@@ -1,0 +1,113 @@
+{
+  "id": "cc7.2-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.2",
+  "control_description": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/monitoring-policy.md",
+      "type": "policy",
+      "description": "Helix Data Systems security monitoring and alerting policy"
+    },
+    {
+      "path": "evidence/alert-summary-q4-2025.csv",
+      "type": "log",
+      "description": "Monthly alert summary with triage statistics for Q4 2025"
+    },
+    {
+      "path": "evidence/monitoring-coverage-review-q4.json",
+      "type": "report",
+      "description": "Quarterly monitoring coverage review with gap analysis"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/penetration-test-summary.md",
+      "type": "report",
+      "description": "Annual penetration test executive summary"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Helix Data Systems covering the observation period Q4 2025. Review all provided evidence and assess compliance with CC7.2 (Monitoring and Anomaly Detection). Consider whether identified issues represent material control deficiencies or acceptable operational realities. Not all documents may be relevant to this control. Provide your professional judgment on each finding.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Two production services deployed without monitoring for 25+ days",
+      "description": "helix-ml-inference was deployed November 20 with partial monitoring (APM only, no SIEM, no alerts). helix-data-lake-ingestion was deployed October 5 with only CloudWatch basic metrics — no Datadog, no SIEM, no alerting. Policy Section 5 requires monitoring within 5 business days of deployment. Both services exceeded this SLA by weeks. The data lake ingestion service has been unmonitored for the entire observation period.",
+      "evidence_sources": ["evidence/monitoring-coverage-review-q4.json", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "Coverage review shows 2 of 3 new services have no monitoring → policy requires 5-day SLA → both well past SLA → data lake has been running for nearly 3 months without SIEM integration → clear control failure.",
+      "detection_criteria": {
+        "required_keywords": ["helix-ml-inference", "helix-data-lake", "5 business days", "monitoring", "coverage gap", "deployed", "no alerting", "SLA"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "S3 bulk access alert has persistent false positive rate exceeding 30% threshold",
+      "description": "The S3 bulk access alert has a false positive rate of approximately 95-97% across all three months (152/156 in Oct, 86/89 in Nov, 135/142 in Dec). Policy Section 3.3 requires tuning within 2 weeks when FP rate exceeds 30%. A tuning ticket was created October 20 (TUNE-202) and partially applied, but the rate did not meaningfully improve. By December, the alert summary notes 'tuning regressed.' This alert has been effectively useless for the entire quarter while remaining in a noisy state that contributes to alert fatigue.",
+      "evidence_sources": ["evidence/alert-summary-q4-2025.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "FP rates: Oct 97%, Nov 97%, Dec 95% → all exceed 30% threshold → tuning ticket created but ineffective → 3 months of non-compliance with tuning SLA → alert fatigue risk.",
+      "detection_criteria": {
+        "required_keywords": ["S3 bulk access", "false positive", "30%", "tuning", "TUNE-202", "alert fatigue", "95%", "97%"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Failed login brute force alert acknowledged within SLA only 94-99% of the time",
+      "description": "The brute force alert is High severity (30-minute SLA, 24/7). In October, 839/847 (99%) were acknowledged within SLA. In November, 308/312 (99%). In December, 285/298 (96%). The December spike (coordinated brute force from 3 IP ranges, Dec 14-16) contributed to the SLA misses. This is a judgment call: is 96-99% SLA adherence acceptable, or is any miss on a High-severity 24/7 alert a finding? The 8 missed alerts in October and 13 in December were during periods of high alert volume.",
+      "evidence_sources": ["evidence/alert-summary-q4-2025.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "96-99% SLA adherence is operationally strong but not perfect. High-severity alerts have a 30-min 24/7 SLA. Misses during high-volume periods suggest capacity constraints, not process failure. A strict auditor flags this; a pragmatic one notes it as an observation with a recommendation to review on-call staffing during attack spikes.",
+      "detection_criteria": {
+        "required_keywords": ["brute force", "SLA", "acknowledged", "96%", "99%", "missed", "December", "capacity", "observation"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "SQL injection alert rule disabled for entire observation period",
+      "description": "The SQL injection detection rule was disabled on November 1 and remained disabled through the end of the observation period. CISO approval was obtained (TUNE-203) with a documented compensating control (WAF blocking + CloudTrail monitoring). This is a judgment call: the CISO approval and compensating control may be sufficient, but disabling a core security monitoring rule for 2 months creates a detection gap. If the WAF were bypassed, there would be no secondary detection mechanism. The model should assess whether the compensating control adequately addresses the risk.",
+      "evidence_sources": ["evidence/alert-summary-q4-2025.csv", "evidence/monitoring-coverage-review-q4.json", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "Rule disabled with CISO approval → compensating control exists (WAF + CloudTrail) → but 100% FP rate justified the disable → risk: if WAF bypass occurs, no detection → judgment: most auditors would accept with the compensating control documented, but should note the gap and recommend re-enabling with better tuning.",
+      "detection_criteria": {
+        "required_keywords": ["SQL injection", "disabled", "TUNE-203", "compensating", "WAF", "CISO", "2 months", "detection gap"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "December impossible travel alerts — increasing unresolved investigations",
+      "description": "Impossible travel alerts in December: 31 total, 4 true positives, 22 false positives, 5 'requires investigation.' Only 28/31 (90%) were acknowledged within SLA. The 5 unresolved investigations are a concern — policy Section 4.1 requires triage as TP, FP, or Requires Investigation, but there is no SLA for resolving 'Requires Investigation' items. These 5 alerts may represent actual security events that were never fully triaged. Combined with the SLA miss, this suggests the security team was capacity-constrained in December.",
+      "evidence_sources": ["evidence/alert-summary-q4-2025.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "5 unresolved investigations from impossible travel → could be real security events → no resolution SLA in policy → 90% SLA adherence on a High-severity alert → pattern of December capacity issues → judgment: the unresolved investigations are more concerning than the SLA miss.",
+      "detection_criteria": {
+        "required_keywords": ["impossible travel", "5", "unresolved", "investigation", "December", "capacity", "SLA", "triage"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 10
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["monitoring", "alerting", "false_positive_rate", "coverage_gap", "judgment", "materiality", "alert_fatigue"]
+  }
+}

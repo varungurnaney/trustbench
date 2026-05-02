@@ -1,0 +1,128 @@
+{
+  "id": "cc9.1-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC9.1",
+  "control_description": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions or from the use of vendors and business partners.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/vendor-management-policy.md",
+      "type": "policy",
+      "description": "Quantum SaaS third-party vendor risk management policy"
+    },
+    {
+      "path": "evidence/vendor-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Vendor inventory with tier, SOC 2 status, DPA, and subservice organization details"
+    },
+    {
+      "path": "evidence/vendor-exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO-approved exceptions for vendor compliance gaps"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/data-classification-policy.md",
+      "type": "policy",
+      "description": "Data classification policy"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Quantum SaaS Inc. covering the observation period Q4 2025 (October 1 – December 31, 2025). Review all provided evidence and assess compliance with CC9.1 (Risk Mitigation for Vendors and Business Partners). Cross-reference the vendor management policy against the vendor inventory and exception register. Not all documents may be relevant. Identify genuine control deficiencies — consider whether exceptions or compensating controls adequately address apparent gaps before flagging.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "DataRobot has no SOC 2 report — but has valid CISO exception with compensating controls",
+      "description": "DataRobot is a Critical-tier vendor without a SOC 2 report. This looks like a clear policy violation. However, VEXC-2025-001 shows an active CISO-approved exception with compensating controls (security questionnaire, encryption, SSO access, quarterly review, right-to-audit). The vendor is new (onboarded Sep 2025) and expects SOC 2 by Q1 2026. The exception is current and well-documented.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-exception-register.csv"],
+      "expected_reasoning": "Critical vendor without SOC 2 → check exception register → VEXC-2025-001 active → compensating controls documented → exception is reasonable for a new vendor → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["DataRobot", "SOC 2", "exception", "VEXC-2025-001", "compensating", "new vendor"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["approved", "per policy", "covered", "mitigated", "acceptable", "not a finding"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "HubSpot has no SOC 2 report — but has valid CISO exception with alternative assessment",
+      "description": "HubSpot is a High-tier vendor that has not provided its SOC 2 report despite requests since October 2025. VEXC-2025-002 shows a CISO-approved exception with an alternative assessment (security questionnaire, Trust Center review, ISO 27001 confirmation). The vendor has SOC 2 — they just haven't shared it. The exception is active and the compensating controls include ISO 27001 certification, which is a recognized equivalent.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-exception-register.csv"],
+      "expected_reasoning": "High vendor without SOC 2 on file → check exception register → VEXC-2025-002 active → alternative assessment completed → ISO 27001 is a recognized equivalent → not a finding, though the vendor should be pressured to provide the report.",
+      "detection_criteria": {
+        "required_keywords": ["HubSpot", "SOC 2", "not provided", "exception", "VEXC-2025-002", "ISO 27001", "alternative"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["approved", "covered", "mitigated", "acceptable", "alternative assessment"]
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Stripe uses carve-out method for GCP subservice organization — no independent assessment",
+      "description": "Stripe is a Critical-tier vendor processing customer PII and financial data. Their SOC 2 report uses the carve-out method for GCP. Policy Section 4.2 states: 'If carve-out method is used, Quantum must independently assess the subservice organization.' There is no evidence that Quantum independently assessed GCP as used by Stripe. AWS is also carved out but Quantum uses AWS directly and has its own assessment. GCP is different — Quantum has no direct relationship with GCP and no assessment on file.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "Stripe uses carve-out for GCP → policy requires independent assessment of carved-out subservice orgs → no GCP assessment on file → Stripe handles financial data → this is a gap in subservice organization monitoring.",
+      "detection_criteria": {
+        "required_keywords": ["Stripe", "carve-out", "GCP", "subservice", "independent", "assessment", "policy"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "Snowflake SOC 2 report review not completed within 90-day SLA",
+      "description": "Snowflake is a Critical-tier vendor processing customer PII. Their SOC 2 report was received December 15, 2025. The vendor inventory shows 'review not yet completed' as of the evidence collection date. Policy Section 4.1 requires review within 90 days of report issuance. The report period is Jan 1 - Dec 31, 2025, so the report was likely issued in December — the 90-day clock has just started. However, during the Q4 observation period, Quantum was operating with a Snowflake SOC 2 review from an unknown date for a prior report period. The question is whether the current report was reviewed timely.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "Snowflake report received Dec 15 → review pending → 90-day SLA not yet breached from the new report → BUT what about the previous year's report review? There is no evidence of a prior review date → for a Critical vendor processing PII, an observation period without a current SOC 2 review is a gap.",
+      "detection_criteria": {
+        "required_keywords": ["Snowflake", "pending", "review", "90 days", "Critical", "PII", "not completed", "SOC 2"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No quarterly business reviews for High-tier vendors (SendGrid, HubSpot, Zendesk, Amplitude)",
+      "description": "Policy Section 4.3 requires quarterly business reviews for Critical vendors. The vendor inventory shows business reviews completed for all Critical vendors (AWS, Datadog, Stripe, Okta, Snowflake, DataRobot all show Dec 2025 reviews). However, High-tier vendors (SendGrid, HubSpot, Zendesk, Amplitude) all show 'N/A' for last business review. The policy only requires quarterly business reviews for Critical vendors, so this is technically compliant. But four High-tier vendors with no business reviews — some processing customer PII (Zendesk, HubSpot) — is a control design weakness worth noting.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "Policy only requires business reviews for Critical tier → High-tier vendors show N/A → technically compliant → but HubSpot and Zendesk handle customer PII → control design could be improved → observation/recommendation, not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["High", "business review", "N/A", "SendGrid", "HubSpot", "Zendesk", "Amplitude", "recommendation", "design"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-006",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Multiple High-tier vendors use carve-out method with no independent subservice org assessment",
+      "description": "SendGrid (AWS carve-out), Amplitude (AWS + GCP carve-out), and Lattice (AWS carve-out) all use the carve-out method for subservice organizations in their SOC 2 reports. Policy Section 4.2 requires independent assessment of carved-out subservice organizations. While Quantum directly uses AWS and has its own assessment, GCP subservice organization assessments are missing for Amplitude. Lattice is Medium tier so SOC 2 is not required, but its data includes employee PII.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "Multiple vendors use carve-out → policy requires independent assessment → AWS is covered (Quantum's own assessment) → GCP is not covered → Amplitude processes customer behavioral data via GCP → gap in subservice monitoring.",
+      "detection_criteria": {
+        "required_keywords": ["carve-out", "subservice", "Amplitude", "GCP", "independent", "assessment", "missing"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 10
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["vendor_management", "subservice_organizations", "soc2_report_review", "red_herring", "exception_register", "carve_out"]
+  }
+}

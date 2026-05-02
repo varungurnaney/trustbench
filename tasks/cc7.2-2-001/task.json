@@ -1,0 +1,84 @@
+{
+  "id": "cc7.2-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.2",
+  "control_description": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/incident-response-plan.md",
+      "type": "policy",
+      "description": "Pinnacle SaaS incident response plan"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the incident response plan for Pinnacle SaaS Inc. and assess whether it adequately addresses SOC 2 CC7.2 requirements for monitoring and anomaly detection. Identify any gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No after-hours coverage for P2 incidents",
+      "description": "Section 3.2 states on-call SRE responds to P1 alerts 24/7, but P2 alerts only have a 15-minute triage SLA 'during business hours.' P2 incidents include unauthorized access to production — a serious security event that could go unresponded overnight or over weekends.",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "P2 includes 'unauthorized access to production' which is a security event that should not wait until the next business day for triage. The asymmetry between P1 (24/7) and P2 (business hours only) creates a gap where serious security events could be undetected for 16+ hours.",
+      "detection_criteria": {
+        "required_keywords": ["P2", "business hours", "after-hours", "24/7", "overnight", "weekend", "unauthorized access", "coverage gap", "on-call"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Vulnerability scan results only reviewed weekly",
+      "description": "Section 3.1 shows Qualys vulnerability scan results go to a weekly report. Critical vulnerabilities discovered by a scan would not be triaged for up to 7 days. CC7.2 requires timely detection of anomalies — weekly review of vulnerability data is insufficient for critical findings.",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "Qualys scan results are delivered as a weekly report rather than real-time alerts. A critical vulnerability could sit unreported for a full week. Other monitoring sources alert in real-time via Slack, but vuln scans are treated differently without justification.",
+      "detection_criteria": {
+        "required_keywords": ["Qualys", "weekly", "vulnerability", "delay", "real-time", "critical", "timely"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No database activity monitoring",
+      "description": "Section 3.1 lists infrastructure logs, application logs, CloudTrail, endpoint detection, and email security — but no database activity monitoring (DAM). For a SaaS company, the database is the primary data store. Anomalous queries, privilege escalation, or bulk data exports would not be detected.",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "The monitoring stack covers infrastructure, application, cloud API, endpoint, and email — but not database-level activity. Direct database access or SQL injection attacks would not trigger alerts.",
+      "detection_criteria": {
+        "required_keywords": ["database", "DAM", "SQL", "data access", "monitoring", "missing", "not included", "queries"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Annual plan testing is insufficient",
+      "description": "Section 6 states the IRP is tested annually via tabletop exercise only. SOC 2 auditors increasingly expect more frequent testing (semi-annual) and varied exercise types (tabletop plus simulated incident). A single annual tabletop may not validate the plan's effectiveness across different incident types.",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "One tabletop per year tests a single scenario. The plan covers P1-P4 incidents across data breaches, ransomware, unauthorized access, and insider threats — a single exercise cannot validate all of these.",
+      "detection_criteria": {
+        "required_keywords": ["annual", "tabletop", "testing", "frequency", "insufficient", "simulation", "once"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 10
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "10 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["monitoring", "incident_response", "anomaly_detection", "single_document"]
+  }
+}

@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TrustBench Task",
+  "description": "Schema for a TrustBench SOC 2 compliance evaluation task",
+  "type": "object",
+  "required": ["id", "version", "framework", "control", "control_description", "difficulty", "category", "evidence_files", "prompt", "findings", "metadata"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique task identifier. Format: {control}-{difficulty}-{sequence}",
+      "examples": ["cc6.1-2-001", "cc8.1-4-003"]
+    },
+    "version": {
+      "type": "string",
+      "description": "Schema version",
+      "const": "1.0"
+    },
+    "framework": {
+      "type": "string",
+      "description": "Compliance framework being tested",
+      "enum": ["SOC2", "ISO27001", "HIPAA", "PCI-DSS"]
+    },
+    "control": {
+      "type": "string",
+      "description": "Control identifier within the framework",
+      "examples": ["CC6.1", "CC7.2", "CC8.1", "A1.2"]
+    },
+    "control_description": {
+      "type": "string",
+      "description": "Full text of the control requirement"
+    },
+    "difficulty": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "1=trivial single-doc gap, 2=single-doc subtle gap, 3=multi-doc cross-reference, 4=multi-doc with noise/red herrings, 5=ambiguous judgment call requiring materiality assessment"
+    },
+    "category": {
+      "type": "string",
+      "enum": ["detection", "cross_reference", "noise_filtering", "red_herring", "judgment"],
+      "description": "Primary skill the task tests"
+    },
+    "evidence_files": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["path", "type", "description"],
+        "properties": {
+          "path": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["policy", "config", "log", "spreadsheet", "screenshot", "ticket", "report", "exception_register", "architecture_diagram"]
+          },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "noise_files": {
+      "type": "array",
+      "description": "Evidence files included that contain no relevant findings. Tests whether the model avoids false positives from irrelevant documents.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": { "type": "string" },
+          "type": { "type": "string" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "prompt": {
+      "type": "string",
+      "description": "The audit instruction given to the model"
+    },
+    "findings": {
+      "type": "array",
+      "description": "Ground-truth findings the model should identify",
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "severity", "title", "description", "evidence_sources", "expected_reasoning", "detection_criteria"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": {
+            "type": "string",
+            "enum": ["gap", "red_herring"],
+            "description": "gap = real finding that should be reported. red_herring = looks like a gap but has a valid explanation in another document — model should NOT flag this."
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "title": {
+            "type": "string",
+            "description": "Short finding title"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed explanation of the finding and why it matters"
+          },
+          "evidence_sources": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Which evidence files must be referenced to identify this finding"
+          },
+          "expected_reasoning": {
+            "type": "string",
+            "description": "The reasoning chain a competent auditor would follow"
+          },
+          "detection_criteria": {
+            "type": "object",
+            "required": ["required_keywords", "minimum_keyword_matches"],
+            "properties": {
+              "required_keywords": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Keywords/phrases that indicate detection"
+              },
+              "minimum_keyword_matches": {
+                "type": "integer",
+                "description": "How many keywords must match for the finding to count as detected"
+              },
+              "exclusion_keywords": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Keywords that indicate a false positive (for red_herring type: if model uses these, it correctly dismissed the red herring)"
+              }
+            }
+          }
+        }
+      }
+    },
+    "scoring": {
+      "type": "object",
+      "description": "How to compute the final score for this task",
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["detection_only", "detection_and_precision", "f1"],
+          "description": "detection_only = recall only. detection_and_precision = penalizes over-reporting. f1 = harmonic mean of precision and recall."
+        },
+        "max_expected_findings": {
+          "type": "integer",
+          "description": "Upper bound on reasonable number of findings. Models reporting more than this are penalized for over-reporting."
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "required": ["author", "created_date", "estimated_human_time", "documents_count", "relevant_documents_count"],
+      "properties": {
+        "author": { "type": "string" },
+        "created_date": { "type": "string", "format": "date" },
+        "estimated_human_time": {
+          "type": "string",
+          "description": "How long this would take a competent auditor",
+          "examples": ["5 minutes", "30 minutes", "2 hours"]
+        },
+        "documents_count": {
+          "type": "integer",
+          "description": "Total number of evidence documents provided (including noise)"
+        },
+        "relevant_documents_count": {
+          "type": "integer",
+          "description": "Number of documents that actually contain or relate to findings"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  }
+}

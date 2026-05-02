@@ -1,0 +1,84 @@
+{
+  "id": "cc6.1-1-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.1",
+  "control_description": "The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events to meet the entity's objectives.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/access-control-policy.md",
+      "type": "policy",
+      "description": "NovaTech Solutions access control policy"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the provided access control policy for NovaTech Solutions. Assess whether the organization's policy adequately addresses the requirements of SOC 2 Trust Service Criteria CC6.1 (Logical Access Security). Identify any gaps, weaknesses, or missing elements that an auditor would flag.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No defined SLA for access revocation upon termination",
+      "description": "No defined SLA for access revocation upon termination. Policy says 'timely manner' instead of specifying a concrete timeframe (e.g., same business day, within 24 hours). Auditors require a measurable, enforceable standard.",
+      "evidence_sources": ["evidence/access-control-policy.md"],
+      "expected_reasoning": "Section 6.1 uses vague language 'timely manner' with no measurable SLA. SOC 2 requires demonstrable, enforceable controls with defined timeframes.",
+      "detection_criteria": {
+        "required_keywords": ["timely", "SLA", "timeframe", "hours", "immediate", "same day", "revocation"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "MFA not required for production system access",
+      "description": "MFA is not required for production system access. Policy mandates MFA for VPN, cloud console, and email from non-corporate devices, but Section 4.2 does not include production servers or databases — the highest-risk systems.",
+      "evidence_sources": ["evidence/access-control-policy.md"],
+      "expected_reasoning": "Section 4.2 lists MFA requirements but omits production servers and databases. These are the highest-risk systems and should be the primary MFA target.",
+      "detection_criteria": {
+        "required_keywords": ["production", "MFA", "multi-factor", "database", "server", "coverage", "missing"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No access review completion evidence or artifacts defined",
+      "description": "No mention of access review completion evidence or artifacts. Section 5.2 says reviews are 'documented and retained' but does not specify what format, where they are stored, or how long they are retained. An auditor would ask to see completed review forms or sign-offs.",
+      "evidence_sources": ["evidence/access-control-policy.md"],
+      "expected_reasoning": "Section 5.2 claims documentation but specifies no format, storage location, or retention period. Auditors need to inspect actual review artifacts.",
+      "detection_criteria": {
+        "required_keywords": ["evidence", "artifact", "sign-off", "retention", "format", "stored", "proof"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Role change access revocation depends solely on manager notification",
+      "description": "Role change access revocation depends on the previous manager notifying IT, with no systemic control or verification. If the manager forgets, stale access persists indefinitely. No periodic reconciliation catches this.",
+      "evidence_sources": ["evidence/access-control-policy.md"],
+      "expected_reasoning": "Section 6.2 relies on a manual, human-dependent process (manager notification) with no automated trigger, verification, or fallback reconciliation.",
+      "detection_criteria": {
+        "required_keywords": ["role change", "manager", "notify", "stale", "accumulation", "creep", "previous"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "5 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["logical_access", "access_control", "policy_review", "single_document"]
+  }
+}

@@ -1,0 +1,94 @@
+{
+  "id": "a1.2-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "A1.2",
+  "control_description": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup processes, and recovery infrastructure to meet its objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/availability-policy.md",
+      "type": "policy",
+      "description": "NexGen Platform availability and recovery policy"
+    },
+    {
+      "path": "evidence/backup-monitoring-logs.csv",
+      "type": "log",
+      "description": "Daily backup execution logs for Q4 2025 (92 days)"
+    },
+    {
+      "path": "evidence/restore-test-results.json",
+      "type": "report",
+      "description": "Quarterly restore test results for Q2 and Q3 2025"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for NexGen Platform covering the observation period Q4 2025 (October 1 – December 31, 2025). Review the availability policy, backup monitoring logs, and restore test results. Assess compliance with A1.2 (Backup and Recovery). Consider whether identified issues are material findings or acceptable operational variances. Provide your professional judgment on each finding's severity and whether it would result in an audit exception.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Two backup failures in the observation period (97.8% success rate)",
+      "description": "The backup log shows 2 failures out of 92 days: Nov 3 (disk full) and Nov 16 (network timeout). The Nov 3 failure was recovered with a manual re-run 2.5 hours later. The Nov 16 failure had NO re-run — there is no successful backup for November 16. This is the harder judgment call: is a 97.8% daily backup success rate acceptable? The Nov 3 recovery shows good operational response, but Nov 16 represents a gap in the backup chain where RPO was effectively 2 days (Nov 15 backup to Nov 17 backup). An auditor must decide if this is a one-off operational issue or a control deficiency.",
+      "evidence_sources": ["evidence/backup-monitoring-logs.csv"],
+      "expected_reasoning": "Nov 3: failed but re-run same day → operational variance, acceptable. Nov 16: failed with no re-run → 48-hour gap in backups → RPO exceeded (policy says 4 hours via WAL, but daily full had a gap) → this is the nuanced call. WAL archiving is continuous, so point-in-time recovery was likely still possible. A strict auditor flags this; a pragmatic one notes the WAL continuity as a compensating control.",
+      "detection_criteria": {
+        "required_keywords": ["November 16", "no re-run", "failed", "gap", "RPO", "48 hours", "WAL", "compensating"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No quarterly restore test performed during the Q4 observation period",
+      "description": "Policy Section 3.3 requires 'Full restore test performed quarterly.' The evidence shows tests in Q2 (June 15) and Q3 (September 20), but no test was performed in Q4 2025 (the observation period). This is a straightforward control failure — the control was not operating during the observation period. However, the Q3 test was only 11 days before the observation period started, and both prior tests passed. The judgment call: is this a material finding or a timing issue?",
+      "evidence_sources": ["evidence/restore-test-results.json", "evidence/availability-policy.md"],
+      "expected_reasoning": "No Q4 restore test = control did not operate during the observation period. This is typically a finding regardless of prior test results. The Q3 test being recent doesn't excuse the gap during the observation window. Most auditors would flag this.",
+      "detection_criteria": {
+        "required_keywords": ["Q4", "no restore test", "quarterly", "missing", "observation period", "not performed", "control"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Restore time trending toward RTO breach",
+      "description": "Q2 restore took 2h 45m. Q3 restore took 3h 30m. RTO is 4 hours. The Q3 test notes explicitly warn: 'Growth in data volume increasing restore time — may exceed RTO by Q2 2026 if trend continues.' The data grew from ~142 GB in October to ~183 GB in December (28% growth in one quarter). At this rate, a restore in Q1 2026 would take approximately 4h 15m — exceeding the RTO. This is not a current failure but a forward-looking risk that a proactive auditor would flag as a management letter comment.",
+      "evidence_sources": ["evidence/restore-test-results.json", "evidence/backup-monitoring-logs.csv"],
+      "expected_reasoning": "Linear extrapolation of restore times (165 min → 210 min over one quarter, ~45 min increase per quarter) puts next restore at ~255 min = 4h 15m, above the 4h RTO. Combined with 28% quarterly data growth visible in backup sizes. This is a risk observation, not a current deficiency.",
+      "detection_criteria": {
+        "required_keywords": ["trending", "RTO", "exceed", "growth", "2h 45m", "3h 30m", "4 hours", "data volume", "extrapolat"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Incremental backup logs not provided — cannot verify 4-hour RPO claim",
+      "description": "Policy states incremental backups run every 4 hours, but the backup monitoring logs only show daily full backups. No evidence of incremental backup execution was provided. Similarly, WAL archiving is claimed as 'continuous' but no WAL archive logs were provided. Without this evidence, the 4-hour RPO cannot be independently verified.",
+      "evidence_sources": ["evidence/backup-monitoring-logs.csv", "evidence/availability-policy.md"],
+      "expected_reasoning": "Absence of evidence is not evidence of absence — but an auditor needs to verify. The judgment call is whether to flag this as a finding or request additional evidence. Most auditors would request the incremental logs before concluding.",
+      "detection_criteria": {
+        "required_keywords": ["incremental", "not provided", "WAL", "evidence", "verify", "RPO", "4 hour", "missing"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["availability", "backup", "recovery", "RTO", "RPO", "judgment", "materiality", "trending"]
+  }
+}

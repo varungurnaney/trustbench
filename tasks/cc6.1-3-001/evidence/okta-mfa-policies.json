@@ -1,0 +1,86 @@
+{
+  "mfa_enrollment_policy": {
+    "name": "Global MFA Enrollment",
+    "status": "ACTIVE",
+    "settings": {
+      "factors": {
+        "okta_otp": { "enroll": "REQUIRED", "status": "ACTIVE" },
+        "okta_push": { "enroll": "OPTIONAL", "status": "ACTIVE" },
+        "okta_sms": { "enroll": "NOT_ALLOWED", "status": "INACTIVE" },
+        "google_otp": { "enroll": "NOT_ALLOWED", "status": "INACTIVE" },
+        "fido_webauthn": { "enroll": "OPTIONAL", "status": "ACTIVE" }
+      }
+    },
+    "conditions": {
+      "people": {
+        "groups": { "include": ["EVERYONE"] }
+      }
+    }
+  },
+  "sign_on_policies": [
+    {
+      "name": "Production Systems - Strict MFA",
+      "priority": 1,
+      "status": "ACTIVE",
+      "conditions": {
+        "app": {
+          "include": [
+            { "name": "AWS SSO", "type": "SAML_2_0" },
+            { "name": "GitHub Enterprise", "type": "SAML_2_0" },
+            { "name": "Datadog", "type": "SAML_2_0" }
+          ]
+        }
+      },
+      "actions": {
+        "signon": {
+          "access": "ALLOW",
+          "requireFactor": true,
+          "factorPromptMode": "ALWAYS",
+          "factorLifetime": 0,
+          "session": { "maxSessionIdleMinutes": 60, "maxSessionLifetimeMinutes": 480 }
+        }
+      }
+    },
+    {
+      "name": "Corporate Apps - Standard MFA",
+      "priority": 2,
+      "status": "ACTIVE",
+      "conditions": {
+        "app": {
+          "include": [
+            { "name": "Google Workspace", "type": "SAML_2_0" },
+            { "name": "Jira Cloud", "type": "SAML_2_0" },
+            { "name": "Confluence Cloud", "type": "SAML_2_0" },
+            { "name": "Slack", "type": "SAML_2_0" }
+          ]
+        }
+      },
+      "actions": {
+        "signon": {
+          "access": "ALLOW",
+          "requireFactor": true,
+          "factorPromptMode": "SESSION",
+          "factorLifetime": 720,
+          "session": { "maxSessionIdleMinutes": 120, "maxSessionLifetimeMinutes": 720 }
+        }
+      }
+    },
+    {
+      "name": "Default Policy",
+      "priority": 3,
+      "status": "ACTIVE",
+      "conditions": {
+        "app": {
+          "include": [{ "type": "ANY" }]
+        }
+      },
+      "actions": {
+        "signon": {
+          "access": "ALLOW",
+          "requireFactor": false,
+          "session": { "maxSessionIdleMinutes": 120, "maxSessionLifetimeMinutes": 720 }
+        }
+      }
+    }
+  ]
+}

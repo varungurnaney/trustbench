@@ -1,0 +1,107 @@
+{
+  "id": "cc6.3-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.3",
+  "control_description": "The entity authorizes, modifies, or removes access to data, software, functions, and other protected information assets based on roles, responsibilities, or the system design and changes, giving consideration to the concepts of least privilege and segregation of duties, to meet the entity's objectives.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/authorization-policy.md",
+      "type": "policy",
+      "description": "ClearView Analytics data access authorization policy"
+    },
+    {
+      "path": "evidence/aws-rds-access-grants.json",
+      "type": "config",
+      "description": "PostgreSQL role and grant configuration for production database"
+    },
+    {
+      "path": "evidence/data-access-requests-q4.csv",
+      "type": "log",
+      "description": "Data access request tickets for Q4 2025"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for ClearView Analytics covering Q4 2025. Review the data access authorization policy, the actual database grant configuration, and the data access request log. Cross-reference these documents to identify inconsistencies between policy and implementation. Assess compliance with CC6.3.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "developer_debug role has full read-write access to all production tables",
+      "description": "The policy (Section 3.1) requires CISO approval for write access to customer databases. The database grants show 'developer_debug' role has SELECT, INSERT, UPDATE, DELETE on ALL TABLES in clearview_production. The access request log shows charlie.wong (DAR-403) and diana.jones (DAR-405) only received Manager approval for this access — missing Data Owner, Privacy Officer, and CISO approval required for write access to Confidential data. This violates least privilege and the approval chain.",
+      "evidence_sources": ["evidence/authorization-policy.md", "evidence/aws-rds-access-grants.json", "evidence/data-access-requests-q4.csv"],
+      "expected_reasoning": "Cross-reference: policy requires CISO approval for write access → db grants show developer_debug has full write → access requests show only Manager approval → approval chain violated.",
+      "detection_criteria": {
+        "required_keywords": ["developer_debug", "write access", "CISO", "approval", "ALL TABLES", "least privilege", "charlie", "diana", "Manager only"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "evan.smith has both etl_pipeline and developer_debug roles — segregation of duties violation",
+      "description": "The role_memberships show evan.smith has both 'developer_debug' (full read-write to all tables) and 'etl_pipeline' (full read-write + TRUNCATE to all tables). This gives one user two overlapping privileged roles with no segregation. evan.smith could modify data via developer_debug and then cover tracks by truncating tables via etl_pipeline. Additionally, DAR-407 shows this access has 'No expiration' — violating time-limited access principles.",
+      "evidence_sources": ["evidence/aws-rds-access-grants.json", "evidence/data-access-requests-q4.csv"],
+      "expected_reasoning": "Two powerful roles on one user = segregation failure. Plus no expiration date on the access request, meaning this persists indefinitely.",
+      "detection_criteria": {
+        "required_keywords": ["evan", "dual", "both roles", "segregation", "etl_pipeline", "developer_debug", "TRUNCATE", "no expiration", "indefinite"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "analytics_readonly role has access to production database, not just analytics replica",
+      "description": "Policy Section 3.4 states analysts access customer data through a 'read-only analytics replica' with PII masking. However, the database grants show 'analytics_readonly' has SELECT on ALL TABLES in clearview_production (the production database), not just clearview_analytics. Analysts can bypass PII masking by querying production directly.",
+      "evidence_sources": ["evidence/authorization-policy.md", "evidence/aws-rds-access-grants.json"],
+      "expected_reasoning": "Policy says analysts use the analytics replica with PII masking → grants show analytics_readonly has access to production (unmasked) → policy vs implementation contradiction.",
+      "detection_criteria": {
+        "required_keywords": ["analytics_readonly", "production", "replica", "masking", "PII", "bypass", "clearview_production", "contradiction"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "marketing_integration accesses customer PII without Privacy Officer approval evidence",
+      "description": "The marketing_integration role has SELECT access to customers, customer_events, and customer_profiles in production. DAR-404 shows Privacy Officer approved this. However, this is Confidential customer data being sent to an external system (HubSpot) — per policy Section 3.2, exports to external systems require Privacy Officer review, which was provided, but Section 3.2 also requires Data Owner + CISO approval for bulk exports. HubSpot integration likely syncs >1,000 records continuously, meeting the bulk export threshold without the required CISO approval.",
+      "evidence_sources": ["evidence/authorization-policy.md", "evidence/aws-rds-access-grants.json", "evidence/data-access-requests-q4.csv"],
+      "expected_reasoning": "HubSpot integration = continuous external data export → likely exceeds 1,000 record threshold → requires CISO approval per Section 3.2 → not present in the approval chain for DAR-404.",
+      "detection_criteria": {
+        "required_keywords": ["marketing", "HubSpot", "external", "bulk", "1000", "CISO", "export", "approval"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "developer_debug role granted via postgres superuser, not governed process",
+      "description": "The database grants show developer_debug was granted by 'postgres' (the superuser account) on 2023-09-05, predating the current policy (effective August 2025). This suggests legacy access that was never re-authorized under the current policy framework. All other recent grants were issued by 'db_admin', suggesting a governed process exists but wasn't applied retroactively.",
+      "evidence_sources": ["evidence/aws-rds-access-grants.json", "evidence/authorization-policy.md"],
+      "expected_reasoning": "Grant issued by postgres superuser in 2023, before current policy existed → was this access ever re-authorized? Legacy grants should be captured in quarterly reviews.",
+      "detection_criteria": {
+        "required_keywords": ["postgres", "superuser", "2023", "legacy", "pre-date", "re-authorized", "db_admin", "governed"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 12
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "20 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["data_access", "authorization", "least_privilege", "segregation_of_duties", "cross_reference"]
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "review_date": "2025-12-15",
+  "reviewer": "Olivia Nash (CISO)",
+  "asset_inventory_source": "AWS Config + CMDB",
+  "total_production_services": 24,
+  "services_with_monitoring": 22,
+  "coverage_gaps": [
+    {
+      "service": "helix-ml-inference",
+      "type": "ECS Fargate service",
+      "deployed_date": "2025-11-20",
+      "monitoring_status": "Partial — Datadog APM configured, no SIEM integration, no custom alert rules",
+      "jira_ticket": "MON-445",
+      "target_date": "2026-01-15",
+      "notes": "ML team deployed without notifying Security. Discovered during this review."
+    },
+    {
+      "service": "helix-data-lake-ingestion",
+      "type": "Lambda + Step Functions",
+      "deployed_date": "2025-10-05",
+      "monitoring_status": "CloudWatch basic metrics only — no Datadog, no SIEM, no alerting",
+      "jira_ticket": "MON-446",
+      "target_date": "2026-01-15",
+      "notes": "Data team uses separate AWS account. Not integrated with central monitoring."
+    }
+  ],
+  "new_services_deployed_q4": [
+    {
+      "service": "helix-ml-inference",
+      "deployed_date": "2025-11-20",
+      "monitoring_configured_date": null,
+      "within_5_day_sla": false
+    },
+    {
+      "service": "helix-data-lake-ingestion",
+      "deployed_date": "2025-10-05",
+      "monitoring_configured_date": null,
+      "within_5_day_sla": false
+    },
+    {
+      "service": "helix-notification-v2",
+      "deployed_date": "2025-10-15",
+      "monitoring_configured_date": "2025-10-17",
+      "within_5_day_sla": true
+    }
+  ],
+  "disabled_alerts": [
+    {
+      "rule": "SQL injection pattern (WAF)",
+      "severity": "Medium",
+      "disabled_date": "2025-11-01",
+      "reason": "100% false positive rate — all blocked by WAF, no actionable signal",
+      "ciso_approval": true,
+      "approval_ticket": "TUNE-203",
+      "compensating_control": "WAF blocks all SQL injection attempts; CloudTrail monitors for any requests that bypass WAF"
+    }
+  ]
+}

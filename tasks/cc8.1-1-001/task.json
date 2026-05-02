@@ -1,0 +1,71 @@
+{
+  "id": "cc8.1-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC8.1",
+  "control_description": "The entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures to meet its objectives.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/change-management-policy.md",
+      "type": "policy",
+      "description": "Orion Health change management policy"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the change management policy for Orion Health and assess whether it adequately addresses SOC 2 CC8.1 requirements. Identify any gaps or missing elements.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No segregation of duties in change deployment",
+      "description": "Section 4.3 states 'Changes are deployed by the requesting engineer.' The same person who requests a change also deploys it. CC8.1 requires segregation of duties — the person who develops/requests a change should not be the same person who approves or deploys it to production.",
+      "evidence_sources": ["evidence/change-management-policy.md"],
+      "expected_reasoning": "The requesting engineer deploys their own changes. No independent reviewer or deployer is required. This eliminates a key control — segregation between development and deployment.",
+      "detection_criteria": {
+        "required_keywords": ["segregation", "separation", "same person", "requesting engineer", "deploys", "developer", "independent", "review"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No testing requirement before production deployment",
+      "description": "The policy mentions CI/CD pipeline goes from staging to production but does not require testing in staging, test results sign-off, or QA validation before promotion to production. CC8.1 explicitly requires that changes are 'tested' before implementation.",
+      "evidence_sources": ["evidence/change-management-policy.md"],
+      "expected_reasoning": "Section 4.3 mentions staging but has no testing gate. Changes could be pushed from staging to production without any test execution or validation.",
+      "detection_criteria": {
+        "required_keywords": ["testing", "test", "QA", "validation", "staging", "verified", "no requirement", "before production", "missing"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Emergency change process lacks controls",
+      "description": "Emergency changes require only verbal approval and a retroactive Jira ticket. No requirement for post-implementation security review, no time limit for creating the retroactive ticket, and no verification that the emergency change didn't introduce vulnerabilities.",
+      "evidence_sources": ["evidence/change-management-policy.md"],
+      "expected_reasoning": "Verbal approval is not auditable. Retroactive documentation could be created long after the change. No security review of emergency changes.",
+      "detection_criteria": {
+        "required_keywords": ["emergency", "verbal", "retroactive", "auditable", "security review", "post-implementation", "documentation"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "5 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["change_management", "single_document", "policy_review"]
+  }
+}

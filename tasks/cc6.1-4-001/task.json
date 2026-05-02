@@ -1,0 +1,106 @@
+{
+  "id": "cc6.1-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.1",
+  "control_description": "The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events to meet the entity's objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/access-control-policy.md",
+      "type": "policy",
+      "description": "Vantage Corp access control policy"
+    },
+    {
+      "path": "evidence/gcp-service-accounts.json",
+      "type": "config",
+      "description": "GCP service account configuration and key status"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO-approved security exceptions with compensating controls"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/business-continuity-plan-summary.md",
+      "type": "policy",
+      "description": "BCP executive summary — not relevant to CC6.1"
+    },
+    {
+      "path": "evidence/vendor-risk-assessment-q4.csv",
+      "type": "report",
+      "description": "Vendor risk assessments — not relevant to CC6.1"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Vantage Corp covering Q4 2025 (October 1 – December 31, 2025). You have been provided with multiple evidence artifacts. Review all documents, cross-reference them, and assess compliance with CC6.1 (Logical Access Security). Note that not all documents may be relevant to this control. Identify genuine findings only — consider whether exceptions or compensating controls adequately address apparent gaps before flagging them.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Legacy ETL service account has a manual key (but has valid CISO exception)",
+      "description": "The legacy-etl service account has a manually created key, violating the policy's workload identity requirement. However, the exception register shows EXC-2025-004 — a current, CISO-approved exception with documented compensating controls (IP allowlisting, Vault storage, daily audit). A competent auditor would note the exception and move on, not flag this as a finding.",
+      "evidence_sources": ["evidence/gcp-service-accounts.json", "evidence/exception-register.csv"],
+      "expected_reasoning": "Initial red flag: manual key exists → check exception register → EXC-2025-004 is active and approved → compensating controls are documented → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["legacy-etl", "exception", "EXC-2025-004", "approved", "compensating", "not a finding", "mitigated", "accepted"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["finding", "gap", "violation", "deficiency", "non-compliant"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Terraform import service account with editor role still active 9 months after use",
+      "description": "terraform-import has roles/editor (extremely broad permissions) and a key that was last used March 12, 2025. The exception register shows EXC-2025-003 expired on April 8, 2025. The key and service account were supposed to be deleted after the one-time import, but they are still active 9 months later. The exception has expired, so this is no longer covered.",
+      "evidence_sources": ["evidence/gcp-service-accounts.json", "evidence/exception-register.csv"],
+      "expected_reasoning": "Service account has roles/editor → exception existed but expired April 2025 → key still exists and was never deleted → exception no longer provides cover → stale privileged credential with broad access.",
+      "detection_criteria": {
+        "required_keywords": ["terraform", "editor", "expired", "March", "April", "deleted", "stale", "one-time", "still active", "broad"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Monitoring agent exception expired but key still in use",
+      "description": "The monitoring-agent service account has a manually created key (violating workload identity policy). Exception EXC-2025-002 covered this until December 10, 2025 — but the key was still actively used on December 28, 2025. The exception expired without renewal, so this service account is now operating outside the approved exception framework.",
+      "evidence_sources": ["evidence/gcp-service-accounts.json", "evidence/exception-register.csv"],
+      "expected_reasoning": "Key actively used after exception expiration date → no current exception covers this → operating outside policy without approval.",
+      "detection_criteria": {
+        "required_keywords": ["monitoring", "expired", "December 10", "December 28", "renewal", "exception", "still", "active"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Legacy ETL exception compensating control (key rotation) not evidenced",
+      "description": "EXC-2025-001 and its renewal EXC-2025-004 list compensating controls including 'key stored in HashiCorp Vault' and 'automated daily key usage audit.' However, the GCP service account data shows the legacy-etl key was created on 2023-01-15 and never rotated (no rotation evident in the key data). If the compensating controls aren't actually being followed, the exception's risk acceptance is undermined.",
+      "evidence_sources": ["evidence/gcp-service-accounts.json", "evidence/exception-register.csv"],
+      "expected_reasoning": "Exception is valid, but compensating controls claim rotation/audit → key dates show no rotation since 2023 → are the compensating controls actually operating? This is a control effectiveness question.",
+      "detection_criteria": {
+        "required_keywords": ["legacy-etl", "2023", "rotation", "never rotated", "compensating", "Vault", "audit", "effectiveness"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 3,
+    "tags": ["service_accounts", "exceptions", "compensating_controls", "red_herring", "noise_documents", "GCP"]
+  }
+}

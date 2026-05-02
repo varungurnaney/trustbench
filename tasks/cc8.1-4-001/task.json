@@ -1,0 +1,159 @@
+{
+  "id": "cc8.1-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC8.1",
+  "control_description": "The entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures to meet its objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/change-management-policy.md",
+      "type": "policy",
+      "description": "Stratos Inc. change management policy"
+    },
+    {
+      "path": "evidence/change-log-q4-2025.csv",
+      "type": "log",
+      "description": "Change request log for Q4 2025 (15 changes)"
+    },
+    {
+      "path": "evidence/cab-meeting-minutes-q4.md",
+      "type": "report",
+      "description": "Change Advisory Board meeting minutes for Q4 2025"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/sdlc-overview.md",
+      "type": "policy",
+      "description": "Software development lifecycle overview"
+    },
+    {
+      "path": "evidence/incident-log-q4-2025.csv",
+      "type": "log",
+      "description": "Incident log for Q4 2025"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Stratos Inc. covering the observation period Q4 2025 (October 1 – December 31, 2025). Review all provided evidence and assess compliance with CC8.1 (Change Management). Cross-reference the change management policy against the change log and CAB meeting minutes. Note that not all documents may be directly relevant to this control. Identify genuine control deficiencies — consider the full context before flagging.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "CHG-414 emergency change during holiday freeze — but CISO approval was obtained",
+      "description": "CHG-414 (DB failover) was deployed during the holiday freeze on Dec 22. This looks like a freeze violation, but the policy explicitly allows emergency changes during freeze with CISO approval. The change log shows CISO approval via Slack at 03:02, and the CAB retrospective was completed on Dec 30. The model should note the freeze-period deployment but recognize it was handled per policy.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Emergency change during freeze → check policy → freeze policy allows emergencies with CISO approval → CISO approval documented → retrospective CAB completed → compliant, not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-414", "DB failover", "holiday freeze", "December 22 freeze", "freeze violation"],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": ["CISO approval obtained", "CISO approved", "per policy", "compliant", "properly followed", "approval was obtained", "approval via slack", "not a finding", "not a violation"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "CHG-415 deployed on Dec 20 (start of holiday freeze) — but approved and scheduled before freeze",
+      "description": "CHG-415 was deployed on December 20, which is the first day of the holiday freeze. However, it was approved at the December 16 CAB meeting and scheduled before the freeze began. The policy states freezes are enforced '48 hours before and after major releases' and lists specific holiday freeze dates. This is a normal change that was approved and scheduled in advance — deploying on the freeze start date with pre-approval is not a violation.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/cab-meeting-minutes-q4.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Deployed Dec 20 (freeze starts Dec 20) → but approved Dec 16 at CAB → change was scheduled before freeze → pre-approved changes during freeze are a gray area but the intent of the freeze is to prevent new approvals, not block pre-scheduled work.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-415", "rate limit thresholds", "December 20 freeze", "deployed during freeze", "freeze violation"],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": ["pre-approved", "before freeze", "scheduled prior", "not a violation", "approved before", "approved on december 16", "approved at the december 16"]
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "CHG-410 deployed during holiday freeze without CISO approval",
+      "description": "CHG-410 (log4j patch) was a Standard change deployed on November 26 during the Thanksgiving holiday freeze (Nov 25-30). Policy Section 5 requires CISO approval for changes during freeze periods, even standard changes. The change log notes 'No CISO approval documented.' Additionally, it was deployed outside the maintenance window (14:00 UTC on a Wednesday, not Saturday 02:00-06:00). Even though it's a standard change, deploying during a freeze without CISO approval is a policy violation.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Standard change during holiday freeze → policy requires CISO approval for all changes during freeze → no CISO approval documented → also deployed outside maintenance window → control failure.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-410", "log4j", "holiday freeze", "Thanksgiving", "CISO", "November 26", "approval", "maintenance window"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "CHG-411 retrospective CAB review exceeded 48-business-hour SLA",
+      "description": "CHG-411 was an emergency change deployed December 1. The retrospective CAB review occurred December 9 — 6 business days later. Policy Section 3.2 requires retrospective CAB review within 48 business hours (approximately 6 business days would be valid only if business hours means 8-hour workdays, making 48 business hours = 6 calendar business days). However, the more natural reading of '48 business hours' is 2 business days. The CAB minutes confirm the Dec 9 review. This is a timeline issue the model must evaluate.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/cab-meeting-minutes-q4.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Emergency change Dec 1 → retrospective CAB Dec 9 → policy says 48 business hours → 6 business days elapsed → likely exceeds SLA regardless of interpretation → control failure.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-411", "48", "business hours", "December 1", "December 9", "retrospective", "SLA", "late", "exceeded"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "high",
+      "title": "CHG-407 and CHG-411: developer deployed their own emergency change (segregation violation)",
+      "description": "Policy Section 3.3 states 'Production deployments are executed by the SRE team, not the development team.' CHG-407 was developed by maya.jackson and deployed by maya.jackson. CHG-411 was developed by alice.chen and deployed by alice.chen. In both cases, the developer bypassed the SRE team and deployed their own code to production. Emergency changes do not exempt segregation of duties requirements in the policy.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Change log shows developer = deployer for CHG-407 and CHG-411 → policy requires SRE deploys, not developers → emergency process doesn't waive this → segregation of duties violation.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-407", "CHG-411", "maya.jackson", "alice.chen", "segregation", "SRE", "deployed", "same person", "developer"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-006",
+      "type": "gap",
+      "severity": "high",
+      "title": "CHG-409 approved without CAB quorum — high-risk change without Security Lead",
+      "description": "CHG-409 was a High-risk change (customer data export endpoint) approved at the November 18 CAB meeting. The CAB minutes show only Derek Huang and Raj Patel attended — quorum was NOT met (requires VP Engineering + Security Lead + one other). Policy Section 3.4 requires Security team review for High/Critical risk changes. The Security Lead was absent, meaning this high-risk change involving customer data was approved without security review.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/cab-meeting-minutes-q4.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "CAB minutes show 2/3 attendees, no quorum → change was high risk → policy requires security review for high risk → security lead absent → approved without required oversight.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-409", "quorum", "Security Lead", "absent", "high risk", "customer data", "November 18", "approval"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-007",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CHG-409 missing post-implementation verification",
+      "description": "CHG-409 has post_impl_verified = No with no post-implementation date. Policy Section 3.5 requires verification within 2 hours. The change is marked as Completed despite this missing step. This means there is no evidence that the customer data export endpoint was verified to be working correctly after deployment.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Change log shows post_impl_verified = No → policy requires verification within 2 hours → missing verification on a high-risk change involving customer data.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-409", "post-implementation", "verification", "missing", "No", "2 hours"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-008",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CHG-412 security review performed by the same person who developed the change",
+      "description": "CHG-412 (TLS cipher suite update) was developed by maya.jackson. The change log notes 'Security review by maya.jackson (same person who developed the change).' Policy Section 3.3 requires segregation — the developer must not be the approver. While the policy specifically mentions development vs. approval, a security review by the developer undermines the control's intent.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Security review performed by the developer → even if policy only explicitly covers approval segregation, security review by the author is a control weakness → especially for a High-risk security change.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-412", "maya.jackson", "security review", "same person", "developed", "segregation"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 12
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 3,
+    "tags": ["change_management", "segregation_of_duties", "red_herring", "holiday_freeze", "calendar_math", "cab_quorum"]
+  }
+}
