@@ -34,37 +34,40 @@ Requires an `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable dependi
 
 ## Results
 
-Preliminary results from 20 tasks across 8 controls. Three models were evaluated across all tasks. Scoring uses F1 on D4-D5 tasks (penalizes false positives) and detection recall on D1-D3.
+Preliminary results from 20 tasks across 8 controls, evaluated on 6 models. D4-D5 tasks use F1 scoring (penalizes both missed gaps and false positives).
 
-| Rank | Model | Provider | Avg Score | Tasks Evaluated | Highest | Lowest |
-|------|-------|----------|-----------|-----------------|---------|--------|
-| 1 | GPT-5.5 | OpenAI | **79%** | 14 | 100% (6 tasks) | 18% (cc6.6-5) |
-| 2 | Claude Sonnet 4.6 | Anthropic | **75%** | 15 | 100% (3 tasks) | 36% (cc9.1-5) |
-| 3 | Claude Opus 4.7 | Anthropic | **68%** | 15 | 100% (2 tasks) | 33% (cc6.6-5) |
+| Rank | Model | Provider | Avg D4-D5 F1 | Highest | Lowest |
+|------|-------|----------|-------------|---------|--------|
+| 1 | GPT-5.5 | OpenAI | **77%** | 100% (5 tasks) | 18% (cc6.6-5) |
+| 2 | Claude Sonnet 4.6 | Anthropic | **75%** | 100% (3 tasks) | 36% (cc9.1-5) |
+| 3 | Claude Opus 4.7 | Anthropic | **63%** | 91% (cc7.2-5, cc8.1-5) | 33% (cc6.6-5) |
+| 4 | GPT-4.1 | OpenAI | **60%** | 92% (cc8.1-4) | 0% (cc3.1-5) |
+| 5 | Claude Haiku 4.5 | Anthropic | **51%** | 92% (cc8.1-4) | 12% (cc3.1-5) |
+| 6 | GPT-4o | OpenAI | **40%** | 100% (cc8.1-4) | 0% (cc3.1-5) |
 
-**Per-task breakdown (D4-D5 only, sorted by average, hardest first):**
+**Per-task breakdown (sorted by 6-model average, hardest first):**
 
-| Task | D | Control | GPT-5.5 | Sonnet 4.6 | Opus 4.7 | Avg |
-|------|---|---------|---------|------------|----------|-----|
-| cc6.6-5-001 | D5 | System Boundaries | 18% | 55% | 33% | **35%** |
-| cc9.1-5-001 | D5 | Vendor Mgmt | 33% | 36% | 40% | **36%** |
-| cc3.1-5-001 | D5 | Risk Assessment | 57% | 55% | 40% | **51%** |
-| cc6.3-4-001 | D4 | Data Access | 60% | 67% | 57% | **61%** |
-| cc3.1-4-001 | D4 | Risk Assessment | 86% | 73% | 62% | **74%** |
-| cc9.1-4-001 | D4 | Vendor Mgmt | 100% | 73% | 67% | **80%** |
-| cc6.1-5-001 | D5 | Logical Access | 89% | 83% | 67% | **80%** |
-| cc7.2-4-001 | D4 | Monitoring | 86% | 89% | 67% | **81%** |
-| cc8.1-5-001 | D5 | Change Mgmt | 73% | 83% | 91% | **82%** |
-| cc6.6-4-001 | D4 | System Boundaries | 100% | 100% | 57% | **86%** |
-| cc7.2-5-001 | D5 | Monitoring | 100% | 67% | 91% | **86%** |
-| a1.2-4-001 | D4 | Backup/Recovery | 100% | 100% | 62% | **87%** |
-| cc8.1-4-001 | D4 | Change Mgmt | 100% | 92% | 80% | **91%** |
+| Task | D | Control | GPT-5.5 | Sonnet | Opus | GPT-4.1 | Haiku | GPT-4o | Avg |
+|------|---|---------|---------|--------|------|---------|-------|--------|-----|
+| cc3.1-5-001 | D5 | Risk Assessment | 57% | 55% | 40% | 0% | 12% | 0% | **27%** |
+| cc9.1-5-001 | D5 | Vendor Mgmt | 33% | 36% | 40% | 20% | 14% | 20% | **27%** |
+| cc6.6-5-001 | D5 | System Boundaries | 18% | 55% | 33% | 20% | 27% | 20% | **29%** |
+| cc7.2-4-001 | D4 | Monitoring | 86% | 89% | 67% | 40% | 42% | 20% | **57%** |
+| cc6.3-4-001 | D4 | Data Access | 60% | 67% | 57% | 55% | 67% | 40% | **58%** |
+| cc6.1-5-001 | D5 | Logical Access | 89% | 83% | 67% | 62% | 30% | 31% | **60%** |
+| cc6.6-4-001 | D4 | System Boundaries | 100% | 100% | 57% | 55% | 25% | 44% | **64%** |
+| cc9.1-4-001 | D4 | Vendor Mgmt | 100% | 73% | 67% | 67% | 80% | 18% | **67%** |
+| cc3.1-4-001 | D4 | Risk Assessment | 86% | 73% | 62% | 80% | 67% | 44% | **69%** |
+| a1.2-4-001 | D4 | Backup/Recovery | 100% | 100% | 62% | 80% | 32% | 60% | **72%** |
+| cc8.1-5-001 | D5 | Change Mgmt | 73% | 83% | 91% | 71% | 43% | 80% | **74%** |
+| cc7.2-5-001 | D5 | Monitoring | 100% | 67% | 91% | 91% | 91% | 43% | **80%** |
+| cc8.1-4-001 | D4 | Change Mgmt | 100% | 92% | 80% | 92% | 92% | 100% | **93%** |
 
-**No model dominates.** GPT-5.5 leads overall but scored 18% on system boundary judgment. Opus scored 91% on change management judgment (beating GPT-5.5's 73% on the same task). Each model has blind spots.
+**No model dominates.** GPT-5.5 leads overall but scored 18% on system boundary judgment. Opus scored 91% on change management judgment (beating GPT-5.5's 73%). GPT-4o scored 100% on change management but 0% on risk assessment. Each model has blind spots.
 
-**D5 judgment tasks are hardest.** Three tasks average below 51% — no model scores above 57% on these. They require materiality assessment where reasonable auditors would disagree.
+**Three tasks average below 30%.** cc3.1-5-001 (risk assessment), cc9.1-5-001 (vendor incident), and cc6.6-5-001 (boundary materiality) are the hardest tasks. Two models scored 0% on risk assessment judgment. These tasks require materiality assessment where auditors disagree.
 
-**Recall is easy. Precision separates.** Most models find most gaps. Scores diverge on false positives. Opus consistently over-reports (100% recall but 40-50% precision). GPT-5.5 is more concise.
+**Clear model tiers.** GPT-5.5 and Sonnet are the top tier (75-77%). Opus and GPT-4.1 form the middle tier (60-63%). Haiku and GPT-4o are the lower tier (40-51%) — they find gaps but drown them in false positives.
 
 See [Task Reference](docs/tasks.md) for per-task analysis and [Leaderboard](LEADERBOARD.md) for full results.
 
