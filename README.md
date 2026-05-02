@@ -53,7 +53,9 @@ One D3 task (cc6.1-3-001): 6 evidence documents, 9 planted gaps. Scored on detec
 
 ### D4-D5 — Red Herrings, Noise, and Judgment (13 tasks, 3 models)
 
-Scored with F1 (penalizes both missed gaps and false positives). GPT-5.5, Opus 4.7, and Sonnet 4.6 were evaluated on all 13 tasks. GPT-4o was evaluated on only 3 of 13 (cc8.1-4, cc7.2-5, cc9.1-4) and is excluded from the average.
+Scored with F1 (penalizes both missed gaps and false positives). GPT-5.5, Opus 4.7, and Sonnet 4.6 were evaluated on all 13 tasks. GPT-4o was evaluated on only 3 of 13 and is excluded from the average.
+
+**Overall:**
 
 | Rank | Model | Provider | Avg F1 | Highest | Lowest |
 |------|-------|----------|--------|---------|--------|
@@ -61,20 +63,33 @@ Scored with F1 (penalizes both missed gaps and false positives). GPT-5.5, Opus 4
 | 2 | Claude Sonnet 4.6 | Anthropic | **69%** | 100% (3 tasks) | 36% (cc9.1-5) |
 | 3 | Claude Opus 4.7 | Anthropic | **63%** | 91% (cc7.2-5, cc8.1-5) | 33% (cc6.6-5) |
 
+**Per-task breakdown (sorted by average, hardest first):**
+
+| Task | D | Control | GPT-5.5 | Sonnet 4.6 | Opus 4.7 | Avg |
+|------|---|---------|---------|------------|----------|-----|
+| cc6.6-5-001 | D5 | System Boundaries | 18% | 55% | 33% | **35%** |
+| cc9.1-5-001 | D5 | Vendor Mgmt | 33% | 36% | 40% | **36%** |
+| cc3.1-5-001 | D5 | Risk Assessment | 57% | 55% | 40% | **51%** |
+| cc6.3-4-001 | D4 | Data Access | 60% | 67% | 57% | **61%** |
+| cc3.1-4-001 | D4 | Risk Assessment | 86% | 73% | 62% | **74%** |
+| cc9.1-4-001 | D4 | Vendor Mgmt | 100% | 73% | 67% | **80%** |
+| cc6.1-5-001 | D5 | Logical Access | 89% | 83% | 67% | **80%** |
+| cc7.2-4-001 | D4 | Monitoring | 86% | 89% | 67% | **81%** |
+| cc8.1-5-001 | D5 | Change Mgmt | 73% | 83% | 91% | **82%** |
+| cc6.6-4-001 | D4 | System Boundaries | 100% | 100% | 57% | **86%** |
+| cc7.2-5-001 | D5 | Monitoring | 100% | 67% | 91% | **86%** |
+| a1.2-4-001 | D4 | Backup/Recovery | 100% | 100% | 62% | **87%** |
+| cc8.1-4-001 | D4 | Change Mgmt | 100% | 92% | 80% | **91%** |
+
 ### What the scores mean
 
 **No model dominates.** GPT-5.5 leads overall but scored 18% on system boundary judgment. Opus scored 91% on change management judgment (beating GPT-5.5's 73% on the same task). Each model has blind spots.
 
 **Recall is easy. Precision separates.** Most models find most gaps (high recall). Scores diverge on how many false positives are reported. Opus consistently over-reports (100% recall but 40-50% precision on many tasks). GPT-5.5 is more concise.
 
-**D5 judgment tasks are hardest.** The three hardest tasks average 35-51% across all models:
-- cc6.6-5-001 (system boundary materiality): **35% avg**
-- cc9.1-5-001 (vendor incident judgment): **36% avg**
-- cc3.1-5-001 (risk assessment judgment): **51% avg**
+**D5 judgment tasks are hardest.** Three tasks average below 51% across all models — no model scores above 57% on these. These tasks require materiality assessment where reasonable auditors would disagree.
 
 See [Task Reference](docs/tasks.md) for per-task analysis and [Leaderboard](LEADERBOARD.md) for full results.
-
-Full leaderboard: [LEADERBOARD.md](LEADERBOARD.md)
 
 ## Task Structure
 
