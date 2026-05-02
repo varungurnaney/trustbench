@@ -1,0 +1,119 @@
+{
+  "id": "cc6.6-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.6",
+  "control_description": "The entity implements logical access security measures to protect against threats from sources outside its system boundaries, including network segmentation, firewalls, intrusion detection, and encryption of data in transit.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/network-security-policy.md",
+      "type": "policy",
+      "description": "Prism Cloud network security policy defining environment segmentation, WAF requirements, encryption in transit standards, and security group rules."
+    },
+    {
+      "path": "evidence/firewall-rules.json",
+      "type": "config",
+      "description": "AWS security group export for all Prism Cloud VPCs showing inbound/outbound rules, VPC peering configurations, and WAF associations."
+    },
+    {
+      "path": "evidence/tls-config-audit.csv",
+      "type": "config",
+      "description": "TLS configuration audit across 15 endpoints showing TLS versions, cipher suites, certificate status, and PII handling flags."
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "log",
+      "description": "Approved network security exceptions with compensating controls, risk ratings, and review outcomes."
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/incident-response-contacts.md",
+      "type": "log",
+      "description": "Prism Cloud incident response contact list and on-call rotation. Not relevant to CC6.6 system boundary protection controls."
+    }
+  ],
+  "prompt": "You are auditing Prism Cloud's SOC 2 Type II compliance for control CC6.6 (System Boundary Protection). Review the provided evidence to assess whether Prism Cloud effectively protects its system boundaries through network segmentation, firewall rules, WAF deployment, and encryption of data in transit. Be thorough in cross-referencing evidence across documents — some apparent issues may have valid exceptions documented in the exception register.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Cross-VPC security group sg-0a1b2c3d4e5f60008 allows all traffic between staging and production",
+      "description": "Security group sg-0a1b2c3d4e5f60008 (prod-data-sync-cross-vpc) contains rules sgr-021 and sgr-022 that allow all protocols and ports between the staging VPC (10.1.0.0/16) and the production VPC (10.0.0.0/16). This appears to be a critical violation of Section 3.1 of the network security policy, which requires separate VPCs with no direct connectivity. However, exception EXC-NET-2025-003 in the exception register documents approved cross-VPC connectivity for ML model training data sync with comprehensive compensating controls: IP allowlisting to specific subnets (10.1.4.0/24 to 10.0.8.0/24), encrypted IPsec tunnel, PII stripping at the production export layer, and audit logging with 12-month retention. The exception was renewed on 2025-10-01 with verification of compensating control effectiveness.",
+      "evidence_sources": ["evidence/firewall-rules.json", "evidence/exception-register.csv", "evidence/network-security-policy.md"],
+      "expected_reasoning": "An auditor should initially flag the all-traffic cross-VPC rules as a critical segmentation failure, then cross-reference the exception register to find EXC-NET-2025-003. The exception is active, approved by the Director of Security Engineering, and includes strong compensating controls (IP allowlisting, IPsec encryption, PII stripping, audit logging). Note that while the security group rules themselves are broad (all protocols/ports from the full staging CIDR), the exception documents that actual traffic is constrained to specific subnets via the compensating controls. An observant auditor might note the gap between the broad security group rules and the narrower compensating controls as a defense-in-depth concern, but this is not a finding given the documented exception.",
+      "detection_criteria": {
+        "required_keywords": ["sg-0a1b2c3d4e5f60008", "EXC-NET-2025-003", "compensating control"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["EXC-NET-2025-003", "exception register", "compensating"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Webhook receiver endpoint webhooks.prismcloud.io has no WAF protection",
+      "description": "Security group sg-0a1b2c3d4e5f60011 (prod-webhook-receiver) accepts inbound HTTPS traffic on port 443 from 0.0.0.0/0 but has no WAF association (waf_association is null). The firewall rules export notes 'No WAF association configured.' Section 4.1 of the network security policy requires all public-facing HTTP/HTTPS endpoints to be protected by AWS WAF. The webhook receiver at webhooks.prismcloud.io is a public-facing endpoint that accepts traffic from the internet, making it subject to this requirement. No exception exists in the exception register for this gap.",
+      "evidence_sources": ["evidence/firewall-rules.json", "evidence/network-security-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "The auditor should identify that sg-0a1b2c3d4e5f60011 has waf_association: null, compare it to the two security groups that do have WAF (sg-0a1b2c3d4e5f60001 and sg-0a1b2c3d4e5f60009), and note the policy requirement in Section 4.1. The webhook receiver is clearly public-facing (source 0.0.0.0/0 on port 443) and processes external input (webhooks from Stripe, GitHub, Twilio), making it a particularly important endpoint to protect with WAF.",
+      "detection_criteria": {
+        "required_keywords": ["prod-webhook-receiver", "waf_association", "webhooks.prismcloud.io"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Notification service uses unencrypted HTTP for internal communication",
+      "description": "The notification service (TLS-008 in the TLS config audit, sg-0a1b2c3d4e5f60006 in the firewall rules) uses unencrypted HTTP on port 8080 for internal communication from the application tier. The TLS config audit marks this as 'NON-COMPLIANT' with 'Unencrypted HTTP on internal service. No TLS configured.' The firewall rules confirm that sgr-015 uses port 8080 (HTTP) with a note that 'no TLS configured on this listener.' Section 5.2 of the network security policy states that 'Unencrypted HTTP is prohibited for any inter-service communication in production.' No exception exists in the exception register for this endpoint.",
+      "evidence_sources": ["evidence/tls-config-audit.csv", "evidence/firewall-rules.json", "evidence/network-security-policy.md"],
+      "expected_reasoning": "The auditor should correlate TLS-008 (notifications.prod.prismcloud.local on port 8080 with TLS version 'None') with the firewall rule sgr-015 and its note about no TLS. This is a clear policy violation of Section 5.2 with no exception documented. While the notification service is marked as pii_handling: No, the policy prohibition on unencrypted HTTP applies to all inter-service communication regardless of data sensitivity.",
+      "detection_criteria": {
+        "required_keywords": ["notification service", "unencrypted HTTP", "TLS-008"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Batch processing security group allows outbound 0.0.0.0/0 on Elasticsearch port 9200",
+      "description": "Security group sg-0a1b2c3d4e5f60012 (prod-batch-processing) contains outbound rule sgr-032 allowing TCP port 9200 to 0.0.0.0/0, described as 'Elasticsearch cluster access — legacy configuration pending migration.' Section 3.3 of the network security policy prohibits rules permitting 0.0.0.0/0 on non-public-facing ports. Port 9200 (Elasticsearch) is not a public-facing port, and the destination should be restricted to the specific Elasticsearch cluster security group or IP range. The rule description acknowledges this is a legacy configuration, but no exception or migration timeline is documented in the exception register.",
+      "evidence_sources": ["evidence/firewall-rules.json", "evidence/network-security-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "The auditor should flag sgr-032 as violating the Section 3.3 prohibition on 0.0.0.0/0 rules for non-public ports. While this is an outbound rule (reducing risk compared to inbound), it still violates the policy and could allow the batch processing service to connect to any Elasticsearch instance on the internet, creating a potential data exfiltration path. The 'legacy configuration pending migration' note indicates the team is aware of the issue but has not formalized an exception or remediation plan.",
+      "detection_criteria": {
+        "required_keywords": ["sgr-032", "prod-batch-processing", "9200"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Elasticsearch endpoint TLS-014 uses TLS 1.2 while handling customer PII",
+      "description": "The Elasticsearch cluster endpoint (TLS-014, es.prod.prismcloud.local on port 9200) uses TLS 1.2 and is flagged as handling customer PII (search indices contain user profiles and activity data). The TLS config audit notes this is a 'legacy deployment' and that policy requires TLS 1.3 for new deployments. While Section 5.3 of the network security policy sets TLS 1.2 as the minimum for existing services and TLS 1.3 for new deployments, this endpoint handles PII data and uses an older protocol version. There is no exception in the exception register for this specific endpoint. Given that this service processes customer PII and the January 1, 2025 deadline for TLS 1.3 on new deployments has passed, the continued use of TLS 1.2 for a PII-handling service without a documented exception or upgrade timeline is a gap.",
+      "evidence_sources": ["evidence/tls-config-audit.csv", "evidence/network-security-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "The auditor should note that TLS-014 is using TLS 1.2 (not technically non-compliant since Section 5.3 allows TLS 1.2 for existing services) but should escalate the concern because: (1) the endpoint handles customer PII, (2) other internal services (TLS-004, TLS-005, TLS-010, TLS-011, TLS-012, TLS-013) have already been upgraded to TLS 1.3, suggesting this is an outlier, and (3) there is no documented exception or upgrade plan in the exception register. While this requires some judgment, the PII factor and lack of documented exception make it a finding.",
+      "detection_criteria": {
+        "required_keywords": ["TLS-014", "Elasticsearch", "TLS 1.2", "PII"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["network-segmentation", "firewall-rules", "waf", "tls-encryption", "vpc-peering", "security-groups", "system-boundaries"]
+  }
+}

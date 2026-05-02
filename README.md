@@ -4,7 +4,7 @@
 
 # TrustBench
 
-> **This is an early-stage project (v0.1).** The current task set has 10 tasks across 6 controls — not enough to draw reliable conclusions about model performance. Results shown below are preliminary and will change as more tasks are added. We need 50+ tasks across all difficulty levels before this benchmark produces statistically meaningful scores. If you're a compliance professional, we'd welcome your help building tasks grounded in real audit findings. See the [authoring guide](docs/authoring.md).
+> **This is an early-stage project (v0.1).** The current task set has 20 tasks across 8 controls — enough to show meaningful differentiation but not yet statistically robust. We need 50+ tasks before this benchmark produces reliable aggregate scores. If you're a compliance professional, we'd welcome your help building tasks grounded in real audit findings. See the [authoring guide](docs/authoring.md).
 
 A benchmark for evaluating LLMs on security compliance auditing.
 
@@ -50,14 +50,15 @@ Preliminary results across D3-D5 tasks. D4-D5 tasks use F1 scoring (penalizes fa
 
 **D4-D5 — Red herrings, noise, and judgment (F1 scoring):**
 
-| Task | GPT-5.5 | Opus 4.7 | Sonnet 4.6 | GPT-4o |
-|------|---------|----------|------------|--------|
-| CC8.1-D4 (change mgmt, 6 gaps + 2 red herrings) | 100% | 80% | 92% | 100% |
-| CC7.2-D5 (monitoring judgment, 5 gaps) | 100% | 91% | 67% | 43% |
-| CC9.1-D4 (vendor mgmt, 4 gaps + 2 red herrings) | 100% | 67% | 73% | 18% |
-| **Average** | **100%** | **79%** | **77%** | **54%** |
+| Rank | Model | Avg D4-D5 F1 | Tasks |
+|------|-------|-------------|-------|
+| 1 | GPT-5.5 | **79%** | 13 |
+| 2 | Claude Sonnet 4.6 | **69%** | 13 |
+| 3 | Claude Opus 4.7 | **63%** | 13 |
 
-D4-D5 tasks successfully differentiate models that score identically on D3. GPT-5.5 is the only model to score 100% across all D4-D5 tasks. Recall is high across models — precision (not over-reporting, not flagging red herrings) is what separates the rest.
+Hardest tasks (avg F1 across all models): cc9.1-5-001 vendor judgment (36%), cc6.6-5-001 boundary judgment (35%), cc3.1-5-001 risk assessment judgment (51%). No model scores above 57% on these.
+
+See [Task Reference](docs/tasks.md) for per-task results and analysis.
 
 Full leaderboard: [LEADERBOARD.md](LEADERBOARD.md)
 
@@ -79,11 +80,10 @@ Tasks span 5 difficulty levels. D4-D5 tasks make up ~62% of the benchmark:
 
 | Level | Skill | % of tasks |
 |-------|-------|-----------|
-| D1 | Single-document gap detection | 12.5% |
-| D2 | Subtle gap detection | 12.5% |
-| D3 | Cross-document reasoning | 12.5% |
-| D4 | Red herring filtering + noise | 25% |
-| D5 | Materiality judgment | 37.5% |
+| D1-D2 | Single-document gap detection | 15% |
+| D3 | Cross-document reasoning | 10% |
+| D4 | Red herring filtering + noise | 35% |
+| D5 | Materiality judgment | 40% |
 
 ## Documentation
 

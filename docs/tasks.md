@@ -1,304 +1,154 @@
 # Task Reference
 
-All tasks currently in TrustBench, with evidence structure, planted findings, and complexity notes.
+20 tasks across 8 SOC 2 controls. 13 are D4-D5 (red herrings, noise, judgment). Results from 3 models: GPT-5.5, Claude Opus 4.7, Claude Sonnet 4.6.
+
+## Results Summary
+
+| Task | D | GPT-5.5 | Opus 4.7 | Sonnet 4.6 | Hardest skill tested |
+|------|---|---------|----------|------------|---------------------|
+| cc6.1-1-002 | 1 | — | — | — | Policy reading |
+| cc7.2-2-001 | 2 | — | — | — | Noticing absences in a table |
+| cc8.1-1-001 | 1 | — | — | — | Policy reading |
+| cc6.1-3-001 | 3 | 100% | 100% | 100% | Cross-referencing 6 documents |
+| cc6.3-3-001 | 3 | — | — | — | PostgreSQL grant analysis |
+| cc6.1-4-001 | 4 | — | — | — | Exception register validation |
+| cc6.3-4-001 | 4 | 60% | 57% | 67% | Segregation of duties in DB roles |
+| cc6.6-4-001 | 4 | 100% | 57% | 100% | Firewall rule exceptions |
+| cc7.2-4-001 | 4 | 86% | 67% | 89% | Decommissioned service red herring |
+| cc8.1-4-001 | 4 | 100% | 80% | 92% | Holiday freeze calendar math |
+| cc9.1-4-001 | 4 | 100% | 67% | 73% | SOC 2 carve-out methodology |
+| a1.2-4-001 | 4 | 100% | 62% | 100% | Backup failure with WAL compensating control |
+| cc3.1-4-001 | 4 | 86% | 62% | 73% | Risk register with Board-approved exception |
+| cc6.1-5-001 | 5 | 89% | 67% | 83% | Weekend termination SLA ambiguity |
+| cc7.2-5-001 | 5 | 100% | 91% | 67% | Alert false positive rate materiality |
+| cc8.1-5-001 | 5 | 73% | 91% | 83% | 94% test pass rate with documented flaky tests |
+| a1.2-5-001 | 5 | — | — | — | Backup trending toward RTO breach |
+| cc3.1-5-001 | 5 | 57% | 40% | 55% | Risk downgrade without justification |
+| cc6.6-5-001 | 5 | 18% | 33% | 55% | Admin API boundary bypass materiality |
+| cc9.1-5-001 | 5 | 33% | 40% | 36% | Vendor incident with 3-week data uncertainty |
 
 ---
 
-## cc6.1-1-002 — Access Control Policy Review
+## D4 Tasks — Red Herring Filtering
 
-| Field | Value |
-|-------|-------|
-| Control | CC6.1 (Logical Access Security) |
-| Difficulty | D1 |
-| Category | detection |
-| Scoring | detection_only |
-| Evidence | 1 document |
-| Findings | 4 gaps |
+### cc6.3-4-001 — Data Access Authorization
+**Company:** Aurora Labs | **Best: Sonnet 67%** | **Spread: 57-67%**
 
-**Evidence:**
-- `access-control-policy.md` — NovaTech Solutions access control policy (policy)
+A MongoDB database has a `data-analytics` role with broad production read access. The exception register shows a valid CISO exception with data masking as a compensating control. The model must not flag this.
 
-**Findings:**
+Real gaps: a user (`j.morrison`) with both read and write roles on financial collections (segregation violation), Looker access certification completed 21 days late, a contractor account (`r.santos`) with no expiration date, and an ownerless service account (`svc-etl-snowflake`) whose migration exception expired.
 
-| ID | Type | Severity | Finding |
-|----|------|----------|---------|
-| F-001 | gap | high | No SLA for access revocation on termination — policy says "timely manner" |
-| F-002 | gap | high | MFA not required for production servers or databases |
-| F-003 | gap | medium | Access review evidence format, storage, retention not specified |
-| F-004 | gap | medium | Role change revocation depends solely on manager notification |
+**Why models struggle:** All three models over-reported (precision 40-50%). The data access domain produces many observations that look like findings — every broad permission triggers a "least privilege" instinct. Distinguishing "this is broad but approved" from "this is broad and ungoverned" requires checking the exception register.
 
-**Complexity:** Minimal. Single document, all gaps visible on careful reading. No cross-referencing needed. Tests whether the model reads a policy and identifies missing elements against CC6.1 requirements.
+### cc6.6-4-001 — System Boundaries
+**Company:** Prism Cloud | **Best: Sonnet/GPT-5.5 100%** | **Spread: 57-100%**
 
----
+A security group rule allows traffic between staging and production VPCs. This looks like a segmentation failure, but the exception register documents a CISO-approved data sync workflow with IP allowlisting, encrypted tunnel, and audit logging as compensating controls.
 
-## cc6.1-3-001 — Logical Access Cross-Reference
+Real gaps: a webhook receiver endpoint missing WAF, an internal notification service using unencrypted HTTP, a security group allowing 0.0.0.0/0 on port 9200 (Elasticsearch), and an internal endpoint handling PII over TLS 1.2 instead of 1.3.
 
-| Field | Value |
-|-------|-------|
-| Control | CC6.1 (Logical Access Security) |
-| Difficulty | D3 |
-| Category | cross_reference |
-| Scoring | detection_and_precision |
-| Evidence | 6 documents |
-| Findings | 9 gaps |
+**Why Opus struggled (57%):** Found all 4 gaps but reported 10 total findings, including flagging the red herring despite the exception register. It also noted several best-practice recommendations that inflated the finding count.
 
-**Evidence:**
-- `access-control-policy.md` — Meridian Cloud Systems access control policy (policy)
-- `aws-iam-credential-report.csv` — IAM users, key rotation dates, MFA status (config)
-- `access-review-log-q4-2025.csv` — quarterly access review completion records (log)
-- `terminations-q4-2025.csv` — employee terminations with Okta disable dates (log)
-- `okta-mfa-policies.json` — sign-on policy configuration with 3 priority-ordered policies (config)
-- `service-account-inventory.csv` — service account ownership, review dates (spreadsheet)
+### cc7.2-4-001 — Monitoring
+**Company:** Atlas Cloud | **Best: Sonnet 89%** | **Spread: 67-89%**
 
-**Findings:**
+A legacy batch reconciliation service isn't in the SIEM. This looks like a coverage gap, but the exception register shows it was decommissioned on October 30 with approved monitoring exemption.
 
-| ID | Type | Severity | Finding | Cross-ref needed |
-|----|------|----------|---------|-----------------|
-| F-001 | gap | critical | jenkins-legacy: stale IAM key (2+ years), unowned, unreviewed | IAM report + SA inventory |
-| F-002 | gap | high | legacy-monitoring: key rotation 9 months overdue, unowned | IAM report + SA inventory |
-| F-003 | gap | high | david.kim: direct IAM console user, policy prohibits this | IAM report + policy §3.3 |
-| F-004 | gap | high | Tom Bradley: Okta disabled 7 days after termination (4-hour SLA) | terminations + policy §6.1 |
-| F-005 | gap | medium | Priya Sharma: Okta disabled 3 days after termination | terminations + policy §6.1 |
-| F-006 | gap | high | Okta default policy has requireFactor=false, contradicts policy | Okta config + policy §4.2 |
-| F-007 | gap | medium | Okta access review: 23 business days (15-day SLA), 5 flagged but 3 revoked | access review + policy §5.1 |
-| F-008 | gap | medium | backup-s3-sync: two active keys, one unrotated for 2 years | IAM report |
-| F-009 | gap | high | Direct IAM users not included in access review scope (only SSO reviewed) | access review + IAM report |
+Real gaps: a new real-time collaboration service deployed November 15 that's still not in the SIEM 47 days later (5-day SLA), two critical alert SLA breaches during concurrent major incidents, no evidence of monthly alert tuning reviews, and no documentation of daily log reviews.
 
-**Complexity:** Moderate. Every finding requires comparing at least two documents. The Okta JSON config requires parsing a priority-ordered policy chain to understand the default fallback. The termination findings require date arithmetic. The access review scope gap requires noticing what's absent (direct IAM users) from the review log. This is the task that saturated at 100% for 6 frontier models.
+**Why models score differently:** GPT-5.5 (86%) missed the daily log review gap but had perfect precision. Sonnet (89%) found everything with only 1 extra finding. Opus (67%) found everything but reported too many extras.
 
----
+### cc8.1-4-001 — Change Management
+**Company:** Stratos Inc. | **Best: GPT-5.5 100%** | **Spread: 80-100%**
 
-## cc6.1-4-001 — Service Accounts with Exceptions and Noise
+15 changes in Q4. Two red herrings involving the holiday freeze: CHG-414 (emergency DB failover during freeze — CISO approved via Slack) and CHG-415 (deployed December 20, the freeze start date — but pre-approved at the December 16 CAB meeting).
 
-| Field | Value |
-|-------|-------|
-| Control | CC6.1 (Logical Access Security) |
-| Difficulty | D4 |
-| Category | red_herring |
-| Scoring | f1 |
-| Evidence | 3 documents + 2 noise |
-| Findings | 1 red herring, 3 gaps |
+Real gaps: CHG-410 (log4j patch during Thanksgiving freeze without CISO approval), CHG-411 (retrospective CAB review 6 business days late), CHG-407/CHG-411 (developers deployed their own emergency changes — segregation violation), CHG-409 (approved without CAB quorum — Security Lead absent for a high-risk change), CHG-409 (missing post-implementation verification), CHG-412 (security review by the same person who developed the change).
 
-**Evidence:**
-- `access-control-policy.md` — Vantage Corp access control policy (policy)
-- `gcp-service-accounts.json` — 6 GCP service accounts with key status, workload identity bindings, IAM roles (config)
-- `exception-register.csv` — 4 CISO-approved exceptions with compensating controls, expiration dates (exception_register)
+**Why this task exposed a scoring issue:** The original keywords ("freeze", "approved") matched incidentally throughout any change management assessment. After tightening to entity-specific keywords ("CHG-415", "rate limit thresholds"), Opus went from a false 80% to a true 80% and Sonnet went from 86% to 92%. This is documented in the leaderboard as a keyword scoring limitation.
 
-**Noise:**
-- `business-continuity-plan-summary.md` — BCP executive summary, irrelevant to CC6.1
-- `vendor-risk-assessment-q4.csv` — vendor SOC 2 report status, irrelevant to CC6.1
+### cc9.1-4-001 — Vendor Management
+**Company:** Quantum SaaS | **Best: GPT-5.5 100%** | **Spread: 18-100%**
 
-**Findings:**
+14 vendors across 4 tiers. DataRobot (Critical, no SOC 2 report) and HubSpot (High, SOC 2 not provided) both look like policy violations. Both have CISO-approved exceptions in the exception register with compensating controls.
 
-| ID | Type | Severity | Finding | Why it's hard |
-|----|------|----------|---------|--------------|
-| F-001 | red_herring | low | legacy-etl has manual key — but VEXC-2025-004 is a valid, active CISO exception | Model must check exception register before flagging |
-| F-002 | gap | critical | terraform-import has roles/editor, exception expired April 2025, SA still active 9 months later | Must cross-ref exception register expiration date |
-| F-003 | gap | high | monitoring-agent key used after exception expired Dec 10 (key used Dec 28) | Date comparison: exception expiry vs last-used date |
-| F-004 | gap | medium | legacy-etl exception claims compensating controls but key never rotated since 2023 | Exception is valid but compensating controls aren't operating |
+Real gaps: Stripe uses the carve-out method for GCP as a subservice organization with no independent assessment (requires SOC 2 methodology knowledge), Snowflake SOC 2 review pending on a Critical vendor processing PII, no business reviews for High-tier vendors processing customer data, and multiple vendors with unassessed carved-out subservice organizations.
 
-**Complexity:** High. The red herring (F-001) tests whether the model checks the exception register before flagging a service account with a manual key. F-002 and F-003 require comparing exception expiration dates against the service account activity dates. F-004 is the subtlest — the exception itself is valid, but the compensating controls it claims (key rotation, Vault storage) aren't evidenced in the actual key data (key created 2023, never rotated). The noise documents test whether the model stays focused on CC6.1.
+**Why GPT-4o scored 18%:** It flagged both red herrings as findings without checking the exception register AND missed the carve-out gaps. The subservice organization carve-out vs. inclusive method distinction is SOC 2-specific domain knowledge that smaller models lack.
+
+### a1.2-4-001 — Backup & Recovery
+**Company:** Cobalt Systems | **Best: Sonnet/GPT-5.5 100%** | **Spread: 62-100%**
+
+92 days of backup logs with 3 failures. The November 8 failure has no re-run (48-hour gap), but the exception register shows CISO acknowledgment with WAL archiving confirmed as compensating control.
+
+Real gaps: December 1 failure re-run took 6 hours (exceeds 2-hour re-run SLA), restore time trending from 3h 15m to 3h 50m with only 10-minute margin to 4-hour RTO, no incremental backup logs provided to verify RPO claim, and backup sizes growing with no capacity planning documented.
+
+**Why Opus scored 62%:** Found all gaps (100% recall) but reported 9 total findings. It flagged the November 8 failure as a finding despite the exception register, and added observations about backup encryption verification and cross-region replication testing.
+
+### cc3.1-4-001 — Risk Assessment
+**Company:** Vertex AI Corp | **Best: GPT-5.5 86%** | **Spread: 62-86%**
+
+18-item risk register. RISK-014 is rated Critical with treatment "Accept" — looks like an unmitigated critical risk. But the exception register shows Board approval (BR-2025-012), legal analysis, insurance coverage, and quarterly reviews.
+
+Real gaps: three risks (RISK-008, 009, 013) not reviewed within the quarterly cycle (6-9 months overdue), two risks (RISK-016, 017) with no assigned owner, annual risk assessment missing AI/ML and supply chain risk categories, and the assessment itself is 9 months old.
+
+**Why GPT-5.5 scored highest (86%):** It correctly dismissed the red herring AND had perfect precision — only reported findings that matched planted gaps. But it missed the risk assessment staleness gap (75% recall). Opus found everything (100% recall) but over-reported (44% precision).
 
 ---
 
-## cc6.3-3-001 — Data Access Authorization Cross-Reference
+## D5 Tasks — Judgment Calls
 
-| Field | Value |
-|-------|-------|
-| Control | CC6.3 (Access Authorization) |
-| Difficulty | D3 |
-| Category | cross_reference |
-| Scoring | detection_and_precision |
-| Evidence | 3 documents |
-| Findings | 5 gaps |
+### cc6.1-5-001 — Logical Access
+**Company:** Nimbus Health | **Best: GPT-5.5 89%** | **Spread: 67-89%**
 
-**Evidence:**
-- `authorization-policy.md` — ClearView Analytics data access authorization policy (policy)
-- `aws-rds-access-grants.json` — PostgreSQL role grants, privileges, role memberships (config)
-- `data-access-requests-q4.csv` — Jira access request tickets with approval chains (log)
+180 active Okta users vs. 178 in HR records — 2 unmatched accounts (service accounts? ghost accounts?). The AWS access review was done by James Chen, who also manages AWS (self-review). Derek Chung was terminated Friday at 5pm, Okta disabled Monday 9am — 64 calendar hours but only ~1 business hour over the 24-hour SLA if weekends are excluded. One access review completed 2 days late. Contractor accounts show no evidence of expiration dates.
 
-**Findings:**
+**What separates models:** GPT-5.5 (89%) handled the weekend SLA ambiguity well and didn't over-report. Sonnet (83%) was more thorough but added extra findings. Opus (67%) found everything but reported too many observations as findings. The weekend termination question is a genuine judgment call — calendar hours vs. business hours changes whether this is a finding.
 
-| ID | Type | Severity | Finding | Cross-ref needed |
-|----|------|----------|---------|-----------------|
-| F-001 | gap | high | developer_debug role has full read-write to all production tables, only manager approval (needs CISO) | DB grants + access requests + policy §3.1 |
-| F-002 | gap | high | evan.smith has both developer_debug and etl_pipeline roles (segregation violation), no expiration | DB grants (role memberships) + access requests |
-| F-003 | gap | high | analytics_readonly has production access, policy says analysts use read-only replica with PII masking | DB grants + policy §3.4 |
-| F-004 | gap | medium | marketing_integration syncs to HubSpot — likely >1,000 records, needs CISO approval for bulk export | DB grants + access requests + policy §3.2 |
-| F-005 | gap | medium | developer_debug granted by postgres superuser in 2023, never re-authorized under current policy | DB grants (granted_by + date) + policy effective date |
+### cc7.2-5-001 — Monitoring
+**Company:** Helix Data Systems | **Best: GPT-5.5 100%** | **Spread: 43-100%**
 
-**Complexity:** Moderate. Requires understanding PostgreSQL grant structures (role memberships, ALL TABLES grants). F-002 requires noticing one user has two roles in the role_memberships array. F-003 requires comparing the policy's description of the analytics workflow against the actual database grants. F-004 requires inferring that a continuous HubSpot sync exceeds the 1,000-record bulk export threshold. F-005 requires noticing the grant predates the current policy.
+3 months of alert data across 8 rules. The S3 bulk access alert has a 95-97% false positive rate all quarter (policy threshold: 30%, tuning SLA: 2 weeks). Brute force alert SLA adherence dropped to 96% during an attack spike. SQL injection detection was disabled for 2 months with CISO approval and WAF compensating control. 5 impossible travel alerts in December marked "requires investigation" and never resolved.
 
----
+**The widest D5 spread before the new tasks.** GPT-5.5 achieved perfect precision. GPT-4o reported 18 findings, treating every data point as a finding. The core skill tested: can the model distinguish "this metric is interesting" from "this is an audit finding"?
 
-## cc7.2-2-001 — Incident Response Plan Review
+### cc8.1-5-001 — Change Management
+**Company:** Beacon SaaS | **Best: Opus 91%** | **Spread: 73-91%**
 
-| Field | Value |
-|-------|-------|
-| Control | CC7.2 (Monitoring & Anomaly Detection) |
-| Difficulty | D2 |
-| Category | detection |
-| Scoring | detection_only |
-| Evidence | 1 document |
-| Findings | 4 gaps |
+20 deployments in Q4. One deployment had a 94% test pass rate — the 6% failures were documented flaky tests with remediation tickets. A hotfix skipped staging but was peer-reviewed and tested in a canary environment. Two rollbacks occurred in the quarter. One deployment was approved by the engineering manager instead of CAB because the weekly meeting was cancelled.
 
-**Evidence:**
-- `incident-response-plan.md` — Pinnacle SaaS incident response plan (policy)
+**Opus's best task (91%).** It correctly assessed the 94% pass rate as a finding (flaky tests indicate CI reliability issues even if documented), while GPT-5.5 (73%) was more lenient and missed it. This task tests whether models have calibrated judgment about software engineering practices — not just compliance checkbox checking.
 
-**Findings:**
+### cc3.1-5-001 — Risk Assessment
+**Company:** Zenith Cloud | **Best: GPT-5.5 57%** | **Spread: 40-57%**
 
-| ID | Type | Severity | Finding |
-|----|------|----------|---------|
-| F-001 | gap | high | P2 incidents (including "unauthorized access to production") have no after-hours coverage |
-| F-002 | gap | medium | Qualys vulnerability scan results delivered as weekly report, not real-time alerts |
-| F-003 | gap | medium | No database activity monitoring in the monitoring stack |
-| F-004 | gap | low | IRP tested annually via single tabletop exercise only |
+22-item risk register. Two risks were downgraded from High to Medium during Q4 — one has "improved controls" in the SGC minutes but no documentation of which controls improved. The risk register was last comprehensively updated 11 months ago (annual requirement). The SGC reviewed only the top 10 of 22 risks. One risk has likelihood=2, impact=5 — rated "Medium" on the 5x5 matrix but arguably understates catastrophic-impact scenarios.
 
-**Complexity:** Low-moderate. F-001 is the subtlest — it's buried in a table showing P1 gets 24/7 on-call but P2 only gets "business hours" triage, and the model must recognize that P2 includes serious security events. F-002 requires comparing Qualys's delivery method (weekly report) against the real-time alerting of all other monitoring sources. F-003 requires noticing what's absent from a list. F-004 is an industry-knowledge question about testing frequency expectations.
+**The second-hardest task in the benchmark (avg 51%).** Every finding requires a materiality judgment. Is reviewing 10 of 22 risks "quarterly review" or a scope gap? Is 11 months "annual"? Does the matrix rating reflect actual risk when the impact is catastrophic? No model scored above 57%.
+
+### cc6.6-5-001 — System Boundaries
+**Company:** Apex Fintech | **Best: Sonnet 55%** | **Spread: 18-55%**
+
+An internal admin API is exposed directly without going through the API gateway — used by SRE for emergency debugging, restricted to VPN, and documented as an accepted risk in the Q3 penetration test. 0.3% of traffic bypasses the gateway (all from VPN CIDR). The Q3 pentest covers the observation period boundary question. No mTLS certificate inventory was provided despite the policy claiming mTLS everywhere.
+
+**The hardest task in the benchmark (avg 35%).** GPT-5.5 scored 18% — it found only the mTLS evidence gap and had 14% precision. Sonnet (55%) found 3 of 4 findings. Opus (33%) found 2 but over-reported heavily. The admin API question is the core challenge: it violates the boundary policy, but it's VPN-restricted, accepted risk, and only 0.3% of traffic. Every model handles this differently.
+
+### cc9.1-5-001 — Vendor Management
+**Company:** Onyx Data | **Best: Opus 40%** | **Spread: 33-40%**
+
+A critical vendor (PrestoServe) had a security incident in November. They notified within 72 hours (meeting the contractual SLA), contained it in 48 hours, but couldn't confirm whether customer data was compromised for 3 weeks. Another vendor (Cloudmatic) has a qualified opinion on CC6.1 in their SOC 2 report — the review notes acknowledge it but no follow-up risk assessment was documented (policy requires one). PrestoServe's quarterly business review is 10 days overdue.
+
+**The hardest task in the benchmark (avg 36%).** Every finding requires vendor risk judgment: Does meeting the 72-hour SLA excuse 3 weeks of data exposure uncertainty? Should customers have been notified during the uncertainty period? Is acknowledging a qualified opinion sufficient without a risk assessment? No model scored above 40%.
 
 ---
 
-## cc7.2-5-001 — Monitoring & Alerting Judgment
+## Difficulty Distribution
 
-| Field | Value |
-|-------|-------|
-| Control | CC7.2 (Monitoring & Anomaly Detection) |
-| Difficulty | D5 |
-| Category | judgment |
-| Scoring | f1 |
-| Evidence | 3 documents + 1 noise |
-| Findings | 5 gaps |
+| Level | Tasks | Avg F1 (best model) | What it tests |
+|-------|-------|---------------------|---------------|
+| D1-D2 | 3 | ~100% | Basic policy reading |
+| D3 | 2 | 100% (saturated) | Multi-document cross-referencing |
+| D4 | 7 | 90% (GPT-5.5) | Red herrings + exception registers + noise |
+| D5 | 6 | 62% (varies) | Materiality judgment — no single right answer |
 
-**Evidence:**
-- `monitoring-policy.md` — Helix Data Systems security monitoring and alerting policy (policy)
-- `alert-summary-q4-2025.csv` — 3 months of alert data: 8 alert rules × 3 months = 24 rows with counts, FP rates, triage times (log)
-- `monitoring-coverage-review-q4.json` — quarterly review showing 2 coverage gaps, 1 disabled alert rule, 3 new services deployed (report)
-
-**Noise:**
-- `penetration-test-summary.md` — annual pentest executive summary, not directly relevant to CC7.2 monitoring controls
-
-**Findings:**
-
-| ID | Type | Severity | Finding | Why it requires judgment |
-|----|------|----------|---------|------------------------|
-| F-001 | gap | high | Two production services deployed without monitoring (25+ and 80+ days past 5-day SLA) | Clear finding, but model must cross-ref coverage review against policy SLA |
-| F-002 | gap | high | S3 bulk access alert at 95-97% FP rate for 3 months (policy threshold: 30%, 2-week tuning SLA) | Model must calculate FP rates from the CSV data and compare against policy threshold |
-| F-003 | gap | medium | Brute force alert SLA adherence dropped to 96% in December during attack spike | Judgment: is 96% acceptable? Misses were during high-volume periods suggesting capacity, not process failure |
-| F-004 | gap | medium | SQL injection detection rule disabled for 2 months with CISO approval and WAF compensating control | Judgment: CISO approved with compensating control — is this acceptable or still a gap? |
-| F-005 | gap | medium | 5 impossible travel alerts in December marked "requires investigation" and never resolved | Model must notice the unresolved status and assess whether these could be real security events |
-
-**Complexity:** High. The alert summary CSV requires numerical reasoning — calculating false positive percentages from raw counts, comparing across months to identify trends, and computing SLA adherence rates. F-003 and F-004 are genuine judgment calls where reasonable auditors would disagree. F-005 requires noticing a specific status value ("requires investigation") in a dense CSV and understanding its implications. This task produced the widest score spread in our benchmarks (91% to 43%).
-
----
-
-## cc8.1-1-001 — Change Management Policy Review
-
-| Field | Value |
-|-------|-------|
-| Control | CC8.1 (Change Management) |
-| Difficulty | D1 |
-| Category | detection |
-| Scoring | detection_only |
-| Evidence | 1 document |
-| Findings | 3 gaps |
-
-**Evidence:**
-- `change-management-policy.md` — Orion Health change management policy (policy)
-
-**Findings:**
-
-| ID | Type | Severity | Finding |
-|----|------|----------|---------|
-| F-001 | gap | high | No segregation of duties — requesting engineer also deploys to production |
-| F-002 | gap | high | No testing requirement before production deployment (staging mentioned but no gate) |
-| F-003 | gap | medium | Emergency change process: verbal approval only, retroactive ticket with no time limit |
-
-**Complexity:** Minimal. Single document with straightforward gaps. F-001 is stated explicitly in the policy ("deployed by the requesting engineer"). F-002 requires noticing the absence of a testing gate despite staging being mentioned. F-003 requires recognizing that verbal approval is not auditable.
-
----
-
-## cc8.1-4-001 — Change Management with Red Herrings and Calendar Math
-
-| Field | Value |
-|-------|-------|
-| Control | CC8.1 (Change Management) |
-| Difficulty | D4 |
-| Category | red_herring |
-| Scoring | f1 |
-| Evidence | 3 documents + 2 noise |
-| Findings | 2 red herrings, 6 gaps |
-
-**Evidence:**
-- `change-management-policy.md` — Stratos Inc. change management policy with freeze periods, CAB quorum rules, segregation requirements (policy)
-- `change-log-q4-2025.csv` — 15 changes with developer, approver, deployer, risk rating, dates, testing evidence, post-implementation status (log)
-- `cab-meeting-minutes-q4.md` — 10 CAB meetings with attendees, quorum status, and retrospective reviews (report)
-
-**Noise:**
-- `sdlc-overview.md` — SDLC methodology overview, not relevant to CC8.1 control testing
-- `incident-log-q4-2025.csv` — Q4 incidents, related to changes but not a CC8.1 evidence artifact
-
-**Findings:**
-
-| ID | Type | Severity | Finding | Why it's hard |
-|----|------|----------|---------|--------------|
-| F-001 | red_herring | low | CHG-414: emergency DB failover during holiday freeze | Looks like a freeze violation, but CISO approval was obtained via Slack and retrospective CAB completed. Policy explicitly allows this. |
-| F-002 | red_herring | low | CHG-415: deployed Dec 20 (first day of holiday freeze) | Approved at Dec 16 CAB meeting, scheduled before freeze began. Not a new approval during freeze. |
-| F-003 | gap | high | CHG-410: log4j patch during Thanksgiving freeze without CISO approval, outside maintenance window | Standard change during freeze — policy requires CISO approval for ALL changes during freeze |
-| F-004 | gap | high | CHG-411: retrospective CAB review 6 business days later (policy says 48 business hours) | Requires interpreting "48 business hours" and counting business days between Dec 1 and Dec 9 |
-| F-005 | gap | high | CHG-407 + CHG-411: developers deployed their own emergency changes (segregation violation) | Must compare developer column vs deployer column for each change against policy §3.3 |
-| F-006 | gap | high | CHG-409: approved at CAB without quorum, Security Lead absent for a high-risk change | Must cross-ref change log (high risk) against CAB minutes (2/3 attendees, no quorum) |
-| F-007 | gap | medium | CHG-409: post-implementation verification missing (post_impl_verified = No) | Simple field check, but on the same change with other issues |
-| F-008 | gap | medium | CHG-412: security review performed by the same person who developed the change | Must notice the developer and security reviewer are both maya.jackson |
-
-**Complexity:** High. The two red herrings are the core challenge — both involve changes during the holiday freeze, but one has valid CISO approval and the other was pre-approved before the freeze. The model must distinguish between these and the real freeze violation (CHG-410). F-004 requires calendar math (counting business days). F-005 requires column-by-column comparison across the CSV. F-006 requires cross-referencing the change log's risk rating against CAB meeting attendance. The noise documents test whether the model stays focused on CC8.1 evidence. This task exposed keyword scoring limitations in the original run.
-
----
-
-## cc9.1-4-001 — Vendor Management with Exception Register
-
-| Field | Value |
-|-------|-------|
-| Control | CC9.1 (Vendor Risk Mitigation) |
-| Difficulty | D4 |
-| Category | red_herring |
-| Scoring | f1 |
-| Evidence | 3 documents + 1 noise |
-| Findings | 2 red herrings, 4 gaps |
-
-**Evidence:**
-- `vendor-management-policy.md` — Quantum SaaS vendor risk management policy with tier definitions, SOC 2 review requirements, subservice org monitoring rules (policy)
-- `vendor-inventory.csv` — 14 vendors with tier, SOC 2 status, DPA, subservice orgs, review dates (spreadsheet)
-- `vendor-exception-register.csv` — 2 CISO-approved exceptions for DataRobot and HubSpot (exception_register)
-
-**Noise:**
-- `data-classification-policy.md` — data classification levels, not directly relevant to CC9.1
-
-**Findings:**
-
-| ID | Type | Severity | Finding | Why it's hard |
-|----|------|----------|---------|--------------|
-| F-001 | red_herring | low | DataRobot: Critical vendor without SOC 2 report | VEXC-2025-001: active CISO exception, new vendor, SOC 2 expected Q1 2026, compensating controls documented |
-| F-002 | red_herring | low | HubSpot: High vendor, SOC 2 not provided despite requests | VEXC-2025-002: active CISO exception, alternative assessment completed, ISO 27001 confirmed |
-| F-003 | gap | high | Stripe uses carve-out method for GCP — no independent assessment per policy §4.2 | Requires understanding SOC 2 inclusive vs carve-out methodology and noticing GCP is not independently assessed |
-| F-004 | gap | high | Snowflake SOC 2 review pending — Critical vendor processing PII operating without current review | Must check review status column and interpret "Pending" against 90-day SLA |
-| F-005 | gap | medium | No business reviews for High-tier vendors (SendGrid, HubSpot, Zendesk, Amplitude) | Technically compliant (policy only requires for Critical) but a control design weakness for PII-handling vendors |
-| F-006 | gap | medium | Multiple vendors use carve-out for GCP/AWS with no independent subservice org assessment | Broader pattern of F-003 across Amplitude, SendGrid, Lattice |
-
-**Complexity:** High. The red herrings are the hardest test in the benchmark — DataRobot and HubSpot look like clear policy violations (Critical/High vendor without SOC 2 on file). The model must check the exception register, verify the exceptions are current, and assess whether the compensating controls are adequate. GPT-4o failed both of these. F-003 requires SOC 2-specific knowledge about inclusive vs carve-out report methodology — a domain concept that mid-tier models don't reliably understand. F-005 is a judgment call: the policy is technically met, but the control design is weak for vendors handling customer PII.
-
----
-
-## Summary
-
-| Task | Control | D | Category | Evidence | Noise | Gaps | Red Herrings | Key Skill Tested |
-|------|---------|---|----------|----------|-------|------|--------------|-----------------|
-| cc6.1-1-002 | CC6.1 | 1 | detection | 1 | 0 | 4 | 0 | Policy reading |
-| cc7.2-2-001 | CC7.2 | 2 | detection | 1 | 0 | 4 | 0 | Careful reading, noticing absences |
-| cc6.1-3-001 | CC6.1 | 3 | cross_reference | 6 | 0 | 9 | 0 | Multi-document cross-referencing |
-| cc6.3-3-001 | CC6.3 | 3 | cross_reference | 3 | 0 | 5 | 0 | DB grant analysis, approval chain validation |
-| cc6.1-4-001 | CC6.1 | 4 | red_herring | 3 | 2 | 3 | 1 | Exception register validation, date comparison |
-| cc8.1-4-001 | CC8.1 | 4 | red_herring | 3 | 2 | 6 | 2 | Holiday freeze reasoning, calendar math, CSV column comparison |
-| cc9.1-4-001 | CC9.1 | 4 | red_herring | 3 | 1 | 4 | 2 | SOC 2 carve-out methodology, exception validation |
-| cc8.1-1-001 | CC8.1 | 1 | detection | 1 | 0 | 3 | 0 | Policy reading |
-| cc7.2-5-001 | CC7.2 | 5 | judgment | 3 | 1 | 5 | 0 | Numerical reasoning, materiality assessment, trend analysis |
-| a1.2-5-001 | A1.2 | 5 | judgment | 3 | 0 | 4 | 0 | Backup log analysis, RTO trending, evidence sufficiency |
+D5 tasks are where the benchmark has the most room. The two hardest tasks (cc6.6-5-001 at 35% avg, cc9.1-5-001 at 36% avg) show that even frontier models struggle with genuine compliance judgment calls.

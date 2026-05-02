@@ -1,0 +1,114 @@
+{
+  "id": "cc6.6-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.6",
+  "control_description": "The entity implements logical access security measures to protect against threats from sources outside its system boundaries and controls the system boundary by managing authorized access and restricting unauthorized access.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/boundary-policy.md",
+      "type": "policy",
+      "description": "Apex Fintech system boundary and network security policy defining DMZ architecture, WAF/API Gateway requirements, mTLS, and VPN access controls"
+    },
+    {
+      "path": "evidence/network-topology.md",
+      "type": "architecture_diagram",
+      "description": "Network architecture document describing VPC layout, traffic flows, and the admin API configuration"
+    },
+    {
+      "path": "evidence/penetration-test-findings.json",
+      "type": "report",
+      "description": "Q3 2025 external penetration test results from CyberShield Assessments with 2 medium and 3 low findings"
+    },
+    {
+      "path": "evidence/api-gateway-access-logs.csv",
+      "type": "log",
+      "description": "30 days of API Gateway and admin API access logs showing traffic distribution and source IPs"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Apex Fintech's system boundary controls for the Q4 2025 observation period (October 1 — December 31, 2025). Review the boundary policy, network architecture documentation, penetration test report, and API gateway access logs. Assess whether CC6.6 requirements for system boundary definition and protection are met. Identify any gaps, considering materiality, compensating controls, and the overall effectiveness of the boundary architecture.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Admin API bypasses defined system boundary controls",
+      "description": "The boundary policy (APXF-SEC-POL-009 Section 3.2) states 'No production service shall be directly accessible from the public internet without traversing the WAF and API Gateway.' The admin API endpoint (admin-api.internal.apexfintech.net:8443) bypasses both the WAF and Kong API Gateway, routing directly from VPN to internal ALB. While the admin API is VPN-restricted and has mTLS + SSO authentication, and while the pentest accepted-risk finding (CS-APXF-2025-002) documents compensating controls, the endpoint still represents a deviation from the organization's own boundary policy. The risk acceptance (SEC-EXC-2025-031) documents the exception, but the exception process itself shows the organization acknowledges this is a policy violation.",
+      "evidence_sources": [
+        "evidence/boundary-policy.md",
+        "evidence/network-topology.md",
+        "evidence/penetration-test-findings.json"
+      ],
+      "expected_reasoning": "An auditor should cross-reference Section 3.2 of the boundary policy (all traffic through WAF/API Gateway) with the network topology showing the admin API bypasses this path. The pentest finding CS-APXF-2025-002 confirms this bypass. While compensating controls exist (VPN, mTLS, SSO) and a formal risk acceptance is documented, the auditor must judge whether the compensating controls are sufficient and whether the exception process was adequate. The admin API processes ~12,500 requests/day and handles sensitive operations (circuit breakers, routing, scaling). A judgment call: the risk acceptance and compensating controls may be adequate, but the finding should be noted because the organization's own policy is being violated via exception.",
+      "detection_criteria": {
+        "required_keywords": ["admin API", "bypass", "API Gateway", "WAF", "boundary policy", "SEC-EXC-2025-031", "compensating controls", "VPN-restricted"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "low",
+      "title": "Penetration test staleness for Q4 observation period",
+      "description": "The most recent penetration test was conducted July 14-25, 2025 (Q3). The policy requires quarterly penetration testing. The pentest report notes 'next assessment: Q4 2025 — Scheduled for October 2025,' but no Q4 2025 pentest report is provided as evidence. For a Q4 2025 observation period, the most recent boundary validation is 3-6 months old. Any changes to the boundary architecture since July would not have been validated by an external assessment.",
+      "evidence_sources": [
+        "evidence/penetration-test-findings.json",
+        "evidence/boundary-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note that policy Section 4.3 requires quarterly penetration testing. The provided pentest is from Q3 (July 2025), and no Q4 pentest evidence exists. For a Q4 observation period, the auditor must judge whether a Q3 pentest is sufficient. Factors to consider: the policy says quarterly, so a Q4 test should exist; however, if the Q4 test was scheduled for October and not yet completed, the staleness may be minor. The judgment call is whether the 3-month gap is material given no significant architecture changes are evident.",
+      "detection_criteria": {
+        "required_keywords": ["Q3 pentest", "Q4 observation period", "quarterly penetration testing", "pentest staleness", "July 2025", "3-month"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No centralized mTLS certificate inventory or validation evidence",
+      "description": "The boundary policy (Section 3.3) requires mTLS for all service-to-service communication with 90-day certificate rotation via HashiCorp Vault. The network topology document confirms mTLS is configured via Istio PeerAuthentication in STRICT mode. However, the network topology document also states 'No centralized certificate inventory is currently maintained' and that certificate status is tracked per-service in individual Vault PKI mounts. There is no evidence of certificate rotation compliance, no inventory showing all services have valid certificates, and no monitoring for certificate expiration. The pentest report's positive observations note mTLS was 'correctly implemented on sampled services' — but sampling is not comprehensive validation.",
+      "evidence_sources": [
+        "evidence/boundary-policy.md",
+        "evidence/network-topology.md",
+        "evidence/penetration-test-findings.json"
+      ],
+      "expected_reasoning": "The auditor should identify that while mTLS is claimed and the pentest validated it on sampled services, there is no comprehensive evidence that all services maintain valid mTLS certificates or that the 90-day rotation is consistently enforced. The lack of a centralized certificate inventory means the organization cannot demonstrate complete mTLS coverage. A judgment call: Istio STRICT mode would reject services without valid certs (providing a technical enforcement mechanism), but without inventory evidence, the auditor cannot verify completeness. The Q1 2026 roadmap item for a 'consolidated inventory dashboard' implicitly acknowledges this gap.",
+      "detection_criteria": {
+        "required_keywords": ["certificate inventory", "mTLS validation", "Vault PKI", "sampled services", "90-day rotation", "Istio STRICT mode", "Q1 2026 roadmap"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Materiality of traffic bypassing API Gateway boundary",
+      "description": "Access logs show 0.3% of total production traffic (~12,500 requests/day) bypasses the API Gateway boundary by hitting the admin API directly. While all admin API traffic originates from the VPN CIDR range (100.64.0.0/10) and the error rate is 0.00%, this traffic handles sensitive operations (circuit breakers, scaling, routing overrides) without WAF protection, centralized rate limiting, or API Gateway schema validation. The question is whether 0.3% traffic bypass is immaterial or whether the sensitivity of the operations makes the volume metric misleading.",
+      "evidence_sources": [
+        "evidence/api-gateway-access-logs.csv",
+        "evidence/network-topology.md",
+        "evidence/boundary-policy.md"
+      ],
+      "expected_reasoning": "The auditor should analyze the access logs and note that while 0.3% is a small percentage, the admin API handles highly privileged operations (circuit breaker management, scaling overrides, routing changes). Materiality should not be assessed solely by volume — a single malicious request to the admin API could have outsized impact. The judgment call: VPN restriction and mTLS provide strong access controls, and all source IPs are confirmed within the Tailscale CIDR. The 0.3% may be immaterial given the access restrictions, or it may be material given the sensitivity of the operations.",
+      "detection_criteria": {
+        "required_keywords": ["0.3%", "12500 requests", "circuit breaker", "scaling override", "VPN CIDR", "100.64.0.0/10", "materiality"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["system_boundary", "network_security", "WAF", "API_gateway", "mTLS", "penetration_testing", "judgment_call", "compensating_controls"]
+  }
+}

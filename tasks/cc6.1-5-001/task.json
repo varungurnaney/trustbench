@@ -1,0 +1,183 @@
+{
+  "id": "cc6.1-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.1",
+  "control_description": "The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events to meet the entity's objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/access-control-policy.md",
+      "type": "policy",
+      "description": "Nimbus Health access control policy defining SSO, MFA, access review, termination, and privileged access management requirements"
+    },
+    {
+      "path": "evidence/okta-user-report.csv",
+      "type": "report",
+      "description": "Okta user report showing 180 active accounts including 172 employees, 6 contractors, and 2 non-HR-matched accounts (platform-monitoring and demo-environment)"
+    },
+    {
+      "path": "evidence/access-review-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 quarterly access review results for 12 systems showing completion status, reviewer details, findings, and remediation actions"
+    },
+    {
+      "path": "evidence/termination-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 employee termination log showing 5 terminations with Okta disable timestamps and SLA compliance details"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Nimbus Health's logical access controls under Trust Services Criteria CC6.1. Review all provided evidence documents to assess whether access provisioning, access reviews, termination procedures, and identity management controls are operating effectively. This is a healthcare company handling PHI, so consider the sensitivity of the data environment. For each finding, assess its materiality and provide your reasoning on whether the issue represents a significant control deficiency or a minor procedural gap. Several of the issues you will find require professional judgment to determine their severity and significance.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Two Okta Accounts with No Matching HR Records",
+      "description": "The Okta user report shows 180 active accounts, but HR records indicate 172 employees plus 6 contractors (178 total). Two accounts do not match any HR record: USR-0179 (platform-monitoring, an integration service account for Datadog APM) and USR-0180 (demo-environment, a shared functional account used by the Sales team for customer demos). The access control policy (Section 3.1) prohibits direct application authentication and requires all access through Okta SSO, but does not explicitly address the governance of service or shared functional accounts in Okta itself. These accounts have 'Service' user_type and use API Key authentication rather than standard MFA. The demo-environment account was last used December 18 for a Meridian Health System demo. The auditor must determine: are these appropriately governed service accounts, or are they ungoverned shadow accounts that bypass normal identity lifecycle controls?",
+      "evidence_sources": [
+        "evidence/okta-user-report.csv",
+        "evidence/access-control-policy.md"
+      ],
+      "expected_reasoning": "The auditor must exercise judgment here. USR-0179 (platform-monitoring) appears to be a legitimate service account with a clear purpose (Datadog integration) and an assigned owner (James Chen). USR-0180 (demo-environment) is more concerning -- it is a shared account used by the Sales team, which means multiple individuals may use it without individual accountability. The policy addresses service accounts in CyberArk (Section 3.4) but these Okta service accounts are not in CyberArk. The key judgment is whether the gap is in account governance (no policy covering Okta-native service accounts) or whether these represent unauthorized accounts. The 2-account discrepancy with HR records should trigger investigation regardless.",
+      "detection_criteria": {
+        "required_keywords": [
+          "USR-0179",
+          "USR-0180",
+          "unmatched",
+          "HR",
+          "headcount",
+          "discrepancy",
+          "180",
+          "178",
+          "extra accounts"
+        ],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "AWS Access Review Self-Review by Infrastructure Manager",
+      "description": "The Q4 access review for AWS Console (Production) was performed by James Chen, Cloud Infrastructure Lead (AR-Q4-001). James Chen is the individual responsible for managing AWS infrastructure and IAM policies -- he effectively reviewed access to systems under his own management and for his own team members. The access control policy (Section 5.1) states reviews should be performed by 'the application owner or delegate' but does not explicitly require segregation of duties between the access grantor/manager and the access reviewer. This raises a segregation-of-duties concern: the person granting and managing AWS access is the same person validating that access is appropriate. The auditor must determine whether this self-review arrangement provides sufficient independent oversight or whether it creates a conflict of interest that undermines the control objective.",
+      "evidence_sources": [
+        "evidence/access-review-q4.csv",
+        "evidence/access-control-policy.md"
+      ],
+      "expected_reasoning": "The auditor must weigh competing considerations. On one hand, the application owner is often the most qualified person to assess whether access is appropriate for the system's users. On the other hand, having the same person who grants access also review it eliminates the independent check that access reviews are designed to provide. For a production AWS environment in a healthcare company, this is particularly significant because AWS IAM access could provide access to PHI. A reasonable auditor might note that while the policy permits this arrangement, the lack of independent review for the most sensitive infrastructure is a control design weakness. The fact that James Chen found and remediated 2 issues in his own review could be seen as evidence the review is effective, or as insufficient given the inherent conflict.",
+      "detection_criteria": {
+        "required_keywords": [
+          "James Chen",
+          "self-review",
+          "AWS",
+          "same person",
+          "segregation",
+          "reviewer",
+          "manages"
+        ],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Weekend Termination Access Revocation Delay",
+      "description": "Employee Derek Chung (TERM-Q4-004) was terminated Friday December 5 at 5:00 PM EST, but his Okta account was not disabled until Monday December 8 at 9:12 AM EST -- a gap of 64 calendar hours. The access control policy (Section 6.1) requires Okta account disablement within 24 hours of the termination effective date, with no exception for weekends or non-business hours. However, IT Operations does not staff weekend shifts, so the actual business-hour exposure was approximately 12 minutes past the first business hour on Monday. The Okta system log confirms no login activity during the weekend. The auditor must determine: does the 24-hour SLA apply to calendar hours or business hours? Is the lack of weekend IT staffing a systemic risk for Friday terminations? Does the absence of weekend login activity mitigate the risk, or is the control gap the window of opportunity itself regardless of whether it was exploited?",
+      "evidence_sources": [
+        "evidence/termination-log-q4.csv",
+        "evidence/access-control-policy.md"
+      ],
+      "expected_reasoning": "The auditor faces a classic materiality judgment. The policy says '24 hours' without qualifying business hours vs. calendar hours. Strictly interpreted, this is a violation. However: (1) the termination was voluntary (lower risk than involuntary), (2) no access was attempted during the gap, (3) the practical exposure was minimal. A reasonable auditor might note the policy language is ambiguous and recommend clarification while acknowledging the low actual risk. However, for a healthcare company handling PHI, even a voluntary departure with 64 hours of lingering access creates a compliance exposure. The systemic issue is more important than this individual instance -- every Friday termination would face the same gap.",
+      "detection_criteria": {
+        "required_keywords": [
+          "Derek Chung",
+          "64 hours",
+          "weekend",
+          "Friday",
+          "Monday",
+          "termination",
+          "SLA",
+          "business hours"
+        ],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "AWS Access Review Completed 2 Business Days Past SLA",
+      "description": "The AWS Console access review (AR-Q4-001) was completed on October 24, 2 business days after the 15-business-day SLA deadline of October 22. The policy (Section 5.1) requires access reviews to be completed within 15 business days of initiation. While 11 of 12 system reviews were completed on time, the late review was for the most sensitive system (production AWS Console). The notes indicate the delay was not attributed to any specific cause beyond the reviewer's schedule. The auditor must assess whether a 2-day delay on a single review is a pattern indicator or an isolated occurrence, and whether the fact that it was the most critical system makes it more concerning.",
+      "evidence_sources": [
+        "evidence/access-review-q4.csv",
+        "evidence/access-control-policy.md"
+      ],
+      "expected_reasoning": "A 2-business-day delay on one of twelve reviews could be seen as immaterial -- 92% of reviews were completed on time. However, the delayed review was for the most sensitive system (production AWS), and the same reviewer (James Chen) who was late also has the self-review conflict noted in F-002. The combination of self-review and late completion for the most critical system may suggest the reviewer is not prioritizing this control. A single quarter of data makes it difficult to determine if this is a pattern. The auditor should consider requesting prior quarter data to assess trend.",
+      "detection_criteria": {
+        "required_keywords": [
+          "AR-Q4-001",
+          "AWS review",
+          "late",
+          "overdue",
+          "2 days",
+          "SLA"
+        ],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Contractor Okta Accounts Missing Expiration Dates",
+      "description": "The access control policy (Section 3.3) requires that contractor accounts 'be created with a designated expiration date aligned with the contract end date.' The Okta user report shows 6 active contractor accounts (USR-0173 through USR-0178), but the Okta export does not include an expiration date or account expiration field. There is no evidence that any of these contractor accounts have automated expiration configured. Some contractors reference specific SOW numbers (e.g., AC-2025-NH-014, DF-2025-NH-008), but the Okta data does not show whether accounts will automatically disable when contracts end. Without expiration dates, contractor accounts could persist indefinitely after engagement completion, creating orphaned account risk. The auditor must determine whether the absence of expiration data in the Okta export indicates missing expiration configuration, or whether the export simply did not include that field.",
+      "evidence_sources": [
+        "evidence/okta-user-report.csv",
+        "evidence/access-control-policy.md"
+      ],
+      "expected_reasoning": "The auditor must decide whether the absence of evidence is evidence of absence. The Okta user report CSV does not contain an expiration_date column, which could mean: (a) contractor accounts do not have expiration dates configured (a policy violation), or (b) the Okta export was configured to exclude that field. The policy is explicit that contractor accounts must have expiration dates. A thorough auditor would request the full Okta export with expiration fields, or request screenshots of individual contractor account configurations. Without that evidence, the auditor cannot confirm compliance with Section 3.3. The monthly review by the contractor's sponsor (also required by policy) is also not evidenced.",
+      "detection_criteria": {
+        "required_keywords": [
+          "contractor",
+          "expiration",
+          "no expiration",
+          "missing",
+          "Section 3.3",
+          "time-limited"
+        ],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": [
+      "logical-access",
+      "identity-management",
+      "access-review",
+      "termination",
+      "segregation-of-duties",
+      "contractor-management",
+      "service-accounts",
+      "judgment-calls",
+      "materiality"
+    ]
+  }
+}

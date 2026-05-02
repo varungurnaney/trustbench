@@ -1,0 +1,99 @@
+{
+  "restore_test_report": {
+    "report_id": "RT-2025-Q4-001",
+    "test_date": "2025-11-15",
+    "conducted_by": "James Liu, Infrastructure Lead",
+    "reviewed_by": "Marcus Chen, VP of Infrastructure",
+    "environment": "Disaster Recovery Site (us-west-2)",
+    "test_type": "Full Restore Test"
+  },
+  "backup_set_used": {
+    "backup_id": "BKP-2025-1114",
+    "backup_date": "2025-11-14",
+    "backup_size_gb": 161.9,
+    "source_system": "cs-db-prod-01",
+    "encryption": "AES-256",
+    "storage_location": "s3://cs-dr-backup-usw2/daily/2025-11-14/"
+  },
+  "restore_timeline": {
+    "test_start": "2025-11-15T09:00:00Z",
+    "backup_download_start": "2025-11-15T09:00:00Z",
+    "backup_download_complete": "2025-11-15T09:47:22Z",
+    "decryption_start": "2025-11-15T09:47:22Z",
+    "decryption_complete": "2025-11-15T10:02:15Z",
+    "database_restore_start": "2025-11-15T10:02:15Z",
+    "database_restore_complete": "2025-11-15T12:18:43Z",
+    "integrity_verification_start": "2025-11-15T12:18:43Z",
+    "integrity_verification_complete": "2025-11-15T12:38:55Z",
+    "application_validation_start": "2025-11-15T12:38:55Z",
+    "application_validation_complete": "2025-11-15T12:50:12Z",
+    "test_end": "2025-11-15T12:50:12Z",
+    "total_restore_duration_minutes": 230,
+    "total_restore_duration_formatted": "3 hours 50 minutes"
+  },
+  "rto_compliance": {
+    "defined_rto_hours": 4,
+    "defined_rto_minutes": 240,
+    "actual_restore_minutes": 230,
+    "margin_remaining_minutes": 10,
+    "compliant": true,
+    "notes": "Restore completed within RTO but with only 10-minute margin. Database restore phase took 136 minutes, up from 112 minutes in the Q3 test, reflecting data growth."
+  },
+  "data_integrity": {
+    "checksum_verification": "PASSED",
+    "row_count_comparison": "PASSED",
+    "sample_data_validation": "PASSED",
+    "referential_integrity_check": "PASSED",
+    "details": {
+      "total_tables_verified": 247,
+      "total_rows_verified": 48293117,
+      "checksum_algorithm": "SHA-256",
+      "source_checksum": "a3f8c2e1b9d74506e821f3a9c7b5d2e8f1a4c6b3d9e7f2a5b8c1d4e7f0a3b6c9",
+      "restored_checksum": "a3f8c2e1b9d74506e821f3a9c7b5d2e8f1a4c6b3d9e7f2a5b8c1d4e7f0a3b6c9"
+    }
+  },
+  "application_validation": {
+    "api_health_check": "PASSED",
+    "user_authentication_flow": "PASSED",
+    "transaction_processing_test": "PASSED",
+    "reporting_module_test": "PASSED",
+    "details": "All critical application functions validated successfully against restored database."
+  },
+  "previous_quarter_comparison": {
+    "q3_2025_test": {
+      "test_date": "2025-08-17",
+      "backup_size_gb": 138.5,
+      "total_restore_duration_minutes": 195,
+      "total_restore_duration_formatted": "3 hours 15 minutes",
+      "margin_remaining_minutes": 45,
+      "database_restore_phase_minutes": 112
+    },
+    "trend_analysis": "Restore duration increased by 35 minutes (18%) quarter-over-quarter. Database restore phase increased by 24 minutes (21.4%). Data volume increased by 16.9% (138.5 GB to 161.9 GB). If this trend continues, next quarter's restore may approach or exceed the 4-hour RTO."
+  },
+  "issues_encountered": [
+    {
+      "issue": "Slow cross-region download speed",
+      "description": "S3 download throughput from us-west-2 was approximately 580 MB/s, below the expected 800 MB/s baseline. Likely due to concurrent cross-region traffic.",
+      "impact": "Added approximately 8 minutes to the download phase",
+      "resolution": "No immediate action taken. Recommend investigating dedicated transfer acceleration for DR scenarios."
+    }
+  ],
+  "recommendations": [
+    "Monitor restore time trend closely -- current trajectory suggests potential RTO breach within 1-2 quarters",
+    "Evaluate parallel restore strategies to offset data growth impact",
+    "Consider dedicated S3 Transfer Acceleration for DR backup downloads",
+    "Investigate database partitioning to enable parallel table restoration"
+  ],
+  "sign_off": {
+    "infrastructure_lead": {
+      "name": "James Liu",
+      "date": "2025-11-15",
+      "signature": "Approved"
+    },
+    "vp_infrastructure": {
+      "name": "Marcus Chen",
+      "date": "2025-11-18",
+      "signature": "Approved -- noting RTO margin concern for Q1 2026 planning"
+    }
+  }
+}

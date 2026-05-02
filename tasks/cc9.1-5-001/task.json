@@ -1,0 +1,136 @@
+{
+  "id": "cc9.1-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC9.1",
+  "control_description": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions or from the use of vendors and business partners.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/vendor-policy.md",
+      "type": "policy",
+      "description": "Onyx Data vendor risk management policy defining vendor tiers, assessment requirements, SOC 2 review procedures, and incident response expectations"
+    },
+    {
+      "path": "evidence/vendor-inventory-q4.csv",
+      "type": "spreadsheet",
+      "description": "Q4 2025 vendor inventory with 16 vendors, tier classifications, SOC 2 review status, and business review dates"
+    },
+    {
+      "path": "evidence/vendor-incident-response.md",
+      "type": "report",
+      "description": "Detailed incident report for the PrestoServe Analytics security incident in November 2025 including timeline, impact assessment, and customer notification decision"
+    },
+    {
+      "path": "evidence/soc2-review-notes.csv",
+      "type": "spreadsheet",
+      "description": "SOC 2 report review tracker with reviewer notes, CUECs, and follow-up actions for each reviewed vendor"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/insurance-coverage-summary.md",
+      "type": "report",
+      "description": "Cyber insurance coverage summary — risk transfer mechanism but not directly relevant to vendor management control effectiveness"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Onyx Data's vendor risk management controls for the Q4 2025 observation period (October 1 — December 31, 2025). Review the vendor management policy, vendor inventory, vendor security incident documentation, and SOC 2 review notes. Assess whether CC9.1 requirements for vendor risk mitigation are met. Identify any gaps, considering the adequacy of vendor oversight, incident response, and whether the vendor management program effectively mitigates third-party risk.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Cloudmatic Systems qualified SOC 2 opinion without required risk assessment",
+      "description": "Cloudmatic Systems (OD-V-004), a Critical-tier vendor providing customer identity and access management (CIAM), received a qualified SOC 2 opinion on CC6.1 — user access reviews were not performed at required frequency (4 of 12 quarterly reviews missed). The vendor policy Section 4.3.4 explicitly states: 'Reports with qualified opinions require a formal risk assessment documenting the nature of the qualification, potential impact on Onyx Data, and any compensating controls or remediation commitments from the vendor.' The SOC 2 review notes confirm the reviewer (Karen Mitchell) escalated this to Angela Torres on June 20, 2025, but as of December 31, 2025, 'no formal risk assessment has been documented.' This is a direct policy violation: a Critical vendor managing customer authentication has a known access review deficiency, and the required risk assessment was never completed despite 6 months passing since the escalation.",
+      "evidence_sources": [
+        "evidence/soc2-review-notes.csv",
+        "evidence/vendor-policy.md",
+        "evidence/vendor-inventory-q4.csv"
+      ],
+      "expected_reasoning": "The auditor should identify the qualified opinion on Cloudmatic Systems' SOC 2 report and cross-reference it with the vendor policy's Section 4.3.4 requirement. The SOC 2 review notes explicitly flag that no risk assessment was completed. The judgment element: Cloudmatic manages CIAM (customer SSO/MFA) — their access review failures could mean unauthorized personnel at Cloudmatic have access to systems managing Onyx Data's customer authentication. This is not merely a documentation gap; it represents an unassessed risk in a Critical vendor controlling customer identity. However, Cloudmatic's management response states they have implemented Sailpoint automated access reviews since Q2 2025, which is a remediation effort — does this mitigate the concern?",
+      "detection_criteria": {
+        "required_keywords": ["Cloudmatic Systems", "qualified opinion", "CC6.1", "access review", "Section 4.3.4", "risk assessment not completed", "Karen Mitchell", "CIAM"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "PrestoServe incident — 3-week uncertainty period without customer notification",
+      "description": "PrestoServe Analytics (OD-V-016), a Critical vendor processing customer PII and behavioral data, experienced a security incident on November 8, 2025. For 20 days (November 8-28), PrestoServe could not confirm whether Onyx Data's 2.3 million customer records were accessed. The customer notification decision documented in the incident report shows Onyx Data chose not to notify customers during this uncertainty period, with the VP GRC dissenting. While the final forensic report confirmed no Onyx Data data was compromised, the decision-making process raises questions about whether the vendor incident response adequately protected customers during the uncertainty window. The vendor policy Section 6.2 defines 'potential customer data exposure' (which this was) as requiring CISO and Legal notification within 24 hours — but does not explicitly address customer notification during prolonged uncertainty.",
+      "evidence_sources": [
+        "evidence/vendor-incident-response.md",
+        "evidence/vendor-policy.md",
+        "evidence/vendor-inventory-q4.csv"
+      ],
+      "expected_reasoning": "The auditor should evaluate the incident response against the vendor policy's Section 6.1 and 6.2 requirements. The 72-hour vendor notification SLA was met (4 hours 8 minutes). The internal escalation followed policy. The judgment call centers on whether the 20-day uncertainty period — with 2.3 million records potentially at risk — was handled appropriately. Angela Torres's documented dissent suggests internal disagreement. The auditor must weigh: (1) no confirmed compromise occurred, (2) contractual notification triggers on 'confirmed' breach, (3) but SOC 2 expectations include proactive risk communication, (4) the General Counsel's rationale is legally sound but may not satisfy SOC 2 auditor expectations for transparency.",
+      "detection_criteria": {
+        "required_keywords": ["PrestoServe", "20-day uncertainty", "2.3 million records", "customer notification", "Angela Torres dissent", "November 2025 incident", "Mandiant forensic"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "PrestoServe incident root cause reveals vendor credential management weakness",
+      "description": "The PrestoServe security incident root cause was a long-lived API key (not rotated since March 2025 — 8 months) accidentally committed to a developer's public GitHub repository. This reveals fundamental credential management weaknesses at a Critical vendor: no credential rotation enforcement, no secret scanning on developer repositories (until post-incident), and reliance on manual credential management. PrestoServe's 2024 SOC 2 report was unqualified, but the incident occurred in 2025 and exposes controls that were either not in place or not effective. The question is whether Onyx Data's vendor management program should have identified these credential management risks through the assessment process, or whether this is an inherent limitation of vendor oversight.",
+      "evidence_sources": [
+        "evidence/vendor-incident-response.md",
+        "evidence/soc2-review-notes.csv",
+        "evidence/vendor-policy.md"
+      ],
+      "expected_reasoning": "The auditor should evaluate whether Onyx Data's vendor assessment process adequately assessed PrestoServe's credential management practices. The SOC 2 review for PrestoServe was unqualified for 2024, but the incident in 2025 exposed control weaknesses (no credential scanning, long-lived API keys). The judgment call: SOC 2 reports are point-in-time / period-specific assessments; Onyx Data cannot be expected to predict vendor control failures beyond the report period. However, the Onyx Data Security Questionnaire (OD-SQ-v3, 127 questions) should have covered credential management practices. The auditor should assess whether the vendor management program has adequate mechanisms to detect inter-period control deterioration at critical vendors.",
+      "detection_criteria": {
+        "required_keywords": ["PrestoServe root cause", "long-lived API key", "March 2025", "GitHub repository", "credential rotation", "vendor credential management", "secret scanning"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "PrestoServe quarterly business review overdue at end of Q4",
+      "description": "The vendor inventory shows PrestoServe Analytics (OD-V-016, Critical tier) had its Q4 business review due December 28, 2025, but it was rescheduled to January 7, 2026 due to 'holiday freeze.' The vendor policy Section 4.2 requires quarterly business reviews for Critical vendors. The review is 10 days past due at the end of the Q4 observation period. This is notable because PrestoServe had a significant security incident in November 2025, making the Q4 business review particularly important for discussing remediation progress and enhanced security requirements.",
+      "evidence_sources": [
+        "evidence/vendor-inventory-q4.csv",
+        "evidence/vendor-policy.md"
+      ],
+      "expected_reasoning": "The auditor should check the vendor inventory's business review dates against the policy requirement. PrestoServe's Q4 review was due December 28 and rescheduled to January 7 — a 10-day slip. The judgment call: a 10-day delay for a holiday freeze is a common, minor scheduling issue. However, given the November security incident, the Q4 business review was especially important. Rescheduling it means the incident remediation progress was not formally reviewed with the vendor before the end of the observation period. The auditor must decide: is this a meaningful gap or a trivial scheduling issue?",
+      "detection_criteria": {
+        "required_keywords": ["PrestoServe business review", "December 28", "January 7", "holiday freeze", "10 days overdue", "quarterly business review", "Critical vendor"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Vendor incident response adequacy — PrestoServe containment versus systemic control weakness",
+      "description": "PrestoServe detected the breach within 48 minutes and contained it within 2 hours and 23 minutes, which the incident report characterizes as demonstrating 'effective monitoring' and 'effective incident response.' However, the incident itself reveals systemic control weaknesses: 8-month-old unrotated credentials, no secret scanning, and multi-tenant data isolation that could not quickly determine which tenants were affected. Fast detection and containment of an incident caused by poor credential hygiene does not demonstrate adequate vendor controls — it demonstrates effective reactive controls masking preventive control failures. The auditor must judge whether PrestoServe's overall control environment is adequate for a Critical vendor processing 2.3 million customer records.",
+      "evidence_sources": [
+        "evidence/vendor-incident-response.md",
+        "evidence/vendor-inventory-q4.csv"
+      ],
+      "expected_reasoning": "The auditor should look beyond the containment metrics (48-minute detection, 2-hour containment) to the underlying control weaknesses that caused the incident. The judgment call: does PrestoServe's rapid response demonstrate adequate vendor controls (good detective/corrective controls), or does the root cause (long-lived credentials on a public repo, no scanning, slow tenant-level attribution) demonstrate inadequate preventive controls for a vendor handling customer PII? Both perspectives have merit. The planned remediation (short-lived tokens, dedicated tenant isolation) addresses the gaps but is not yet implemented. The auditor must assess whether Onyx Data's continued reliance on PrestoServe during the remediation period is appropriately managed.",
+      "detection_criteria": {
+        "required_keywords": ["PrestoServe containment", "48-minute detection", "preventive controls", "credential hygiene", "multi-tenant isolation", "2.3 million records", "reactive versus preventive"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "55 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["vendor_management", "third_party_risk", "vendor_incident", "SOC2_qualified_opinion", "judgment_call", "customer_notification", "credential_management"]
+  }
+}

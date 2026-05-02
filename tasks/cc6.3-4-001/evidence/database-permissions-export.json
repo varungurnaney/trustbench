@@ -1,0 +1,200 @@
+{
+  "export_metadata": {
+    "cluster": "aurora-prod-east-1",
+    "platform": "MongoDB Atlas",
+    "exported_by": "it-security-automation",
+    "export_timestamp": "2025-12-15T09:30:00Z",
+    "export_tool": "atlas-rbac-exporter v2.4.1"
+  },
+  "roles": [
+    {
+      "role_name": "app-backend-readonly",
+      "description": "Read-only access for application backend query services",
+      "database": "aurora_production",
+      "privileges": [
+        {"resource": {"collection": "users"}, "actions": ["find"]},
+        {"resource": {"collection": "sessions"}, "actions": ["find"]},
+        {"resource": {"collection": "products"}, "actions": ["find"]},
+        {"resource": {"collection": "orders"}, "actions": ["find"]}
+      ],
+      "created_date": "2024-03-10",
+      "last_modified": "2024-03-10"
+    },
+    {
+      "role_name": "app-backend-readwrite",
+      "description": "Read-write access for application backend services",
+      "database": "aurora_production",
+      "privileges": [
+        {"resource": {"collection": "users"}, "actions": ["find", "insert", "update"]},
+        {"resource": {"collection": "sessions"}, "actions": ["find", "insert", "update", "remove"]},
+        {"resource": {"collection": "products"}, "actions": ["find", "insert", "update"]},
+        {"resource": {"collection": "orders"}, "actions": ["find", "insert", "update"]}
+      ],
+      "created_date": "2024-03-10",
+      "last_modified": "2024-06-22"
+    },
+    {
+      "role_name": "billing-service",
+      "description": "Access for billing microservice to manage financial records",
+      "database": "aurora_production",
+      "privileges": [
+        {"resource": {"collection": "billing"}, "actions": ["find", "insert", "update"]},
+        {"resource": {"collection": "invoices"}, "actions": ["find", "insert", "update"]},
+        {"resource": {"collection": "payment_transactions"}, "actions": ["find", "insert"]},
+        {"resource": {"collection": "revenue_records"}, "actions": ["find"]}
+      ],
+      "created_date": "2024-03-10",
+      "last_modified": "2025-01-18"
+    },
+    {
+      "role_name": "data-analytics",
+      "description": "Read access for data analytics team across production collections",
+      "database": "aurora_production",
+      "privileges": [
+        {"resource": {"collection": "users"}, "actions": ["find"]},
+        {"resource": {"collection": "orders"}, "actions": ["find"]},
+        {"resource": {"collection": "products"}, "actions": ["find"]},
+        {"resource": {"collection": "billing"}, "actions": ["find"]},
+        {"resource": {"collection": "invoices"}, "actions": ["find"]},
+        {"resource": {"collection": "revenue_records"}, "actions": ["find"]},
+        {"resource": {"collection": "payment_transactions"}, "actions": ["find"]},
+        {"resource": {"collection": "sessions"}, "actions": ["find"]},
+        {"resource": {"collection": "audit_log"}, "actions": ["find"]},
+        {"resource": {"collection": "feature_flags"}, "actions": ["find"]}
+      ],
+      "created_date": "2025-02-14",
+      "last_modified": "2025-02-14"
+    },
+    {
+      "role_name": "dba-admin",
+      "description": "Database administration role for infrastructure operations",
+      "database": "aurora_production",
+      "privileges": [
+        {"resource": {"collection": ""}, "actions": ["find", "createIndex", "dropIndex", "collStats", "dbStats", "reIndex", "compact"]}
+      ],
+      "created_date": "2024-03-10",
+      "last_modified": "2024-03-10"
+    },
+    {
+      "role_name": "etl-pipeline",
+      "description": "ETL pipeline service account for data warehouse sync",
+      "database": "aurora_production",
+      "privileges": [
+        {"resource": {"collection": "orders"}, "actions": ["find"]},
+        {"resource": {"collection": "products"}, "actions": ["find"]},
+        {"resource": {"collection": "users"}, "actions": ["find"]},
+        {"resource": {"collection": "billing"}, "actions": ["find"]},
+        {"resource": {"collection": "invoices"}, "actions": ["find"]},
+        {"resource": {"collection": "revenue_records"}, "actions": ["find", "insert", "update"]},
+        {"resource": {"collection": "payment_transactions"}, "actions": ["find"]}
+      ],
+      "created_date": "2024-08-05",
+      "last_modified": "2025-09-12"
+    }
+  ],
+  "user_assignments": [
+    {
+      "username": "svc-app-api-01",
+      "account_type": "service_account",
+      "roles": ["app-backend-readwrite"],
+      "assigned_date": "2024-03-15",
+      "owner": "Derek Huang",
+      "owner_email": "d.huang@auroralabs.io",
+      "expiration_date": null,
+      "last_authentication": "2025-12-15T09:12:44Z"
+    },
+    {
+      "username": "svc-app-api-02",
+      "account_type": "service_account",
+      "roles": ["app-backend-readonly"],
+      "assigned_date": "2024-06-20",
+      "owner": "Derek Huang",
+      "owner_email": "d.huang@auroralabs.io",
+      "expiration_date": null,
+      "last_authentication": "2025-12-15T08:55:31Z"
+    },
+    {
+      "username": "svc-billing-processor",
+      "account_type": "service_account",
+      "roles": ["billing-service"],
+      "assigned_date": "2024-03-15",
+      "owner": "Aisha Patel",
+      "owner_email": "a.patel@auroralabs.io",
+      "expiration_date": null,
+      "last_authentication": "2025-12-15T09:28:03Z"
+    },
+    {
+      "username": "svc-etl-snowflake",
+      "account_type": "service_account",
+      "roles": ["etl-pipeline"],
+      "assigned_date": "2024-08-05",
+      "owner": null,
+      "owner_email": null,
+      "expiration_date": null,
+      "last_authentication": "2025-12-14T02:00:12Z",
+      "notes": "Created during Q3 2024 data warehouse migration project"
+    },
+    {
+      "username": "m.chen",
+      "account_type": "employee",
+      "full_name": "Marcus Chen",
+      "department": "Data Analytics",
+      "roles": ["data-analytics"],
+      "assigned_date": "2025-02-18",
+      "expiration_date": null,
+      "last_authentication": "2025-12-13T16:42:19Z"
+    },
+    {
+      "username": "l.okonkwo",
+      "account_type": "employee",
+      "full_name": "Lena Okonkwo",
+      "department": "Data Analytics",
+      "roles": ["data-analytics"],
+      "assigned_date": "2025-03-01",
+      "expiration_date": null,
+      "last_authentication": "2025-12-12T11:05:47Z"
+    },
+    {
+      "username": "j.morrison",
+      "account_type": "employee",
+      "full_name": "James Morrison",
+      "department": "Finance",
+      "roles": ["billing-service"],
+      "assigned_date": "2025-06-10",
+      "expiration_date": null,
+      "last_authentication": "2025-12-14T14:33:22Z"
+    },
+    {
+      "username": "r.santos",
+      "account_type": "contractor",
+      "full_name": "Ricardo Santos",
+      "department": "Engineering",
+      "vendor": "TechBridge Consulting",
+      "roles": ["app-backend-readwrite"],
+      "assigned_date": "2025-09-01",
+      "contract_end_date": "2025-12-31",
+      "expiration_date": null,
+      "last_authentication": "2025-12-14T17:20:08Z"
+    },
+    {
+      "username": "k.nakamura",
+      "account_type": "employee",
+      "full_name": "Kenji Nakamura",
+      "department": "Database Administration",
+      "roles": ["dba-admin"],
+      "assigned_date": "2024-03-15",
+      "expiration_date": null,
+      "last_authentication": "2025-12-15T07:10:55Z"
+    },
+    {
+      "username": "t.williams",
+      "account_type": "employee",
+      "full_name": "Tanya Williams",
+      "department": "Engineering",
+      "roles": ["app-backend-readonly"],
+      "assigned_date": "2025-01-12",
+      "expiration_date": null,
+      "last_authentication": "2025-12-13T09:44:31Z"
+    }
+  ]
+}

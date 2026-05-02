@@ -1,0 +1,119 @@
+{
+  "id": "cc6.3-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.3",
+  "control_description": "The entity authorizes, modifies, or removes access to data, software functions, and other protected information assets based on roles and responsibilities, segregation of duties, and least privilege principles.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/data-access-policy.md",
+      "type": "policy",
+      "description": "Aurora Labs data access authorization policy defining RBAC, least privilege, segregation of duties, DLP controls, and quarterly access certification requirements."
+    },
+    {
+      "path": "evidence/database-permissions-export.json",
+      "type": "config",
+      "description": "MongoDB Atlas RBAC export showing roles, privileges, and user assignments for the aurora-prod-east-1 cluster as of December 15, 2025."
+    },
+    {
+      "path": "evidence/access-certification-q4.csv",
+      "type": "log",
+      "description": "Quarterly access certification log for Q4 2025 across 8 Aurora Labs systems, including completion dates, findings, and reviewer notes."
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "log",
+      "description": "CISO-approved exception register documenting policy deviations with compensating controls, risk ratings, and review outcomes."
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/encryption-standards.md",
+      "type": "policy",
+      "description": "Aurora Labs encryption standards policy covering data at rest, in transit, and key management. Not relevant to CC6.3 access authorization controls."
+    }
+  ],
+  "prompt": "You are auditing Aurora Labs' SOC 2 Type II compliance for control CC6.3 (Access Authorization). Review the provided evidence to assess whether Aurora Labs effectively authorizes access based on roles, enforces segregation of duties, and applies least privilege principles. Identify any gaps, deficiencies, or areas of concern. Be careful to cross-reference evidence across documents — some apparent issues may have valid exceptions or compensating controls documented elsewhere.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Data analytics role has broad production read access across all collections",
+      "description": "The data-analytics role in the MongoDB permissions export grants read access to 10 production collections including financial data (billing, invoices, revenue_records, payment_transactions). This appears to violate the least-privilege principle in Section 3.1 of the data access policy. However, exception EXC-2025-014 in the exception register documents CISO approval for this access with compensating controls including PII field-level redaction, query audit logging, bulk export alerts, and read replica isolation. The exception was renewed on 2025-10-01 with verification that compensating controls remain effective.",
+      "evidence_sources": ["evidence/database-permissions-export.json", "evidence/exception-register.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "An auditor should initially flag the broad read access of the data-analytics role, then cross-reference the exception register to find EXC-2025-014, which provides valid CISO approval and documented compensating controls (data masking, audit logging, bulk export alerts). This is not a finding because the exception process in Section 7 of the policy was followed correctly.",
+      "detection_criteria": {
+        "required_keywords": ["data-analytics", "EXC-2025-014", "compensating control"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["EXC-2025-014", "exception register", "compensating"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Finance employee j.morrison holds billing-service role with write access to financial collections",
+      "description": "User j.morrison (James Morrison, Finance department) is assigned the billing-service role, which grants insert and update access to the billing, invoices, and payment_transactions collections. As a Finance department employee, Morrison likely has approval or reconciliation responsibilities for financial data. Holding both write access and financial oversight authority on the same collections violates the segregation of duties requirements in Section 3.2 of the data access policy, which states that users with write access to financial data collections must not simultaneously hold administrative or approval privileges.",
+      "evidence_sources": ["evidence/database-permissions-export.json", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor should identify that j.morrison is a Finance department employee with write access to billing, invoices, and payment_transactions. Section 3.2 of the policy explicitly prohibits this combination. Unlike the data-analytics broad access, there is no exception in the exception register for this user or scenario.",
+      "detection_criteria": {
+        "required_keywords": ["j.morrison", "billing-service", "segregation of duties"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Looker Analytics Platform access certification completed 21 days late",
+      "description": "The Q4 2025 access certification for the Looker Analytics Platform (CERT-Q4-2025-006) was due on October 14, 2025, but was not completed until November 4, 2025 — 21 calendar days after the certification period opened and 7 days past the 14-day policy deadline. The delay was attributed to the system owner being on PTO. Per Section 5.3 of the data access policy, certifications completed more than 14 calendar days after the certification period opens are flagged as non-compliant.",
+      "evidence_sources": ["evidence/access-certification-q4.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor should compare the certification_completed date (2025-11-04) against the certification_due date (2025-10-14) for CERT-Q4-2025-006 and note the 21-day gap exceeds the 14-day policy requirement. The PTO explanation does not constitute a valid exception per the policy's exception process.",
+      "detection_criteria": {
+        "required_keywords": ["CERT-Q4-2025-006", "Looker", "21 days"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "Contractor r.santos has no account expiration date despite policy requirement",
+      "description": "Contractor Ricardo Santos (r.santos, TechBridge Consulting) has a contract end date of 2025-12-31 but no expiration date set on the database account. Section 6.2 of the data access policy requires that contractor accounts have a defined expiration date not exceeding the contract end date or 90 days, whichever is shorter. The absence of an expiration date means the account will persist beyond the contract period unless manually deprovisioned, creating a risk of unauthorized access after contract termination.",
+      "evidence_sources": ["evidence/database-permissions-export.json", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor should notice that r.santos is flagged as account_type 'contractor' with contract_end_date '2025-12-31' but expiration_date is null. Policy Section 6.2 explicitly requires contractor accounts to have defined expiration dates. This is a clear policy violation with no documented exception.",
+      "detection_criteria": {
+        "required_keywords": ["r.santos", "contractor", "expiration"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "high",
+      "title": "Service account svc-etl-snowflake has production write access with no designated owner",
+      "description": "The svc-etl-snowflake service account is assigned the etl-pipeline role, which includes insert and update access to the revenue_records collection in the production database. The account has no designated owner (owner and owner_email are both null). Section 6.1 of the data access policy requires all service accounts to have a designated human owner documented in the service account registry. Additionally, the account was noted as created during the Q3 2024 data warehouse migration, and exception EXC-2025-022 for that migration expired on 2025-10-31, yet the service account and its elevated write access remain active.",
+      "evidence_sources": ["evidence/database-permissions-export.json", "evidence/data-access-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "The auditor should identify that svc-etl-snowflake has null owner fields, violating Section 6.1. Cross-referencing with the exception register reveals that EXC-2025-022 (temporary elevated access for data warehouse migration) has expired, suggesting this account's write access to revenue_records should have been reverted. The account also has write access (insert, update) to production revenue_records with no oversight.",
+      "detection_criteria": {
+        "required_keywords": ["svc-etl-snowflake", "owner", "revenue_records"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["access-control", "rbac", "segregation-of-duties", "least-privilege", "service-accounts", "contractor-access", "access-certification"]
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "id": "cc3.1-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC3.1",
+  "control_description": "The entity specifies objectives with sufficient clarity to enable the identification of risks to the achievement of its objectives. The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/risk-management-policy.md",
+      "type": "policy",
+      "description": "Vertex AI Corp risk management policy defining the risk assessment framework, governance structure, risk rating methodology, and treatment requirements"
+    },
+    {
+      "path": "evidence/risk-register.csv",
+      "type": "exception_register",
+      "description": "Active risk register with 18 risks including risk ratings, treatment plans, owners, and review dates from the ServiceNow GRC module"
+    },
+    {
+      "path": "evidence/risk-assessment-report-2025.md",
+      "type": "report",
+      "description": "2025 Annual Risk Assessment Report dated March 2025 covering 15 risk categories with findings, treatment summary, and recommendations"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Exception register documenting the Board-approved exception for RISK-014 (Critical-rated cross-border data transfer risk acceptance)"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/business-impact-analysis.md",
+      "type": "documentation",
+      "description": "Business Impact Analysis summary identifying critical processes and recovery priorities -- related to risk management but focused on BCP/DR rather than the risk assessment process itself"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Vertex AI Corp's risk management controls under Trust Services Criteria CC3.1. Review all provided evidence documents to assess whether the organization's risk identification, assessment, and management processes are operating effectively. Evaluate the completeness of risk coverage, timeliness of risk reviews, adequacy of risk treatment, and governance oversight. Identify any gaps or deficiencies, but be careful to distinguish genuine gaps from risks that have been properly managed through formal exception and governance processes.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "RISK-014 Critical Risk Accepted Without Mitigation",
+      "description": "RISK-014 (cross-border data transfer non-compliance) is rated Critical (Likelihood 4, Impact 5, Rating 20) with a treatment strategy of 'Accept.' This appears to be an unmitigated Critical risk. However, review of the exception register (EXC-2025-019) reveals a properly governed risk acceptance: external EU legal counsel (Fieldfisher LLP) provided analysis, comprehensive compensating controls are documented (SCCs, encryption, pseudonymization, EU data residency), cyber liability insurance covers fines up to $10M (Beazley Policy CL-2025-VAC-0042), the CISO approved and the Board was notified via resolution BR-2025-012, and quarterly reviews have been conducted consistently (Q2, Q3, Q4 2025). This follows the exception process defined in Section 9 of the risk management policy.",
+      "evidence_sources": [
+        "evidence/risk-register.csv",
+        "evidence/exception-register.csv",
+        "evidence/risk-management-policy.md"
+      ],
+      "expected_reasoning": "An auditor might initially flag a Critical-rated risk with treatment 'Accept' as a major deficiency. However, the policy explicitly allows risk acceptance for Critical risks with CISO + Board approval (Section 6 and 9). The exception register demonstrates all required approvals were obtained, compensating controls are documented and substantive, and quarterly reviews are current. This is a model example of a properly governed risk acceptance.",
+      "detection_criteria": {
+        "required_keywords": [
+          "Fieldfisher LLP",
+          "Board resolution BR-2025-012",
+          "Beazley insurance"
+        ],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": [
+          "unmitigated critical risk",
+          "missing treatment plan",
+          "control failure"
+        ]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Three Risks Overdue for Quarterly Review",
+      "description": "The risk management policy (Section 7.2) requires quarterly review of all risks by their owners. Three risks in the register have not been reviewed within the required quarterly cycle: RISK-008 (Software Supply Chain, last reviewed April 2025 -- 8 months overdue), RISK-009 (State Privacy Law Compliance, last reviewed May 2025 -- 7 months overdue), and RISK-013 (Vendor Data Breach, last reviewed March 2025 -- 9 months overdue). All three are rated High (scores of 12, 6, and 12 respectively). RISK-013 is particularly concerning as its notes indicate 4 of 12 critical vendor assessments remain incomplete. These overdue reviews represent a systemic failure in the quarterly risk review cycle, not an isolated incident.",
+      "evidence_sources": [
+        "evidence/risk-register.csv",
+        "evidence/risk-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should compare each risk's last_review_date against the policy requirement for quarterly reviews. Three risks (RISK-008, RISK-009, RISK-013) have next_review_dates that passed months ago (July, August, June 2025 respectively). By the end of Q4 2025, these reviews are 6-9 months overdue. The fact that three separate risks across different categories are overdue suggests a process breakdown, not individual oversight.",
+      "detection_criteria": {
+        "required_keywords": [
+          "RISK-008",
+          "RISK-009",
+          "RISK-013",
+          "overdue",
+          "quarterly review",
+          "not reviewed",
+          "6 months",
+          "stale"
+        ],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Two High-Rated Risks Without Assigned Owners",
+      "description": "The risk management policy (Section 3.2) requires that each identified risk must have a designated Risk Owner responsible for implementing treatment plans, monitoring risk indicators, and reporting status changes. Two risks in the register have no owner assigned: RISK-016 (Phishing Attack, rated High at 12) and RISK-017 (Business Email Compromise, rated High at 12). Both are actively being managed with treatment controls in place (KnowBe4, Proofpoint), but the absence of an accountable owner means no individual is responsible for monitoring these risks, updating treatment plans, or reporting to the SGC. The risk register notes for both explicitly state 'NO OWNER ASSIGNED.'",
+      "evidence_sources": [
+        "evidence/risk-register.csv",
+        "evidence/risk-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should identify the empty risk_owner field for RISK-016 and RISK-017 and cross-reference with the policy requirement in Section 3.2. While treatment controls are documented and appear operational, the lack of ownership accountability is a governance gap. The auditor should note that despite no owner, the risks have current review dates, suggesting someone is managing them informally without formal accountability.",
+      "detection_criteria": {
+        "required_keywords": [
+          "RISK-016",
+          "RISK-017",
+          "no owner",
+          "unassigned",
+          "ownership",
+          "accountability"
+        ],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Annual Risk Assessment Missing Supply Chain and AI/ML Risk Categories",
+      "description": "The 2025 Annual Risk Assessment Report covers 15 risk categories but notably omits two categories that are highly relevant for a company named 'Vertex AI Corp' that develops AI/ML products: (1) AI/ML Model Risk -- risks related to model bias, training data integrity, model drift, adversarial attacks, and responsible AI governance; and (2) Supply Chain Risk -- while 'Third-Party Vendor Risk' is covered, software supply chain risk (malicious dependencies, compromised build pipelines, SBOM management) is not assessed as a distinct category, despite RISK-008 in the register specifically identifying this as a High-rated risk. The omission of AI/ML model risk is particularly significant given the company's core business involves AI products.",
+      "evidence_sources": [
+        "evidence/risk-assessment-report-2025.md",
+        "evidence/risk-register.csv"
+      ],
+      "expected_reasoning": "The auditor should review the 15 risk categories listed in Section 3 of the risk assessment report and note what is absent. For an AI company, the absence of AI/ML-specific risk categories (model risk, training data integrity, algorithmic bias) is a significant scope gap. Additionally, software supply chain risk exists as RISK-008 in the register but was not assessed as a distinct category in the annual assessment. This suggests the risk assessment methodology has not kept pace with the company's evolving risk profile.",
+      "detection_criteria": {
+        "required_keywords": [
+          "AI",
+          "ML",
+          "supply chain",
+          "missing",
+          "risk category",
+          "scope",
+          "not covered",
+          "emerging"
+        ],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Risk Assessment Report Staleness Approaching End of Validity",
+      "description": "The annual risk assessment was completed in March 2025 and by the end of Q4 2025, the assessment is 9 months old. The policy requires annual risk assessments (Section 4.1, 'typically in Q1'), and the next assessment is scheduled for Q1 2026 (Section 8 of the report). While the risk register itself has been updated with new review dates for most risks throughout the year, the foundational risk assessment -- which establishes the risk categories, methodology, and baseline ratings -- has not been refreshed. Given the rapidly evolving threat landscape (new ransomware variants, AI-specific regulations, supply chain attacks), the 9-month-old assessment may not reflect the current risk environment. Additionally, the policy allows for ad hoc assessments triggered by significant changes (Section 4.2), and the emergence of AI-specific regulatory frameworks in 2025 would appear to qualify as such a trigger.",
+      "evidence_sources": [
+        "evidence/risk-assessment-report-2025.md",
+        "evidence/risk-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note the March 2025 report date and evaluate whether the assessment remains current for Q4 2025 audit purposes. While technically within the annual cycle, the 9-month gap is notable. The policy's ad hoc assessment triggers (Section 4.2) include 'new regulatory requirements' and 'significant changes to the technology environment,' and the AI regulatory landscape has evolved significantly in 2025. The auditor should assess whether the annual frequency is sufficient given the company's risk profile.",
+      "detection_criteria": {
+        "required_keywords": [
+          "March 2025",
+          "9 months",
+          "staleness",
+          "outdated",
+          "annual",
+          "not updated",
+          "comprehensive assessment"
+        ],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": [
+      "risk-assessment",
+      "risk-register",
+      "risk-governance",
+      "quarterly-review",
+      "risk-ownership",
+      "risk-coverage",
+      "exception-management",
+      "red-herring"
+    ]
+  }
+}

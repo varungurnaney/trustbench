@@ -1,0 +1,102 @@
+{
+  "report_metadata": {
+    "title": "External Penetration Test Report — Apex Fintech",
+    "vendor": "CyberShield Assessments LLC",
+    "report_id": "CS-2025-Q3-APXF-0847",
+    "assessment_period": "July 14, 2025 — July 25, 2025",
+    "report_date": "August 1, 2025",
+    "scope": "All internet-facing services, VPN endpoints, and DMZ infrastructure for Apex Fintech production environment (api.apexfintech.com, *.apexfintech.com, VPN endpoints)",
+    "methodology": "OWASP Testing Guide v4.2, PTES, NIST SP 800-115",
+    "overall_risk_rating": "Low",
+    "tester_lead": "Diana Kowalski, OSCP, GPEN",
+    "classification": "Confidential"
+  },
+  "executive_summary": "CyberShield Assessments performed an external penetration test of Apex Fintech's internet-facing infrastructure during Q3 2025. The assessment identified 2 medium-severity findings and 3 low-severity findings. No critical or high-severity vulnerabilities were discovered. Apex Fintech's boundary controls are generally well-implemented with effective WAF and API Gateway configurations.",
+  "findings": [
+    {
+      "finding_id": "CS-APXF-2025-001",
+      "title": "HTTP Security Headers Missing on Admin API Endpoint",
+      "severity": "Medium",
+      "cvss_score": 5.3,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:L/I:N/A:N",
+      "description": "The admin API endpoint (admin-api.internal.apexfintech.net:8443) is missing several recommended HTTP security headers including X-Content-Type-Options, X-Frame-Options, Content-Security-Policy, and Strict-Transport-Security. While the endpoint is not directly internet-facing, it is accessible via the VPN and does not benefit from the WAF's header injection rules that protect the main API Gateway path.",
+      "affected_asset": "admin-api.internal.apexfintech.net:8443",
+      "evidence": "During VPN-authenticated testing, HTTP responses from the admin API lacked standard security headers. The main API path (via Kong) correctly applies these headers via WAF rules.",
+      "recommendation": "Implement security headers directly on the admin API service or via the internal ALB configuration.",
+      "remediation_status": "Remediated",
+      "remediation_date": "August 18, 2025",
+      "remediation_notes": "Security headers added to admin API Nginx configuration. Verified by CyberShield retest on August 20, 2025."
+    },
+    {
+      "finding_id": "CS-APXF-2025-002",
+      "title": "Admin API Accessible Outside API Gateway Boundary",
+      "severity": "Medium",
+      "cvss_score": 4.8,
+      "cvss_vector": "CVSS:3.1/AV:A/AC:H/PR:L/UI:N/S:U/C:L/I:L/A:L",
+      "description": "The admin API endpoint (admin-api.internal.apexfintech.net:8443) bypasses the organization's defined system boundary controls — specifically the WAF and API Gateway — and is accessible directly from the VPN. While the endpoint requires mTLS client certificate and Okta SSO authentication, it does not benefit from WAF-layer protections (OWASP rule filtering, bot detection, rate limiting) or API Gateway controls (centralized logging, schema validation, API versioning). This creates an alternative entry path into the production VPC that operates outside the standard boundary architecture described in policy APXF-SEC-POL-009 Section 3.2.",
+      "affected_asset": "admin-api.internal.apexfintech.net:8443 (10.100.5.20)",
+      "evidence": "Testing confirmed the admin API is reachable from VPN-connected clients without traversing CloudFront, WAF, or Kong API Gateway. Traffic flows directly from VPN to internal ALB to admin API service. The admin API processes ~12,500 requests/day, representing approximately 0.3% of total production traffic.",
+      "recommendation": "Option A: Route admin API traffic through a dedicated WAF-protected path. Option B: If Gateway-independent access is required for operational resilience, document the risk formally and implement compensating controls (enhanced logging, request validation at the application layer, dedicated IDS rules for admin API traffic).",
+      "remediation_status": "Accepted Risk",
+      "remediation_date": null,
+      "remediation_notes": "Apex Fintech has accepted this risk. Business justification: The admin API was deployed after incident INC-2024-0312 where a Kong outage prevented SRE from managing production systems. Compensating controls in place: (1) VPN-only access with Okta SSO + MFA, (2) mTLS client certificate authentication, (3) Admin API access logs shipped to Splunk, (4) IP allowlist restricted to Tailscale CIDR 100.64.0.0/10. Risk acceptance approved by Sarah Nakamura (CISO) on August 15, 2025. Exception documented in SEC-EXC-2025-031, expires August 15, 2026."
+    },
+    {
+      "finding_id": "CS-APXF-2025-003",
+      "title": "TLS 1.0 Supported on Legacy Health Check Endpoint",
+      "severity": "Low",
+      "cvss_score": 3.1,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N",
+      "description": "The /healthz endpoint on the external ALB accepts TLS 1.0 connections. While no sensitive data is returned, TLS 1.0 is deprecated and should be disabled.",
+      "affected_asset": "External ALB (prod-alb-external)",
+      "evidence": "SSL Labs scan showed TLS 1.0 enabled on the external ALB security policy.",
+      "recommendation": "Update ALB security policy to ELBSecurityPolicy-TLS13-1-2-2021-06 or newer.",
+      "remediation_status": "Remediated",
+      "remediation_date": "August 10, 2025",
+      "remediation_notes": "ALB security policy updated. TLS 1.0 and 1.1 disabled. Verified by rescan."
+    },
+    {
+      "finding_id": "CS-APXF-2025-004",
+      "title": "Verbose Error Messages on API Gateway 500 Responses",
+      "severity": "Low",
+      "cvss_score": 3.0,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N",
+      "description": "When the API Gateway returns HTTP 500 errors, the response body includes internal service names and stack trace fragments. This information could assist an attacker in mapping internal architecture.",
+      "affected_asset": "Kong API Gateway",
+      "evidence": "Crafted malformed requests to /v2/transactions triggered 500 responses containing internal service names (payment-svc, ledger-svc) and partial Java stack traces.",
+      "recommendation": "Configure Kong to sanitize 500 error responses and return generic error messages to clients.",
+      "remediation_status": "Remediated",
+      "remediation_date": "August 22, 2025",
+      "remediation_notes": "Custom error handler plugin deployed to Kong. All 5xx responses now return standardized error format without internal details."
+    },
+    {
+      "finding_id": "CS-APXF-2025-005",
+      "title": "DNS Zone Transfer Permitted on Secondary Nameserver",
+      "severity": "Low",
+      "cvss_score": 2.8,
+      "cvss_vector": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N",
+      "description": "AXFR zone transfer requests are permitted on the secondary external nameserver (ns2.apexfintech.com), which could allow an attacker to enumerate all DNS records.",
+      "affected_asset": "ns2.apexfintech.com",
+      "evidence": "dig AXFR apexfintech.com @ns2.apexfintech.com returned the full zone file.",
+      "recommendation": "Restrict zone transfers to authorized nameserver IPs only.",
+      "remediation_status": "Remediated",
+      "remediation_date": "August 5, 2025",
+      "remediation_notes": "Zone transfer ACL updated to restrict to primary nameserver IP only."
+    }
+  ],
+  "findings_summary": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 3,
+    "informational": 0
+  },
+  "positive_observations": [
+    "WAF configuration effectively blocks OWASP Top 10 attack patterns",
+    "API Gateway rate limiting and schema validation are well-configured",
+    "mTLS enforcement via Istio service mesh is correctly implemented on sampled services",
+    "VPN access controls with hardware MFA provide strong administrative access security",
+    "Network segmentation between VPCs is properly enforced with no transitive routing"
+  ],
+  "next_assessment": "Q4 2025 — Scheduled for October 2025"
+}

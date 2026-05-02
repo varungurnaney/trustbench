@@ -1,0 +1,113 @@
+{
+  "id": "cc8.1-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC8.1",
+  "control_description": "The entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures to meet its objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/change-policy.md",
+      "type": "policy",
+      "description": "Beacon SaaS change management policy defining peer review, staging testing, CAB approval, deployment windows, and emergency change procedures."
+    },
+    {
+      "path": "evidence/deployment-log-q4.csv",
+      "type": "log",
+      "description": "Complete deployment log for Q4 2025 covering 20 changes with approval chains, test results, rollback events, and deployment outcomes."
+    },
+    {
+      "path": "evidence/automated-test-results.json",
+      "type": "config",
+      "description": "CI/CD automated test results for all Q4 2025 deployments, including pass rates, flaky test tracking, and test suite metadata."
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/capacity-planning-q4.md",
+      "type": "log",
+      "description": "Infrastructure capacity planning report for Q4 2025. Not relevant to CC8.1 change management controls."
+    }
+  ],
+  "prompt": "You are auditing Beacon SaaS's SOC 2 Type II compliance for control CC8.1 (Change Management). Review the provided evidence to assess whether Beacon SaaS has effective change management controls in place, including proper authorization, testing, approval, and deployment practices. Evaluate whether deviations from the documented policy represent genuine control gaps or reasonable operational decisions. Consider the full context when making judgments — some situations may be ambiguous and require nuanced analysis.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CHG-414 deployed to production with 94.2% test pass rate, below the 98% policy threshold",
+      "description": "Deployment CHG-414 (Real-time analytics pipeline migration to Kafka) proceeded to production with a 94.2% automated test pass rate, which is below the 98% overall pass rate required by Section 4.3 of the change management policy. The 146 test failures were attributed to 7 known flaky tests (FLAKY-028 through FLAKY-034) related to Kafka integration tests that are sensitive to CI environment resource constraints. Each flaky test has a tracking Jira ticket (BEACON-4892, BEACON-5011). All critical tests passed and the CAB approved the deployment with awareness of the flaky test situation. This is a judgment call: the flaky tests are documented and tracked, and all critical tests passed, but the policy threshold of 98% was not met and the organization has not formally updated the policy or created a standing exception for flaky tests.",
+      "evidence_sources": ["evidence/deployment-log-q4.csv", "evidence/automated-test-results.json", "evidence/change-policy.md"],
+      "expected_reasoning": "The auditor must weigh whether documented flaky tests constitute a valid reason to bypass the 98% pass rate threshold. Supporting factors: flaky tests are tracked in Jira, all critical tests passed, CAB was informed. Concerning factors: the policy states 98% without a flaky-test carve-out, 3 of the flaky tests have exceeded the 30-day remediation SLA by over 100 days, and the organization has not updated the policy to formalize this exception. A thorough auditor should flag this as a process gap — the policy should be updated or a formal exception created.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-414", "94.2%", "flaky"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CHG-415 approved by Engineering Manager instead of CAB, with no formal delegation authority",
+      "description": "Deployment CHG-415 (Onboarding wizard flow redesign), classified as Medium risk, was approved by Jared Kim (Engineering Manager) instead of the Change Advisory Board as required by Section 4.4 of the change policy. The deployment log notes that CAB did not convene the week of December 1 due to holiday scheduling, and Jared Kim approved as a delegate per verbal authorization from Natasha Volkov (VP of Engineering / CAB Chair). The policy does not define a delegation process or alternate approvers for when CAB cannot meet. This raises questions about whether the approval was adequate.",
+      "evidence_sources": ["evidence/deployment-log-q4.csv", "evidence/change-policy.md"],
+      "expected_reasoning": "The auditor should note that Section 4.4 requires CAB approval for Medium and High risk changes and defines the CAB composition (VP Engineering, Director SRE, Security Lead, Product Manager). It does not define a delegation process or alternate approval authority. While Natasha Volkov's verbal authorization provides some assurance, verbal approvals are not documented in a verifiable way. An Engineering Manager is not listed as a CAB member. This is a process gap — the policy should define delegation procedures for when CAB cannot convene.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-415", "Jared Kim", "CAB"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Two rollbacks in Q4 2025 triggers the escalation threshold defined in policy metrics",
+      "description": "Q4 2025 saw two production rollbacks: CHG-406 (API rate limiting, rolled back October 29 due to latency threshold breach) and CHG-418 (Kubernetes node pool scaling, rolled back December 17 due to pod scheduling failures). Section 6 of the change management policy defines a rollback frequency escalation trigger at more than 2 rollbacks per quarter. At exactly 2, the organization is at the threshold boundary. Both rollbacks involved issues that were not caught by the staging test environment — CHG-406's latency impact and CHG-418's node affinity conflicts suggest gaps in staging environment fidelity relative to production.",
+      "evidence_sources": ["evidence/deployment-log-q4.csv", "evidence/automated-test-results.json", "evidence/change-policy.md"],
+      "expected_reasoning": "The auditor must evaluate whether 2 rollbacks represent a systemic testing gap or normal operational variance. Supporting factors: both changes were properly rolled back within defined criteria, root causes were identified, and corrective deployments followed (CHG-411, CHG-420). Concerning factors: both failures involved issues not detectable in staging, suggesting the staging environment does not adequately mirror production for infrastructure-level changes. The 2-rollback count is at the escalation threshold boundary, and the pattern (both infrastructure-related) suggests a specific gap in infrastructure change testing.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-406", "CHG-418", "rollback"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Emergency hotfix CHG-409 bypassed staging testing — retrospective CAB review completed within SLA",
+      "description": "CHG-409 (Critical XSS vulnerability hotfix for CVE-2025-41823) was deployed as an emergency change on November 6 at 22:15 ET, bypassing staging environment testing and the standard deployment window. The change was peer-reviewed by Elena Ruiz, automated unit and integration tests passed with 100% pass rate, and retrospective CAB approval was obtained on November 11 — within the 5 business day requirement. The emergency change process in Section 5 explicitly permits bypassing staging and deployment windows for Severity 1/2 incidents. This change followed the documented emergency process correctly.",
+      "evidence_sources": ["evidence/deployment-log-q4.csv", "evidence/automated-test-results.json", "evidence/change-policy.md"],
+      "expected_reasoning": "The auditor should verify that CHG-409 met all emergency change requirements: active production incident (CVE-2025-41823 with active exploitation), peer review completed (Elena Ruiz), automated tests passed, post-deployment validation passed, and retrospective CAB review within 5 business days (deployed Nov 6, CAB review Nov 11 = 3 business days). The emergency process was followed correctly. However, the full end-to-end test suite was not run (only unit/integration tests per the test results), which could be noted as a minor observation — though the policy only requires 'automated unit and integration tests must pass' for emergency changes.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-409", "CVE-2025-41823", "staging"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Flaky test remediation SLA exceeded by over 100 days for Kafka integration tests",
+      "description": "The automated test results show that 3 flaky tests (FLAKY-028, FLAKY-029, FLAKY-030) identified on September 14, 2025 have been open for 109 days, far exceeding the 30-day remediation SLA defined in the flaky test registry. These tests are tracked under BEACON-4892 and are reported as 'blocked on Kafka test container improvements.' The persistence of unresolved flaky tests erodes confidence in the automated test suite as a change management control, as demonstrated by CHG-414's deployment at 94.2% pass rate. A test suite with known-unreliable tests that are not remediated in a timely manner weakens the effectiveness of the testing gate in the change management process.",
+      "evidence_sources": ["evidence/automated-test-results.json", "evidence/change-policy.md"],
+      "expected_reasoning": "The auditor should connect the flaky test SLA breach to the broader change management control effectiveness. When flaky tests persist beyond SLA, teams develop a pattern of dismissing test failures, which can mask genuine regressions. The 30-day SLA exists for this reason, and exceeding it by 3.5x warrants a finding. The 'blocked' status suggests a resource or priority issue rather than a technical impossibility.",
+      "detection_criteria": {
+        "required_keywords": ["FLAKY-028", "BEACON-4892", "remediation SLA"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["change-management", "deployment", "testing", "rollback", "emergency-change", "cab-approval", "flaky-tests", "judgment-call"]
+  }
+}

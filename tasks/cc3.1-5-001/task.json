@@ -1,0 +1,130 @@
+{
+  "id": "cc3.1-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC3.1",
+  "control_description": "The entity specifies objectives with sufficient clarity to enable the identification of risks and assessment of risks relating to objectives, including the identification and assessment of risks of fraud.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/risk-policy.md",
+      "type": "policy",
+      "description": "Zenith Cloud enterprise risk management framework defining risk appetite, 5x5 assessment matrix, assessment frequency requirements, and governance structure"
+    },
+    {
+      "path": "evidence/risk-register-q4.csv",
+      "type": "spreadsheet",
+      "description": "Q4 2025 risk register containing 22 risks with likelihood/impact ratings, treatment strategies, and change history"
+    },
+    {
+      "path": "evidence/sgc-meeting-minutes-q4.md",
+      "type": "report",
+      "description": "Security Governance Committee Q4 2025 quarterly meeting minutes documenting risk review, rating changes, and emerging risk discussion"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/compliance-calendar-2025.md",
+      "type": "report",
+      "description": "Annual compliance activity calendar showing scheduled activities for 2025 — not directly relevant to risk assessment effectiveness"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Zenith Cloud's risk identification and assessment process for the Q4 2025 observation period (October 1 — December 31, 2025). Review the risk management policy, risk register, Security Governance Committee meeting minutes, and any supporting documentation. Assess whether CC3.1 requirements for risk identification and assessment are met. Identify any gaps, considering the adequacy of the risk assessment process, governance oversight, and whether the risk register accurately reflects the organization's risk posture.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Risk rating downgrades without documented justification in the register",
+      "description": "Two risks were downgraded from High to Medium during Q4 2025: ZC-RISK-002 (cloud misconfiguration) and ZC-RISK-015 (phishing attack). The risk register's change_justification field is blank for ZC-RISK-002. While the SGC meeting minutes reference 'improved controls' (Wiz CSPM for ZC-RISK-002, FIDO2 MFA for ZC-RISK-015), the risk policy Section 5.2 requires that rating changes include 'documented justification referencing specific control changes, threat intelligence, or incident data' and 'before/after comparison of the risk rating.' The SGC minutes provide a brief discussion summary but do not constitute the formal documentation required by policy. ZC-RISK-002's register entry has no change justification at all.",
+      "evidence_sources": [
+        "evidence/risk-register-q4.csv",
+        "evidence/sgc-meeting-minutes-q4.md",
+        "evidence/risk-policy.md"
+      ],
+      "expected_reasoning": "The auditor should cross-reference the risk register's change_justification column with the policy's Section 5.2 requirements. ZC-RISK-002 has an empty justification field — a clear documentation gap. ZC-RISK-015 at least has justification in the SGC minutes, but the auditor must judge whether minutes-level discussion satisfies the policy's requirement for 'documented justification.' The judgment call: is the SGC's verbal approval and brief minutes note sufficient, or does the policy require a more formal documented assessment? For ZC-RISK-002, the blank field is a clear process gap regardless.",
+      "detection_criteria": {
+        "required_keywords": ["ZC-RISK-002", "ZC-RISK-015", "downgrade", "change_justification", "Section 5.2", "blank justification", "rating change documentation"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Risk register comprehensive update approaching staleness",
+      "description": "The risk policy Section 4.2 requires a comprehensive risk assessment 'conducted annually, typically in Q1.' The risk register shows the last comprehensive review was February 15, 2025 — 10 months prior to the end of the Q4 2025 observation period. While the policy says 'typically in Q1' (not strictly Q1), the next comprehensive assessment is scheduled for March 15, 2026. This means the register will be 13 months old before the next comprehensive update. During Q4 2025, the register's comprehensive foundation is 10-11 months old — risks may have changed materially since February.",
+      "evidence_sources": [
+        "evidence/risk-register-q4.csv",
+        "evidence/risk-policy.md"
+      ],
+      "expected_reasoning": "The auditor should check the last_comprehensive_review date (February 15, 2025) against the annual requirement. At the end of Q4 (December 31, 2025), it will be 10.5 months since the last comprehensive review, with the next not until March 2026 (13 months gap). The judgment call: the policy says 'annual, typically in Q1' — does this mean within a calendar year or within 12 months? If calendar year, the 2025 comprehensive assessment was done in Q1 2025 and the next is Q1 2026, which is compliant. If the standard is rolling 12 months, the gap is borderline. The auditor must also consider whether quarterly SGC reviews provide sufficient interim oversight to compensate for the aging comprehensive assessment.",
+      "detection_criteria": {
+        "required_keywords": ["comprehensive risk assessment", "February 2025", "annual requirement", "10 months", "13 months", "staleness", "last_comprehensive_review"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "SGC reviewed only top 10 of 22 risks",
+      "description": "The risk register contains 22 risks. The SGC Q4 meeting minutes show the committee reviewed only the 'top 10 risks by residual risk rating.' Twelve risks received no governance committee review during Q4. While the risk policy Section 6.2 specifies Board reporting covers 'Top 10 risks,' the SGC's own responsibility (Section 6.1) is broader: 'reviewing the risk register and approving rating changes.' The policy does not explicitly limit the SGC review to only the top 10. Risks ranked 11-22 include items like CI/CD pipeline compromise (ZC-RISK-016), multi-tenant data isolation failure (ZC-RISK-018), and shadow IT proliferation (ZC-RISK-020) — all of which could warrant committee attention.",
+      "evidence_sources": [
+        "evidence/sgc-meeting-minutes-q4.md",
+        "evidence/risk-register-q4.csv",
+        "evidence/risk-policy.md"
+      ],
+      "expected_reasoning": "The auditor should compare the SGC's actual review scope (top 10) against the policy's stated SGC responsibilities (Section 6.1: 'reviewing the risk register'). The Board reporting requirement (Section 6.2) specifies top 10, but the SGC's own charter does not include this limitation. The judgment call: is reviewing only the top 10 reasonable given time constraints and the fact that lower-rated risks have lower residual impact, or does the policy require the SGC to review all 22 risks? Notable: ZC-RISK-018 (multi-tenant isolation, likelihood 1, impact 5) and ZC-RISK-016 (CI/CD compromise, likelihood 1, impact 4) are low-likelihood but high-impact risks that could be underrepresented by a top-10 review approach.",
+      "detection_criteria": {
+        "required_keywords": ["top 10", "22 risks", "SGC review scope", "partial review", "ZC-RISK-016", "ZC-RISK-018", "Section 6.1"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Risk matrix may understate catastrophic-impact risks",
+      "description": "ZC-RISK-007 (insider threat — malicious data exfiltration) has likelihood=2 and impact=5. Per the 5x5 matrix in the risk policy, this maps to 'Medium.' However, impact=5 is defined as 'Catastrophic — Severe, potentially existential — >$10M financial impact, >48 hours outage, data breach, regulatory action.' A Medium rating for a risk with catastrophic potential impact may not adequately communicate the severity to stakeholders. Similarly, ZC-RISK-011 (API authentication bypass) and ZC-RISK-018 (multi-tenant data isolation failure) both have impact=5 but are rated Medium. The matrix design itself may be inadequate for capturing risks that are unlikely but existential.",
+      "evidence_sources": [
+        "evidence/risk-register-q4.csv",
+        "evidence/risk-policy.md"
+      ],
+      "expected_reasoning": "The auditor should examine whether the 5x5 matrix adequately captures risk severity for low-likelihood, catastrophic-impact scenarios. Three risks with impact=5 (catastrophic) are rated Medium: ZC-RISK-007, ZC-RISK-011, and ZC-RISK-018. The matrix mathematically produces Medium for likelihood 1-2 combined with impact 5, but a data breach with >$10M impact and regulatory action arguably warrants more than a Medium rating regardless of likelihood. The judgment call: is the matrix methodology valid (many frameworks use this approach), or does the organization need a separate escalation path for catastrophic-impact risks regardless of likelihood? The risk appetite statement says Critical risks require Board approval — but these risks never reach Critical under the current matrix.",
+      "detection_criteria": {
+        "required_keywords": ["impact=5", "catastrophic", "Medium rating", "ZC-RISK-007", "likelihood=2", "matrix methodology", "understated risk"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "low",
+      "title": "No formal emerging risk assessment conducted",
+      "description": "The risk policy Section 7 describes an emerging risk identification process that includes 'quarterly threat landscape briefings,' 'industry peer benchmarking,' 'technology horizon scanning,' and 'regulatory change monitoring.' The SGC meeting minutes show only a brief, informal discussion of emerging risks (AI-powered attacks, regulatory landscape) with an acknowledgment that 'no formal emerging risk assessment was conducted during this meeting.' The independent risk advisor recommended scheduling a dedicated workshop in Q1 2026. For a Q4 observation period, the absence of a formal emerging risk process — despite the policy requiring one — represents a gap between policy and practice.",
+      "evidence_sources": [
+        "evidence/sgc-meeting-minutes-q4.md",
+        "evidence/risk-policy.md"
+      ],
+      "expected_reasoning": "The auditor should compare the policy's Section 7 emerging risk requirements against the evidence of actual practice. The SGC minutes explicitly state 'no formal emerging risk assessment was conducted.' The policy lists four components (threat briefings, peer benchmarking, horizon scanning, regulatory monitoring), but the minutes only show an informal discussion. The judgment call: does the brief SGC discussion plus ongoing monitoring activities (ISAC membership, regulatory tracking) constitute adequate emerging risk identification, or does the policy require a more structured process? The independent advisor's recommendation for a dedicated workshop suggests even internal stakeholders recognize the current approach is insufficient.",
+      "detection_criteria": {
+        "required_keywords": ["emerging risk", "no formal assessment", "Section 7", "threat landscape", "Maria Santos", "Q1 2026 workshop", "horizon scanning"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["risk_assessment", "risk_register", "governance", "judgment_call", "rating_methodology", "emerging_risk", "documentation_gaps"]
+  }
+}

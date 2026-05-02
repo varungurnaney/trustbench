@@ -1,0 +1,192 @@
+{
+  "id": "a1.2-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "A1.2",
+  "control_description": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup and recovery infrastructure, and recovery plan procedures to meet its objectives. Backup and recovery processes include procedures for recovery of data, systems, and infrastructure to meet the entity's availability commitments and system requirements.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/backup-policy.md",
+      "type": "policy",
+      "description": "Cobalt Systems backup and recovery policy defining RPO/RTO targets, backup schedules, encryption requirements, and restore testing procedures"
+    },
+    {
+      "path": "evidence/backup-log-q4.csv",
+      "type": "log",
+      "description": "Daily backup execution log for Q4 2025 (October-December) showing 92 days of backup operations including successes, failures, and re-runs"
+    },
+    {
+      "path": "evidence/restore-test-q4.json",
+      "type": "report",
+      "description": "Q4 2025 quarterly restore test report with restore timeline, data integrity results, RTO compliance assessment, and quarter-over-quarter trend analysis"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Exception register documenting the CISO-approved exception for the November 8 backup failure with compensating controls"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/disaster-recovery-site-info.md",
+      "type": "documentation",
+      "description": "Disaster recovery site infrastructure details and failover procedures -- related to DR but not directly relevant to backup control testing"
+    },
+    {
+      "path": "evidence/vendor-sla-summary.csv",
+      "type": "report",
+      "description": "Cloud vendor SLA performance summary for Q4 2025 -- general vendor management data not specific to backup controls"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Cobalt Systems' backup and recovery controls under Trust Services Criteria A1.2. Review all provided evidence documents to assess whether backup processes, recovery infrastructure, and recovery testing meet the organization's stated objectives. Identify any gaps, deficiencies, or findings. Be careful to distinguish between genuine control gaps and issues that have been properly mitigated through compensating controls or formal exception processes.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "November 8 Backup Failure with No Re-Run",
+      "description": "The November 8 daily backup (BKP-2025-1108) failed due to a cross-region network timeout and no re-run was executed, creating an apparent 48-hour gap between successful full backups (November 7 to November 9). However, the exception register documents that the CISO reviewed and approved this exception, confirming that WAL archiving remained continuously operational throughout the incident window, archiving segments every 12-15 minutes. This provided effective point-in-time recovery capability with an RPO of approximately 15 minutes, well within the 4-hour RPO target. The exception was formally accepted with a remediation plan to add automated re-run triggers for future network-related failures.",
+      "evidence_sources": [
+        "evidence/backup-log-q4.csv",
+        "evidence/exception-register.csv"
+      ],
+      "expected_reasoning": "An auditor might initially flag the 48-hour full backup gap as a significant RPO violation. However, proper audit procedure requires checking for compensating controls and formal exceptions. The exception register shows CISO approval, WAL archiving continuity as a compensating control, and a remediation plan -- this represents a properly managed exception, not a control failure.",
+      "detection_criteria": {
+        "required_keywords": [
+          "WAL archiving",
+          "CISO approved",
+          "compensating control"
+        ],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": [
+          "control failure",
+          "RPO violation",
+          "unmitigated gap"
+        ]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "December 1 Backup Re-Run Exceeded 4-Hour RPO",
+      "description": "The December 1 backup failed at 02:31 UTC and the re-run did not begin until 08:15 UTC -- a 6-hour gap attributed to delayed on-call response. The re-run completed at 10:08 UTC. Combined with the original failure, the gap between the last successful backup (November 30, completing at 04:21 UTC) and the successful re-run (December 1, completing at 10:08 UTC) was approximately 29 hours and 47 minutes for a full backup. Unlike the November 8 incident, no exception was filed for this event and no documentation confirms whether WAL archiving was operational during this period. The 6-hour delay in initiating the re-run violates the policy requirement to investigate and initiate a re-run within 2 hours of failure.",
+      "evidence_sources": [
+        "evidence/backup-log-q4.csv",
+        "evidence/backup-policy.md",
+        "evidence/exception-register.csv"
+      ],
+      "expected_reasoning": "The auditor should note that the policy requires re-run initiation within 2 hours of failure. The 6-hour delay (02:31 to 08:15 UTC) exceeds this requirement by 4 hours. Unlike the Nov 8 event, there is no exception register entry for Dec 1, meaning no formal risk acceptance or compensating control documentation exists. The backup log note explicitly mentions 'delayed on-call response' as the cause.",
+      "detection_criteria": {
+        "required_keywords": [
+          "December 1",
+          "6 hours",
+          "re-run",
+          "delayed",
+          "RPO",
+          "4-hour",
+          "exceeded",
+          "2-hour"
+        ],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Restore Time Trending Toward RTO Breach",
+      "description": "The Q4 restore test completed in 3 hours 50 minutes against a 4-hour RTO target, leaving only a 10-minute margin. The Q3 restore test completed in 3 hours 15 minutes with a 45-minute margin. This represents an 18% increase in restore duration quarter-over-quarter (195 to 230 minutes), driven by 16.9% data growth (138.5 GB to 161.9 GB). The database restore phase specifically increased by 21.4% (112 to 136 minutes). At this trajectory, the next quarterly restore test is likely to exceed the 4-hour RTO, creating an availability risk. While the Q4 test technically passed, the shrinking margin and absence of documented remediation plans for the trend represent a control weakness.",
+      "evidence_sources": [
+        "evidence/restore-test-q4.json"
+      ],
+      "expected_reasoning": "The auditor should recognize that while the Q4 test is technically compliant (230 minutes < 240 minutes), the trend is concerning. The restore test report itself notes this trend and the VP of Infrastructure acknowledged the RTO margin concern. The key issue is the absence of concrete capacity or performance improvement plans to prevent an RTO breach in Q1 2026. Recommendations were listed but no committed action plan exists.",
+      "detection_criteria": {
+        "required_keywords": [
+          "3h 50m",
+          "3h 15m",
+          "RTO",
+          "trending",
+          "restore time",
+          "increasing",
+          "margin"
+        ],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No Incremental Backup Logs to Verify 4-Hour RPO Claim",
+      "description": "The backup policy states that incremental file system backups run every 4 hours (at 06:00, 10:00, 14:00, 18:00, and 22:00 UTC) as part of the RPO strategy, and that WAL segments are archived continuously. However, the backup log provided (backup-log-q4.csv) only contains entries for daily full backups. No incremental backup execution logs or WAL archiving status logs were provided as evidence. Without these logs, the auditor cannot verify that the 4-hour RPO is actually being met on an ongoing basis. The policy claims rely on incremental backups and WAL archiving as key components of the RPO strategy, but only full backup execution is evidenced.",
+      "evidence_sources": [
+        "evidence/backup-log-q4.csv",
+        "evidence/backup-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note the discrepancy between the policy's stated backup strategy (daily full + 4-hour incremental + continuous WAL) and the evidence provided (only daily full backup logs). A thorough audit requires evidence that all stated backup mechanisms are operating as designed. The absence of incremental backup logs is a documentation gap that prevents verification of the RPO claim.",
+      "detection_criteria": {
+        "required_keywords": [
+          "incremental",
+          "WAL",
+          "not provided",
+          "no evidence",
+          "RPO",
+          "verify",
+          "missing logs"
+        ],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "low",
+      "title": "Backup Storage Growth Without Documented Capacity Planning",
+      "description": "Analysis of the backup log shows consistent data growth from 142.3 GB on October 1 to 183.0 GB on December 31 -- a 28.6% increase over the quarter (approximately 1.5% per week). The backup policy requires semi-annual capacity planning reviews, and the October 15 incident was caused by a disk full condition on the backup target that required emergency cleanup. Despite this incident demonstrating the impact of unchecked growth, no capacity planning documentation was provided as evidence. The disk full event on October 15 is itself evidence that capacity management was insufficient -- backup storage filled up during normal operations.",
+      "evidence_sources": [
+        "evidence/backup-log-q4.csv",
+        "evidence/backup-policy.md"
+      ],
+      "expected_reasoning": "The auditor should calculate the growth rate from the backup sizes in the log (142.3 GB to 183.0 GB over 92 days) and note that the policy requires semi-annual capacity planning reviews. The October 15 disk full incident demonstrates that capacity was not being proactively managed. No capacity planning report or storage utilization trending document was provided as evidence.",
+      "detection_criteria": {
+        "required_keywords": [
+          "capacity",
+          "growth",
+          "disk full",
+          "backup size",
+          "planning",
+          "trending"
+        ],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 6,
+    "relevant_documents_count": 4,
+    "tags": [
+      "backup",
+      "recovery",
+      "RPO",
+      "RTO",
+      "restore-testing",
+      "capacity-planning",
+      "exception-management",
+      "red-herring"
+    ]
+  }
+}

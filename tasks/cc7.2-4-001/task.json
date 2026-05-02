@@ -1,0 +1,140 @@
+{
+  "id": "cc7.2-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.2",
+  "control_description": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/monitoring-policy.md",
+      "type": "policy",
+      "description": "Atlas Cloud security monitoring and anomaly detection policy defining SIEM requirements, alert SLAs, log review, and alert tuning procedures"
+    },
+    {
+      "path": "evidence/siem-coverage-report.json",
+      "type": "report",
+      "description": "Q4 2025 SIEM coverage report showing 18 of 20 services integrated, with details on the 2 non-integrated services"
+    },
+    {
+      "path": "evidence/alert-response-log.csv",
+      "type": "log",
+      "description": "Q4 2025 alert response log with 45 alerts, response times, and resolution details"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Security exception register documenting approved exceptions including the legacy batch reconciler decommission exemption"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/uptime-report-q4.md",
+      "type": "report",
+      "description": "System uptime statistics for Q4 2025 — operational metrics not directly relevant to monitoring control effectiveness"
+    },
+    {
+      "path": "evidence/change-advisory-board-schedule.md",
+      "type": "report",
+      "description": "Change Advisory Board meeting schedule and statistics — change management process not directly relevant to monitoring controls"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Atlas Cloud's monitoring and anomaly detection controls for the Q4 2025 observation period (October 1 — December 31, 2025). Review the monitoring policy, SIEM coverage report, alert response log, exception register, and any supporting documentation. Assess whether CC7.2 requirements for monitoring and anomaly detection are met. Identify any gaps where controls are not operating as designed. Be careful to distinguish between genuine gaps and situations where apparent issues have valid explanations.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "Legacy batch reconciler not integrated with SIEM",
+      "description": "The SIEM coverage report shows legacy-batch-reconciler (AC-SVC-020) is not integrated with the SIEM. This appears to be a monitoring gap — a production service without security monitoring. However, the exception register (SEC-EXC-2025-041) documents that this service was approved for decommission on October 15, 2025, and was fully shut down on October 30, 2025. The service ran its final batch job on October 28 and has been offline since October 30. The CMDB entry remains only because cleanup is scheduled for January 2026. This is NOT a finding — the service is decommissioned with an approved exception, and no monitoring is needed for a service that is not running.",
+      "evidence_sources": [
+        "evidence/siem-coverage-report.json",
+        "evidence/exception-register.csv"
+      ],
+      "expected_reasoning": "The model should initially flag legacy-batch-reconciler as a potential SIEM coverage gap, then cross-reference the exception register to find SEC-EXC-2025-041 documenting the approved decommission. The model should recognize that the service was shut down October 30 with proper approvals, data was migrated to data-pipeline (AC-SVC-011) which IS integrated, and the CMDB entry is just pending cleanup. A competent auditor would dismiss this as a non-finding.",
+      "detection_criteria": {
+        "required_keywords": ["legacy-batch-reconciler", "decommissioned", "SEC-EXC-2025-041", "October 30", "approved exception"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["decommissioned", "not a finding", "approved exception", "no longer operational", "shut down", "dismissed"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "New microservice deployed 47 days without SIEM integration",
+      "description": "The real-time-collab-service (AC-SVC-019) was deployed to production on November 15, 2025. As of December 31, 2025 — 47 calendar days later (approximately 33 business days) — the service has not been integrated with the SIEM. The monitoring policy Section 3.1 requires SIEM integration within 5 business days of production deployment. The SIEM coverage report states the integration ticket (SEC-4521) was created November 16 but remains in backlog due to the Security Engineering team being occupied with incident response work. The service processes customer document content and collaboration metadata (approximately 850K events/day) with only basic CloudWatch alarms — no security-specific monitoring or alerting. This is a significant monitoring gap: a customer-data-processing service has been in production for nearly 7 weeks with no SIEM visibility.",
+      "evidence_sources": [
+        "evidence/siem-coverage-report.json",
+        "evidence/monitoring-policy.md"
+      ],
+      "expected_reasoning": "The auditor should identify that real-time-collab-service was deployed November 15 and check the policy's 5-business-day SIEM integration SLA. At 47 days (33+ business days), this is approximately 6x past the SLA. The service handles customer document content — sensitive data that warrants security monitoring. Unlike the legacy batch reconciler, there is no approved exception for this service. The compensating controls (CloudWatch alarms for error rates/latency) provide operational monitoring but not security monitoring — no anomaly detection, no data access monitoring, no authentication logging in the SIEM.",
+      "detection_criteria": {
+        "required_keywords": ["real-time-collab-service", "AC-SVC-019", "November 15", "47 days", "5-business-day SLA", "SEC-4521", "customer document content", "no SIEM integration"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Two critical alert SLA breaches during Q4",
+      "description": "The alert response log shows 2 Critical-severity alerts where the 15-minute response SLA was missed: ALT-Q4-044 (Tor exit node connection, responded in 19 minutes — 4 minutes late, team occupied with INC-2025-Q4-041 post-mortem) and ALT-Q4-045 (privileged database access outside maintenance window, responded in 25 minutes — 10 minutes late, on-call handling concurrent alert). The monitoring policy Section 4.1 defines a 15-minute SLA for Critical alerts with no exception for concurrent incidents. While the context is understandable (team capacity during concurrent events), the SLA misses indicate that on-call staffing may be insufficient to handle concurrent critical alerts. Of 45 total alerts, 43 met SLA (95.6% compliance), but both misses were on Critical-severity alerts where timely response is most important.",
+      "evidence_sources": [
+        "evidence/alert-response-log.csv",
+        "evidence/monitoring-policy.md"
+      ],
+      "expected_reasoning": "The auditor should scan the alert response log for SLA misses and find ALT-Q4-044 (19 min vs 15 min) and ALT-Q4-045 (25 min vs 15 min). Both missed the 15-minute Critical SLA. The auditor should note that both misses occurred when the on-call engineer was already engaged with another issue — suggesting a single-point-of-failure in on-call coverage. The judgment element: are these SLA misses during concurrent incidents acceptable (reflecting real-world operational constraints) or do they indicate inadequate staffing/process? The 4-minute and 10-minute overages are relatively minor, but the policy has no carve-out for concurrent incidents.",
+      "detection_criteria": {
+        "required_keywords": ["ALT-Q4-044", "ALT-Q4-045", "SLA breach", "19 minutes", "25 minutes", "15-minute SLA", "concurrent incident", "on-call capacity"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No evidence of monthly alert tuning reviews",
+      "description": "The monitoring policy Section 4.3 requires monthly alert tuning reviews covering false positive rates, threshold adjustments, new detection rules, and documentation in the 'Alert Rule Change Log.' The SIEM coverage report's alert rule summary shows 7 rules added, 12 modified, and 3 deprecated during Q4 — indicating some tuning activity occurred. However, no Alert Rule Change Log or monthly tuning review documentation is provided as evidence. The alert response log shows multiple alerts that were resolved as false positives with tuning adjustments (e.g., ALT-Q4-006, ALT-Q4-013, ALT-Q4-022), but these are ad-hoc, incident-driven adjustments rather than systematic monthly reviews. Without the Alert Rule Change Log, the auditor cannot verify that monthly tuning reviews were conducted as required by policy.",
+      "evidence_sources": [
+        "evidence/monitoring-policy.md",
+        "evidence/siem-coverage-report.json",
+        "evidence/alert-response-log.csv"
+      ],
+      "expected_reasoning": "The auditor should note the policy requirement for monthly alert tuning (Section 4.3) and look for evidence of compliance. The SIEM report shows rule changes occurred (7 added, 12 modified, 3 deprecated), suggesting some tuning happened, but the specific monthly review cadence and the Alert Rule Change Log are not provided. The alert response log shows reactive tuning (adjusting rules after false positives) but not proactive monthly reviews. The auditor must determine whether the absence of the Alert Rule Change Log is a documentation gap (tuning is happening but not documented) or a process gap (systematic monthly reviews are not occurring).",
+      "detection_criteria": {
+        "required_keywords": ["monthly alert tuning", "Section 4.3", "Alert Rule Change Log", "no evidence", "false positive", "ad-hoc tuning", "systematic review"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No evidence of daily log review documentation",
+      "description": "The monitoring policy Section 5 requires daily log reviews by the Security Operations team covering alert summaries, authentication anomalies, high-privilege activity, and data access patterns. Section 5.2 requires documentation of each review including reviewer name, timestamp, findings summary, and sign-off. No daily log review records are provided as evidence for Q4 2025. While the alert response log demonstrates that the team is actively monitoring and responding to alerts (45 alerts with 95.6% SLA compliance), this shows reactive alert response, not the proactive daily review process described in the policy. The daily log review is a distinct control from alert response — it is intended to catch anomalies that may not trigger automated alerts.",
+      "evidence_sources": [
+        "evidence/monitoring-policy.md",
+        "evidence/alert-response-log.csv"
+      ],
+      "expected_reasoning": "The auditor should identify the daily log review requirement (Section 5) and note that no review records were provided as evidence. The policy specifically requires documented reviews with reviewer name, timestamp, and sign-off. The alert response log shows the team is responsive, but alert response and daily log review are separate controls. Daily log review is designed to catch anomalies that might not trigger automated alerts — its absence means only automated detection is occurring, with no human-driven proactive review. The auditor should distinguish between the absence of evidence (documentation might exist but was not provided) and the absence of the control (reviews might not be happening).",
+      "detection_criteria": {
+        "required_keywords": ["daily log review", "Section 5", "no documentation", "reviewer name", "sign-off", "proactive review", "distinct from alert response"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 6,
+    "relevant_documents_count": 4,
+    "tags": ["monitoring", "SIEM", "alert_response", "red_herring", "decommission_exception", "log_review", "alert_tuning", "SLA_compliance"]
+  }
+}

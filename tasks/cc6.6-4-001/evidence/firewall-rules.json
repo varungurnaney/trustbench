@@ -1,0 +1,391 @@
+{
+  "export_metadata": {
+    "account_id": "891234567012",
+    "region": "us-east-1",
+    "exported_by": "security-automation-service",
+    "export_timestamp": "2025-12-15T14:00:00Z",
+    "tool": "aws-sg-exporter v1.8.3"
+  },
+  "vpcs": [
+    {
+      "vpc_id": "vpc-prod-0x8a3f",
+      "vpc_name": "prism-production",
+      "cidr_block": "10.0.0.0/16",
+      "environment": "production"
+    },
+    {
+      "vpc_id": "vpc-staging-0x4b2e",
+      "vpc_name": "prism-staging",
+      "cidr_block": "10.1.0.0/16",
+      "environment": "staging"
+    },
+    {
+      "vpc_id": "vpc-dev-0x7c1d",
+      "vpc_name": "prism-development",
+      "cidr_block": "10.2.0.0/16",
+      "environment": "development"
+    }
+  ],
+  "security_groups": [
+    {
+      "group_id": "sg-0a1b2c3d4e5f60001",
+      "group_name": "prod-alb-public",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Public-facing Application Load Balancer — accepts inbound HTTPS traffic",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-001",
+          "protocol": "tcp",
+          "port_range": "443",
+          "source": "0.0.0.0/0",
+          "description": "Allow HTTPS from internet — public API and web application"
+        },
+        {
+          "rule_id": "sgr-002",
+          "protocol": "tcp",
+          "port_range": "80",
+          "source": "0.0.0.0/0",
+          "description": "Allow HTTP from internet — redirects to HTTPS"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-003",
+          "protocol": "tcp",
+          "port_range": "8080",
+          "destination": "sg-0a1b2c3d4e5f60002",
+          "description": "Forward traffic to application tier"
+        }
+      ],
+      "waf_association": {
+        "waf_acl_id": "waf-acl-0x9d8e7f",
+        "waf_acl_name": "prism-prod-waf",
+        "status": "associated"
+      }
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60002",
+      "group_name": "prod-app-tier",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Production application tier — web servers and API services",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-004",
+          "protocol": "tcp",
+          "port_range": "8080",
+          "source": "sg-0a1b2c3d4e5f60001",
+          "description": "Accept traffic from production ALB"
+        },
+        {
+          "rule_id": "sgr-005",
+          "protocol": "tcp",
+          "port_range": "22",
+          "source": "sg-0a1b2c3d4e5f60010",
+          "description": "SSH access from bastion host"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-006",
+          "protocol": "tcp",
+          "port_range": "27017",
+          "destination": "sg-0a1b2c3d4e5f60003",
+          "description": "MongoDB connections to data tier"
+        },
+        {
+          "rule_id": "sgr-007",
+          "protocol": "tcp",
+          "port_range": "6379",
+          "destination": "sg-0a1b2c3d4e5f60004",
+          "description": "Redis connections to cache tier"
+        },
+        {
+          "rule_id": "sgr-008",
+          "protocol": "tcp",
+          "port_range": "443",
+          "destination": "0.0.0.0/0",
+          "description": "Outbound HTTPS for third-party API calls"
+        }
+      ]
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60003",
+      "group_name": "prod-data-tier",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Production data tier — MongoDB and PostgreSQL databases",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-009",
+          "protocol": "tcp",
+          "port_range": "27017",
+          "source": "sg-0a1b2c3d4e5f60002",
+          "description": "MongoDB connections from application tier"
+        },
+        {
+          "rule_id": "sgr-010",
+          "protocol": "tcp",
+          "port_range": "5432",
+          "source": "sg-0a1b2c3d4e5f60002",
+          "description": "PostgreSQL connections from application tier"
+        }
+      ],
+      "outbound_rules": []
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60004",
+      "group_name": "prod-cache-tier",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Production cache tier — Redis ElastiCache",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-011",
+          "protocol": "tcp",
+          "port_range": "6379",
+          "source": "sg-0a1b2c3d4e5f60002",
+          "description": "Redis connections from application tier"
+        }
+      ],
+      "outbound_rules": []
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60005",
+      "group_name": "prod-internal-api",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Internal API services — microservice-to-microservice communication",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-012",
+          "protocol": "tcp",
+          "port_range": "8443",
+          "source": "sg-0a1b2c3d4e5f60002",
+          "description": "HTTPS internal API calls from application tier"
+        },
+        {
+          "rule_id": "sgr-013",
+          "protocol": "tcp",
+          "port_range": "9090",
+          "source": "sg-0a1b2c3d4e5f60002",
+          "description": "gRPC service calls from application tier"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-014",
+          "protocol": "tcp",
+          "port_range": "27017",
+          "destination": "sg-0a1b2c3d4e5f60003",
+          "description": "MongoDB connections to data tier"
+        }
+      ]
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60006",
+      "group_name": "prod-notification-service",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Notification service — handles email, SMS, and push notification delivery",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-015",
+          "protocol": "tcp",
+          "port_range": "8080",
+          "source": "sg-0a1b2c3d4e5f60002",
+          "description": "HTTP internal API calls from application tier"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-016",
+          "protocol": "tcp",
+          "port_range": "443",
+          "destination": "0.0.0.0/0",
+          "description": "Outbound HTTPS for SES, Twilio, and FCM API calls"
+        },
+        {
+          "rule_id": "sgr-017",
+          "protocol": "tcp",
+          "port_range": "587",
+          "destination": "0.0.0.0/0",
+          "description": "Outbound SMTP for email delivery fallback"
+        }
+      ],
+      "notes": "sgr-015 uses port 8080 (HTTP) for internal communication from app tier — no TLS configured on this listener"
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60007",
+      "group_name": "prod-monitoring",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Monitoring and observability stack — Prometheus, Grafana, alerting",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-018",
+          "protocol": "tcp",
+          "port_range": "9090",
+          "source": "10.0.0.0/16",
+          "description": "Prometheus metrics scraping from all production services"
+        },
+        {
+          "rule_id": "sgr-019",
+          "protocol": "tcp",
+          "port_range": "3000",
+          "source": "sg-0a1b2c3d4e5f60010",
+          "description": "Grafana dashboard access from bastion host"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-020",
+          "protocol": "tcp",
+          "port_range": "443",
+          "destination": "0.0.0.0/0",
+          "description": "Outbound HTTPS for PagerDuty and Slack webhook alerts"
+        }
+      ]
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60008",
+      "group_name": "prod-data-sync-cross-vpc",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Cross-VPC data synchronization — staging to production data sync for analytics model training",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-021",
+          "protocol": "-1",
+          "port_range": "all",
+          "source": "10.1.0.0/16",
+          "description": "Allow all traffic from staging VPC for data sync workflow"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-022",
+          "protocol": "-1",
+          "port_range": "all",
+          "destination": "10.1.0.0/16",
+          "description": "Allow all traffic to staging VPC for data sync workflow"
+        }
+      ],
+      "vpc_peering": {
+        "peering_id": "pcx-0x3f4a5b6c",
+        "peer_vpc_id": "vpc-staging-0x4b2e",
+        "status": "active"
+      },
+      "notes": "Cross-VPC peering established for ML model training pipeline. Analytics models are trained on staging infrastructure using anonymized production data. Exception EXC-NET-2025-003 applies."
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60009",
+      "group_name": "prod-partner-api-gateway",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Partner API gateway — external partner integrations",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-023",
+          "protocol": "tcp",
+          "port_range": "443",
+          "source": "0.0.0.0/0",
+          "description": "Allow HTTPS from partner IP ranges — WAF-protected"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-024",
+          "protocol": "tcp",
+          "port_range": "8080",
+          "destination": "sg-0a1b2c3d4e5f60002",
+          "description": "Forward to application tier"
+        }
+      ],
+      "waf_association": {
+        "waf_acl_id": "waf-acl-0x2a3b4c",
+        "waf_acl_name": "prism-partner-waf",
+        "status": "associated"
+      }
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60010",
+      "group_name": "prod-bastion",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Bastion host for administrative SSH access to production",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-025",
+          "protocol": "tcp",
+          "port_range": "22",
+          "source": "10.3.0.0/16",
+          "description": "SSH from VPN CIDR range only"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-026",
+          "protocol": "tcp",
+          "port_range": "22",
+          "destination": "10.0.0.0/16",
+          "description": "SSH to all production subnets"
+        },
+        {
+          "rule_id": "sgr-027",
+          "protocol": "tcp",
+          "port_range": "3000",
+          "destination": "sg-0a1b2c3d4e5f60007",
+          "description": "Grafana access"
+        }
+      ]
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60011",
+      "group_name": "prod-webhook-receiver",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Webhook receiver service — accepts inbound webhooks from third-party services (Stripe, GitHub, Twilio)",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-028",
+          "protocol": "tcp",
+          "port_range": "443",
+          "source": "0.0.0.0/0",
+          "description": "Allow HTTPS webhooks from third-party services"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-029",
+          "protocol": "tcp",
+          "port_range": "8443",
+          "destination": "sg-0a1b2c3d4e5f60005",
+          "description": "Forward validated webhooks to internal API services"
+        }
+      ],
+      "waf_association": null,
+      "notes": "Public-facing endpoint accepting webhooks. No WAF association configured."
+    },
+    {
+      "group_id": "sg-0a1b2c3d4e5f60012",
+      "group_name": "prod-batch-processing",
+      "vpc_id": "vpc-prod-0x8a3f",
+      "description": "Batch processing workers — nightly data processing jobs",
+      "inbound_rules": [],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-030",
+          "protocol": "tcp",
+          "port_range": "27017",
+          "destination": "sg-0a1b2c3d4e5f60003",
+          "description": "MongoDB connections to data tier"
+        },
+        {
+          "rule_id": "sgr-031",
+          "protocol": "tcp",
+          "port_range": "443",
+          "destination": "0.0.0.0/0",
+          "description": "Outbound HTTPS for S3 and external API access"
+        },
+        {
+          "rule_id": "sgr-032",
+          "protocol": "tcp",
+          "port_range": "9200",
+          "destination": "0.0.0.0/0",
+          "description": "Elasticsearch cluster access — legacy configuration pending migration"
+        }
+      ]
+    }
+  ]
+}
