@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="logo.svg" alt="TrustBench" width="400">
+</p>
+
 # TrustBench
 
 > **This is an early-stage project (v0.1).** The current task set has 10 tasks across 6 controls — not enough to draw reliable conclusions about model performance. Results shown below are preliminary and will change as more tasks are added. We need 50+ tasks across all difficulty levels before this benchmark produces statistically meaningful scores. If you're a compliance professional, we'd welcome your help building tasks grounded in real audit findings. See the [authoring guide](docs/authoring.md).
