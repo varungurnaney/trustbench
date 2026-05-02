@@ -1,0 +1,221 @@
+---
+layout: default
+title: "cc6.1-3-001 — Logical Access Security"
+---
+
+<div class="container">
+  <nav>
+    <a href="{{ '/' | relative_url }}">← Back to Leaderboard</a>
+  </nav>
+
+  <section>
+    <h2>cc6.1-3-001</h2>
+    <p class="section-subtitle">CC6.1 — Logical Access Security</p>
+    
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">D3</div>
+        <div class="stat-label">Cross-document reasoning</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">9</div>
+        <div class="stat-label">Gaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">0</div>
+        <div class="stat-label">Red Herrings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">89%</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Task Description</h3>
+    <div class="task-card">
+      <div class="description">You are conducting a SOC 2 Type II readiness assessment for Meridian Cloud Systems, covering the observation period Q4 2025 (October 1 – December 31, 2025). Review all provided evidence artifacts and assess the organization's compliance with CC6.1 (Logical Access Security). Cross-reference documents to identify inconsistencies between stated policy and actual implementation. Identify all gaps, control deficiencies, and audit findings.</div>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        Scoring: <strong>detection_and_precision</strong> · 
+        Estimated human time: <strong>45 minutes</strong> · 
+        Documents: <strong>6</strong> (6 relevant)
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Evidence Files</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2">
+      <li><code>evidence/access-control-policy.md</code> (policy) — Meridian Cloud Systems access control policy</li>
+<li><code>evidence/aws-iam-credential-report.csv</code> (config) — AWS IAM credential report showing all users, keys, and MFA status</li>
+<li><code>evidence/access-review-log-q4-2025.csv</code> (log) — Quarterly access review completion log for Q4 2025</li>
+<li><code>evidence/terminations-q4-2025.csv</code> (log) — Employee termination records with offboarding dates</li>
+<li><code>evidence/okta-mfa-policies.json</code> (config) — Okta MFA enrollment and sign-on policy configuration</li>
+<li><code>evidence/service-account-inventory.csv</code> (spreadsheet) — Service account inventory with ownership and review dates</li>
+
+      
+    </ul>
+  </section>
+
+  <section>
+    <h3>Planted Findings</h3>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>F-001</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>critical</td>
+          <td><strong>Stale unowned service account with active credentials (jenkins-legacy)</strong><br><span style="font-size:13px;color:var(--text-dim)">The 'jenkins-legacy' IAM user has an active access key (last rotated July 2023, over 2 years ago) but was last used in August 2024. The service account inventory shows it is 'Unassigned' with no owner...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-002</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>Key rotation violation on legacy-monitoring service account</strong><br><span style="font-size:13px;color:var(--text-dim)">The 'legacy-monitoring' IAM user has an access key last rotated on March 10, 2024 — over 9 months ago. Policy Section 4.3 requires automatic rotation every 90 days via AWS Secrets Manager. The key is ...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-003</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>Direct IAM console user violates SSO-only policy (david.kim)</strong><br><span style="font-size:13px;color:var(--text-dim)">The IAM user 'david.kim' has console password enabled and MFA active, but policy Section 3.3 explicitly states 'Direct IAM user accounts in AWS are prohibited for human users' — all human access must ...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-004</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>Termination SLA breach — Tom Bradley Okta disabled 7 days late</strong><br><span style="font-size:13px;color:var(--text-dim)">Tom Bradley (EMP-2341) was terminated on December 20 but HR notification was not sent until December 23 (3-day delay) and Okta was not disabled until December 27 (7 days after termination). Policy Sec...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-005</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>Termination SLA breach — Priya Sharma Okta disabled 3 days late</strong><br><span style="font-size:13px;color:var(--text-dim)">Priya Sharma (EMP-2287) terminated November 22 but HR notification was delayed to November 24 (2 days) and Okta was not disabled until November 25 (3 days after termination). While less severe than To...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-006</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>Okta default sign-on policy does not require MFA</strong><br><span style="font-size:13px;color:var(--text-dim)">The Okta sign-on policy has a Default Policy (priority 3) with 'requireFactor': false. Any application not explicitly listed in the 'Production Systems' or 'Corporate Apps' policies will fall through ...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-007</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>Okta access review completed late with unresolved flagged users</strong><br><span style="font-size:13px;color:var(--text-dim)">The Okta (IdP) access review (AR-2025-Q4-008) was initiated December 1 but not completed until January 8, 2026 — 23 business days, exceeding the 15-business-day SLA in policy Section 5.1. Additionally...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-008</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>backup-s3-sync has two active access keys with stale rotation</strong><br><span style="font-size:13px;color:var(--text-dim)">The 'backup-s3-sync' IAM user has two active access keys. Access key 2 was last rotated on January 15, 2024 — nearly 2 years ago — yet both keys were used on the same day (Dec 28, 2025). Having two ac...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-009</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>Direct IAM users excluded from quarterly access review scope</strong><br><span style="font-size:13px;color:var(--text-dim)">The quarterly access review covers 'AWS Console (SSO)' but the IAM credential report shows direct IAM users (david.kim, service accounts) that exist outside of SSO. The access review scope does not in...</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h3>Model Results</h3>
+    <p class="section-subtitle">Score uses detection_and_precision. Detection = gaps found / total gaps.</p>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Precision</th><th>F1</th><th>Gaps</th><th>Findings Reported</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model">Sonnet 4.6</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">100%</td>
+          <td>100%</td>
+          <td>82%</td>
+          <td>90%</td>
+          <td>9/9</td>
+          <td>11</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-006:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-007:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-008:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-009:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">Opus 4.7</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">88%</td>
+          <td>100%</td>
+          <td>53%</td>
+          <td>69%</td>
+          <td>9/9</td>
+          <td>17</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-006:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-007:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-008:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-009:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-5.5</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-mid">79%</td>
+          <td>100%</td>
+          <td>47%</td>
+          <td>64%</td>
+          <td>9/9</td>
+          <td>19</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-006:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-007:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-008:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-009:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4.1</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-high">89%</td>
+          <td>89%</td>
+          <td>100%</td>
+          <td>94%</td>
+          <td>8/9</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-006:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-007:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-008:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-009:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">Haiku 4.5</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">100%</td>
+          <td>100%</td>
+          <td>64%</td>
+          <td>78%</td>
+          <td>9/9</td>
+          <td>14</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-006:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-007:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-008:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-009:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4o</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-mid">78%</td>
+          <td>78%</td>
+          <td>88%</td>
+          <td>82%</td>
+          <td>7/9</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-006:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-007:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-008:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-009:DETECTED</span> </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="site-footer">
+    <p><a href="{{ '/' | relative_url }}">← Back to Leaderboard</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.1-3-001">View task on GitHub</a></p>
+  </footer>
+</div>

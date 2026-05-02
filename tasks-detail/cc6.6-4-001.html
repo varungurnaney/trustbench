@@ -1,0 +1,196 @@
+---
+layout: default
+title: "cc6.6-4-001 — System Boundaries"
+---
+
+<div class="container">
+  <nav>
+    <a href="{{ '/' | relative_url }}">← Back to Leaderboard</a>
+  </nav>
+
+  <section>
+    <h2>cc6.6-4-001</h2>
+    <p class="section-subtitle">CC6.6 — System Boundaries</p>
+    
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">D4</div>
+        <div class="stat-label">Red herring filtering</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Gaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">1</div>
+        <div class="stat-label">Red Herrings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">57%</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Task Description</h3>
+    <div class="task-card">
+      <div class="description">You are auditing Prism Cloud's SOC 2 Type II compliance for control CC6.6 (System Boundary Protection). Review the provided evidence to assess whether Prism Cloud effectively protects its system boundaries through network segmentation, firewall rules, WAF deployment, and encryption of data in transit. Be thorough in cross-referencing evidence across documents — some apparent issues may have valid exceptions documented in the exception register.</div>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        Scoring: <strong>f1</strong> · 
+        Estimated human time: <strong>40 minutes</strong> · 
+        Documents: <strong>5</strong> (4 relevant)
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Evidence Files</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2">
+      <li><code>evidence/network-security-policy.md</code> (policy) — Prism Cloud network security policy defining environment segmentation, WAF requirements, encryption in transit standards, and security group rules.</li>
+<li><code>evidence/firewall-rules.json</code> (config) — AWS security group export for all Prism Cloud VPCs showing inbound/outbound rules, VPC peering configurations, and WAF associations.</li>
+<li><code>evidence/tls-config-audit.csv</code> (config) — TLS configuration audit across 15 endpoints showing TLS versions, cipher suites, certificate status, and PII handling flags.</li>
+<li><code>evidence/exception-register.csv</code> (log) — Approved network security exceptions with compensating controls, risk ratings, and review outcomes.</li>
+
+      <li><code>evidence/incident-response-contacts.md</code> (log) — Prism Cloud incident response contact list and on-call rotation. Not relevant to CC6.6 system boundary protection controls. <span style="color:var(--orange)">[noise]</span></li>
+
+    </ul>
+  </section>
+
+  <section>
+    <h3>Planted Findings</h3>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>F-001</strong></td>
+          <td><span class="difficulty d4">red_herring</span></td>
+          <td>low</td>
+          <td><strong>Cross-VPC security group sg-0a1b2c3d4e5f60008 allows all traffic between staging and production</strong><br><span style="font-size:13px;color:var(--text-dim)">Security group sg-0a1b2c3d4e5f60008 (prod-data-sync-cross-vpc) contains rules sgr-021 and sgr-022 that allow all protocols and ports between the staging VPC (10.1.0.0/16) and the production VPC (10.0....</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-002</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>Webhook receiver endpoint webhooks.prismcloud.io has no WAF protection</strong><br><span style="font-size:13px;color:var(--text-dim)">Security group sg-0a1b2c3d4e5f60011 (prod-webhook-receiver) accepts inbound HTTPS traffic on port 443 from 0.0.0.0/0 but has no WAF association (waf_association is null). The firewall rules export not...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-003</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>Notification service uses unencrypted HTTP for internal communication</strong><br><span style="font-size:13px;color:var(--text-dim)">The notification service (TLS-008 in the TLS config audit, sg-0a1b2c3d4e5f60006 in the firewall rules) uses unencrypted HTTP on port 8080 for internal communication from the application tier. The TLS ...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-004</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>Batch processing security group allows outbound 0.0.0.0/0 on Elasticsearch port 9200</strong><br><span style="font-size:13px;color:var(--text-dim)">Security group sg-0a1b2c3d4e5f60012 (prod-batch-processing) contains outbound rule sgr-032 allowing TCP port 9200 to 0.0.0.0/0, described as 'Elasticsearch cluster access — legacy configuration pendin...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-005</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>Elasticsearch endpoint TLS-014 uses TLS 1.2 while handling customer PII</strong><br><span style="font-size:13px;color:var(--text-dim)">The Elasticsearch cluster endpoint (TLS-014, es.prod.prismcloud.local on port 9200) uses TLS 1.2 and is flagged as handling customer PII (search indices contain user profiles and activity data). The T...</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h3>Model Results</h3>
+    <p class="section-subtitle">Score uses f1. F1 = harmonic mean of recall (gaps found / total) and precision (findings matching gaps / total reported). Over-reporting lowers precision.</p>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Precision</th><th>F1</th><th>Gaps</th><th>Findings Reported</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model">Sonnet 4.6</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">100%</td>
+          <td>100%</td>
+          <td>100%</td>
+          <td>100%</td>
+          <td>4/4</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">Opus 4.7</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-low">57%</td>
+          <td>100%</td>
+          <td>40%</td>
+          <td>57%</td>
+          <td>4/4</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">GPT-5.5</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-mid">62%</td>
+          <td>100%</td>
+          <td>44%</td>
+          <td>62%</td>
+          <td>4/4</td>
+          <td>9</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4.1</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-low">55%</td>
+          <td>75%</td>
+          <td>43%</td>
+          <td>55%</td>
+          <td>3/4</td>
+          <td>7</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-004:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">Haiku 4.5</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-bad">25%</td>
+          <td>75%</td>
+          <td>15%</td>
+          <td>25%</td>
+          <td>3/4</td>
+          <td>20</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-004:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4o</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-low">44%</td>
+          <td>50%</td>
+          <td>40%</td>
+          <td>44%</td>
+          <td>2/4</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-004:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="site-footer">
+    <p><a href="{{ '/' | relative_url }}">← Back to Leaderboard</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.6-4-001">View task on GitHub</a></p>
+  </footer>
+</div>

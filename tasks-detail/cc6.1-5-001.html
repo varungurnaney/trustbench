@@ -1,0 +1,195 @@
+---
+layout: default
+title: "cc6.1-5-001 — Logical Access Security"
+---
+
+<div class="container">
+  <nav>
+    <a href="{{ '/' | relative_url }}">← Back to Leaderboard</a>
+  </nav>
+
+  <section>
+    <h2>cc6.1-5-001</h2>
+    <p class="section-subtitle">CC6.1 — Logical Access Security</p>
+    
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">D5</div>
+        <div class="stat-label">Materiality judgment</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">5</div>
+        <div class="stat-label">Gaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">0</div>
+        <div class="stat-label">Red Herrings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">55%</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Task Description</h3>
+    <div class="task-card">
+      <div class="description">You are a SOC 2 auditor evaluating Nimbus Health's logical access controls under Trust Services Criteria CC6.1. Review all provided evidence documents to assess whether access provisioning, access reviews, termination procedures, and identity management controls are operating effectively. This is a healthcare company handling PHI, so consider the sensitivity of the data environment. For each finding, assess its materiality and provide your reasoning on whether the issue represents a significant control deficiency or a minor procedural gap. Several of the issues you will find require professional judgment to determine their severity and significance.</div>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        Scoring: <strong>f1</strong> · 
+        Estimated human time: <strong>50 minutes</strong> · 
+        Documents: <strong>4</strong> (4 relevant)
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Evidence Files</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2">
+      <li><code>evidence/access-control-policy.md</code> (policy) — Nimbus Health access control policy defining SSO, MFA, access review, termination, and privileged access management requirements</li>
+<li><code>evidence/okta-user-report.csv</code> (report) — Okta user report showing 180 active accounts including 172 employees, 6 contractors, and 2 non-HR-matched accounts (platform-monitoring and demo-environment)</li>
+<li><code>evidence/access-review-q4.csv</code> (log) — Q4 2025 quarterly access review results for 12 systems showing completion status, reviewer details, findings, and remediation actions</li>
+<li><code>evidence/termination-log-q4.csv</code> (log) — Q4 2025 employee termination log showing 5 terminations with Okta disable timestamps and SLA compliance details</li>
+
+      
+    </ul>
+  </section>
+
+  <section>
+    <h3>Planted Findings</h3>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>F-001</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>Two Okta Accounts with No Matching HR Records</strong><br><span style="font-size:13px;color:var(--text-dim)">The Okta user report shows 180 active accounts, but HR records indicate 172 employees plus 6 contractors (178 total). Two accounts do not match any HR record: USR-0179 (platform-monitoring, an integra...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-002</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>AWS Access Review Self-Review by Infrastructure Manager</strong><br><span style="font-size:13px;color:var(--text-dim)">The Q4 access review for AWS Console (Production) was performed by James Chen, Cloud Infrastructure Lead (AR-Q4-001). James Chen is the individual responsible for managing AWS infrastructure and IAM p...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-003</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>Weekend Termination Access Revocation Delay</strong><br><span style="font-size:13px;color:var(--text-dim)">Employee Derek Chung (TERM-Q4-004) was terminated Friday December 5 at 5:00 PM EST, but his Okta account was not disabled until Monday December 8 at 9:12 AM EST -- a gap of 64 calendar hours. The acce...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-004</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>low</td>
+          <td><strong>AWS Access Review Completed 2 Business Days Past SLA</strong><br><span style="font-size:13px;color:var(--text-dim)">The AWS Console access review (AR-Q4-001) was completed on October 24, 2 business days after the 15-business-day SLA deadline of October 22. The policy (Section 5.1) requires access reviews to be comp...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-005</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>Contractor Okta Accounts Missing Expiration Dates</strong><br><span style="font-size:13px;color:var(--text-dim)">The access control policy (Section 3.3) requires that contractor accounts 'be created with a designated expiration date aligned with the contract end date.' The Okta user report shows 6 active contrac...</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h3>Model Results</h3>
+    <p class="section-subtitle">Score uses f1. F1 = harmonic mean of recall (gaps found / total) and precision (findings matching gaps / total reported). Over-reporting lowers precision.</p>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Precision</th><th>F1</th><th>Gaps</th><th>Findings Reported</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model">Sonnet 4.6</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">83%</td>
+          <td>100%</td>
+          <td>71%</td>
+          <td>83%</td>
+          <td>5/5</td>
+          <td>7</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">Opus 4.7</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-mid">67%</td>
+          <td>100%</td>
+          <td>50%</td>
+          <td>67%</td>
+          <td>5/5</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-5.5</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-low">57%</td>
+          <td>80%</td>
+          <td>44%</td>
+          <td>57%</td>
+          <td>4/5</td>
+          <td>9</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4.1</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-mid">62%</td>
+          <td>80%</td>
+          <td>50%</td>
+          <td>62%</td>
+          <td>4/5</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--red);font-size:12px;margin-right:8px">F-001:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">Haiku 4.5</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-bad">30%</td>
+          <td>100%</td>
+          <td>18%</td>
+          <td>30%</td>
+          <td>5/5</td>
+          <td>28</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4o</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-bad">31%</td>
+          <td>40%</td>
+          <td>25%</td>
+          <td>31%</td>
+          <td>2/5</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--red);font-size:12px;margin-right:8px">F-001:MISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-005:MISSED</span> </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="site-footer">
+    <p><a href="{{ '/' | relative_url }}">← Back to Leaderboard</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.1-5-001">View task on GitHub</a></p>
+  </footer>
+</div>

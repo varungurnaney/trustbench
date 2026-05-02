@@ -1,0 +1,197 @@
+---
+layout: default
+title: "cc7.2-4-001 — Monitoring & Anomaly Detection"
+---
+
+<div class="container">
+  <nav>
+    <a href="{{ '/' | relative_url }}">← Back to Leaderboard</a>
+  </nav>
+
+  <section>
+    <h2>cc7.2-4-001</h2>
+    <p class="section-subtitle">CC7.2 — Monitoring & Anomaly Detection</p>
+    
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">D4</div>
+        <div class="stat-label">Red herring filtering</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Gaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">1</div>
+        <div class="stat-label">Red Herrings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">51%</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Task Description</h3>
+    <div class="task-card">
+      <div class="description">You are a SOC 2 auditor evaluating Atlas Cloud's monitoring and anomaly detection controls for the Q4 2025 observation period (October 1 — December 31, 2025). Review the monitoring policy, SIEM coverage report, alert response log, exception register, and any supporting documentation. Assess whether CC7.2 requirements for monitoring and anomaly detection are met. Identify any gaps where controls are not operating as designed. Be careful to distinguish between genuine gaps and situations where apparent issues have valid explanations.</div>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        Scoring: <strong>f1</strong> · 
+        Estimated human time: <strong>40 minutes</strong> · 
+        Documents: <strong>6</strong> (4 relevant)
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Evidence Files</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2">
+      <li><code>evidence/monitoring-policy.md</code> (policy) — Atlas Cloud security monitoring and anomaly detection policy defining SIEM requirements, alert SLAs, log review, and alert tuning procedures</li>
+<li><code>evidence/siem-coverage-report.json</code> (report) — Q4 2025 SIEM coverage report showing 18 of 20 services integrated, with details on the 2 non-integrated services</li>
+<li><code>evidence/alert-response-log.csv</code> (log) — Q4 2025 alert response log with 45 alerts, response times, and resolution details</li>
+<li><code>evidence/exception-register.csv</code> (exception_register) — Security exception register documenting approved exceptions including the legacy batch reconciler decommission exemption</li>
+
+      <li><code>evidence/uptime-report-q4.md</code> (report) — System uptime statistics for Q4 2025 — operational metrics not directly relevant to monitoring control effectiveness <span style="color:var(--orange)">[noise]</span></li>
+<li><code>evidence/change-advisory-board-schedule.md</code> (report) — Change Advisory Board meeting schedule and statistics — change management process not directly relevant to monitoring controls <span style="color:var(--orange)">[noise]</span></li>
+
+    </ul>
+  </section>
+
+  <section>
+    <h3>Planted Findings</h3>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>F-001</strong></td>
+          <td><span class="difficulty d4">red_herring</span></td>
+          <td>medium</td>
+          <td><strong>Legacy batch reconciler not integrated with SIEM</strong><br><span style="font-size:13px;color:var(--text-dim)">The SIEM coverage report shows legacy-batch-reconciler (AC-SVC-020) is not integrated with the SIEM. This appears to be a monitoring gap — a production service without security monitoring. However, th...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-002</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>New microservice deployed 47 days without SIEM integration</strong><br><span style="font-size:13px;color:var(--text-dim)">The real-time-collab-service (AC-SVC-019) was deployed to production on November 15, 2025. As of December 31, 2025 — 47 calendar days later (approximately 33 business days) — the service has not been ...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-003</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>Two critical alert SLA breaches during Q4</strong><br><span style="font-size:13px;color:var(--text-dim)">The alert response log shows 2 Critical-severity alerts where the 15-minute response SLA was missed: ALT-Q4-044 (Tor exit node connection, responded in 19 minutes — 4 minutes late, team occupied with ...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-004</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>No evidence of monthly alert tuning reviews</strong><br><span style="font-size:13px;color:var(--text-dim)">The monitoring policy Section 4.3 requires monthly alert tuning reviews covering false positive rates, threshold adjustments, new detection rules, and documentation in the 'Alert Rule Change Log.' The...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-005</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>No evidence of daily log review documentation</strong><br><span style="font-size:13px;color:var(--text-dim)">The monitoring policy Section 5 requires daily log reviews by the Security Operations team covering alert summaries, authentication anomalies, high-privilege activity, and data access patterns. Sectio...</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h3>Model Results</h3>
+    <p class="section-subtitle">Score uses f1. F1 = harmonic mean of recall (gaps found / total) and precision (findings matching gaps / total reported). Over-reporting lowers precision.</p>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Precision</th><th>F1</th><th>Gaps</th><th>Findings Reported</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model">Sonnet 4.6</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">89%</td>
+          <td>100%</td>
+          <td>80%</td>
+          <td>89%</td>
+          <td>4/4</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">Opus 4.7</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-mid">67%</td>
+          <td>100%</td>
+          <td>50%</td>
+          <td>67%</td>
+          <td>4/4</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">GPT-5.5</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-mid">67%</td>
+          <td>75%</td>
+          <td>60%</td>
+          <td>67%</td>
+          <td>3/4</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4.1</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-bad">20%</td>
+          <td>25%</td>
+          <td>17%</td>
+          <td>20%</td>
+          <td>1/4</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-004:MISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-005:MISSED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">Haiku 4.5</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-low">42%</td>
+          <td>100%</td>
+          <td>27%</td>
+          <td>42%</td>
+          <td>4/4</td>
+          <td>15</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4o</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-bad">20%</td>
+          <td>25%</td>
+          <td>17%</td>
+          <td>20%</td>
+          <td>1/4</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-004:MISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-005:MISSED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="site-footer">
+    <p><a href="{{ '/' | relative_url }}">← Back to Leaderboard</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc7.2-4-001">View task on GitHub</a></p>
+  </footer>
+</div>

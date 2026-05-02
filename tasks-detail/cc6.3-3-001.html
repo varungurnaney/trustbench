@@ -1,0 +1,194 @@
+---
+layout: default
+title: "cc6.3-3-001 — Access Authorization"
+---
+
+<div class="container">
+  <nav>
+    <a href="{{ '/' | relative_url }}">← Back to Leaderboard</a>
+  </nav>
+
+  <section>
+    <h2>cc6.3-3-001</h2>
+    <p class="section-subtitle">CC6.3 — Access Authorization</p>
+    
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">D3</div>
+        <div class="stat-label">Cross-document reasoning</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">5</div>
+        <div class="stat-label">Gaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">0</div>
+        <div class="stat-label">Red Herrings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">87%</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Task Description</h3>
+    <div class="task-card">
+      <div class="description">You are conducting a SOC 2 Type II readiness assessment for ClearView Analytics covering Q4 2025. Review the data access authorization policy, the actual database grant configuration, and the data access request log. Cross-reference these documents to identify inconsistencies between policy and implementation. Assess compliance with CC6.3.</div>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        Scoring: <strong>detection_and_precision</strong> · 
+        Estimated human time: <strong>20 minutes</strong> · 
+        Documents: <strong>3</strong> (3 relevant)
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Evidence Files</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2">
+      <li><code>evidence/authorization-policy.md</code> (policy) — ClearView Analytics data access authorization policy</li>
+<li><code>evidence/aws-rds-access-grants.json</code> (config) — PostgreSQL role and grant configuration for production database</li>
+<li><code>evidence/data-access-requests-q4.csv</code> (log) — Data access request tickets for Q4 2025</li>
+
+      
+    </ul>
+  </section>
+
+  <section>
+    <h3>Planted Findings</h3>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>F-001</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>developer_debug role has full read-write access to all production tables</strong><br><span style="font-size:13px;color:var(--text-dim)">The policy (Section 3.1) requires CISO approval for write access to customer databases. The database grants show 'developer_debug' role has SELECT, INSERT, UPDATE, DELETE on ALL TABLES in clearview_pr...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-002</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>evan.smith has both etl_pipeline and developer_debug roles — segregation of duties violation</strong><br><span style="font-size:13px;color:var(--text-dim)">The role_memberships show evan.smith has both 'developer_debug' (full read-write to all tables) and 'etl_pipeline' (full read-write + TRUNCATE to all tables). This gives one user two overlapping privi...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-003</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>analytics_readonly role has access to production database, not just analytics replica</strong><br><span style="font-size:13px;color:var(--text-dim)">Policy Section 3.4 states analysts access customer data through a 'read-only analytics replica' with PII masking. However, the database grants show 'analytics_readonly' has SELECT on ALL TABLES in cle...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-004</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>marketing_integration accesses customer PII without Privacy Officer approval evidence</strong><br><span style="font-size:13px;color:var(--text-dim)">The marketing_integration role has SELECT access to customers, customer_events, and customer_profiles in production. DAR-404 shows Privacy Officer approved this. However, this is Confidential customer...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-005</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>developer_debug role granted via postgres superuser, not governed process</strong><br><span style="font-size:13px;color:var(--text-dim)">The database grants show developer_debug was granted by 'postgres' (the superuser account) on 2023-09-05, predating the current policy (effective August 2025). This suggests legacy access that was nev...</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h3>Model Results</h3>
+    <p class="section-subtitle">Score uses detection_and_precision. Detection = gaps found / total gaps.</p>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Precision</th><th>F1</th><th>Gaps</th><th>Findings Reported</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model">Sonnet 4.6</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">100%</td>
+          <td>100%</td>
+          <td>42%</td>
+          <td>59%</td>
+          <td>5/5</td>
+          <td>12</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">Opus 4.7</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">100%</td>
+          <td>100%</td>
+          <td>42%</td>
+          <td>59%</td>
+          <td>5/5</td>
+          <td>12</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-5.5</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-high">100%</td>
+          <td>100%</td>
+          <td>50%</td>
+          <td>67%</td>
+          <td>5/5</td>
+          <td>10</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-005:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4.1</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-high">80%</td>
+          <td>80%</td>
+          <td>50%</td>
+          <td>62%</td>
+          <td>4/5</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-005:MISSED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">Haiku 4.5</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">80%</td>
+          <td>80%</td>
+          <td>50%</td>
+          <td>62%</td>
+          <td>4/5</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-005:MISSED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4o</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-mid">60%</td>
+          <td>60%</td>
+          <td>50%</td>
+          <td>55%</td>
+          <td>3/5</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-003:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-005:MISSED</span> </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="site-footer">
+    <p><a href="{{ '/' | relative_url }}">← Back to Leaderboard</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.3-3-001">View task on GitHub</a></p>
+  </footer>
+</div>

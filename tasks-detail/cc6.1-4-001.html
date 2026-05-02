@@ -1,0 +1,190 @@
+---
+layout: default
+title: "cc6.1-4-001 — Logical Access Security"
+---
+
+<div class="container">
+  <nav>
+    <a href="{{ '/' | relative_url }}">← Back to Leaderboard</a>
+  </nav>
+
+  <section>
+    <h2>cc6.1-4-001</h2>
+    <p class="section-subtitle">CC6.1 — Logical Access Security</p>
+    
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">D4</div>
+        <div class="stat-label">Red herring filtering</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Gaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">1</div>
+        <div class="stat-label">Red Herrings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">80%</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Task Description</h3>
+    <div class="task-card">
+      <div class="description">You are conducting a SOC 2 Type II readiness assessment for Vantage Corp covering Q4 2025 (October 1 – December 31, 2025). You have been provided with multiple evidence artifacts. Review all documents, cross-reference them, and assess compliance with CC6.1 (Logical Access Security). Note that not all documents may be relevant to this control. Identify genuine findings only — consider whether exceptions or compensating controls adequately address apparent gaps before flagging them.</div>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        Scoring: <strong>f1</strong> · 
+        Estimated human time: <strong>30 minutes</strong> · 
+        Documents: <strong>5</strong> (3 relevant)
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Evidence Files</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2">
+      <li><code>evidence/access-control-policy.md</code> (policy) — Vantage Corp access control policy</li>
+<li><code>evidence/gcp-service-accounts.json</code> (config) — GCP service account configuration and key status</li>
+<li><code>evidence/exception-register.csv</code> (exception_register) — CISO-approved security exceptions with compensating controls</li>
+
+      <li><code>evidence/business-continuity-plan-summary.md</code> (policy) — BCP executive summary — not relevant to CC6.1 <span style="color:var(--orange)">[noise]</span></li>
+<li><code>evidence/vendor-risk-assessment-q4.csv</code> (report) — Vendor risk assessments — not relevant to CC6.1 <span style="color:var(--orange)">[noise]</span></li>
+
+    </ul>
+  </section>
+
+  <section>
+    <h3>Planted Findings</h3>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>F-001</strong></td>
+          <td><span class="difficulty d4">red_herring</span></td>
+          <td>low</td>
+          <td><strong>Legacy ETL service account has a manual key (but has valid CISO exception)</strong><br><span style="font-size:13px;color:var(--text-dim)">The legacy-etl service account has a manually created key, violating the policy's workload identity requirement. However, the exception register shows EXC-2025-004 — a current, CISO-approved exception...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-002</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>critical</td>
+          <td><strong>Terraform import service account with editor role still active 9 months after use</strong><br><span style="font-size:13px;color:var(--text-dim)">terraform-import has roles/editor (extremely broad permissions) and a key that was last used March 12, 2025. The exception register shows EXC-2025-003 expired on April 8, 2025. The key and service acc...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-003</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>high</td>
+          <td><strong>Monitoring agent exception expired but key still in use</strong><br><span style="font-size:13px;color:var(--text-dim)">The monitoring-agent service account has a manually created key (violating workload identity policy). Exception EXC-2025-002 covered this until December 10, 2025 — but the key was still actively used ...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-004</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>Legacy ETL exception compensating control (key rotation) not evidenced</strong><br><span style="font-size:13px;color:var(--text-dim)">EXC-2025-001 and its renewal EXC-2025-004 list compensating controls including 'key stored in HashiCorp Vault' and 'automated daily key usage audit.' However, the GCP service account data shows the le...</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h3>Model Results</h3>
+    <p class="section-subtitle">Score uses f1. F1 = harmonic mean of recall (gaps found / total) and precision (findings matching gaps / total reported). Over-reporting lowers precision.</p>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Precision</th><th>F1</th><th>Gaps</th><th>Findings Reported</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model">Sonnet 4.6</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-high">100%</td>
+          <td>100%</td>
+          <td>100%</td>
+          <td>100%</td>
+          <td>3/3</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">Opus 4.7</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-mid">75%</td>
+          <td>100%</td>
+          <td>60%</td>
+          <td>75%</td>
+          <td>3/3</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">GPT-5.5</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-high">100%</td>
+          <td>100%</td>
+          <td>100%</td>
+          <td>100%</td>
+          <td>3/3</td>
+          <td>3</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4.1</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-high">86%</td>
+          <td>100%</td>
+          <td>75%</td>
+          <td>86%</td>
+          <td>3/3</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">Haiku 4.5</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-mid">67%</td>
+          <td>100%</td>
+          <td>50%</td>
+          <td>67%</td>
+          <td>3/3</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-002:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4o</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-low">50%</td>
+          <td>67%</td>
+          <td>40%</td>
+          <td>50%</td>
+          <td>2/3</td>
+          <td>5</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DISMISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> <br><span style='font-size:12px;color:var(--text-muted)'>Red herrings flagged: 0/1</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="site-footer">
+    <p><a href="{{ '/' | relative_url }}">← Back to Leaderboard</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.1-4-001">View task on GitHub</a></p>
+  </footer>
+</div>

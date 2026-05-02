@@ -1,0 +1,189 @@
+---
+layout: default
+title: "cc6.6-5-001 — System Boundaries"
+---
+
+<div class="container">
+  <nav>
+    <a href="{{ '/' | relative_url }}">← Back to Leaderboard</a>
+  </nav>
+
+  <section>
+    <h2>cc6.6-5-001</h2>
+    <p class="section-subtitle">CC6.6 — System Boundaries</p>
+    
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">D5</div>
+        <div class="stat-label">Materiality judgment</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Gaps</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">0</div>
+        <div class="stat-label">Red Herrings</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">28%</div>
+        <div class="stat-label">Avg Score</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Task Description</h3>
+    <div class="task-card">
+      <div class="description">You are a SOC 2 auditor evaluating Apex Fintech's system boundary controls for the Q4 2025 observation period (October 1 — December 31, 2025). Review the boundary policy, network architecture documentation, penetration test report, and API gateway access logs. Assess whether CC6.6 requirements for system boundary definition and protection are met. Identify any gaps, considering materiality, compensating controls, and the overall effectiveness of the boundary architecture.</div>
+      <div style="margin-top:12px;font-size:13px;color:var(--text-muted)">
+        Scoring: <strong>f1</strong> · 
+        Estimated human time: <strong>45 minutes</strong> · 
+        Documents: <strong>4</strong> (4 relevant)
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h3>Evidence Files</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2">
+      <li><code>evidence/boundary-policy.md</code> (policy) — Apex Fintech system boundary and network security policy defining DMZ architecture, WAF/API Gateway requirements, mTLS, and VPN access controls</li>
+<li><code>evidence/network-topology.md</code> (architecture_diagram) — Network architecture document describing VPC layout, traffic flows, and the admin API configuration</li>
+<li><code>evidence/penetration-test-findings.json</code> (report) — Q3 2025 external penetration test results from CyberShield Assessments with 2 medium and 3 low findings</li>
+<li><code>evidence/api-gateway-access-logs.csv</code> (log) — 30 days of API Gateway and admin API access logs showing traffic distribution and source IPs</li>
+
+      
+    </ul>
+  </section>
+
+  <section>
+    <h3>Planted Findings</h3>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>F-001</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>Admin API bypasses defined system boundary controls</strong><br><span style="font-size:13px;color:var(--text-dim)">The boundary policy (APXF-SEC-POL-009 Section 3.2) states 'No production service shall be directly accessible from the public internet without traversing the WAF and API Gateway.' The admin API endpoi...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-002</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>low</td>
+          <td><strong>Penetration test staleness for Q4 observation period</strong><br><span style="font-size:13px;color:var(--text-dim)">The most recent penetration test was conducted July 14-25, 2025 (Q3). The policy requires quarterly penetration testing. The pentest report notes 'next assessment: Q4 2025 — Scheduled for October 2025...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-003</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>medium</td>
+          <td><strong>No centralized mTLS certificate inventory or validation evidence</strong><br><span style="font-size:13px;color:var(--text-dim)">The boundary policy (Section 3.3) requires mTLS for all service-to-service communication with 90-day certificate rotation via HashiCorp Vault. The network topology document confirms mTLS is configured...</span></td>
+        </tr>
+        <tr>
+          <td><strong>F-004</strong></td>
+          <td><span class="badge badge-blue">gap</span></td>
+          <td>low</td>
+          <td><strong>Materiality of traffic bypassing API Gateway boundary</strong><br><span style="font-size:13px;color:var(--text-dim)">Access logs show 0.3% of total production traffic (~12,500 requests/day) bypasses the API Gateway boundary by hitting the admin API directly. While all admin API traffic originates from the VPN CIDR r...</span></td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h3>Model Results</h3>
+    <p class="section-subtitle">Score uses f1. F1 = harmonic mean of recall (gaps found / total) and precision (findings matching gaps / total reported). Over-reporting lowers precision.</p>
+    <table class="leaderboard">
+      <thead>
+        <tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Precision</th><th>F1</th><th>Gaps</th><th>Findings Reported</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model">Sonnet 4.6</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-low">55%</td>
+          <td>75%</td>
+          <td>43%</td>
+          <td>55%</td>
+          <td>3/4</td>
+          <td>7</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">Opus 4.7</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-bad">33%</td>
+          <td>50%</td>
+          <td>25%</td>
+          <td>33%</td>
+          <td>2/4</td>
+          <td>8</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-004:MISSED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-5.5</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-bad">15%</td>
+          <td>25%</td>
+          <td>11%</td>
+          <td>15%</td>
+          <td>1/4</td>
+          <td>9</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-003:MISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-004:MISSED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4.1</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-bad">20%</td>
+          <td>25%</td>
+          <td>17%</td>
+          <td>20%</td>
+          <td>1/4</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-003:MISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-004:MISSED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">Haiku 4.5</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-bad">27%</td>
+          <td>75%</td>
+          <td>17%</td>
+          <td>27%</td>
+          <td>3/4</td>
+          <td>18</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-003:DETECTED</span> <span style="color:var(--green);font-size:12px;margin-right:8px">F-004:DETECTED</span> </td>
+        </tr>
+        <tr>
+          <td class="model">GPT-4o</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-bad">20%</td>
+          <td>25%</td>
+          <td>17%</td>
+          <td>20%</td>
+          <td>1/4</td>
+          <td>6</td>
+        </tr>
+        <tr>
+          <td colspan="8" style="padding:4px 16px 12px;border-bottom:1px solid var(--border);font-size:12px"><span style="color:var(--green);font-size:12px;margin-right:8px">F-001:DETECTED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-002:MISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-003:MISSED</span> <span style="color:var(--red);font-size:12px;margin-right:8px">F-004:MISSED</span> </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </section>
+
+  <footer class="site-footer">
+    <p><a href="{{ '/' | relative_url }}">← Back to Leaderboard</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.6-5-001">View task on GitHub</a></p>
+  </footer>
+</div>
