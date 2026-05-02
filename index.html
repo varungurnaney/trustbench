@@ -1,0 +1,345 @@
+---
+layout: default
+title: TrustBench — Security Compliance Benchmark for LLMs
+---
+
+<div class="container">
+
+  <!-- Header -->
+  <header class="site-header">
+    <img src="{{ '/logo.svg' | relative_url }}" alt="TrustBench">
+    <p>An open benchmark for measuring how well LLMs perform security compliance auditing. 20 tasks across 8 SOC 2 controls. F1 scoring with red herrings, noise documents, and judgment calls.</p>
+    <div class="badge-row">
+      <span class="badge badge-blue">v0.1 Early Stage</span>
+      <span class="badge badge-green">20 Tasks</span>
+      <span class="badge badge-yellow">8 Controls</span>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav>
+    <a href="#leaderboard" class="active">Leaderboard</a>
+    <a href="#tasks">Tasks</a>
+    <a href="#methodology">Methodology</a>
+    <a href="#quickstart">Quick Start</a>
+    <a href="https://github.com/varungurnaney/trustbench">GitHub</a>
+  </nav>
+
+  <!-- Stats -->
+  <section>
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="stat-number">20</div>
+        <div class="stat-label">Tasks</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">8</div>
+        <div class="stat-label">Controls</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">13</div>
+        <div class="stat-label">D4-D5 Tasks</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">35%</div>
+        <div class="stat-label">Hardest Task Avg</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Leaderboard -->
+  <section id="leaderboard">
+    <h2>Leaderboard</h2>
+    <p class="section-subtitle">Average F1 score across 13 D4-D5 tasks. F1 penalizes both missed gaps and false positives.</p>
+
+    <table class="leaderboard">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Model</th>
+          <th>Provider</th>
+          <th>Avg F1</th>
+          <th>Best Task</th>
+          <th>Worst Task</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="rank">1</td>
+          <td class="model">GPT-5.5</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-high">79%</td>
+          <td>100% (5 tasks)</td>
+          <td>18% (cc6.6-5)</td>
+        </tr>
+        <tr>
+          <td class="rank">2</td>
+          <td class="model">Claude Sonnet 4.6</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-mid">69%</td>
+          <td>100% (3 tasks)</td>
+          <td>36% (cc9.1-5)</td>
+        </tr>
+        <tr>
+          <td class="rank">3</td>
+          <td class="model">Claude Opus 4.7</td>
+          <td class="provider">Anthropic</td>
+          <td class="score-cell score-low">63%</td>
+          <td>91% (cc7.2-5, cc8.1-5)</td>
+          <td>33% (cc6.6-5)</td>
+        </tr>
+        <tr>
+          <td class="rank">4</td>
+          <td class="model">GPT-4o</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-low">54%</td>
+          <td>100% (cc8.1-4)</td>
+          <td>18% (cc9.1-4)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top: 32px;">Per-Task Breakdown</h3>
+    <p class="section-subtitle">Sorted by average score (hardest first).</p>
+
+    <table class="leaderboard">
+      <thead>
+        <tr>
+          <th>Task</th>
+          <th>D</th>
+          <th>Control</th>
+          <th>GPT-5.5</th>
+          <th>Sonnet 4.6</th>
+          <th>Opus 4.7</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="model">cc6.6-5-001</td>
+          <td><span class="difficulty d5">D5</span></td>
+          <td class="provider">System Boundaries</td>
+          <td class="score-cell score-bad">18%</td>
+          <td class="score-cell score-low">55%</td>
+          <td class="score-cell score-bad">33%</td>
+        </tr>
+        <tr>
+          <td class="model">cc9.1-5-001</td>
+          <td><span class="difficulty d5">D5</span></td>
+          <td class="provider">Vendor Mgmt</td>
+          <td class="score-cell score-bad">33%</td>
+          <td class="score-cell score-bad">36%</td>
+          <td class="score-cell score-bad">40%</td>
+        </tr>
+        <tr>
+          <td class="model">cc3.1-5-001</td>
+          <td><span class="difficulty d5">D5</span></td>
+          <td class="provider">Risk Assessment</td>
+          <td class="score-cell score-low">57%</td>
+          <td class="score-cell score-low">55%</td>
+          <td class="score-cell score-bad">40%</td>
+        </tr>
+        <tr>
+          <td class="model">cc6.3-4-001</td>
+          <td><span class="difficulty d4">D4</span></td>
+          <td class="provider">Data Access</td>
+          <td class="score-cell score-low">60%</td>
+          <td class="score-cell score-low">67%</td>
+          <td class="score-cell score-low">57%</td>
+        </tr>
+        <tr>
+          <td class="model">cc6.1-5-001</td>
+          <td><span class="difficulty d5">D5</span></td>
+          <td class="provider">Logical Access</td>
+          <td class="score-cell score-mid">89%</td>
+          <td class="score-cell score-mid">83%</td>
+          <td class="score-cell score-low">67%</td>
+        </tr>
+        <tr>
+          <td class="model">cc3.1-4-001</td>
+          <td><span class="difficulty d4">D4</span></td>
+          <td class="provider">Risk Assessment</td>
+          <td class="score-cell score-mid">86%</td>
+          <td class="score-cell score-mid">73%</td>
+          <td class="score-cell score-low">62%</td>
+        </tr>
+        <tr>
+          <td class="model">cc9.1-4-001</td>
+          <td><span class="difficulty d4">D4</span></td>
+          <td class="provider">Vendor Mgmt</td>
+          <td class="score-cell score-high">100%</td>
+          <td class="score-cell score-mid">73%</td>
+          <td class="score-cell score-low">67%</td>
+        </tr>
+        <tr>
+          <td class="model">cc7.2-4-001</td>
+          <td><span class="difficulty d4">D4</span></td>
+          <td class="provider">Monitoring</td>
+          <td class="score-cell score-mid">86%</td>
+          <td class="score-cell score-mid">89%</td>
+          <td class="score-cell score-low">67%</td>
+        </tr>
+        <tr>
+          <td class="model">cc6.6-4-001</td>
+          <td><span class="difficulty d4">D4</span></td>
+          <td class="provider">System Boundaries</td>
+          <td class="score-cell score-high">100%</td>
+          <td class="score-cell score-high">100%</td>
+          <td class="score-cell score-low">57%</td>
+        </tr>
+        <tr>
+          <td class="model">a1.2-4-001</td>
+          <td><span class="difficulty d4">D4</span></td>
+          <td class="provider">Backup/Recovery</td>
+          <td class="score-cell score-high">100%</td>
+          <td class="score-cell score-high">100%</td>
+          <td class="score-cell score-low">62%</td>
+        </tr>
+        <tr>
+          <td class="model">cc8.1-4-001</td>
+          <td><span class="difficulty d4">D4</span></td>
+          <td class="provider">Change Mgmt</td>
+          <td class="score-cell score-high">100%</td>
+          <td class="score-cell score-high">92%</td>
+          <td class="score-cell score-mid">80%</td>
+        </tr>
+        <tr>
+          <td class="model">cc8.1-5-001</td>
+          <td><span class="difficulty d5">D5</span></td>
+          <td class="provider">Change Mgmt</td>
+          <td class="score-cell score-mid">73%</td>
+          <td class="score-cell score-mid">83%</td>
+          <td class="score-cell score-high">91%</td>
+        </tr>
+        <tr>
+          <td class="model">cc7.2-5-001</td>
+          <td><span class="difficulty d5">D5</span></td>
+          <td class="provider">Monitoring</td>
+          <td class="score-cell score-high">100%</td>
+          <td class="score-cell score-low">67%</td>
+          <td class="score-cell score-high">91%</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- Tasks -->
+  <section id="tasks">
+    <h2>Hardest Tasks</h2>
+    <p class="section-subtitle">D5 judgment tasks where no model scores above 57%.</p>
+
+    <div class="task-grid">
+      <div class="task-card">
+        <div class="task-card-header">
+          <h3>cc6.6-5-001 — System Boundary Judgment</h3>
+          <span class="difficulty d5">D5</span>
+        </div>
+        <div class="meta">Apex Fintech · 4 evidence files · Avg F1: 35%</div>
+        <div class="description">An internal admin API bypasses the API gateway — used by SRE for emergency debugging, VPN-restricted, documented as accepted risk in Q3 pentest. Is 0.3% of traffic bypassing the boundary material? Is a Q3 pentest valid for Q4? No mTLS certificate inventory despite policy claims.</div>
+        <div class="task-scores">
+          <span class="task-score-item"><span class="model-name">GPT-5.5</span> <span class="score-value score-bad">18%</span></span>
+          <span class="task-score-item"><span class="model-name">Opus 4.7</span> <span class="score-value score-bad">33%</span></span>
+          <span class="task-score-item"><span class="model-name">Sonnet 4.6</span> <span class="score-value score-low">55%</span></span>
+        </div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-card-header">
+          <h3>cc9.1-5-001 — Vendor Incident Judgment</h3>
+          <span class="difficulty d5">D5</span>
+        </div>
+        <div class="meta">Onyx Data · 5 evidence files · Avg F1: 36%</div>
+        <div class="description">A critical vendor had a security incident. They met the 72-hour notification SLA and contained it in 48 hours, but couldn't confirm customer data exposure for 3 weeks. Another vendor's SOC 2 has a qualified opinion acknowledged but no risk assessment documented. Should customers have been notified during the uncertainty period?</div>
+        <div class="task-scores">
+          <span class="task-score-item"><span class="model-name">GPT-5.5</span> <span class="score-value score-bad">33%</span></span>
+          <span class="task-score-item"><span class="model-name">Sonnet 4.6</span> <span class="score-value score-bad">36%</span></span>
+          <span class="task-score-item"><span class="model-name">Opus 4.7</span> <span class="score-value score-bad">40%</span></span>
+        </div>
+      </div>
+
+      <div class="task-card">
+        <div class="task-card-header">
+          <h3>cc3.1-5-001 — Risk Assessment Judgment</h3>
+          <span class="difficulty d5">D5</span>
+        </div>
+        <div class="meta">Zenith Cloud · 4 evidence files · Avg F1: 51%</div>
+        <div class="description">22-item risk register. Two risks downgraded without documented justification. The SGC reviewed only 10 of 22 risks. Comprehensive assessment is 11 months old (annual requirement). A risk with likelihood=2, impact=5 is rated "Medium" on the matrix — does this understate catastrophic scenarios?</div>
+        <div class="task-scores">
+          <span class="task-score-item"><span class="model-name">GPT-5.5</span> <span class="score-value score-low">57%</span></span>
+          <span class="task-score-item"><span class="model-name">Sonnet 4.6</span> <span class="score-value score-low">55%</span></span>
+          <span class="task-score-item"><span class="model-name">Opus 4.7</span> <span class="score-value score-bad">40%</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Methodology -->
+  <section id="methodology">
+    <h2>Methodology</h2>
+    <p class="section-subtitle">How TrustBench evaluates models.</p>
+
+    <div class="task-grid">
+      <div class="task-card">
+        <h3>Task Structure</h3>
+        <div class="description">Each task presents a model with synthetic audit evidence (policies, configs, logs, exception registers) and a SOC 2 control to assess. Evidence contains planted compliance gaps. The model produces an audit assessment. Scoring compares the model's findings against ground truth.</div>
+      </div>
+
+      <div class="task-card">
+        <h3>Difficulty Levels</h3>
+        <div class="description">
+          <strong>D1-D2:</strong> Single document, gap detection. Calibration tasks.<br>
+          <strong>D3:</strong> Multi-document cross-referencing. Policy contradicts config.<br>
+          <strong>D4:</strong> Red herrings (gaps with valid exceptions), noise documents. Tests precision.<br>
+          <strong>D5:</strong> Materiality judgment. Ambiguous scenarios where auditors disagree. No single right answer.
+        </div>
+      </div>
+
+      <div class="task-card">
+        <h3>Scoring</h3>
+        <div class="description">
+          <strong>D1-D2:</strong> Detection only (recall).<br>
+          <strong>D3:</strong> Detection + precision penalty for over-reporting.<br>
+          <strong>D4-D5:</strong> F1 score. Red herrings flagged as findings count as false positives. Models that over-report are penalized. Keyword-based, deterministic, no LLM-as-judge.
+        </div>
+      </div>
+
+      <div class="task-card">
+        <h3>Evidence Types</h3>
+        <div class="description">Policies (.md), IAM configs (.json), MFA policies (.json), firewall rules (.json), termination logs (.csv), access review logs (.csv), risk registers (.csv), backup logs (.csv), exception registers (.csv), vendor inventories (.csv), penetration test results (.json), screenshots (.png).</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Start -->
+  <section id="quickstart">
+    <h2>Quick Start</h2>
+    <p class="section-subtitle">Run TrustBench locally.</p>
+
+<pre><code>git clone https://github.com/varungurnaney/trustbench.git
+cd trustbench
+pip install -r requirements.txt
+
+# Set your API key
+export ANTHROPIC_API_KEY=sk-ant-...
+# or: export OPENAI_API_KEY=sk-...
+
+# Run a single task
+python3 -m trustbench.cli run tasks/cc8.1-4-001 --model claude-sonnet-4-6
+
+# Run all D4-D5 tasks
+python3 -m trustbench.cli run-all --model claude-sonnet-4-6 --difficulty 4
+python3 -m trustbench.cli run-all --model claude-sonnet-4-6 --difficulty 5
+
+# See results
+python3 -m trustbench.cli leaderboard</code></pre>
+
+    <p style="margin-top: 16px; font-size: 14px; color: var(--text-muted);">
+      See the <a href="https://github.com/varungurnaney/trustbench/blob/main/docs/authoring.md" style="color: var(--accent);">authoring guide</a> to contribute tasks.
+    </p>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <p>TrustBench is open source · <a href="https://github.com/varungurnaney/trustbench">GitHub</a> · Created by <a href="https://github.com/varungurnaney">Varun Gurnaney</a></p>
+  </footer>
+
+</div>
