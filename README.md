@@ -74,7 +74,7 @@ Requires an `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable dependi
 
 **Three tasks average below 28%.** cc3.1-5-001 (risk assessment, 23%), cc9.1-5-001 (vendor incident, 24%), and cc6.6-5-001 (boundary materiality, 28%). Two models scored 0% on risk assessment judgment. These require materiality assessment where auditors disagree.
 
-**Clear model tiers.** Sonnet leads at 82%. Opus and GPT-5.5 form the middle tier (71-72%). GPT-4.1 and Haiku at 61%. GPT-4o trails at 44%. The finding-count fix for table-formatted responses corrected GPT-5.5's precision scores downward — it over-reports when using markdown tables.
+**Sonnet leads because it's both thorough and concise.** It achieves 100% recall on 16 of 20 tasks (vs 13 for GPT-5.5) while reporting an average of 7.4 findings per task (vs 8.5 for GPT-5.5, 9.6 for Opus). Larger models find the gaps but also report more non-planted observations — legitimate in a real audit, but penalized by F1 against a defined ground truth. This is a known limitation of keyword-based scoring: it cannot distinguish "useful extra finding" from "false positive."
 
 See [Task Reference](docs/tasks.md) for per-task analysis and [Leaderboard](LEADERBOARD.md) for full results.
 
