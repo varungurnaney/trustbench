@@ -31,8 +31,8 @@ Models receive the evidence package and a system prompt instructing them to prod
 
 Scoring is deterministic:
 - **D1-D2:** Detection only (recall = gaps detected / total gaps).
-- **D3:** Detection with precision penalty (recall x min(1, max_expected / model_findings)).
-- **D4-D5:** F1 scoring. Precision and recall are computed over the full finding set. Findings of type `red_herring` count as false positives if the model flags them without referencing exclusion keywords (e.g., "exception," "approved," "compensating control"). Models are not penalized for mentioning red herring topics if they correctly dismiss them.
+- **D3:** Detection with precision penalty (recall × min(1, max_expected / model_findings)).
+- **D4-D5:** F1 scoring — the harmonic mean of precision and recall. Recall measures what fraction of planted gaps the model found. Precision measures what fraction of the model's reported findings match planted gaps. F1 = 2 × precision × recall / (precision + recall). A model that finds all 5 gaps but reports 15 total findings gets recall=100% but precision=33%, yielding F1=50%. Findings of type `red_herring` count as false positives if the model flags them without referencing exclusion keywords (e.g., "exception," "approved," "compensating control"). Models are not penalized for mentioning red herring topics if they correctly dismiss them.
 
 The schema is framework-agnostic. An ISO 27001 task sets `"framework": "ISO27001"` and `"control": "A.9.2.1"`. A HIPAA task uses `"framework": "HIPAA"` and `"control": "164.312(d)"`. Evidence types, scoring methods, and difficulty levels apply universally.
 
@@ -97,18 +97,26 @@ There are no clear-cut answers. A conservative auditor would flag all of these. 
 
 ## Key Findings
 
-- **No model dominates.** GPT-5.5 leads at 82% average but scores 18% on system boundary tasks (cc6.6-5). Every model has at least one task where it scores below 40%.
-- **Clear performance tiers.** Top tier: GPT-5.5 and Claude Sonnet 4.6 (73-82%). Middle tier: Claude Opus 4.7 and GPT-4.1 (57-65%). Lower tier: Claude Haiku 4.5 and GPT-4o (43-54%).
-- **D5 judgment tasks are the hardest.** Three D5 tasks have an average score below 30% across all models. These tasks require materiality assessment and professional judgment that current models cannot reliably perform.
-- **Recall is easy; precision separates.** Most frontier models detect the majority of planted gaps. The differentiator is precision -- whether the model avoids flagging red herrings, ignores noise documents, and refrains from reporting non-issues.
-- **Change management is the easiest domain** (93% average across all models). The gaps are procedural and well-defined. **Vendor and risk judgment is the hardest** (27% average). These tasks require assessing adequacy rather than detecting violations.
+- **No model dominates.** Sonnet leads at 82% average but scores 36% on vendor judgment. Opus scored 91% on change management judgment (beating GPT-5.5's 73% on the same task). Every model has at least one task below 40%.
+- **Clear performance tiers.** Sonnet leads at 82%. Opus and GPT-5.5 form the middle tier (71-72%). GPT-4.1 and Haiku at 61%. GPT-4o trails at 44%.
+- **D5 judgment tasks are the hardest.** Three D5 tasks average below 28% across all models. These require materiality assessment and professional judgment that current models cannot reliably perform.
+- **Recall is easy; precision separates.** Most frontier models detect the majority of planted gaps. The differentiator is precision — whether the model avoids flagging red herrings, ignores noise documents, and refrains from reporting non-issues.
+- **Change management is the easiest domain** (93% average). The gaps are procedural and well-defined. **Vendor and risk judgment is the hardest** (23-24% average). These require assessing adequacy rather than detecting violations.
+
+### A note on F1 scoring and over-reporting
+
+The F1 metric penalizes models that report more findings than the planted ground truth. In a real audit, this penalization is debatable. When Opus reports 9 findings on a task with 5 planted gaps, the extra 4 might be legitimate compliance observations that a human auditor would include in their report. But our keyword-based scorer cannot distinguish "useful extra finding" from "noise" — any reported finding that doesn't match a planted gap is counted as a false positive, lowering precision and therefore F1.
+
+This means the current scoring favors concise models over thorough ones. Sonnet's lead over Opus and GPT-5.5 is partly driven by Sonnet reporting fewer extra findings (7.4 avg per task vs 8.5 for GPT-5.5 and 9.6 for Opus) — not necessarily because those extra findings are wrong. Sonnet also has genuinely higher recall (100% on 16 of 20 tasks vs 13 for GPT-5.5), so its lead is not purely a precision artifact. But the gap between models would narrow under a scorer that could credit legitimate extra findings.
+
+This is a known limitation of keyword-based, ground-truth scoring for compliance tasks, where the space of valid findings is open-ended. For v2, we plan to add an optional LLM-as-judge secondary scorer that can evaluate whether extra findings are legitimate. The primary keyword-based score will remain for reproducibility and determinism.
 
 ## What's Next
 
-- **More tasks.** Expanding from 20 to 64+ tasks across additional SOC 2 controls (CC6.6, CC3.1).
+- **More tasks.** Expanding from 20 to 64+ tasks across additional SOC 2 controls.
 - **More frameworks.** ISO 27001 Annex A, HIPAA Security Rule, and PCI-DSS v4.0 task sets. The schema supports these without harness changes.
-- **LLM-as-judge for v2.** Keyword scoring is deterministic and reproducible but limited. An optional LLM-as-judge secondary scorer will be added in v2 for tasks where keyword matching cannot capture the full range of valid responses -- particularly D5 judgment tasks.
-- **Community contributions.** The benchmark benefits from tasks authored by compliance professionals who can ground scenarios in real audit findings. Contributions across any framework are welcome.
+- **LLM-as-judge for v2.** An optional secondary scorer that can evaluate whether extra findings are legitimate compliance observations or noise. This addresses the over-reporting penalty described above.
+- **Community contributions.** The benchmark benefits from tasks authored by compliance professionals who can ground scenarios in real audit findings across any framework.
 
 ## Try It
 

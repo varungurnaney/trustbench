@@ -50,7 +50,7 @@ title: TrustBench — Security Compliance Benchmark for LLMs
   <!-- Leaderboard -->
   <section id="leaderboard">
     <h2>Leaderboard</h2>
-    <p class="section-subtitle">Average F1 score across D4-D5 tasks. 6 models evaluated on all 15 tasks.</p>
+    <p class="section-subtitle">6 models, 20 tasks, 120 total runs. D4-D5 tasks use F1 scoring — the harmonic mean of recall (gaps found) and precision (findings that match planted gaps). F1 penalizes both missed gaps and over-reporting. D1-D3 use detection scoring.</p>
 
     <table class="leaderboard">
       <thead>
@@ -66,51 +66,51 @@ title: TrustBench — Security Compliance Benchmark for LLMs
       <tbody>
         <tr>
           <td class="rank">1</td>
-          <td class="model">GPT-5.5</td>
-          <td class="provider">OpenAI</td>
-          <td class="score-cell score-mid">77%</td>
-          <td>100% (5 tasks)</td>
-          <td>18% (cc6.6-5)</td>
-        </tr>
-        <tr>
-          <td class="rank">2</td>
           <td class="model">Claude Sonnet 4.6</td>
           <td class="provider">Anthropic</td>
-          <td class="score-cell score-mid">75%</td>
-          <td>100% (3 tasks)</td>
+          <td class="score-cell score-mid">82%</td>
+          <td>100% (4 tasks)</td>
           <td>36% (cc9.1-5)</td>
         </tr>
         <tr>
-          <td class="rank">3</td>
+          <td class="rank">2</td>
           <td class="model">Claude Opus 4.7</td>
           <td class="provider">Anthropic</td>
-          <td class="score-cell score-low">63%</td>
-          <td>91% (cc7.2-5, cc8.1-5)</td>
-          <td>33% (cc6.6-5)</td>
+          <td class="score-cell score-mid">72%</td>
+          <td>100% (4 tasks)</td>
+          <td>15% (cc9.1-5)</td>
+        </tr>
+        <tr>
+          <td class="rank">3</td>
+          <td class="model">GPT-5.5</td>
+          <td class="provider">OpenAI</td>
+          <td class="score-cell score-mid">71%</td>
+          <td>100% (4 tasks)</td>
+          <td>15% (cc6.6-5)</td>
         </tr>
         <tr>
           <td class="rank">4</td>
           <td class="model">GPT-4.1</td>
           <td class="provider">OpenAI</td>
-          <td class="score-cell score-low">60%</td>
-          <td>92% (cc8.1-4)</td>
-          <td>0% (cc3.1-5)</td>
+          <td class="score-cell score-low">61%</td>
+          <td>100% (cc8.1-1)</td>
+          <td>0% (cc3.1-5, cc7.2-2)</td>
         </tr>
         <tr>
           <td class="rank">5</td>
           <td class="model">Claude Haiku 4.5</td>
           <td class="provider">Anthropic</td>
-          <td class="score-cell score-low">51%</td>
-          <td>92% (cc8.1-4)</td>
+          <td class="score-cell score-low">61%</td>
+          <td>100% (3 tasks)</td>
           <td>12% (cc3.1-5)</td>
         </tr>
         <tr>
           <td class="rank">6</td>
           <td class="model">GPT-4o</td>
           <td class="provider">OpenAI</td>
-          <td class="score-cell score-bad">40%</td>
-          <td>100% (cc8.1-4)</td>
-          <td>0% (cc3.1-5)</td>
+          <td class="score-cell score-bad">44%</td>
+          <td>100% (2 tasks)</td>
+          <td>0% (cc3.1-5, cc7.2-2)</td>
         </tr>
       </tbody>
     </table>
@@ -236,6 +236,11 @@ title: TrustBench — Security Compliance Benchmark for LLMs
           <strong>D3:</strong> Detection + precision penalty for over-reporting.<br>
           <strong>D4-D5:</strong> F1 score. Red herrings flagged as findings count as false positives. Models that over-report are penalized. Keyword-based, deterministic, no LLM-as-judge.
         </div>
+      </div>
+
+      <div class="task-card">
+        <h3>Scoring Caveat: Over-Reporting Penalty</h3>
+        <div class="description">F1 scoring penalizes models that report more findings than the planted ground truth. In a real audit, extra findings might be legitimate — an observation a human auditor would include. But keyword-based scoring cannot distinguish "useful extra finding" from "noise." This favors concise models (Sonnet: 7.4 avg findings/task) over thorough ones (Opus: 9.6, GPT-5.5: 8.5). Sonnet's lead is partly driven by precision, not just recall. An LLM-as-judge secondary scorer is planned for v2 to address this.</div>
       </div>
 
       <div class="task-card">

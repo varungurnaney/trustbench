@@ -34,7 +34,9 @@ Requires an `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable dependi
 
 ## Results
 
-6 models evaluated on all 20 tasks (120 total runs). D4-D5 tasks use F1 scoring (penalizes false positives). D1-D3 use detection-based scoring.
+6 models evaluated on all 20 tasks (120 total runs).
+
+**How scoring works:** D1-D3 tasks use detection scoring (did the model find the planted gaps?). D4-D5 tasks use F1 scoring — the harmonic mean of recall (what fraction of real gaps were found) and precision (what fraction of the model's reported findings were real gaps). F1 penalizes both missed gaps AND over-reporting. A model that finds all 5 gaps but reports 15 total findings gets a lower F1 than one that finds 5 and reports 6.
 
 | Rank | Model | Provider | Avg Score | Highest | Lowest |
 |------|-------|----------|-----------|---------|--------|
@@ -74,7 +76,15 @@ Requires an `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable dependi
 
 **Three tasks average below 28%.** cc3.1-5-001 (risk assessment, 23%), cc9.1-5-001 (vendor incident, 24%), and cc6.6-5-001 (boundary materiality, 28%). Two models scored 0% on risk assessment judgment. These require materiality assessment where auditors disagree.
 
-**Sonnet leads because it's both thorough and concise.** It achieves 100% recall on 16 of 20 tasks (vs 13 for GPT-5.5) while reporting an average of 7.4 findings per task (vs 8.5 for GPT-5.5, 9.6 for Opus). Larger models find the gaps but also report more non-planted observations — legitimate in a real audit, but penalized by F1 against a defined ground truth. This is a known limitation of keyword-based scoring: it cannot distinguish "useful extra finding" from "false positive."
+**Sonnet leads because it's both thorough and concise.** It achieves 100% recall on 16 of 20 tasks (vs 13 for GPT-5.5) while reporting an average of 7.4 findings per task (vs 8.5 for GPT-5.5, 9.6 for Opus).
+
+### A note on scoring and over-reporting
+
+F1 scoring penalizes models that report findings beyond the planted gaps. In a real audit, this penalization is debatable. When Opus reports 9 findings on a task with 5 planted gaps, the extra 4 might be legitimate compliance observations — things a human auditor would include in their report. But our keyword-based scorer has no way to distinguish "useful extra finding" from "noise." Any finding that doesn't match a planted gap counts as a false positive, lowering precision and therefore F1.
+
+This means **the current scoring favors models that are concise over models that are thorough.** Sonnet's lead over Opus and GPT-5.5 is partly because it reports fewer extra findings — not necessarily because those extra findings are wrong. In a production compliance workflow, the additional observations from a more thorough model might be more valuable than a higher F1 score.
+
+This is a known limitation. For v2, we plan to add an optional LLM-as-judge secondary scorer that can evaluate whether extra findings are legitimate compliance observations or actual noise. The primary keyword-based score will remain for reproducibility.
 
 See [Task Reference](docs/tasks.md) for per-task analysis and [Leaderboard](LEADERBOARD.md) for full results.
 
