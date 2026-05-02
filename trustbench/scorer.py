@@ -40,6 +40,7 @@ def _count_model_findings(response: str) -> int:
         r'(?m)^\*\*(?:Finding|Gap|Issue)\s*\d+',
         r'(?m)^\d+\.\s+\*\*',
         r'(?m)^###\s+',
+        r'(?m)^\|\s*\d+\s*\|',
     ]
     counts = []
     for pattern in patterns:

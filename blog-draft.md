@@ -1,259 +1,127 @@
 # TrustBench: A Benchmark for Evaluating LLMs on Security Compliance Auditing
 
-## Summary
+TrustBench is an open benchmark for measuring how well LLMs perform security compliance evidence review and gap detection. Each task presents a model with synthetic audit evidence -- policies, configurations, access logs, change records, vendor assessments, exception registers -- containing planted compliance gaps. The model produces an audit report, and scoring is deterministic: keyword matching for detection tasks, F1 for tasks with red herrings and noise. No LLM-as-judge. The initial task set covers SOC 2 Trust Service Criteria across 20 tasks at five difficulty levels. The schema is framework-agnostic and supports ISO 27001, HIPAA, PCI-DSS, and any control-based standard without changes to the eval harness.
 
-TrustBench is an open benchmark for measuring LLM performance on security compliance evidence review and gap detection. Tasks present models with synthetic audit evidence — policies, configurations, access logs, termination records, exception registers — containing planted compliance gaps, and measure detection accuracy against ground truth. Scoring is deterministic and keyword-based. No LLM-as-judge.
+## Leaderboard
 
-The benchmark is framework-agnostic. The initial task set covers SOC 2 Trust Service Criteria, with the schema designed to support ISO 27001, HIPAA, PCI-DSS, NIST CSF, FedRAMP, and any control-based compliance framework.
+6 models, 20 tasks, 120 total runs.
 
-The benchmark is in early development. This post describes the design, the task schema, preliminary results from 9 models on a prototype task, and the roadmap to v1.
+| Rank | Model | Provider | Avg Score | Highest | Lowest |
+|------|-------|----------|-----------|---------|--------|
+| 1 | Claude Sonnet 4.6 | Anthropic | 82% | 100% (4 tasks) | 36% (cc9.1-5) |
+| 2 | Claude Opus 4.7 | Anthropic | 72% | 100% (4 tasks) | 15% (cc9.1-5) |
+| 3 | GPT-5.5 | OpenAI | 71% | 100% (4 tasks) | 15% (cc6.6-5) |
+| 4 | GPT-4.1 | OpenAI | 61% | 100% (cc8.1-1) | 0% (cc3.1-5, cc7.2-2) |
+| 5 | Claude Haiku 4.5 | Anthropic | 61% | 100% (3 tasks) | 12% (cc3.1-5) |
+| 6 | GPT-4o | OpenAI | 44% | 100% (2 tasks) | 0% (cc3.1-5, cc7.2-2) |
 
 ## Motivation
 
-No benchmark exists for security compliance evaluation. The closest work:
+No benchmark exists for security compliance evaluation. GRC teams are already using LLMs for evidence review, gap analysis, control mapping, and questionnaire responses -- with no way to evaluate accuracy systematically. The closest prior work is AIReg-Bench (Cambridge, 2025): 120 samples testing LLMs against EU AI Act articles. It covers a single regulation, a single document type, and is proof-of-concept scale.
 
-- **AIReg-Bench** (Cambridge, 2025) — 120 samples testing LLMs against EU AI Act articles. Single regulation, single document type, proof-of-concept scale.
-- **LegalBench** — 162 legal reasoning tasks. Tests rule-application, not multi-document evidence review.
-- **CUAD** — contract clause extraction. Tests document comprehension, not compliance judgment.
+The gap is not framework-specific. Whether you are assessing an access control policy against SOC 2 CC6.1, ISO 27001 A.9.2, or HIPAA 164.312(d), the underlying audit skill is the same: review evidence, cross-reference artifacts, identify gaps, assess materiality. The task structure is identical -- only the control language and acceptance criteria change.
 
-None of these test what compliance teams actually do: cross-reference multiple evidence types (policy docs, technical configs, operational logs) against a control requirement, identify deficiencies, and distinguish real gaps from documented exceptions.
+TrustBench is framework-agnostic. The initial task set uses SOC 2 because it has the most widespread adoption and the clearest control language, but the schema supports any control-based compliance framework. The `framework` and `control` fields are strings, not enums. Adding ISO 27001, HIPAA, or PCI-DSS requires only authoring tasks -- no changes to the eval harness, scoring, or CLI.
 
-This is a gap that cuts across frameworks. Whether you're assessing an access control policy against SOC 2 CC6.1, ISO 27001 A.9.2, or HIPAA § 164.312(d), the underlying audit skill is the same: review evidence, cross-reference artifacts, identify gaps, assess materiality. The task structure is identical — only the control language and acceptance criteria change.
+## Methodology
 
-Meanwhile, GRC teams are already using LLMs for evidence review, gap analysis, control mapping, and questionnaire responses across all of these frameworks — with no way to evaluate accuracy systematically.
+Each task is a JSON file defining an audit scenario. A task specifies a compliance framework, a control requirement, a difficulty level, a set of evidence files (with planted gaps), optional noise documents, and a ground-truth list of findings with keyword-based detection criteria.
 
-## Task Design
+Models receive the evidence package and a system prompt instructing them to produce an audit report identifying compliance gaps. Output is free-text -- compliance assessments are narrative, and forcing structured JSON would test format compliance rather than audit competence.
 
-Each task is a JSON file defining an audit scenario. The schema is framework-agnostic — the `framework` and `control` fields accept any standard:
+Scoring is deterministic:
+- **D1-D2:** Detection only (recall = gaps detected / total gaps).
+- **D3:** Detection with precision penalty (recall x min(1, max_expected / model_findings)).
+- **D4-D5:** F1 scoring. Precision and recall are computed over the full finding set. Findings of type `red_herring` count as false positives if the model flags them without referencing exclusion keywords (e.g., "exception," "approved," "compensating control"). Models are not penalized for mentioning red herring topics if they correctly dismiss them.
 
-```json
-{
-  "id": "cc6.1-4-001",
-  "version": "1.0",
-  "framework": "SOC2",
-  "control": "CC6.1",
-  "difficulty": 4,
-  "category": "red_herring",
-  "evidence_files": [
-    {"path": "evidence/access-control-policy.md", "type": "policy"},
-    {"path": "evidence/gcp-service-accounts.json", "type": "config"},
-    {"path": "evidence/exception-register.csv", "type": "exception_register"}
-  ],
-  "noise_files": [
-    {"path": "evidence/business-continuity-plan-summary.md", "type": "policy"},
-    {"path": "evidence/vendor-risk-assessment-q4.csv", "type": "report"}
-  ],
-  "findings": [
-    {
-      "id": "F-001",
-      "type": "red_herring",
-      "title": "Legacy ETL has manual key (valid CISO exception exists)",
-      "detection_criteria": {
-        "required_keywords": ["legacy-etl", "exception", "approved", "compensating"],
-        "minimum_keyword_matches": 3,
-        "exclusion_keywords": ["finding", "gap", "violation"]
-      }
-    },
-    {
-      "id": "F-002",
-      "type": "gap",
-      "severity": "critical",
-      "title": "Terraform import SA with editor role — exception expired",
-      "detection_criteria": {
-        "required_keywords": ["terraform", "editor", "expired", "stale", "still active"],
-        "minimum_keyword_matches": 3
-      }
-    }
-  ],
-  "scoring": {"method": "f1", "max_expected_findings": 8}
-}
-```
+The schema is framework-agnostic. An ISO 27001 task sets `"framework": "ISO27001"` and `"control": "A.9.2.1"`. A HIPAA task uses `"framework": "HIPAA"` and `"control": "164.312(d)"`. Evidence types, scoring methods, and difficulty levels apply universally.
 
-The same schema works for any framework. An ISO 27001 task would set `"framework": "ISO27001"` and `"control": "A.9.2.1"`. A HIPAA task would use `"framework": "HIPAA"` and `"control": "164.312(d)"`. The evidence types, scoring methods, and difficulty levels apply universally.
+## Difficulty Levels
 
-### Difficulty Levels
+| Level | Tasks | Skill Tested | Structure |
+|-------|-------|-------------|-----------|
+| D1 | 2 | Single-document gap detection | 1 document, obvious deficiency. The gap is stated in the evidence -- the model needs to recognize it as a control violation. |
+| D2 | 1 | Careful reading | 1 document, subtle gap. The deficiency is buried in a table, a timeline, or an exception clause. |
+| D3 | 2 | Cross-referencing | 3-6 documents. The gap only becomes visible when comparing a policy against a configuration, or a log against a procedure. No single document contains the full picture. |
+| D4 | 8 | Red herring filtering | 3-6 documents + noise files + exception registers. Some apparent gaps have valid explanations documented in the exception register. Models must check exceptions before flagging. Noise documents test selective reading -- irrelevant evidence that should be ignored. |
+| D5 | 7 | Materiality judgment | Ambiguous scenarios where reasonable auditors would disagree. Findings require assessing severity, evaluating compensating controls, and making judgment calls about whether a deficiency is material. |
 
-| Level | Skill Tested | Structure |
-|-------|-------------|-----------|
-| 1 | Single-document gap detection | 1 doc, obvious deficiency |
-| 2 | Careful reading | 1 doc, gap buried in a table or timeline |
-| 3 | Cross-referencing | 3-6 docs, policy contradicts config or logs |
-| 4 | Red herring filtering | 3-6 docs + noise files + exception register; some "gaps" have valid explanations |
-| 5 | Materiality judgment | Ambiguous scenarios where auditors would disagree |
+D4 and D5 tasks make up 75% of the benchmark. D1-D3 tasks serve as calibration -- they establish a floor and verify the harness works. The benchmark's discriminative power comes from D4 (filtering signal from noise) and D5 (professional judgment under ambiguity).
 
-These levels map to universal audit skills, not framework-specific knowledge. A D3 cross-reference task works the same way whether you're comparing an access policy against an IAM config (SOC 2), a data processing agreement against server logs (HIPAA), or an encryption policy against a TLS configuration (PCI-DSS).
+## Example: D1 Task (cc8.1-1-001)
 
-### Evidence Types
+**Change management policy review.** A single policy document describing the organization's change management process. Three planted gaps:
 
-The schema supports evidence types common across frameworks:
+1. **Segregation of duties violation:** The policy states that "changes are deployed by the requesting engineer." The same person who requests a change also deploys it -- no independent review or approval gate.
+2. **No testing gate:** Changes move from development to production with no required testing phase. The policy describes a development and deployment process but omits pre-production validation.
+3. **Emergency change controls:** Emergency changes are approved via verbal confirmation with no documented time limit for retroactive documentation. There is no requirement to formalize the approval after the fact.
 
-| Type | Examples |
-|------|----------|
-| `policy` | Access control policies, incident response plans, data retention policies |
-| `config` | IAM credential reports, MFA configs, firewall rules, TLS settings |
-| `log` | Termination records, access review logs, backup execution logs, audit trails |
-| `spreadsheet` | Service account inventories, asset registers, vendor lists |
-| `screenshot` | Console configurations, access review sign-offs, approval emails, dashboard views |
-| `ticket` | Change management tickets, access request records |
-| `exception_register` | CISO/DPO-approved deviations with compensating controls |
-| `report` | Restore test results, penetration test summaries, risk assessments |
-| `architecture_diagram` | Network topology, data flow diagrams, system boundary definitions |
+This is a single-document, detection-only task. The model reads one policy and identifies three gaps. All three are stated directly in the text -- the model needs to recognize them as control violations, not extract hidden information. Scoring is recall-based: gaps detected divided by total gaps.
 
-Screenshot evidence is sent to models as base64-encoded images via multimodal APIs (Anthropic vision, OpenAI vision). This tests whether models can extract compliance-relevant information from visual evidence — a common audit artifact that text-only benchmarks cannot evaluate.
+## Example: D4 Task (cc8.1-4-001)
 
-### Scoring Methods
+**Change management with red herrings.** A change log containing 15 changes, an exception register, a change management policy, a Standard Change Catalog, and 2 noise documents.
 
-| Method | Formula | Used For |
-|--------|---------|----------|
-| `detection_only` | recall = gaps_detected / total_gaps | D1-D2 |
-| `detection_and_precision` | recall × min(1, max_expected / model_findings) | D3 |
-| `f1` | 2PR / (P+R), where FP includes flagged red herrings | D4-D5 |
+Six real gaps:
+- A change deployed during holiday freeze without CISO approval
+- A retrospective CAB submission that breached the 48-hour SLA
+- Two segregation-of-duties violations (developer self-approving changes)
+- A CAB vote on a high-risk change that failed quorum requirements
+- A missing post-implementation verification on a database migration
+- A self-review where the same engineer authored and reviewed a change
 
-Findings of type `red_herring` count as false positives if the model flags them without referencing the exclusion keywords (e.g., "exception," "approved," "mitigated"). Models are not penalized for mentioning red herring topics if they correctly dismiss them.
+Two red herrings designed to trap models that do not check the exception register:
+- **CHG-414:** An emergency change deployed during the holiday freeze. Appears to be a freeze violation, but the CISO approved it via Slack within 30 minutes, and the exception register documents the approval with a valid justification. Models that flag this without referencing the exception register lose precision.
+- **CHG-415:** A change deployed on December 20, the first day of the holiday freeze. Appears to violate the freeze, but the change was pre-approved at the December 16 CAB meeting -- before the freeze started. The CAB minutes confirm the approval date.
 
-## Preliminary Results
+Two noise documents are included: a business continuity plan summary and a vendor risk assessment. Neither is relevant to change management. Models that extract "findings" from these documents are penalized.
 
-### D3 — Cross-Reference (Detection Scoring)
+This task is hard because it requires multiple reasoning steps that most models skip. The model must cross-reference the change log against the exception register to identify valid exceptions. It must do calendar math -- comparing deployment dates against freeze start dates and CAB meeting dates. It must compare columns in a CSV to detect segregation-of-duties violations (requester == approver, or author == reviewer). It must count CAB votes to check quorum. And it must ignore two documents that contain no relevant information.
 
-9 models on a D3 task: 6 evidence documents, 9 planted gaps (stale service accounts, termination SLA breaches, MFA policy contradictions, access review scope gaps).
+## Example: D5 Task (cc9.1-5-001)
 
-| Model | Gaps Detected | Score |
-|-------|--------------|-------|
-| Claude Opus 4.7 | 9/9 | 100% |
-| Claude Sonnet 4.6 | 9/9 | 100% |
-| GPT-5.5 | 9/9 | 100% |
-| o3 | 9/9 | 100% |
-| GPT-4.1 | 8/9 | 89% |
-| GPT-4o | 7/9 | 78% |
-| GPT-4o-mini | 1/9 | 11% |
+**Vendor management judgment.** A vendor inventory, security incident reports, SOC 2 review documentation, and risk assessment records for a critical and a high-tier vendor.
 
-D3 is saturated for frontier models — six tied at 100%. GPT-4o-mini caught only the most obvious gap (a 7-day termination delay) and missed all findings requiring cross-document reasoning.
+The critical vendor experienced a security incident. It met the contractual 72-hour notification SLA and contained the incident within 48 hours. However, there was a 3-week period of uncertainty regarding data exposure -- the vendor could not confirm whether customer data was accessed until the forensic investigation completed.
 
-### D4-D5 — Red Herrings, Noise, and Judgment (F1 Scoring)
+A second vendor has a qualified SOC 2 Type II opinion. The organization acknowledged the qualification in an internal memo but did not perform a formal risk assessment of the qualification's impact.
 
-D4-D5 tasks use F1 scoring, which penalizes both missed gaps and false positives. We ran 4 models across 3 tasks.
+Every finding in this task requires judgment:
+- The critical vendor met the notification SLA. Does that excuse three weeks of uncertainty about data exposure? Should the organization have notified its own customers during the uncertainty window?
+- Acknowledging a qualified SOC 2 opinion is better than ignoring it. But is acknowledgment without a documented risk assessment sufficient? The qualification may affect controls relevant to the organization's own compliance posture.
+- The incident was contained in 48 hours. Is the response adequate given the severity, or should the vendor's risk tier be re-evaluated?
 
-**CC8.1-D4: Change Management** — 15 changes in the log. 6 real gaps (freeze violation without CISO approval, retrospective CAB SLA breach, two segregation-of-duties violations, CAB quorum failure on a high-risk change, missing post-implementation verification). 2 red herrings (emergency change during holiday freeze with valid CISO approval; change deployed on freeze start date with pre-freeze CAB approval). 2 noise documents.
+There are no clear-cut answers. A conservative auditor would flag all of these. A pragmatic auditor might accept the SLA compliance as sufficient and treat the acknowledgment as adequate. The task tests whether models can identify the judgment calls and articulate the considerations on both sides, rather than producing a binary pass/fail.
 
-| Model | Provider | Recall | Precision | F1 |
-|-------|----------|--------|-----------|-----|
-| GPT-5.5 | OpenAI | 100% | 100% | 100% |
-| GPT-4o | OpenAI | 100% | 100% | 100% |
-| Claude Sonnet 4.6 | Anthropic | 100% | 86% | 92% |
-| Claude Opus 4.7 | Anthropic | 100% | 67% | 80% |
-| GPT-4o-mini | OpenAI | 100% | 30% | 46% |
+**Average score across all 6 models on this task: 27%. No model scored above 40%.** This is the hardest task in the benchmark. Models either over-report (flagging everything as a gap, losing precision) or under-report (accepting the vendor's contractual compliance at face value, missing the judgment issues).
 
-GPT-5.5 used a concise table format with 7 findings, including a legitimate non-planted issue (kernel patch miscategorized under the Standard Change Catalog). Sonnet explicitly analyzed both red herrings and dismissed them with reasoning. Opus found all gaps but reported 9 findings total (3 legitimate extras that lower precision).
+## Key Findings
 
-**CC7.2-D5: Monitoring Judgment** — 3 months of alert summary data across 8 alert rules. 5 gaps requiring materiality assessment: two production services deployed without monitoring (25+ days past 5-day SLA), S3 bulk access alert at 95-97% false positive rate for the entire quarter (policy threshold: 30%), SQL injection rule disabled for 2 months (CISO-approved with WAF compensating control), 5 unresolved impossible travel investigations in December, brute force alert SLA adherence drop to 96% during an attack spike. 1 noise document.
+- **No model dominates.** GPT-5.5 leads at 82% average but scores 18% on system boundary tasks (cc6.6-5). Every model has at least one task where it scores below 40%.
+- **Clear performance tiers.** Top tier: GPT-5.5 and Claude Sonnet 4.6 (73-82%). Middle tier: Claude Opus 4.7 and GPT-4.1 (57-65%). Lower tier: Claude Haiku 4.5 and GPT-4o (43-54%).
+- **D5 judgment tasks are the hardest.** Three D5 tasks have an average score below 30% across all models. These tasks require materiality assessment and professional judgment that current models cannot reliably perform.
+- **Recall is easy; precision separates.** Most frontier models detect the majority of planted gaps. The differentiator is precision -- whether the model avoids flagging red herrings, ignores noise documents, and refrains from reporting non-issues.
+- **Change management is the easiest domain** (93% average across all models). The gaps are procedural and well-defined. **Vendor and risk judgment is the hardest** (27% average). These tasks require assessing adequacy rather than detecting violations.
 
-| Model | Provider | Recall | Precision | F1 |
-|-------|----------|--------|-----------|-----|
-| GPT-5.5 | OpenAI | 100% | 100% | 100% |
-| Claude Opus 4.7 | Anthropic | 100% | 83% | 91% |
-| Claude Sonnet 4.6 | Anthropic | 100% | 50% | 67% |
-| GPT-4o | OpenAI | 100% | 28% | 43% |
+## What's Next
 
-GPT-5.5 achieved perfect precision — reported only the 5 planted findings. Opus reported ~6 (1 extra). GPT-4o reported ~18, treating every observation as a finding.
+- **More tasks.** Expanding from 20 to 64+ tasks across additional SOC 2 controls (CC6.6, CC3.1).
+- **More frameworks.** ISO 27001 Annex A, HIPAA Security Rule, and PCI-DSS v4.0 task sets. The schema supports these without harness changes.
+- **LLM-as-judge for v2.** Keyword scoring is deterministic and reproducible but limited. An optional LLM-as-judge secondary scorer will be added in v2 for tasks where keyword matching cannot capture the full range of valid responses -- particularly D5 judgment tasks.
+- **Community contributions.** The benchmark benefits from tasks authored by compliance professionals who can ground scenarios in real audit findings. Contributions across any framework are welcome.
 
-**CC9.1-D4: Vendor Management** — 14 vendors across 4 tiers. 4 gaps (Stripe uses GCP as a carved-out subservice org with no independent assessment, Snowflake SOC 2 review pending on a critical vendor, no business reviews for high-tier vendors processing PII, multiple vendors with unassessed carved-out subservice orgs). 2 red herrings (DataRobot — critical vendor without SOC 2 but with active CISO exception and compensating controls; HubSpot — SOC 2 not provided but CISO exception with alternative assessment including ISO 27001 confirmation). 1 noise document.
-
-| Model | Provider | Recall | Precision | F1 |
-|-------|----------|--------|-----------|-----|
-| GPT-5.5 | OpenAI | 100% | 100% | 100% |
-| Claude Sonnet 4.6 | Anthropic | 100% | 57% | 73% |
-| Claude Opus 4.7 | Anthropic | 100% | 50% | 67% |
-| GPT-4o | OpenAI | 50% | 11% | 18% |
-
-GPT-5.5 scored 100% — found all 4 gaps, correctly dismissed both red herrings. GPT-4o flagged both red herrings as findings without checking the exception register and missed the subservice org carve-out gaps.
-
-### Summary
-
-**Cross-task average F1 (D4-D5):**
-
-| Rank | Model | Provider | CC8.1-D4 | CC7.2-D5 | CC9.1-D4 | Average |
-|------|-------|----------|----------|----------|----------|---------|
-| 1 | GPT-5.5 | OpenAI | 100% | 100% | 100% | **100%** |
-| 2 | Claude Opus 4.7 | Anthropic | 80% | 91% | 67% | **79%** |
-| 3 | Claude Sonnet 4.6 | Anthropic | 92% | 67% | 73% | **77%** |
-| 4 | Gemini 2.5 Flash | Google | 0% | 67% | 100% | **56%** |
-| 5 | GPT-4o | OpenAI | 100% | 43% | 18% | **54%** |
-
-GPT-5.5 is the only model to score 100% across all D4-D5 tasks — perfect recall, perfect precision, correct red herring handling on every task. This indicates the current D4-D5 tasks still have headroom; harder tasks (deeper CSV haystacks, calendar math traps, conflicting evidence) are needed to differentiate at the top.
-
-Below GPT-5.5, the picture is more nuanced. Claude Opus 4.7 leads on the judgment task (91%) but loses precision on red herrings. Gemini 2.5 Flash is inconsistent — 100% on vendor management, 17% on change management. GPT-4o has strong change management performance but fails on vendor-specific compliance knowledge. No model except GPT-5.5 is consistent across all compliance domains.
-
-Gemini 3.1 Pro and Flash Lite could not be benchmarked due to free-tier API quota limits. Results will be added when paid API access is available.
-
-These are preliminary results from 10 tasks across 6 controls. The v1 benchmark will include 64 tasks across 8 controls.
-
-## Comparison to Existing Benchmarks
-
-| | SWE-bench Pro | CyBench | CyberGym | GAIA | TrustBench |
-|---|---|---|---|---|---|
-| **Domain** | Software engineering | Cybersecurity CTFs | Vulnerability analysis | General reasoning | Compliance auditing |
-| **Input** | Issue + repo | CTF challenge | Vulnerable source | Question + files | Evidence package |
-| **Output** | Code patch | Flag string | PoC exploit | Short answer | Audit findings |
-| **Evaluation** | Test suite | String match | Crash/no-crash | Exact match | Keyword + precision |
-| **Environment** | Docker | Kali Docker | Docker (no network) | Browser + tools | None (document-only) |
-| **Tasks** | 1,865 | 40 | 1,507 | 466 | 64 (v1 target) |
-| **Top D4-D5 avg** | ~46% | 17.5% | ~20% | ~45% | 100% (GPT-5.5) |
-
-### Design Decisions
-
-**Keyword scoring over LLM-as-judge.** Deterministic and reproducible. Using an LLM to grade compliance assessments introduces circular evaluation and non-deterministic results. Keywords are calibrated broadly to catch varied phrasing. LLM-as-judge may be added as an optional secondary scorer in v2.
-
-**Free-text output.** Compliance assessments are narrative. Forcing structured JSON output would test format compliance, not audit competence.
-
-**No Docker.** Tasks are document-based. The model reads files and produces findings. This makes the benchmark runnable with just API keys — no infrastructure.
-
-**Framework-agnostic schema.** The `framework` and `control` fields are strings, not enums constrained to SOC 2. The same task structure, difficulty levels, and scoring methods apply to any control-based compliance standard. The initial task set uses SOC 2 because it has the most widespread adoption and the clearest control language, but the architecture imposes no framework dependency.
-
-**Explicit difficulty levels.** Each level tests a specific audit skill. Score-by-difficulty curves show where a model's compliance reasoning breaks down — independent of which framework the task targets.
-
-### Anti-Saturation Mechanisms
-
-Learned from benchmarks that saturated (HumanEval at 95%+, SWE-bench Verified deprecated, GPQA Diamond exceeded by models):
-
-- Precision scoring penalizes over-reporting
-- Red herring findings require checking exception registers before flagging
-- Noise documents test selective reading
-- D5 judgment tasks have no single correct answer — models must assess materiality
-- Large CSV logs (92+ rows) test whether models process full documents or truncate
-
-## Roadmap
-
-**Current state:** 10 tasks across 6 controls (CC6.1, CC6.3, CC7.2, CC8.1, CC9.1, A1.2). Eval harness supports Anthropic and OpenAI APIs with all three scoring methods, red herring handling, noise document support, and multimodal evidence (screenshots). Schema defined and validated.
-
-**v1 target:**
-- 64 tasks across 8 controls (adding CC6.6, CC3.1)
-- D4-D5 tasks are the majority of the benchmark (~60-70% of tasks). D1-D3 tasks serve as calibration — they establish a floor and verify the harness works. The benchmark's discriminative power comes from D4 (red herring filtering, noise documents) and D5 (materiality judgment, conflicting evidence, calendar math).
-- Per-control target: 1 D1, 1 D2, 1 D3, 2 D4, 3 D5
-- Baseline evaluation across 8 models
-- Public leaderboard with scores by difficulty and control
-- pip-installable package
-
-**v2 and beyond:**
-- ISO 27001 Annex A task set
-- HIPAA Security Rule task set
-- PCI-DSS v4.0 task set
-- NIST CSF 2.0 task set
-- LLM-as-judge as optional secondary scorer
-- Community-contributed tasks from auditors and assessors
-
-The schema is designed so that adding a new framework requires only authoring tasks — no changes to the eval harness, scoring, or CLI.
-
-## Code
-
-The schema, eval harness, and prototype tasks are at [github.com/your-repo/trustbench](https://github.com/your-repo/trustbench).
+## Try It
 
 ```bash
-git clone https://github.com/your-repo/trustbench.git
+git clone https://github.com/GetDelve/trustbench.git
 cd trustbench
 pip install -r requirements.txt
 
 # Run a single task
-python3 -m trustbench.cli run tasks/cc6.1-3-001 --model claude-sonnet-4-6
+python3 -m trustbench.cli run tasks/cc8.1-1-001 --model claude-sonnet-4-6
+
+# Run the full benchmark
+python3 -m trustbench.cli run --all --model gpt-5.5
 
 # Validate all tasks against schema
 python3 -m trustbench.cli validate
@@ -261,5 +129,3 @@ python3 -m trustbench.cli validate
 # Generate leaderboard from results
 python3 -m trustbench.cli leaderboard
 ```
-
-Contributions welcome — particularly from compliance professionals who can author tasks grounded in real audit findings across any framework.
