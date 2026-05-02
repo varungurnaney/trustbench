@@ -34,31 +34,45 @@ Requires an `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable dependi
 
 ## Results
 
-Preliminary results across D3-D5 tasks. D4-D5 tasks use F1 scoring (penalizes false positives and over-reporting).
+Preliminary results from 20 tasks. Three models were evaluated across all 13 D4-D5 tasks: GPT-5.5 (OpenAI), Claude Opus 4.7 (Anthropic), and Claude Sonnet 4.6 (Anthropic). Additional models were tested on subsets.
 
-**D3 — Cross-reference (CC6.1, 6 docs, 9 gaps, detection scoring):**
+### D3 — Cross-Reference (1 task, 9 models)
 
-| Model | Gaps Detected | Score |
-|-------|--------------|-------|
-| Claude Opus 4.7 | 9/9 | 100% |
-| Claude Sonnet 4.6 | 9/9 | 100% |
-| GPT-5.5 | 9/9 | 100% |
-| o3 | 9/9 | 100% |
-| GPT-4.1 | 8/9 | 89% |
-| GPT-4o | 7/9 | 78% |
-| GPT-4o-mini | 1/9 | 11% |
+One D3 task (cc6.1-3-001): 6 evidence documents, 9 planted gaps. Scored on detection only (recall). This task is saturated — 6 models tie at 100%.
 
-**D4-D5 — Red herrings, noise, and judgment (F1 scoring):**
+| Model | Provider | Gaps | Score |
+|-------|----------|------|-------|
+| Claude Opus 4.7 | Anthropic | 9/9 | 100% |
+| Claude Sonnet 4.6 | Anthropic | 9/9 | 100% |
+| Claude Haiku 4.5 | Anthropic | 9/9 | 100% |
+| GPT-5.5 | OpenAI | 9/9 | 100% |
+| o3 | OpenAI | 9/9 | 100% |
+| GPT-4.1 | OpenAI | 8/9 | 89% |
+| GPT-4o | OpenAI | 7/9 | 78% |
+| GPT-4o-mini | OpenAI | 1/9 | 11% |
 
-| Rank | Model | Avg D4-D5 F1 | Tasks |
-|------|-------|-------------|-------|
-| 1 | GPT-5.5 | **79%** | 13 |
-| 2 | Claude Sonnet 4.6 | **69%** | 13 |
-| 3 | Claude Opus 4.7 | **63%** | 13 |
+### D4-D5 — Red Herrings, Noise, and Judgment (13 tasks, 3 models)
 
-Hardest tasks (avg F1 across all models): cc9.1-5-001 vendor judgment (36%), cc6.6-5-001 boundary judgment (35%), cc3.1-5-001 risk assessment judgment (51%). No model scores above 57% on these.
+Scored with F1 (penalizes both missed gaps and false positives). GPT-5.5, Opus 4.7, and Sonnet 4.6 were evaluated on all 13 tasks. GPT-4o was evaluated on only 3 of 13 (cc8.1-4, cc7.2-5, cc9.1-4) and is excluded from the average.
 
-See [Task Reference](docs/tasks.md) for per-task results and analysis.
+| Rank | Model | Provider | Avg F1 | Highest | Lowest |
+|------|-------|----------|--------|---------|--------|
+| 1 | GPT-5.5 | OpenAI | **79%** | 100% (5 tasks) | 18% (cc6.6-5) |
+| 2 | Claude Sonnet 4.6 | Anthropic | **69%** | 100% (3 tasks) | 36% (cc9.1-5) |
+| 3 | Claude Opus 4.7 | Anthropic | **63%** | 91% (cc7.2-5, cc8.1-5) | 33% (cc6.6-5) |
+
+### What the scores mean
+
+**No model dominates.** GPT-5.5 leads overall but scored 18% on system boundary judgment. Opus scored 91% on change management judgment (beating GPT-5.5's 73% on the same task). Each model has blind spots.
+
+**Recall is easy. Precision separates.** Most models find most gaps (high recall). Scores diverge on how many false positives are reported. Opus consistently over-reports (100% recall but 40-50% precision on many tasks). GPT-5.5 is more concise.
+
+**D5 judgment tasks are hardest.** The three hardest tasks average 35-51% across all models:
+- cc6.6-5-001 (system boundary materiality): **35% avg**
+- cc9.1-5-001 (vendor incident judgment): **36% avg**
+- cc3.1-5-001 (risk assessment judgment): **51% avg**
+
+See [Task Reference](docs/tasks.md) for per-task analysis and [Leaderboard](LEADERBOARD.md) for full results.
 
 Full leaderboard: [LEADERBOARD.md](LEADERBOARD.md)
 
