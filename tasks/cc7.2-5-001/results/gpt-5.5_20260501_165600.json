@@ -1,0 +1,103 @@
+{
+  "task_id": "cc7.2-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T16:56:00.248292",
+  "score": {
+    "task_id": "cc7.2-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.7142857142857143,
+    "f1": 0.8333333333333333,
+    "score": 0.8333333333333333,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "helix-ml-inference",
+          "helix-data-lake",
+          "5 business days",
+          "monitoring",
+          "deployed",
+          "SLA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "S3 bulk access",
+          "false positive",
+          "30%",
+          "tuning"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "brute force",
+          "SLA",
+          "acknowledged",
+          "missed",
+          "December"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQL injection",
+          "disabled",
+          "compensating",
+          "WAF",
+          "CISO"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "impossible travel",
+          "5",
+          "unresolved",
+          "investigation",
+          "December",
+          "SLA",
+          "triage"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2612,
+    "output_tokens": 2402
+  },
+  "raw_response": "## Overall Assessment for CC7.2\n\nHelix has a defined monitoring and alerting policy, centralized tooling requirements, alert severity/SLAs, triage expectations, and evidence of monthly alert analysis. However, for Q4 2025, there are operating effectiveness gaps that would likely require remediation before a SOC 2 Type II audit, especially around incomplete monitoring coverage for production services and inconsistent alert handling/tuning.\n\n---\n\n## Findings\n\n| # | Finding | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Production services not fully monitored | **Quarterly monitoring coverage review with gap analysis** \u2014 `coverage_gaps`, `new_services_deployed_q4`; **Security Monitoring and Alerting Policy** \u2014 Sections 2 and 5 | The policy requires all production systems to be monitored and new production services to have monitoring within 5 business days. Two production services were not fully monitored during Q4: `helix-ml-inference` had partial monitoring only, with no SIEM integration or custom alert rules, and `helix-data-lake-ingestion` had only basic CloudWatch metrics with no Datadog, SIEM, or alerting. Both missed the 5-business-day SLA and remained unresolved as of the December 15 review. This limits Helix\u2019s ability to detect anomalous activity across all production components. | **High** |\n| 2 | Monitoring onboarding process failed for new services | **Quarterly monitoring coverage review with gap analysis** \u2014 `notes`, `new_services_deployed_q4`; **Security Monitoring and Alerting Policy** \u2014 Section 5 | The monitoring gaps were discovered only during the quarterly review. One service was deployed without Security being notified, and another operated in a separate AWS account not integrated with central monitoring. This indicates the control is detective but not sufficiently embedded in the deployment/change process to ensure monitoring is configured before or shortly after production deployment. | **Medium** |\n| 3 | High-severity alerts not consistently acknowledged within SLA | **Monthly alert summary with triage statistics for Q4 2025**; **Security Monitoring and Alerting Policy** \u2014 Section 3.1 and 4.1 | Several High alerts were not acknowledged within the required 30-minute SLA. Examples include October S3 bulk access alerts, November S3 bulk access alerts, December failed login brute force alerts, December impossible travel alerts, and December S3 bulk access alerts. While most alerts were acknowledged timely, the recurring misses indicate inconsistent operating effectiveness for timely anomaly review. | **Medium** |\n| 4 | Persistent high false-positive rates and incomplete alert tuning | **Monthly alert summary with triage statistics for Q4 2025**; **Security Monitoring and Alerting Policy** \u2014 Section 3.3 | Multiple alert rules had very high false-positive rates. Failed login brute force was tuned and improved, but S3 bulk access remained noisy and regressed in December after a change to ETL job patterns. The policy requires rules with false-positive rates above 30% to be tuned within 2 weeks. Persistent noise can reduce the effectiveness of monitoring and increase the risk that true anomalies are missed or delayed. | **Medium** |\n| 5 | Unresolved \u201crequires investigation\u201d alerts lack evidence of final disposition | **Monthly alert summary with triage statistics for Q4 2025**; **Security Monitoring and Alerting Policy** \u2014 Section 4.1 and 4.2 | The monthly alert summary shows alerts categorized as \u201crequires investigation,\u201d including High-severity alerts such as impossible travel, failed login brute force, and S3 bulk access. December notes specifically mention an increase in unresolved investigations for impossible travel. The evidence does not show whether these were ultimately resolved as true positives, false positives, or incidents. CC7.2 requires anomalies to be analyzed to determine whether they represent security events. | **Medium** |\n| 6 | Disabled required SQL injection alert reduces direct detection coverage | **Quarterly monitoring coverage review with gap analysis** \u2014 `disabled_alerts`; **Security Monitoring and Alerting Policy** \u2014 Sections 3.2 and 3.3; **Monthly alert summary** \u2014 SQL injection pattern rows | The policy lists SQL injection patterns as a required alert rule. The rule was disabled on November 1 due to a 100% false-positive rate. The disablement was CISO-approved and included a compensating control \u2014 WAF blocking plus CloudTrail monitoring for bypass attempts \u2014 which makes this more of a controlled exception than a material deficiency. However, Helix should ensure the compensating control is tested and documented, because the required alert is no longer active. | **Low** |\n| 7 | Limited evidence of CISO review of monthly alert summaries | **Security Monitoring and Alerting Policy** \u2014 Section 4.2; **Monthly alert summary with triage statistics for Q4 2025** | The policy requires monthly alert summary reports to be produced and reviewed by the CISO. The Q4 summary provides useful triage statistics, but the evidence does not show formal CISO review, approval, or follow-up decisions for open investigations and tuning issues. This is primarily an evidence/completeness gap rather than proof the review did not occur. | **Low** |\n\n---\n\n## Items Not Considered Material Findings\n\n| Item | Professional Judgment |\n|---|---|\n| Annual penetration test results | The penetration test is relevant to the broader security program but is not strong evidence of ongoing monitoring under CC7.2. The high finding was remediated and retested. Accepted risks appear documented. No CC7.2 finding noted from this document alone. |\n| SQL injection alert disablement | Although the alert is a required rule, the disablement was approved by the CISO and supported by a rationale and compensating controls. This should be tracked as an exception and periodically revalidated, but it does not appear to be a material deficiency by itself. |\n| Presence of false positives generally | False positives are an operational reality in monitoring programs. The issue is not that false positives exist, but that some remained high and affected acknowledgment performance, particularly for S3 bulk access alerts. |\n\n---\n\n## Readiness Conclusion\n\nHelix is **partially ready** for CC7.2. The monitoring framework is well defined and there is evidence of alert generation, triage statistics, tuning, and escalation. However, the unresolved production monitoring gaps and recurring SLA/tuning issues indicate the control was not operating consistently throughout Q4 2025.\n\nThe most important remediation before audit is to fully onboard all production services into central monitoring/SIEM and demonstrate timely alert triage and final disposition for investigations."
+}

@@ -1,0 +1,58 @@
+{
+  "task_id": "cc6.6-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:25:45.855085",
+  "score": {
+    "task_id": "cc6.6-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "FW-018",
+          "9300",
+          "0.0.0.0/0",
+          "Elasticsearch",
+          "sg-prod-analytics",
+          "outbound",
+          "data exfiltration"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "FW-019",
+          "webhook",
+          "0.0.0.0/0",
+          "partner",
+          "inbound"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1184,
+    "output_tokens": 1442
+  },
+  "raw_response": "Certainly. Below is a structured analysis of the provided AWS security group export against SOC 2 CC6.6 requirements. The focus is on least privilege, appropriate source/destination restrictions, and system boundary protection.\n\n---\n\n## Findings\n\n---\n\n### 1. **Overly Broad Inbound Access to Webhook Service**\n\n**Section:**  \nFW-019, `sg-prod-webhook`, inbound, tcp, 443, `0.0.0.0/0`, \u201cInbound HTTPS webhooks from partners\u201d\n\n**Why it\u2019s a gap:**  \nAllowing inbound 443 (HTTPS) from `0.0.0.0/0` exposes the webhook service to the entire internet. Typically, webhook endpoints should be restricted to known IP ranges of trusted partners (if feasible), rather than all public addresses, to reduce attack surface.\n\n**Severity:**  \n**High**\n\n---\n\n### 2. **Unrestricted Inbound HTTPS for Public Web Application**\n\n**Section:**  \nFW-001, `sg-prod-alb-public`, inbound, tcp, 443, `0.0.0.0/0`, \u201cAllow HTTPS from internet \u2014 public web application\u201d  \nFW-002, `sg-prod-alb-public`, inbound, tcp, 80, `0.0.0.0/0`, \u201cAllow HTTP from internet \u2014 redirect to HTTPS\u201d\n\n**Why it\u2019s a gap:**  \nInbound 443/80 from anywhere is required for public-facing web applications. However, this does not represent a gap if the security groups are attached only to intended resources (i.e., load balancers serving public apps) and additional controls such as WAF, DDoS protection, and proper hardening are in place. Lack of mention of these controls is a **potential observation** but not inherently an issue in isolation.\n\n**Severity:**  \n**Low** (if documentation attests that only web tier is exposed; escalate if controls are not present)\n\n---\n\n### 3. **Outbound Elasticsearch Traffic Fully Open to Internet**\n\n**Section:**  \nFW-018, `sg-prod-analytics`, outbound, tcp, 9300, `0.0.0.0/0`, \u201cElasticsearch cluster transport \u2014 data export pipeline\u201d\n\n**Why it\u2019s a gap:**  \nAllowing outbound 9300 (Elasticsearch transport protocol) to any destination on the internet is highly risky. This port should be restricted to known internal clusters or specific trusted destinations, not open to all, as it could allow data exfiltration or unintentional leaks.\n\n**Severity:**  \n**Critical**\n\n---\n\n### 4. **Outbound Connections to Public Internet \u2014 Risk of Overexposure**\n\n**Section:**  \nFW-008, `sg-prod-app-tier`, outbound, tcp, 443, `0.0.0.0/0`, \u201cOutbound HTTPS for third-party API calls (Stripe/Twilio)\u201d  \nFW-017, `sg-prod-analytics`, outbound, tcp, 443, `0.0.0.0/0`, \u201cOutbound HTTPS for S3 exports\u201d  \nFW-021, `sg-prod-monitoring`, outbound, tcp, 443, `0.0.0.0/0`, \u201cOutbound HTTPS for PagerDuty/Slack alerts\u201d\n\n**Why it\u2019s a gap:**  \nWhile outbound 443 to the internet is often required, the security groups should ideally restrict these to the minimal required IP ranges (where possible, i.e., AWS S3 endpoints, partner APIs). Unrestricted outbound HTTPS could be used for data exfiltration or to mask malicious activity. The absence of egress filtering is a potential weakness.\n\n**Severity:**  \n**Medium**\n\n---\n\n### 5. **Outbound Traffic from Webhook Service to Internal Network**\n\n**Section:**  \nFW-020, `sg-prod-webhook`, outbound, tcp, 8443, `sg-prod-app-tier`, \u201cForward webhooks to internal services\u201d\n\n**Why it\u2019s a gap:**  \nThis appears to allow the webhook service to contact the internal application tier. This is acceptable if strictly necessary for business logic, but care should be taken to monitor and restrict what the webhook service can communicate with to avoid lateral movement from a potentially internet-facing service.\n\n**Severity:**  \n**Low** (observation to ensure segmentation/restriction)\n\n---\n\n### 6. **General Lack of Explicit Deny Rules or Segmentation Comments**\n\n**Section:**  \nAll exported rules; no explicit \"deny\" statements or segmentation documentation\n\n**Why it\u2019s a gap:**  \nAWS security groups are stateful and implicitly deny traffic not explicitly allowed, but the export does not indicate review of segmentation between sensitive tiers (e.g., data, application, bastion). Lack of supporting documentation of regular review or rationale for security group design may hinder CC6.6 evidence.\n\n**Severity:**  \n**Low** (process/documentation gap, not misconfiguration)\n\n---\n\n## Summary Table\n\n| Title                                                           | Section                                                 | Gap Summary                                                        | Severity   |\n|------------------------------------------------------------------|---------------------------------------------------------|---------------------------------------------------------------------|------------|\n| Overly Broad Inbound Access to Webhook Service                   | FW-019 sg-prod-webhook inbound 443 from 0.0.0.0/0       | Webhook service open to entire internet, not restricted to partners | High       |\n| Unrestricted Inbound HTTPS for Public Web Application            | FW-001/002 sg-prod-alb-public inbound 80/443 from all   | Acceptable for public apps, but note if WAF/DDOS is not present     | Low        |\n| Outbound Elasticsearch Traffic Fully Open to Internet            | FW-018 sg-prod-analytics outbound 9300 to 0.0.0.0/0     | Elastic transport protocol open outbound to internet                | **Critical** |\n| Outbound Connections to Public Internet \u2014 Overexposure           | FW-008/017/021 outbound 443 to internet                 | Outbound HTTPS not restricted to known IPs or ranges                | Medium     |\n| Webhook Service Lateral Access to Internal Tier                  | FW-020 sg-prod-webhook outbound 8443 to app-tier        | Potential lateral move vector; ensure justified and monitored       | Low        |\n| Lack of Explicit Deny Rules / Segmentation Comments/Review       | All                                                    | No evidence of periodic review or rationale for security grouping   | Low        |\n\n---\n\n# Recommendations\n\n- **FW-019:** Restrict allowed source IPs to partner ranges if possible; monitor and alert on any unwanted access.\n- **FW-018:** Change outbound rule to only permit required known endpoints; block public internet.\n- **FW-008/017/021:** Where feasible, use VPC endpoints or restrict egress to required service IPs/FQDNs.\n- **Documentation:** Maintain design documentation and periodic review records for security group configurations.\n- **Monitoring:** Ensure logging and alerting for all perimeter-facing resources and for any access using open rules.\n\n---\n\n**End of findings. Let me know if you need remediation steps, mapping to SOC 2 criteria, or more technical detail on any item.**"
+}

@@ -1,0 +1,86 @@
+{
+  "task_id": "cc8.1-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T20:05:09.885496",
+  "score": {
+    "task_id": "cc8.1-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 2,
+    "red_herrings_total": 2,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "rollback",
+          "4.7%"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-510",
+          "node pool",
+          "rollback",
+          "pod scheduling"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-506",
+          "SCIM",
+          "testing evidence",
+          "N/A",
+          "Section 3.2",
+          "no testing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "CHANGE-510",
+          "staging",
+          "production",
+          "parity",
+          "2 nodes",
+          "infrastructure"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3950,
+    "output_tokens": 2678
+  },
+  "raw_response": "# CC8.1 Change Management Control \u2013 Readiness Assessment\n\n## FINDINGS\n\n---\n\n### Finding 1: Missing Testing Evidence Prior to CAB Approval\n\n**Document:** CHANGE-506 (SCIM provisioning endpoint) + CAB Meeting Minutes (November 10, 2025)\n\n**Control Reference:** POL-CHG-014, Section 3.2 (Testing Requirements)\n\n**Issue:**\nThe policy explicitly requires \"Test results attached to the Jira ticket\" prior to production deployment for all Normal changes. CHANGE-506 was approved by CAB on November 10 with **no testing evidence attached** (\"testing_evidence\" field is blank in the change log). The CAB meeting minutes explicitly note: \"Note: formal testing evidence not yet attached to Jira ticket at time of approval. Lisa indicated test results would be uploaded before deployment.\"\n\nThis represents approval based on a promise of future evidence rather than actual evidence. While the change was ultimately deployed successfully with post-implementation verification completed, the approval decision was made without the required supporting documentation. This violates the sequential control: testing evidence must precede (and inform) CAB approval, not follow it.\n\n**Severity:** **High**\n\n**Remediation:** Enforce that CAB review cycles close only when all required testing evidence is attached to the ticket. Implement Jira workflow automation to block approval state transitions until testing_evidence field is populated for Normal/High/Critical changes.\n\n---\n\n### Finding 2: Incomplete Rollback Documentation and Root Cause Analysis\n\n**Document:** CHANGE-510 rollback + CAB Meeting Minutes (December 15, 2025)\n\n**Control Reference:** POL-CHG-014, Section 3.6 (Rollback)\n\n**Issue:**\nCHANGE-510 (Kubernetes node pool scaling) was rolled back on December 9 due to \"Pod scheduling failures on new node pool \u2014 node affinity rules misconfigured.\" The change log notes the root cause as a \"Pod anti-affinity conflict with existing DaemonSets.\"\n\nHowever, unlike CHANGE-503 (which has a formal Incident Report with detailed timeline, severity classification, and documented corrective actions), **CHANGE-510 has no equivalent incident documentation**. The CAB meeting minutes provide only a brief summary. There is no evidence of:\n- Formal post-mortem analysis\n- Detailed timeline of detection and rollback execution\n- Evaluation of why the misconfiguration was not caught in staging\n- Corrective actions to prevent recurrence (beyond the fix change itself)\n\nWhile CHANGE-511 was created to fix the issue, there is no documented process improvement or root cause prevention strategy. This is a control weakness because rollbacks should trigger formal review and documented learning to prevent similar issues.\n\n**Severity:** **Medium**\n\n**Remediation:** Establish a threshold (e.g., any rollback of Normal or higher risk changes) that automatically triggers a formal incident report or post-mortem document. Require root cause analysis and corrective actions to be reviewed and approved by CAB before closing the incident.\n\n---\n\n### Finding 3: Emergency Change Approval Process Lacks Formality in Real-Time Documentation\n\n**Document:** CHANGE-507 (curl CVE patch) + CAB Meeting Minutes (November 17, 2025)\n\n**Control Reference:** POL-CHG-014, Section 2 (Emergency approval) and Section 3.3 (CAB approval)\n\n**Issue:**\nCHANGE-507 was approved via \"verbal\" approval from VP Engineering (Andrea Ruiz) on November 15 at 08:05, with retroactive CAB review scheduled for November 17 (within the policy's 72-hour window). This is compliant with the policy as written.\n\nHowever, there is a **documentation gap**: the change log shows \"Andrea Ruiz (verbal)\" as the approver, but there is no contemporaneous record of:\n- Who made the verbal approval request\n- The timestamp and context of the verbal decision\n- What criteria triggered the emergency classification (e.g., \"active incident remediation\")\n- On-call escalation procedures followed\n\nWhile the retrospective CAB meeting minutes confirm the emergency process was followed correctly, **real-time verbal approvals create audit trail gaps**. If there were no incident ticket or escalation documentation contemporaneously, the approval decision lacks supporting context.\n\n**Severity:** **Medium**\n\n**Remediation:** For emergency changes, require either: (a) a contemporaneous written confirmation (Slack message, email) from the approver within 15 minutes, or (b) a linked incident ticket (INC-*) that documents the business justification for the emergency classification. Verbal approval should be recorded with timestamp and attendees.\n\n---\n\n### Finding 4: CAB Quorum Inconsistency and Unclear Quorum Definition\n\n**Document:** CAB Meeting Minutes (October 20, November 3, November 10, December 8, 2025)\n\n**Control Reference:** POL-CHG-014, Section 3.3 (CAB approval \u2013 \"Quorum: 3 of 4 members including VP Engineering\")\n\n**Issue:**\nThe policy states quorum requires \"3 of 4 members **including VP Engineering**.\" However, the CAB meeting on **November 3, 2025** shows:\n\n**Attendees:** Andrea Ruiz (VP Eng), Derek Santos (SRE Director), Carlos Vega (QA Lead)  \n**Quorum:** Met (3/4)\n\nThis is **3 of 4 members present, and includes VP Engineering**, so it technically meets the policy requirement. However, the policy language is ambiguous: does it mean:\n- (a) At least 3 members present AND VP Eng must be one of them, OR\n- (b) A simple majority (3) must include VP Eng (allowing 2 others + VP Eng)\n\nMore critically, **three meetings (October 20, November 10, December 8) show only 3 of 4 members** with Mei Lin (Security Lead) absent from October 20 and December 8. For high-risk changes (CHANGE-503, CHANGE-506, CHANGE-509), security review appears optional under this interpretation, which contradicts the security-sensitive nature of those changes.\n\n**Severity:** **Medium**\n\n**Remediation:** Clarify the quorum requirement in POL-CHG-014 to explicitly state: \"Minimum 4 members including VP Engineering, OR minimum 3 members including both VP Engineering and Security Lead.\" Document which changes require security review as a mandatory gate. Implement Jira automation to flag meetings where high-risk changes were approved without full quorum.\n\n---\n\n### Finding 5: Test Pass Rate Threshold Not Met \u2013 CHANGE-503 Approved Despite Subthreshold Testing\n\n**Document:** CHANGE-503 change log + CAB Meeting Minutes (October 20, 2025)\n\n**Control Reference:** POL-CHG-014, Section 3.2 (Testing Requirements \u2013 \"minimum 95% pass rate\")\n\n**Issue:**\nCHANGE-503 shows a test pass rate of **96.1%**, which meets the stated 95% minimum. However, examination of the actual incident (INC-2025-0891) reveals that the **testing in staging was insufficient to detect the production failure**:\n\n> \"WebSocket connection pooling under production load exceeded staging environment capacity. The staging environment has 2 Kubernetes nodes vs. production's 12 nodes, causing connection pool exhaustion to manifest only at production scale.\"\n\nWhile the testing technically met the 95% threshold, **the test environment configuration was inadequate to validate the change**. A 96.1% pass rate in staging became a 4.7% error rate in production\u2014not because testing was poorly executed, but because the testing environment didn't match production topology.\n\nThis reveals a **control design weakness**: the policy requires a pass-rate threshold but does not require test environment parity validation for infrastructure/load-sensitive changes. The policy should distinguish between:\n- Unit/functional testing pass rates (current requirement)\n- Load testing environment configuration validation (missing requirement)\n\n**Severity:** **High**\n\n**Remediation:** Amend POL-CHG-014, Section 3.2 to add: \"For changes affecting resource pooling, connection management, or scalability, load testing must be conducted in a staging environment configured with equivalent node/replica density to production, or must use synthetic load testing at 2x production capacity. Staging environment configuration gaps must be documented if testing cannot achieve parity.\"\n\n---\n\n### Finding 6: Post-Implementation Verification Timing Concerns\n\n**Document:** CHANGE-506 change log\n\n**Control Reference:** POL-CHG-014, Section 3.5 (Post-Implementation Verification \u2013 \"Change owner verifies deployment within 1 hour\")\n\n**Issue:**\nCHANGE-506 shows:\n- **Deployed:** 2025-11-11 13:00 ET\n- **Post-impl verified:** 2025-11-11 13:45 (45 minutes \u2013 within policy)\n- **Testing evidence:** Blank (N/A in test_pass_rate field)\n\nWhile the timing is compliant, the **post-implementation verification was performed without prior test evidence**, creating a logical sequence problem: the change owner verified deployment success, but there was no baseline set of automated tests to confirm the change didn't introduce regressions. This is a **downstream control confirmation of upstream evidence gaps** (related to Finding 1).\n\nAdditionally, the notes state \"Deployment successful. No issues reported\" but provide no detail on what verification was performed (which health checks, metrics, manual testing, etc.).\n\n**Severity:** **Low**\n\n**Remediation:** Require post-implementation verification sign-off to reference specific health checks, automated tests, and/or monitoring queries that confirmed the change's success. Document verification method in the change ticket's post_impl_verified field or linked check list.\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Category | Severity | Status |\n|---------|----------|----------|--------|\n| 1. Missing test evidence before CAB approval (CHANGE-506) | Authorization & Testing | High | Control Gap |\n| 2. Incomplete rollback documentation (CHANGE-510) | Documentation & Learning | Medium | Control Gap |\n| 3. Emergency approval process lacks real-time documentation (CHANGE-507) | Authorization | Medium | Control Gap |\n| 4. CAB quorum definition ambiguous; security review optional | Authorization | Medium | Control Gap |\n| 5. Test environment parity not validated (CHANGE-503) | Testing | High | Design Gap |\n| 6. Post-impl verification lacks detail (CHANGE-506) | Verification | Low | Documentation Gap |\n\n---\n\n## OVERALL ASSESSMENT\n\n**Control Status: PARTIALLY EFFECTIVE WITH GAPS**\n\n**Strengths:**\n- Change authorization process is well-documented with clear roles (CAB, developers, SRE)\n- Segregation of duties is enforced (developers cannot deploy)\n- Rollback procedures are executed promptly and successfully (6-8 minute execution times)\n- Post-implementation verification is performed on all changes\n- Emergency process (CHANGE-507) was followed correctly with retroactive review\n\n**Weaknesses:**\n- Testing evidence review was not always sequenced before approval (CHANGE-506)\n- Test environment configuration adequacy is not validated for load-sensitive changes\n- Rollback documentation and root cause analysis are inconsistent between incidents\n- CAB quorum requirements are ambiguous regarding security review participation\n- Emergency approval processes lack contemporaneous written documentation\n\n**Risk Level:** CC8.1 is adequately controlled for routine changes but has **material gaps in change authorization completeness and testing rigor validation**. The control would benefit from tighter enforcement of evidence-before-approval sequencing and more explicit test environment parity requirements."
+}

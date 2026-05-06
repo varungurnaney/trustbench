@@ -1,0 +1,64 @@
+{
+  "task_id": "a1.2-4-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:07:16.627096",
+  "score": {
+    "task_id": "a1.2-4-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "application functionality",
+          "deferred",
+          "January",
+          "Section 5.1",
+          "incomplete",
+          "not completed"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "235 minutes",
+          "RTO",
+          "data growth"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3080,
+    "output_tokens": 1192
+  },
+  "raw_response": "Below is an analysis of Apex Digital\u2019s backup and recovery control performance under A1.2 for Q4 2025, based on the provided backup/recovery policy, change management log, and Q3 and Q4 restore test reports.\n\n---\n\n## **Finding 1: Restore Test Application Validation Not Completed in Q4**\n**Section:**  \n- **Backup and Recovery Policy:** Section 5.1 (Quarterly Restore Tests, item 4)\n- **Q4 2025 Restore Test Report:** phase_4_application_validation, issues_encountered[0]\n\n**Why it\u2019s a gap:**  \nThe policy mandates (\u201cEach test must validate: 4. Application functionality validation post-restore...\u201d) that after data restoration, a full application validation (API checks, background jobs, user auth flow) occur **as part of the quarterly restore test**. For Q4, this phase was not completed due to engineering team unavailability before the end of the quarter; it was deferred to January. Thus, the Q4 restore test is incomplete against stated requirements. This creates a risk that, if a real recovery were needed, critical application dependencies tied to backup data would remain unproven for that quarter.\n\n**Severity:** **High**  \n*The organization is unable to demonstrate full end-to-end recovery within the observation period. This is a direct gap in the tested effectiveness of critical recovery procedures, not offset by compensating controls.*\n\n---\n\n## **Finding 2: Restore Time Margin Shrinking\u2014RTO Achievement At Risk**\n**Section:**  \n- **Q4 2025 Restore Test Report:** rto_assessment, quarter_over_quarter, recommendations\n\n**Why it\u2019s a gap:**  \nBetween Q3 and Q4, restore times increased from 192 to 235 minutes (a 28.8% increase), and the margin to the four-hour RTO target dropped from 48 minutes to just 5 minutes. Data volumes grew 19%. Though RTO requirements were technically met in Q4, the trend indicates that further data growth or minor delays could result in breach of RTO in the near term. Remediation steps are mentioned (restore optimization, archival strategies), but there is no evidence in Q4 that these were actioned or that risk was otherwise mitigated within the period.\n\n**Severity:** **Medium**  \n*Though not a direct failure yet, this trend signals the control may not operate as designed in the near future. If unaddressed, this is a likely candidate for future non-compliance.*\n\n---\n\n## **Finding 3: Policy Adherence\u2014Restore Test Not Fully Signed Off Per Requirements**\n**Section:**  \n- **Backup and Recovery Policy:** Section 5.2 (Documentation)\n- **Q4 2025 Restore Test Report:** sign_off, phase_4_application_validation\n\n**Why it\u2019s a gap:**  \nSection 5.2 requires each restore test report to document sign-off after \u201ctiming details, integrity results, issues encountered,\u201d **and validation completion**. The Q4 report is signed off by the Infrastructure Lead with a note that Phase 4 was deferred, but as the application validation was not performed, full adherence to the procedure is lacking. The CISO\u2019s approval is noted, but the control intent is not fulfilled, and evidence that exceptions/deviations are formally tracked or risk-accepted by management is missing.\n\n**Severity:** **Medium**  \n*Failure to complete the test per policy and still closing the report as complete (rather than exception) reflects a weak enforcement of process discipline. The gap is procedural but reinforces the risk in Finding 1.*\n\n---\n\n## **Finding 4: No Immediate Compensating Controls for Missed Application Validation**\n**Section:**  \n- **Q4 2025 Restore Test Report:** issues_encountered[0], recommendations; Backup and Recovery Policy\n\n**Why it\u2019s a gap:**  \nThe test report acknowledges the lack of application validation was due to the engineering team\u2019s unavailability, but offers no evidence of interim application health checks or mitigation (such as a partial validation by another team or automated health checks) during the quarter. There\u2019s also no documentation that risks posed by the missed validation were analyzed or accepted by risk management. Delaying this testing until after the observation period leaves a window where weaknesses could go undetected.\n\n**Severity:** **Medium**  \n*Absence of a compensating control or formal risk exception increases the effective risk of the gap in Finding 1.*\n\n---\n\n## **(Positive Note / Not a Finding):**  \n**Q3 test and policy remediation is effective\u2014database platforms were promptly upgraded and data integrity issues due to partitioned tables were resolved by Q4. This signals that observed technical defects are addressed in a timely manner and the change management process is effective.**\n\n---\n\n# **Summary Table**\n\n| # | Title                                                  | Section(s)                                       | Why it\u2019s a Gap                                                                  | Severity |\n|---|--------------------------------------------------------|--------------------------------------------------|---------------------------------------------------------------------------------|----------|\n| 1 | Restore Test Application Validation Not Completed in Q4 | Policy 5.1, Q4 Report phase_4, issues            | End-to-end recovery not demonstrated; risk for business continuity               | High     |\n| 2 | Restore Time Margin Shrinking\u2014RTO Achievement At Risk  | Q4 Report rto_assessment, quarter_over_quarter   | Risk of RTO non-compliance due to trend; no clear action implemented            | Medium   |\n| 3 | Restore Test Not Fully Signed Off Per Requirements     | Policy 5.2, Q4 Report sign_off, application phase| Signed off before test completion; lacks formal exception or risk note           | Medium   |\n| 4 | No Immediate Compensating Controls for Missed Validation| Q4 Report issues, recommendations, policy        | No compensating control or risk acceptance for missed application validation     | Medium   |"
+}

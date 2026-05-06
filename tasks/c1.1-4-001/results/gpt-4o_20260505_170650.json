@@ -1,0 +1,77 @@
+{
+  "task_id": "c1.1-4-001",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-05T17:06:50.693425",
+  "score": {
+    "task_id": "c1.1-4-001",
+    "model": "gpt-4o",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.16666666666666666,
+    "f1": 0.26666666666666666,
+    "score": 0.26666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "compensating"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "AES-128",
+          "Restricted",
+          "PII"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "bft-prod-ml-training",
+          "SSE-S3",
+          "SSE-KMS",
+          "PII",
+          "derived"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "Restricted",
+          "production"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4726,
+    "output_tokens": 475
+  },
+  "raw_response": "Based on the provided evidence and your instructions, I have identified the following findings related to the control C1.1 and CC6.7. Notably, the exceptions with documented compensating controls have been considered to address gaps, so those have been filtered out as findings.\n\n### Finding 1: Inadequate Encryption for ML Training Bucket\n\n1. **Title:** Inadequate Encryption for ML Training Bucket  \n2. **Relates to:** Data Protection and Encryption Policy - Section 4.2 (Data at Rest)\n3. **Why it's a gap:** The ML training bucket (`bft-prod-ml-training`) is labeled as \"Non-Compliant\" because it uses Server-Side Encryption with S3 (SSE-S3) rather than the required Server-Side Encryption with AWS Key Management Service (SSE-KMS) for Confidential or Restricted data, as specified by the policy. It contains derived PII, which contravenes the encryption requirements.\n4. **Severity:** Medium\n\n### Finding 2: Use of AES-128 in Production\n\n1. **Title:** Use of AES-128 for Webhook Payload Encryption  \n2. **Relates to:** Data Protection and Encryption Policy - Section 4.3 (Minimum Algorithm Standards)\n3. **Why it's a gap:** Although an exception (EXC-2025-012) has been granted to use AES-128-GCM for webhook payloads, the minimum algorithm standard policy specifies AES-256 for encryption. While compensating controls are in place (such as TLS 1.2), this still represents a deviation from recommended encryption standards, particularly since webhook data is classified as Confidential.\n4. **Severity:** Low\n\n### Finding 3: Expired Security Assessment\n\n1. **Title:** Expired Security Assessment of Jira  \n2. **Relates to:** Vendor security assessment practices\n3. **Why it's a gap:** The vendor security assessment for Jira is recorded as overdue by 7 days. This oversight in scheduled assessments can potentially expose the organization to unaccounted-for risks from third-party vendors if it persists without remedial action.\n4. **Severity:** Low\n\nThese findings are highlighted due to potential risks they present to the confidentiality of the data and the alignment with the documented policies. Corrective actions should be prioritized based on the severity and impact on compliance objectives."
+}

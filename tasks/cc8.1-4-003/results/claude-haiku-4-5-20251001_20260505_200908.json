@@ -1,0 +1,83 @@
+{
+  "task_id": "cc8.1-4-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T20:09:08.977511",
+  "score": {
+    "task_id": "cc8.1-4-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-706",
+          "violation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "CISO",
+          "NOT OBTAINED",
+          "unreachable",
+          "emergency"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "anika.patel",
+          "developer",
+          "deployer",
+          "segregation",
+          "SRE"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CISO",
+          "delegate",
+          "unreachable",
+          "emergency"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3027,
+    "output_tokens": 2117
+  },
+  "raw_response": "# CC8.1 Compliance Audit Report\n**Meridian Analytics \u2013 Q4 2025 Change Management**\n\n---\n\n## FINDINGS\n\n### 1. **Emergency Change Dual-Approval Requirement Bypassed (CHG-708)**\n\n**Policy Section:** 4 (Emergency Changes)\n\n**Gap Description:**  \nCHG-708 (Auth token expiry emergency fix, deployed December 2, 2025) violated the mandatory dual-approval requirement. The change log and CAB minutes confirm:\n- VP Engineering (Nathan Cole) approval obtained at 03:05 UTC\n- CISO approval **NOT obtained** \u2014 Yuki Tanaka was unreachable at 3:00 AM\n- Change deployed at 04:15 UTC with only single VP approval\n\nThe policy explicitly states: *\"Emergency changes require dual verbal approval from VP Engineering AND CISO.\"* This is framed as a higher bar due to Meridian Analytics handling financial data subject to regulatory requirements. The deviation was acknowledged in the December 9 CAB retrospective, but the policy was not enforced at the time of deployment.\n\n**Severity:** **CRITICAL**  \n*Rationale:* Direct violation of a control explicitly designed for high-severity financial data scenarios. No compensating controls were documented; the CISO's concurrent approval is non-negotiable per the policy's stated regulatory basis.\n\n---\n\n### 2. **Segregation of Duties Violated \u2013 Developer Deployed Emergency Change (CHG-708)**\n\n**Policy Section:** 3.4 (Segregation of Duties)\n\n**Gap Description:**  \nCHG-708 was deployed by the developer (Anika Patel) rather than the SRE team. The policy states: *\"Production deployments by SRE team only.\"* The change log shows:\n- Developer: anika.patel\n- Deployer: anika.patel\n- Reason: SRE on-call engineer (Raj Mehta) did not respond to page\n\nThe CAB recommended establishing backup SRE coverage, but this does not retroactively remediate the control violation. The developer approved and deployed their own change in a critical scenario.\n\n**Severity:** **CRITICAL**  \n*Rationale:* Violation of fundamental segregation-of-duties principle. In a financial data context, developer self-approval and self-deployment of emergency security fixes creates uncontrolled change risk and audit trail ambiguity.\n\n---\n\n### 3. **Missing Post-Implementation Security Review for Standard Changes**\n\n**Policy Section:** 3.2 (Testing) and 3.5 (Post-Implementation)\n\n**Gap Description:**  \nThe policy requires security reviews for \"High/Critical risk\" changes (Section 3.2). However, CHG-707 and CHG-710 are Standard category, Low risk changes with no documented security review:\n\n| Ticket | Category | Risk | Security Review | Notes |\n|--------|----------|------|-----------------|-------|\n| CHG-707 | Standard | Low | None | Node.js CVE patch |\n| CHG-710 | Standard | Low | None | TLS cert rotation |\n\nWhile these are low-risk changes in pre-approved catalogs, no documented verification confirms the security review requirement was assessed for relevance. For a financial data platform, third-party patch application (especially CVE remediation) and certificate rotation are security-sensitive operations that may warrant evidence of change validation.\n\n**Severity:** **MEDIUM**  \n*Rationale:* Low-risk standard changes may not require formal security reviews, but the policy lacks explicit guidance on when security review is waived vs. required. Given financial data context, documented risk assessment justifying the omission would strengthen compliance posture.\n\n---\n\n### 4. **Incomplete Post-Implementation Verification Documentation (Multiple Changes)**\n\n**Policy Section:** 3.5 (Post-Implementation)\n\n**Gap Description:**  \nThe policy requires: *\"Verification within 2 hours. Automated monitoring for 24 hours post-deployment. Sign-off in Jira.\"*\n\nThe change log shows \"post_impl_verified\" = \"Yes\" for all changes, but the provided evidence does not include:\n- Verification logs or monitoring dashboards for the 2-hour and 24-hour windows\n- Jira sign-off evidence (screenshots, timestamps, owner names)\n- Monitoring alerts or health check results\n\nThe SLA dashboard shows change failure rate of 0% and MTTR metrics, but these are aggregate metrics, not change-specific verification records.\n\n**Severity:** **MEDIUM**  \n*Rationale:* While verification may have occurred in practice (evidenced by zero rollbacks and strong SLA performance), audit trail documentation is insufficient. SOC 2 requires demonstrable evidence of execution, not just claim of completion. This creates audit repeatability and evidence gaps.\n\n---\n\n### 5. **CAB Quorum Met but Missing Required Member (November 11 / CHG-706)**\n\n**Policy Section:** 3.3 (CAB)\n\n**Gap Description:**  \nThe policy specifies CAB membership: *\"VP Engineering (Chair), SRE Director, Security Lead, Engineering Manager.\"*  \nRequired quorum: *\"VP Engineering + 2 other members.\"*\n\nNovember 11 CAB meeting (CHG-706 approval) attendees:\n- Nathan Cole (VP Eng) \u2713\n- Yuki Tanaka (Security Lead) \u2713\n- Raj Mehta (SRE Director) \u2713\n- Diana Ford (Eng Manager) \u2717 **Absent**\n\nQuorum was met (3/4), but notably the Engineering Manager was absent and the Engineering Manager is explicitly named in the policy. While quorum was technically satisfied, the CAB did not have full prescribed membership, which may weaken review depth.\n\n**Severity:** **LOW**  \n*Rationale:* Quorum requirement was met per policy language. However, the named role absence reduces intended diversity of review (engineering ops/delivery perspective). Not a strict violation but indicates inconsistent CAB composition. Recommend documenting role substitution rationale if absences occur.\n\n---\n\n### 6. **Emergency Process Post-Approval Timeline Met, But Retro-Review Should Occur Sooner**\n\n**Policy Section:** 4 (Emergency Changes)\n\n**Gap Description:**  \nThe policy requires: *\"Retrospective CAB review must occur within 5 business days.\"*\n\nBoth emergency changes met this requirement:\n- CHG-704: Deployed Oct 28 \u2192 Retro CAB Nov 4 (5 business days) \u2713\n- CHG-708: Deployed Dec 2 \u2192 Retro CAB Dec 9 (5 business days) \u2713\n\nHowever, CHG-708's retrospective review *identified* control violations (missing CISO approval, developer deployment) that had already occurred. The 5-day window allowed the violations to persist without immediate corrective action. While compliant with the stated timeline, the delay weakened real-time control enforcement.\n\n**Severity:** **LOW**  \n*Rationale:* Not a direct policy violation, but highlights a control design gap. Recommend tightening the retro-review window to 24-48 hours for critical/high-severity emergencies, especially when control deviations are suspected.\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Severity | Control Impact | Status |\n|---------|----------|-----------------|--------|\n| CHG-708: Dual-approval bypass | **CRITICAL** | Control not operating | Requires immediate remediation |\n| CHG-708: Developer deployment | **CRITICAL** | Control not operating | Requires immediate remediation |\n| Standard change security review gaps | **MEDIUM** | Audit trail incomplete | Document risk assessment process |\n| Post-implementation verification evidence | **MEDIUM** | Evidence gaps | Formalize and retain verification logs |\n| CAB composition inconsistency | **LOW** | Risk of reduced review quality | Monitor and document absences |\n| Emergency retro-review timing | **LOW** | Delayed corrective action | Consider tightening approval window |\n\n---\n\n## OVERALL COMPLIANCE ASSESSMENT\n\n**Status: NON-COMPLIANT**\n\nMeridian Analytics' change management control design is sound (policy is comprehensive, approval workflows are documented, CAB governance exists). However, **two critical control violations in CHG-708 directly contradict the stated policy** and were not prevented or immediately remediated. The violations involved:\n1. Bypassing mandatory CISO dual-approval for a critical emergency fix\n2. Violating segregation of duties by allowing the developer to deploy\n\nThese failures occurred in December 2025 and were identified in the retrospective review, but no evidence shows the underlying root causes (CISO unavailability, SRE backup coverage) were remediated *before* this audit period ended.\n\n**Recommendation:** \n- **Immediate:** Implement CISO backup/delegate protocol and enforce SRE on-call coverage before further emergency changes.\n- **Short-term:** Audit all emergency changes in 2025 for dual-approval compliance; retrain engineering and SRE teams on segregation-of-duties enforcement.\n- **Medium-term:** Enhance post-implementation verification documentation and formalize security review waiver criteria for standard changes."
+}

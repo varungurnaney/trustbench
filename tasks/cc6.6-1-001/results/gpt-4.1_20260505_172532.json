@@ -1,0 +1,79 @@
+{
+  "task_id": "cc6.6-1-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:25:32.583081",
+  "score": {
+    "task_id": "cc6.6-1-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 0.75,
+    "precision": 0.375,
+    "f1": 0.5,
+    "score": 0.75,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "subnet",
+          "public",
+          "boundary"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAF",
+          "web application firewall",
+          "IDS",
+          "IPS",
+          "SQL injection"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "should",
+          "where feasible",
+          "internal",
+          "encryption",
+          "mandatory",
+          "permissive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 645,
+    "output_tokens": 1213
+  },
+  "raw_response": "Certainly! Here is a detailed assessment of the Orion Health Network Security Policy against the requirements of **SOC 2 CC6.6** (Logical access security against external threats), including any identified gaps:\n\n---\n\n### 1. **Lack of Explicit Intrusion Detection/Prevention Measures**\n- **Section:** Section 6 (Monitoring)\n- **Gap Description:**  \n  While the policy states that VPC Flow Logs are sent to SIEM for analysis, it does not explicitly discuss the use of intrusion detection systems (IDS), intrusion prevention systems (IPS), or automated threat detection tools (e.g., AWS GuardDuty, network anomaly detection) at the network boundary or within critical subnets. SOC 2 CC6.6 expects proactive measures to detect and respond to external threats, not just log collection.\n- **Severity:** **High**\n\n---\n\n### 2. **No Mention of Web Application Firewall (WAF)**\n- **Section:** Section 3.3 (Firewall and Access Control)\n- **Gap Description:**  \n  There is no reference to the use or requirements for a Web Application Firewall (WAF) to protect publicly accessible endpoints. Given that all inbound traffic passes through an Application Load Balancer, it is now industry standard to require a WAF to filter application-level attacks (e.g., SQL injection, XSS) at the boundary.\n- **Severity:** **High**\n\n---\n\n### 3. **Lack of Explicit DDoS Protection Controls**\n- **Section:** Section 3.3 (Firewall and Access Control)\n- **Gap Description:**  \n  The policy does not mention DDoS (Distributed Denial of Service) protection capabilities (such as AWS Shield or equivalent) on internet-facing endpoints. DDoS mitigation is critical for protecting service availability from external threats.\n- **Severity:** **Medium**\n\n---\n\n### 4. **Incomplete Internal Encryption Mandate**\n- **Section:** Section 4.2 (Internal Traffic)\n- **Gap Description:**  \n  The policy states that internal service-to-service communication \"*should use encrypted channels where feasible*.\" This language is non-committal and could allow for exceptions without adequate justification or compensating controls. For full alignment with SOC 2, encryption of internal communications that traverse shared networks should be a mandatory (or risk-assessed) requirement.\n- **Severity:** **Medium**\n\n---\n\n### 5. **Limited Details on Security Group and NACL Review Process**\n- **Section:** Section 3.3 (Firewall and Access Control)\n- **Gap Description:**  \n  Security group rules are said to \"follow least privilege principles,\" but there is no requirement or process described for regular review and validation of firewall/security group/NACL configurations to detect overly permissive rules or misconfigurations.\n- **Severity:** **Medium**\n\n---\n\n### 6. **Absence of Explicit Policy on Remote Access Session Timeout and Restrictions**\n- **Section:** Section 5 (VPN Access)\n- **Gap Description:**  \n  The policy requires VPN and MFA, but does not mention session timeout settings, restrictions on source IPs (geo-fencing, named devices, etc.), or auto-disconnect of idle sessions. Tightening these controls is important for preventing unauthorized access from external sources.\n- **Severity:** **Low**\n\n---\n\n### 7. **Policy Lacks Third-Party and Interconnection Controls**\n- **Section:** Not addressed\n- **Gap Description:**  \n  The policy does not mention procedures for managing or monitoring third-party connections (e.g., business partners, vendors) or interconnectivity with external systems. SOC 2 expects controls at system boundaries, including oversight for all external connections\u2014not just public internet access.\n- **Severity:** **Low**\n\n---\n\n### 8. **No Specific Incident Response Reference for External Attacks**\n- **Section:** Section 6 (Monitoring)\n- **Gap Description:**  \n  While monitoring is referenced, the policy lacks details or a cross-reference to incident response procedures specifically for external (network-based) attacks. Including expected actions or escalation steps upon detection of suspicious activity is important for SOC 2 coverage.\n- **Severity:** **Low**\n\n---\n\n## **Summary Table**\n\n| # | Title                                      | Section             | Why It's a Gap                                                      | Severity |\n|---|--------------------------------------------|---------------------|---------------------------------------------------------------------|----------|\n| 1 | Lack of Intrusion Detection/Prevention     | 6 (Monitoring)      | No IDS/IPS or automated threat detection discussed                  | High     |\n| 2 | No Web Application Firewall                | 3.3 (Firewall)      | No WAF requirement for public endpoints                             | High     |\n| 3 | No Explicit DDoS Protection                | 3.3 (Firewall)      | DDoS protections not mentioned                                      | Medium   |\n| 4 | Incomplete Internal Encryption Mandate     | 4.2 (Encryption)    | Non-mandatory language for internal encryption                      | Medium   |\n| 5 | Limited Review Process for Firewalls/NACLs | 3.3 (Firewall)      | No mention of periodic review or attestation                        | Medium   |\n| 6 | Lacking VPN Session Controls               | 5 (VPN Access)      | No session timeout/source IP/auto-disconnect stipulations           | Low      |\n| 7 | No Third-Party Interconnection Controls    | Not addressed       | Absence of controls for external/third-party system boundaries      | Low      |\n| 8 | No Incident Response for Network Attacks   | 6 (Monitoring)      | Lack of explicit IR steps for external attack scenarios             | Low      |\n\n\n---\n\n**Conclusion:**  \nThe Orion Health Network Security Policy demonstrates a solid baseline of perimeter controls but lacks several key elements required for full SOC 2 CC6.6 coverage, particularly explicit requirements for intrusion detection, WAF, and DDoS protection. Strengthening these areas and clarifying ambiguous requirements will improve compliance and better defend against external threats."
+}

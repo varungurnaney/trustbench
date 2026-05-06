@@ -1,0 +1,85 @@
+{
+  "task_id": "c1.1-5-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:19:11.664701",
+  "score": {
+    "task_id": "c1.1-5-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.5,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "deidentification",
+          "de-identification",
+          "HTTP",
+          "PHI",
+          "unencrypted",
+          "raw PHI",
+          "CERT-NHA-005",
+          "compensating",
+          "remediation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "addressable",
+          "implemented",
+          "HIPAA",
+          "policy",
+          "not fully",
+          "de-identification"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "should",
+          "Confidential"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "No",
+          "Internal"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3394,
+    "output_tokens": 2736
+  },
+  "raw_response": "## Findings\n\n| # | Short title | Related document section(s) | Why it\u2019s a gap | Severity |\n|---|---|---|---|---|\n| 1 | **Raw PHI transmitted over plaintext HTTP to de-identification service** | **TLS endpoint audit:** `deidentification-svc.internal.nextera-health.com`, port 8080, HTTP plaintext, Restricted, contains PHI/PII. <br> **Data Protection Policy:** \u00a75.2 Data in Transit \u2014 Internal; \u00a75.4 HIPAA Addressable Specification. <br> **Certificate Inventory:** CERT-NHA-005. <br> **HIPAA Risk Assessment:** \u00a77.3 Identified Gap. | The de-identification service receives raw PHI and PII over unencrypted HTTP. Nextera\u2019s policy explicitly requires TLS 1.2 or higher for all internal communications carrying Restricted data and all PHI in transit. The service also has no TLS certificate and is outside the Kubernetes Istio mTLS mesh, so existing mTLS controls do not apply. Although compensating controls reduce likelihood, they do not satisfy the stated encryption requirement for PHI transmission. | **High** |\n| 2 | **No formal exception or timely remediation evidence for known PHI encryption gap** | **Data Protection Policy:** \u00a78 Monitoring; \u00a79 Exceptions. <br> **HIPAA Risk Assessment:** \u00a77.3 Recommendation, target Q1 2026. <br> **TLS endpoint audit:** last scan 2025-12-20 still shows HTTP. | The policy requires non-compliant resources to be remediated within 14 days or have a CISO-approved exception. The gap was identified in September 2025 and remained open as of the December 2025 scan, with remediation deferred to Q1 2026. The evidence includes a risk assessment reviewed by the CISO, but it does not show a formal exception approval, exception expiration date, quarterly review record, or documented risk acceptance meeting the policy requirements. For SOC 2 purposes, this is a current operating deficiency, not merely a managed future remediation item. | **Medium** |\n| 3 | **HIPAA risk assessment language overstates transmission security implementation** | **HIPAA Risk Assessment:** \u00a77.2 Implementation Specification: Encryption; \u00a77.4 Overall Transmission Security Assessment. | The assessment states the encryption specification is \u201cImplemented\u201d and that ePHI encryption is implemented across all identified data flows, but the same assessment identifies the PHI pipeline to de-identification service flow as pending and unencrypted. The \u201cSubstantially Compliant\u201d conclusion is useful context, but it is not sufficient SOC 2 evidence of operating effectiveness where a known raw PHI transmission gap exists. This creates a risk that management\u2019s control status is overstated. | **Medium** |\n| 4 | **Inconsistent classification of de-identified analytics data** | **TLS endpoint audit:** `analytics.nextera-health.com` marked Restricted, contains PHI = Yes, notes say \u201cde-identified patient data.\u201d <br> **HIPAA Risk Assessment:** \u00a77.2 data flow \u201cDe-identification service \u2192 Analytics\u201d shown as de-identified/compliant. <br> **Data Protection Policy:** \u00a74 Data Classification. | The evidence is inconsistent on whether analytics data is de-identified or still contains PHI. If the analytics dashboard uses properly de-identified data, the \u201ccontains_phi = Yes\u201d and Restricted classification may be inaccurate. If it does contain PHI, the notes describing it as de-identified are inaccurate. This weakens C1.1 evidence that confidential information is consistently identified and maintained according to classification requirements. | **Medium** |\n\n## Overall assessment\n\nThe primary control issue is the unencrypted internal transmission of raw PHI to the de-identification service. Given the sensitivity of PHI, Nextera\u2019s explicit policy commitment to encrypt all PHI in transit, and BAA/HIPAA obligations, this should be treated as a significant SOC 2 readiness finding despite private subnet placement, security groups, VPN/MFA, and VPC Flow Logs.\n\nCompensating controls reduce exposure likelihood, but they do not fully address the confidentiality objective because an attacker or insider with VPC-level access could still observe raw PHI in transit. Until TLS is implemented or a formally approved, time-bound exception is documented and monitored, this remains a current control deficiency."
+}

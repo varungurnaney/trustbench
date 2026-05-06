@@ -1,0 +1,99 @@
+{
+  "id": "cc1.1-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.1",
+  "control_description": "The entity demonstrates a commitment to integrity and ethical values.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/information-security-policy.md",
+      "type": "policy",
+      "description": "Atherton SaaS Inc. information security policy defining governance structure, security controls, and metric reporting requirements"
+    },
+    {
+      "path": "evidence/policy-review-tracker.csv",
+      "type": "spreadsheet",
+      "description": "Policy review register tracking review dates, status, and overdue items for all Tier 1 and Tier 2 policies"
+    },
+    {
+      "path": "evidence/security-metrics-report-q3.md",
+      "type": "report",
+      "description": "Q3 2025 security metrics report covering all five policy-defined metrics"
+    },
+    {
+      "path": "evidence/committee-meeting-minutes.md",
+      "type": "log",
+      "description": "Security Steering Committee meeting minutes for Q2 and Q3 2025"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Atherton SaaS Inc. covering the audit period January 1 - December 31, 2025. Review all provided evidence and cross-reference the information security policy requirements against the policy review tracker, security metrics report, and committee meeting minutes. Assess whether governance controls under CC1.1 are operating effectively. Look for discrepancies between what the policy requires and what was actually performed.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Information Security Policy annual review overdue by 199 days — last reviewed April 2024",
+      "description": "The Information Security Policy (POL-ISEC-002) states in Section 4.2 that 'All Tier 1 and Tier 2 policies are reviewed annually by the CISO.' The policy's own metadata shows Next Review Date of April 2025 and the policy review tracker confirms the last review was April 15, 2024, making it 199 days overdue as of the tracker snapshot. This means the foundational Tier 1 security policy has not been reviewed in over 18 months. Notably, the Q2 2025 committee meeting minutes show Nathan Cross reported that the Tier 1 policy review was pending with a target of end of Q2, and action item AI-Q2-002 assigned completion by June 30, 2025 — but the policy review tracker shows no subsequent review was completed. The policy's own review requirement has been violated.",
+      "evidence_sources": ["evidence/information-security-policy.md", "evidence/policy-review-tracker.csv", "evidence/committee-meeting-minutes.md"],
+      "expected_reasoning": "Policy Section 4.2 requires annual review. Policy metadata shows Next Review Date April 2025. Tracker shows last review April 15, 2024 — 199 days overdue. Q2 meeting minutes show CISO committed to completing review by June 30 (AI-Q2-002) but it was never done. Cross-referencing these three documents reveals the gap.",
+      "detection_criteria": {
+        "required_keywords": ["POL-ISEC-002", "annual review", "April 2024", "199 days", "overdue", "Tier 1", "AI-Q2-002", "June 30"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Committee reviews only 2 of 5 security metrics despite policy requiring all five",
+      "description": "The Information Security Policy (Section 6) defines five security metrics the CISO reports to the Security Steering Committee quarterly: (1) MTTD, (2) MTTR, (3) vulnerability remediation compliance rate, (4) security awareness training completion rate, and (5) policy exception status. The security metrics report (Q3 2025) includes all five metrics. However, the committee meeting minutes for both Q2 and Q3 show that only MTTD and MTTR were discussed. In Q3, the minutes explicitly state: 'No further discussion on the remaining metrics (vulnerability remediation, training completion, policy exceptions).' In Q2, similarly, only MTTD and MTTR were discussed with 'No discussion of vulnerability remediation rates, training completion, or policy exceptions.' This means the committee is not reviewing 3 of 5 metrics that the policy requires them to oversee, including vulnerability remediation which showed critical compliance dropping to 75% in Q3.",
+      "evidence_sources": ["evidence/information-security-policy.md", "evidence/security-metrics-report-q3.md", "evidence/committee-meeting-minutes.md"],
+      "expected_reasoning": "Policy Section 6 defines 5 metrics. Metrics report covers all 5. But Q2 and Q3 meeting minutes show only MTTD and MTTR discussed. Q3 minutes explicitly note no discussion of remaining 3 metrics. Cross-reference reveals committee is not fulfilling its oversight role for vulnerability remediation (75% critical compliance), training (94.6% vs 95% target), and exceptions (1 expired without renewal).",
+      "detection_criteria": {
+        "required_keywords": ["2 of 5", "MTTD", "MTTR", "vulnerability remediation", "training completion", "policy exceptions", "no further discussion", "not discussed"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Vulnerability Management Standard review overdue by 49 days with no remediation timeline",
+      "description": "The policy review tracker shows POL-VUL-001 (Vulnerability Management Standard) was last reviewed September 15, 2024, with a next review due September 15, 2025. It is 49 days overdue with the note 'deferred due to SOC 2 audit prep.' This is the second Tier 2 policy with an overdue review. Critically, the Q3 security metrics report shows vulnerability remediation compliance for critical vulnerabilities dropped from 100% in Q2 to 75% in Q3 — the very control governed by this overdue policy. The committee did not discuss vulnerability remediation metrics in either the Q2 or Q3 meeting, meaning this decline went unreviewed at the governance level.",
+      "evidence_sources": ["evidence/policy-review-tracker.csv", "evidence/security-metrics-report-q3.md", "evidence/committee-meeting-minutes.md"],
+      "expected_reasoning": "Tracker shows POL-VUL-001 overdue by 49 days. Metrics report shows critical vuln remediation dropped to 75%. Committee didn't discuss vuln metrics. Three pieces of evidence converge: the governing policy is stale, the metrics show degradation, and the governance body isn't reviewing the degradation.",
+      "detection_criteria": {
+        "required_keywords": ["POL-VUL-001", "Vulnerability Management", "49 days", "overdue", "75%", "critical", "deferred", "not discussed"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Expired policy exception EXC-2025-001 not renewed or remediated — no committee follow-up",
+      "description": "The security metrics report (Metric 5) shows EXC-2025-001 for POL-ENC-003 expired August 15, 2025 and was marked 'Expired — Not Renewed' with the note 'needs follow-up.' This means an encryption policy deviation has been operating without an approved exception since August 15. The committee did not discuss policy exception status in either the Q2 or Q3 meeting, so this lapsed exception has had no governance oversight. The policy (Section 6) defines policy exception status as one of the five metrics reported to the committee.",
+      "evidence_sources": ["evidence/security-metrics-report-q3.md", "evidence/committee-meeting-minutes.md", "evidence/information-security-policy.md"],
+      "expected_reasoning": "Metrics report shows EXC-2025-001 expired without renewal. Committee minutes show policy exceptions were not discussed in Q2 or Q3. Policy Section 6 requires exception status to be reported. Lapsed exception + no governance review = gap.",
+      "detection_criteria": {
+        "required_keywords": ["EXC-2025-001", "expired", "not renewed", "encryption", "exception", "follow-up", "not discussed", "lapsed"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "25 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["policy_review", "metrics_oversight", "cross_reference", "committee_effectiveness", "vulnerability_management", "policy_exceptions", "governance_gap"]
+  }
+}

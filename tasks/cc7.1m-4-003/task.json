@@ -1,0 +1,80 @@
+{
+  "id": "cc7.1m-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "The entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/maintenance-policy.md",
+      "type": "policy",
+      "description": "Keystone Data Services maintenance policy defining patch SLAs, vendor dependency procedures, and exception process"
+    },
+    {
+      "path": "evidence/patching-records-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "Patching records for Q4 2025 with 17 patch deployments"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Patch exception register with 2 vendor-dependency exceptions documenting compensating controls and vendor timelines"
+    },
+    {
+      "path": "evidence/vendor-maintenance-agreements.csv",
+      "type": "spreadsheet",
+      "description": "Vendor maintenance agreement tracking with 8 vendors showing agreement status, costs, and SLAs"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Keystone Data Services' system maintenance program for Q4 2025 (October 1 - December 31, 2025). Review the maintenance policy, patching records, exception register, and vendor maintenance agreements. Assess whether CC7.1 maintenance requirements are met. Examine patch exception handling for vendor dependencies and the status of vendor maintenance agreements. Some patch exceptions for vendor dependencies may be legitimate — assess whether the exception process was properly followed and compensating controls are adequate.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "high",
+      "title": "PaperCut High-severity vulnerability unpatched for 75+ days — but vendor has not released a fix and exception process properly followed",
+      "description": "EXC-2025-P-060 documents a High-severity vulnerability (CVE-2025-21395, Print Spooler RCE) on print-mgmt-01 that has been unpatched since October 15. The 30-day High SLA has been exceeded. However, this is a vendor dependency: PaperCut has acknowledged the vulnerability but has not released a fix. The fix is expected in PaperCut MF v24.1 (late January 2026). The exception was approved by the IT Director per Section 4.3 (vendor dependency), 5 compensating controls are documented and verified, the vendor's interim workaround (disable remote admin API) was applied, and the exception was reviewed on December 15 with all controls confirmed operational. This is NOT a finding — the organization cannot apply a patch that does not exist, the vendor dependency exception process (Section 4.3) was followed correctly, and compensating controls are in place.",
+      "evidence_sources": [
+        "evidence/exception-register.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The model should identify the unpatched High vulnerability, then check whether the vendor has released a fix. The exception register shows PaperCut has not released a fix. Section 4.3 defines the vendor dependency process, which was followed: vendor acknowledgment documented, compensating controls implemented, interim mitigations applied, and exception approved. The organization cannot patch what the vendor has not fixed.",
+      "detection_criteria": {
+        "required_keywords": ["CVE-2025-21395", "EXC-2025-P-060", "PaperCut", "vendor dependency", "no fix released", "Section 4.3", "compensating controls", "v24.1"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["not a finding", "vendor dependency exception valid", "cannot patch", "properly followed"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Fortinet maintenance agreement expired September 30 — firewall hardware maintenance coverage lapsed for 90 days",
+      "description": "VMA-2025-003 (Fortinet) shows the maintenance agreement expired on September 30, 2025 with status 'Expired.' The notes state 'Renewal in progress — procurement negotiating new 3-year term. FortiGuard threat intelligence subscription still active (separate contract). Firewall hardware maintenance coverage has lapsed.' This means for the entire Q4 observation period (October 1 - December 31), Keystone's firewall hardware has been without maintenance agreement coverage. The policy Section 5.2 requires 'All vendor maintenance agreements must be current and reviewed annually.' If a firewall experiences a hardware failure, there is no contractual obligation for Fortinet to provide replacement hardware, response time SLAs are not enforceable, and emergency support may not be available. The patching records show firewall firmware updates (PATCH-6006, PATCH-6007, PATCH-6012) were applied during Q4 using the still-active FortiGuard subscription, but hardware maintenance coverage is a separate concern. The 90-day lapse suggests procurement delays are not being prioritized.",
+      "evidence_sources": [
+        "evidence/vendor-maintenance-agreements.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should review all vendor agreements for currency. VMA-2025-003 expired September 30, 2025 — before the observation period began. The entire Q4 period is uncovered for Fortinet hardware maintenance. While FortiGuard (threat intelligence/signatures) is separate and active, hardware maintenance has lapsed. Policy Section 5.2 requires current agreements. A 90-day gap in firewall hardware maintenance coverage is a significant risk.",
+      "detection_criteria": {
+        "required_keywords": ["VMA-2025-003", "Fortinet", "expired", "September 30", "hardware maintenance", "lapsed", "90 days", "Section 5.2", "renewal in progress", "procurement"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "28 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["system_maintenance", "vendor_dependency", "patch_exception", "vendor_agreement", "red_herring", "expired_agreement", "Fortinet", "PaperCut"]
+  }
+}

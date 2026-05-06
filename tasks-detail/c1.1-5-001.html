@@ -1,0 +1,49 @@
+---
+layout: default
+title: "c1.1-5-001"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>c1.1-5-001</h2>
+    <p class="section-subtitle">C1.1 · D5 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D5</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">5</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">77%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are a SOC 2 auditor evaluating Vanguard Risk Solutions' encryption controls under C1.1 and CC6.7. Review all provided evidence to assess whether data protection controls are operating effectively. Several issues in this assessment require professional judgment to determine materiality and severity. For each finding, provide your assessment of whether the issue represents a significant control deficiency, a minor variance, or an acceptable risk given the context. Consider the difference between policy violations and actual security risk, and whether compensating factors mitigate identified gaps.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/encryption-standards-policy.md</code> — Vanguard Risk Solutions encryption standards policy defining algorithm requirements, key rotation schedules, and grace periods</li>
+<li><code>evidence/encryption-posture-audit-q4.csv</code> — Q4 2025 encryption posture audit showing compliance status for all production resources including two items flagged as 'Review Needed'</li>
+<li><code>evidence/key-rotation-status.csv</code> — Key rotation status log showing rotation dates, delays, and grace period compliance</li>
+<li><code>evidence/network-architecture-summary.md</code> — Network architecture summary documenting east-west traffic encryption including unencrypted cross-VPC analytics pipeline</li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>AES-128 used for webhook-payload-key instead of required AES-256 for Confidential data</strong><br><span style="font-size:13px;color:var(--text-dim)">The encryption posture audit shows webhook-payload-key uses AES-128-GCM for webhook payloads classified as Confidential. Policy Section 3.1 requires AES-256 for Confidential data. The auditor must exe...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Unencrypted cross-VPC analytics traffic carrying Confidential data between vpc-prod and vpc-data</strong><br><span style="font-size:13px;color:var(--text-dim)">The network architecture document (Section 3.3) shows that traffic between the production Kubernetes cluster and the analytics pipeline in vpc-data uses HTTP (port 8080) with no TLS — neither at the n...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>low</td><td><strong>APP-PROD-006 notification key rotation completed 15 days late — 1 day beyond 14-day grace period</strong><br><span style="font-size:13px;color:var(--text-dim)">The key rotation status shows APP-PROD-006 (notification-encryption-key) was due October 1, 2025 and completed October 16 — 15 days late, exceeding the 14-day grace period by exactly 1 day. The CISO w...</span></td></tr>
+<tr><td><strong>F-004</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Pattern of key rotation delays suggests systemic process weakness</strong><br><span style="font-size:13px;color:var(--text-dim)">Examining all completed application key rotations during the audit period reveals a concerning pattern: APP-PROD-001 was 3 days late, APP-PROD-003 was 14 days late (at the grace boundary), and APP-PRO...</span></td></tr>
+<tr><td><strong>F-005</strong></td><td><span class="badge badge-blue">gap</span></td><td>low</td><td><strong>ML model S3 bucket uses AES-128 KMS encryption instead of AES-256 for Confidential data</strong><br><span style="font-size:13px;color:var(--text-dim)">The encryption posture audit shows vrs-prod-ml-models uses SSE-KMS with AES-128 instead of the required AES-256 for Confidential data. The models contain trained weights derived from Confidential cust...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-low">59%</td><td>100%</td><td>42%</td><td>59%</td><td>5/5</td><td>12</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-high">83%</td><td>100%</td><td>71%</td><td>83%</td><td>5/5</td><td>7</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-high">100%</td><td>100%</td><td>100%</td><td>100%</td><td>5/5</td><td>5</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-high">83%</td><td>100%</td><td>71%</td><td>83%</td><td>5/5</td><td>7</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-low">59%</td><td>100%</td><td>42%</td><td>59%</td><td>5/5</td><td>12</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-high">80%</td><td>80%</td><td>80%</td><td>80%</td><td>4/5</td><td>5</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/c1.1-5-001">GitHub</a></p></footer>
+</div>

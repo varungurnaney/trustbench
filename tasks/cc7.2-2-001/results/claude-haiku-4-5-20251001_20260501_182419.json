@@ -1,0 +1,83 @@
+{
+  "task_id": "cc7.2-2-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-01T18:24:19.375951",
+  "score": {
+    "task_id": "cc7.2-2-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.36363636363636365,
+    "f1": 0.5333333333333333,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "P2",
+          "business hours",
+          "24/7",
+          "on-call"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Qualys",
+          "weekly",
+          "vulnerability",
+          "delay",
+          "real-time",
+          "critical"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "monitoring",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "annual",
+          "tabletop",
+          "testing",
+          "frequency",
+          "insufficient"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1259,
+    "output_tokens": 1954
+  },
+  "raw_response": "# SOC 2 CC7.2 Readiness Assessment\n## Pinnacle SaaS Incident Response Plan\n\n---\n\n## FINDINGS\n\n### 1. **Absence of Documented Anomaly Detection Criteria**\n**Related Section:** 3.2 Alert Triage  \n**Gap Description:**  \nCC7.2 requires monitoring for anomalies indicative of malicious acts, natural disasters, and errors. The plan defines severity levels but does not document the specific anomaly patterns, thresholds, or behavioral indicators that trigger alerts. There is no reference to detection rules, alert configurations, or the criteria used to identify anomalous behavior across the monitoring sources listed in Section 3.1.\n\n**Why This Matters:**  \nWithout documented detection criteria, there is no objective evidence that the monitoring is systematically capturing the types of anomalies required by the control. Auditors cannot verify that monitoring is comprehensive or consistently applied.\n\n**Severity:** **Critical**\n\n---\n\n### 2. **Missing Monitoring for Natural Disasters and Environmental Events**\n**Related Section:** 3.1 Monitoring Sources  \n**Gap Description:**  \nThe monitoring sources focus exclusively on security-related events (logs, CloudTrail, endpoint detection, email security, vulnerabilities). There is no mention of monitoring for natural disasters, power failures, environmental anomalies, facility incidents, or other non-security system failures that could affect the entity's ability to meet its objectives.\n\n**Why This Matters:**  \nCC7.2 explicitly requires monitoring for anomalies indicative of natural disasters. The current monitoring program is incomplete and does not address half of the required anomaly categories.\n\n**Severity:** **Critical**\n\n---\n\n### 3. **No Documented Analysis Process for Anomaly Classification**\n**Related Section:** 3.2 Alert Triage  \n**Gap Description:**  \nThe plan describes triage timelines but does not document the *analysis process* for determining whether an anomaly represents a security event vs. a non-security system error. The distinction between \"security event\" and \"security incident\" is defined, but there is no documented methodology for analysts to assess and classify anomalies, particularly for P3/P4 alerts reviewed the next business day.\n\n**Why This Matters:**  \nCC7.2 requires that \"anomalies are analyzed to determine whether they represent security events.\" The plan lacks evidence of a systematic analysis framework, potentially leading to inconsistent or incomplete anomaly assessment.\n\n**Severity:** **High**\n\n---\n\n### 4. **Inadequate 24/7 Monitoring Coverage for Non-Business Hours**\n**Related Section:** 3.2 Alert Triage  \n**Gap Description:**  \nThe plan states that P1/P2 alerts receive 24/7 on-call response, but P3/P4 alerts are only reviewed \"during the next business day.\" No monitoring coverage or response procedure is defined for P3/P4 anomalies occurring outside business hours. Given that P3 includes \"suspicious activity\" and \"failed intrusion attempts,\" a 24+ hour gap in analysis poses a risk.\n\n**Why This Matters:**  \nAnomalies must be continuously monitored and analyzed. The current plan leaves a significant gap where anomalies may not be assessed for up to 24+ hours, which could delay detection of developing security events or system failures.\n\n**Severity:** **High**\n\n---\n\n### 5. **No Monitoring or Alerting for Data Integrity and Application Logic Errors**\n**Related Section:** 3.1 Monitoring Sources  \n**Gap Description:**  \nThe monitoring sources cover infrastructure, logs, API calls (CloudTrail), endpoints, and email. However, there is no mention of monitoring for application-level anomalies such as data corruption, logic errors, calculation failures, or integrity violations that could indicate malicious acts (e.g., data manipulation) or errors affecting system objectives.\n\n**Why This Matters:**  \nCC7.2 requires monitoring for anomalies indicative of malicious acts and errors. The plan does not demonstrate monitoring of application behavior, data integrity, or business logic anomalies\u2014significant gaps in threat and error detection.\n\n**Severity:** **High**\n\n---\n\n### 6. **Lack of Defined False Positive Management Process**\n**Related Section:** 3.2 Alert Triage  \n**Gap Description:**  \nThe plan does not describe how false positives are identified, documented, or used to refine detection rules. Section 5.2 mentions that \"detection rules are updated based on incident learnings,\" but there is no process for handling and learning from non-incidents to reduce alert noise and improve detection quality.\n\n**Why This Matters:**  \nWithout a documented false positive management process, there is no evidence of continuous improvement in the monitoring program. Alert fatigue can lead to missed genuine anomalies, and the plan provides no mechanism to address this risk.\n\n**Severity:** **Medium**\n\n---\n\n### 7. **No Performance Metrics or SLAs for Anomaly Analysis Quality**\n**Related Section:** 3.2 Alert Triage  \n**Gap Description:**  \nThe plan defines response timelines (triage within 15 minutes, containment within 1 hour for P1) but does not establish metrics for the quality or completeness of anomaly analysis itself. There are no KPIs for detection accuracy, false negative rates, analysis thoroughness, or whether all relevant anomalies are being captured.\n\n**Why This Matters:**  \nAuditors need evidence that the monitoring and analysis program is effective, not just that it exists. Without performance metrics, there is no way to demonstrate that the monitoring is meeting CC7.2 objectives or to identify areas for improvement.\n\n**Severity:** **Medium**\n\n---\n\n### 8. **Vulnerability Scan Reporting Frequency Inadequate for Anomaly Monitoring**\n**Related Section:** 3.1 Monitoring Sources  \n**Gap Description:**  \nVulnerability scans via Qualys are reported only *weekly* to the Security Lead, with no real-time alert routing. Unlike other monitoring sources that feed into immediate alert channels, vulnerabilities are batched into a weekly report. New vulnerabilities could exist for days before review.\n\n**Why This Matters:**  \nNew vulnerabilities represent anomalies indicative of system changes and potential security weaknesses. The weekly batching is inconsistent with the near-real-time alerting for other anomaly sources and creates a monitoring gap.\n\n**Severity:** **Medium**\n\n---\n\n### 9. **Missing Documentation of Monitoring Tool Configuration and Tuning**\n**Related Section:** 3.1 Monitoring Sources  \n**Gap Description:**  \nThe plan lists monitoring tools (Datadog, CrowdStrike, Qualys, Proofpoint) but provides no reference to documentation describing alert rule configurations, threshold settings, log collection configurations, or how these tools are tuned to detect the anomalies required by CC7.2.\n\n**Why This Matters:**  \nAuditors need evidence that monitoring tools are properly configured to detect the required anomalies. Without documentation of tool configuration, there is no evidence that monitoring is actually capturing the intended anomalies.\n\n**Severity:** **Medium**\n\n---\n\n### 10. **Annual Testing Frequency May Be Insufficient for Control Validation**\n**Related Section:** 6. Plan Testing  \n**Gap Description:**  \nThe incident response plan is tested annually through a tabletop exercise. For a compliance control focused on continuous monitoring and rapid anomaly detection, annual testing provides limited assurance that the monitoring program functions effectively year-round.\n\n**Why This Matters:**  \nWhile annual tabletop exercises test response procedures, they do not validate that monitoring and anomaly detection work continuously. The plan should include more frequent testing of detection capabilities (e.g., monthly alert validation, quarterly tool verification).\n\n**Severity:** **Low**\n\n---\n\n## SUMMARY\n\n| Severity | Count |\n|----------|-------|\n| **Critical** | 2 |\n| **High** | 3 |\n| **Medium** | 4 |\n| **Low** | 1 |\n\n### Key Gaps:\nThe incident response plan addresses *response* to incidents very well but has significant gaps in the *detection and analysis* components of CC7.2:\n- No documented anomaly detection criteria or rules\n- No monitoring for natural disasters or environmental events\n- No systematic anomaly analysis framework\n- Limited 24/7 coverage for anomaly assessment\n- No application-level or data integrity monitoring\n\n**Recommendation:** Develop a complementary **Security Monitoring and Anomaly Detection Policy** that documents detection criteria, alert thresholds, analysis procedures, and monitoring architecture to fully address CC7.2 requirements."
+}

@@ -1,0 +1,85 @@
+{
+  "task_id": "cc6.3-4-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:18:16.041605",
+  "score": {
+    "task_id": "cc6.3-4-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.42857142857142855,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "segregation of duties"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Looker",
+          "21 days"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "r.santos",
+          "contractor",
+          "expiration"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-etl-snowflake",
+          "owner"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5434,
+    "output_tokens": 1494
+  },
+  "raw_response": "**Aurora Labs SOC 2 Type II \u2013 CC6.3 Access Authorization Findings**\n\n---\n\n### 1. **Service Account Owner Not Documented**\n**Section:** Data Access Authorization Policy Section 6.1 and RBAC Export  \n**Why It's a Gap:** The Data Access Authorization Policy (Section 6.1) requires all service accounts to have a designated human owner documented in the service account registry. In the MongoDB Atlas RBAC export, the service account `svc-etl-snowflake` has `owner` and `owner_email` set to null.  \n**Severity:** **Medium**  \n**Rationale:** Lack of documented ownership introduces risk of orphaned access, incomplete accountability, and possible delay in revocation during offboarding or role changes.\n\n---\n\n### 2. **Contractor Account Expiration Not Enforced**\n**Section:** Data Access Authorization Policy Section 6.2 and RBAC Export  \n**Why It's a Gap:** The policy mandates contractor and temporary employee accounts must have a defined expiration date no later than the contract end date or 90 days, whichever is shorter, and deprovisioned within 24 hours of termination. In the RBAC export, contractor `r.santos` (contract end date: 2025-12-31) has `expiration_date: null`, meaning there\u2019s no technical control to ensure timely deprovisioning.  \n**Severity:** **Medium**  \n**Rationale:** Failure to enforce expirations could lead to ex-contractors retaining access beyond their authorized period, creating a potential security risk.\n\n---\n\n### 3. **Policy Exception Process Actively Used but Effectively Monitored**\n**Section:** Data Access Authorization Policy Section 7 and Exception Register  \n**Why It's a Gap:** Multiple exceptions are approved for broad access (e.g., for the Data Analytics team and billing service). However, all exceptions have clearly defined compensating controls, expiration, and have been recently reviewed for effectiveness.  \n**Severity:** **Low**  \n**Rationale:** While exceptions permit deviations from standard controls, comprehensive compensating controls and CISO oversight are evident. Not a deficiency, but should continue to be closely monitored in future reviews.\n\n---\n\n### 4. **Single Minor Lapse in Quarterly Access Certification (Looker Platform)**\n**Section:** Data Access Authorization Policy Section 5 and Quarterly Certification Log  \n**Why It's a Gap:** Policy (Section 5.1) requires quarterly access certifications to be completed within 14 calendar days. Looker Analytics Platform's Q4 2025 certification was completed 21 days after start (2025-11-04 vs. 2025-10-14). Cause was system owner PTO; non-compliance was acknowledged, and revoked accounts demonstrate correction.  \n**Severity:** **Low**  \n**Rationale:** Occasional policy deviation with prompt remediation and clear cause is not a control breakdown but should be tracked. Continued late certifications could raise severity in future periods.\n\n---\n\n### 5. **Access Reviews Do Not Explicitly Document Review of Segregation of Duties**\n**Section:** Data Access Authorization Policy Section 3.2 & 5, Quarterly Certification Log  \n**Why It's a Gap:** The policy strictly requires SOD (e.g., financial collections: user cannot modify and approve; DBAs cannot have application write access, etc.). However, quarterly certification logs only reference reviewing grants against the RBAC matrix and do not explicitly state that SOD checks (e.g., cross-role checks in finance) are performed and documented during certification.  \n**Severity:** **Low**  \n**Rationale:** Lack of documented evidence that segregation of duties is specifically checked raises minor concern that SOD violations might not be discovered during certifications. All available evidence supports SOD in the RBAC structure, but explicit documentation of these checks should be considered to strengthen the audit trail.\n\n---\n\n### 6. **Service Account Credential Rotation Not Evidenced**\n**Section:** Data Access Authorization Policy Section 6.1 / Not Evident in Supplied Evidence  \n**Why It's a Gap:** Policy requires service account credentials to be rotated every 90 days. No credential rotation logs or attestations, nor reference to service account key rotation, are present in the certification logs, RBAC export, or other evidence.  \n**Severity:** **Low**  \n**Rationale:** The absence of evidence does not confirm a failure, but lack of documentation for this process means full testing of control operation is not possible from the provided artifacts.\n\n---\n\n### 7. **Oldest RBAC Role Modification Dates (Possible Staleness)**\n**Section:** MongoDB Atlas RBAC Export  \n**Why It's a Gap:** Several roles (e.g., `dba-admin`, `app-backend-readonly`) list `last_modified` as far back as March 2024. While this does not prove roles are outdated, stale roles are a known risk area if unused or misaligned with current business needs. However, quarterly reviews confirm RBAC matrix alignment.  \n**Severity:** **Low**  \n**Rationale:** Not a failure, but a potential area for ongoing review, especially if job functions change or roles become obsolete.\n\n---\n\n## **No Critical or High Deficiencies Identified**\n\nAll high-risk access (financial, broad read) is governed by documented roles, regularly reviewed, and, where exceptions exist, they are managed with compensating controls, formal expiry, and CISO oversight. The technical enforcement of least privilege, RBAC, and SOD is evident. Remediation for access revocations (departed staff and contractors) occurs as standard process during quarterly review with supporting evidence.\n\n---\n\n## **Summary Table**\n\n| Finding Title                                           | Section                                 | Gap Description                                                                 | Severity |\n|--------------------------------------------------------|-----------------------------------------|----------------------------------------------------------------------------------|----------|\n| Service Account Owner Not Documented                    | Policy \u00a76.1, RBAC Export                | `svc-etl-snowflake` lacks an assigned owner in the RBAC export                   | Medium   |\n| Contractor Account Expiration Not Enforced              | Policy \u00a76.2, RBAC Export                | Contractor `r.santos` has no expiration date in RBAC export                      | Medium   |\n| Exception Process Actively Used, Monitored              | Policy \u00a77, Exception Register           | Exceptions increase risk, but all controls and reviews in place                  | Low      |\n| Access Certification Delayed (Looker Q4)                | Policy \u00a75, Certification Log            | One late certification, remediated                                               | Low      |\n| Explicit SOD Review Not Documented in Certifications    | Policy \u00a73.2, \u00a75, Certification Log      | Certifications do not specify SOD review is performed                            | Low      |\n| Service Account Credential Rotation Not Evidenced       | Policy \u00a76.1, All Evidence               | No logs or attestations of 90-day rotation presented                             | Low      |\n| Potential RBAC Staleness                               | RBAC Export                             | Old modification dates for some roles, but quarterly reviews cover this           | Low      |\n\n---\n\n**Auditor Recommendation**:  \nAddress \"Medium\" findings by establishing procedures to ensure all service accounts have owners and contractors have explicit expiration dates in all systems. For \"Low\" findings, enhance evidence collection around SOD verification and service account credential rotation. Continue strong exception oversight. No critical or high-risk deficiencies detected at this time."
+}

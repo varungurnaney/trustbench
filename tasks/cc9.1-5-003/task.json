@@ -1,0 +1,92 @@
+{
+  "id": "cc9.1-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC9.1",
+  "control_description": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions or from the use of vendors and business partners.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/vendor-policy.md",
+      "type": "policy",
+      "description": "NovaBridge vendor risk management policy defining subservice organization monitoring, notification requirements, and vendor assessment procedures"
+    },
+    {
+      "path": "evidence/vendor-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Q4 2025 vendor inventory with 14 vendors showing subservice organizations, SOC 2 status, and tier classifications"
+    },
+    {
+      "path": "evidence/subservice-change-notifications.csv",
+      "type": "log",
+      "description": "Log of subservice organization change notifications received from vendors during 2025"
+    },
+    {
+      "path": "evidence/soc2-review-notes.csv",
+      "type": "spreadsheet",
+      "description": "SOC 2 report review notes showing subservice organization details extracted from vendor SOC 2 reports"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/vendor-sla-performance.md",
+      "type": "report",
+      "description": "Vendor SLA performance summary for Q4 2025 covering uptime, response times, and incident counts"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating NovaBridge's vendor risk management controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the vendor management policy, vendor inventory, subservice change notification log, and SOC 2 review notes. Assess whether CC9.1 requirements for vendor and subservice organization risk mitigation are met. Pay particular attention to subservice organization monitoring and whether changes were communicated and assessed in accordance with policy.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Segment (Twilio) changed subservice organization from AWS to GCP without notifying NovaBridge within 30 days",
+      "description": "Segment (NB-V-008, High tier, customer behavioral data) migrated its data processing infrastructure from AWS to Google Cloud Platform in August 2025. NovaBridge's SOC 2 review of Segment's latest report (reviewed November 15, 2025) discovered the subservice organization change in Section III of the report. The subservice change notification log has no entry for this change from Segment. Policy Section 4.2 requires vendors to communicate subservice organization changes within 30 days, and Section 4.3 requires NovaBridge to independently assess new subservice organizations within 60 days of notification. The change occurred approximately 3 months before NovaBridge discovered it via the SOC 2 report. The judgment element: Segment is owned by Twilio, and NovaBridge has a direct relationship with GCP through another vendor (Datadog uses GCP). Does NovaBridge's existing familiarity with GCP mitigate the risk of the undisclosed subservice change? Or is the vendor's failure to notify a control failure regardless of the subservice org's reputation?",
+      "evidence_sources": ["evidence/soc2-review-notes.csv", "evidence/subservice-change-notifications.csv", "evidence/vendor-policy.md", "evidence/vendor-inventory.csv"],
+      "expected_reasoning": "The auditor should compare the subservice organizations listed in the SOC 2 review notes against the vendor inventory and the change notification log. The vendor inventory still lists AWS as Segment's subservice org. The SOC 2 review notes show GCP. The change notification log has no Segment entry. This reveals: (1) Segment failed to notify NovaBridge of the change within 30 days per contractual and policy requirements, (2) NovaBridge's vendor inventory was not updated for 3+ months, (3) no independent assessment of GCP as Segment's subservice org was performed. The judgment: is this a vendor control failure (Segment didn't notify) or a NovaBridge control failure (NovaBridge should have a mechanism to detect undisclosed changes earlier)?",
+      "detection_criteria": {
+        "required_keywords": ["Segment", "subservice", "AWS to GCP", "30-day notification", "not notified", "Section 4.2", "discovered via SOC 2", "independent assessment"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No mechanism to detect undisclosed subservice organization changes between SOC 2 review cycles",
+      "description": "NovaBridge relies entirely on vendor self-reporting for subservice organization changes (per Section 4.2) and annual SOC 2 report reviews to verify subservice org details. The Segment situation (F-001) demonstrates that this approach has a detection gap: if a vendor fails to notify, the change is not discovered until the next SOC 2 review — which can be up to 12 months later. For Critical and High tier vendors processing customer data, a year of undetected subservice organization changes could mean customer data is being processed by an unassessed third party. The auditor must assess whether NovaBridge's subservice monitoring program has adequate detection controls or relies too heavily on vendor cooperation.",
+      "evidence_sources": ["evidence/vendor-policy.md", "evidence/subservice-change-notifications.csv", "evidence/soc2-review-notes.csv"],
+      "expected_reasoning": "The policy requires vendor notification within 30 days, but there is no independent verification mechanism. The subservice change notification log shows only 3 notifications for the year across 14 vendors. The SOC 2 review cycle catches changes eventually, but with significant delay. A proactive approach would include periodic vendor confirmation of subservice organizations, contractual audit rights specific to subservice org changes, or automated monitoring of vendor trust pages.",
+      "detection_criteria": {
+        "required_keywords": ["detection gap", "subservice", "self-reporting", "12 months", "undetected", "independent verification", "vendor cooperation", "monitoring"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Snowflake added Azure as subservice organization — NovaBridge assessed AWS but not Azure",
+      "description": "The SOC 2 review notes for Snowflake (NB-V-002, Critical tier) show that Snowflake's latest report lists both AWS (inclusive) and Azure (carve-out) as subservice organizations. NovaBridge's vendor inventory only lists 'AWS (inclusive)' for Snowflake. The subservice change notification log shows Snowflake notified NovaBridge of the Azure addition on July 20, 2025. Policy Section 4.3 requires independent assessment of carve-out subservice organizations within 60 days of notification. The SOC 2 review notes flag: 'Azure carve-out identified. Need to schedule independent assessment.' As of December 31, 2025, no assessment has been completed — 164 days after notification, over 100 days past the 60-day deadline. Snowflake is a Critical vendor processing customer PII.",
+      "evidence_sources": ["evidence/soc2-review-notes.csv", "evidence/subservice-change-notifications.csv", "evidence/vendor-policy.md", "evidence/vendor-inventory.csv"],
+      "expected_reasoning": "The auditor should note that Snowflake properly notified NovaBridge of the Azure addition (unlike Segment). However, the required independent assessment of Azure was never completed. The 60-day deadline was September 18, 2025. For a Critical vendor processing customer PII, an unassessed carve-out subservice organization means there is no assurance that Azure's controls meet NovaBridge's requirements. The judgment: does Snowflake's notification compliance offset the assessment failure? Azure is a well-known cloud provider — does its reputation reduce the urgency?",
+      "detection_criteria": {
+        "required_keywords": ["Snowflake", "Azure", "carve-out", "independent assessment", "not completed", "164 days", "60-day deadline", "Section 4.3", "Critical"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["vendor_management", "subservice_organizations", "change_notification", "carve_out", "judgment_call", "detection_gap"]
+  }
+}

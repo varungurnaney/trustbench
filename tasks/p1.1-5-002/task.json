@@ -1,0 +1,123 @@
+{
+  "id": "p1.1-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "P1.1",
+  "control_description": "The entity provides notice to data subjects about its privacy practices to meet the entity's objectives related to privacy.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/privacy-policy.md",
+      "type": "policy",
+      "description": "Meridian HR privacy policy for a cloud-based human resources information system (HRIS) platform"
+    },
+    {
+      "path": "evidence/data-processing-activity-records.csv",
+      "type": "spreadsheet",
+      "description": "GDPR Article 30 Record of Processing Activities listing all data flows and third-party processors"
+    },
+    {
+      "path": "evidence/dsar-log.csv",
+      "type": "log",
+      "description": "Data Subject Access Request log covering Q3-Q4 2025"
+    },
+    {
+      "path": "evidence/consent-management-records.csv",
+      "type": "log",
+      "description": "Consent records for optional processing activities including employee wellness and performance analytics"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/soc2-readiness-checklist.md",
+      "type": "report",
+      "description": "SOC 2 readiness checklist — general compliance checklist, not specific to P1.1"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Meridian HR's privacy notice practices under Trust Services Criteria P1.1. Meridian HR is a cloud-based HRIS platform that processes employee personal data on behalf of employer clients. The platform handles sensitive employment data including compensation, performance reviews, health benefits enrollment, and disciplinary records. Review all evidence documents and assess whether the privacy notice accurately describes data processing practices. This assessment involves several judgment calls regarding the intersection of employer-employee privacy, processor vs. controller responsibilities, and the adequacy of notice in a B2B2C context where the end data subjects (employees) may not interact directly with Meridian's privacy policy. Not all documents may be relevant to P1.1.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Privacy policy does not clearly distinguish Meridian's role as processor (for employer clients) vs. controller (for its own employees and direct contacts)",
+      "description": "Meridian HR acts in two distinct privacy roles: (1) as a data processor when processing employee data on behalf of employer clients, and (2) as a data controller for its own website visitors, sales prospects, and direct customer contacts. The privacy policy Section 2 states 'Meridian HR processes personal data as described in this policy' without distinguishing between these roles. The ROPA (data processing activity records) clearly shows both processor activities (PROC-001 through PROC-008, processing employer client employee data) and controller activities (PROC-009 through PROC-012, Meridian's own marketing, sales, and website analytics). The privacy policy applies the same notice to both categories, which is problematic because: (a) employees of Meridian's clients should receive their privacy notice from their employer, not from Meridian; (b) Meridian's own direct contacts need a controller-specific privacy notice. The current policy creates confusion about who is providing notice and in what capacity.",
+      "evidence_sources": ["evidence/privacy-policy.md", "evidence/data-processing-activity-records.csv"],
+      "expected_reasoning": "The auditor must assess: (1) ROPA shows processor activities (PROC-001 to PROC-008) and controller activities (PROC-009 to PROC-012). (2) The privacy policy does not distinguish between these roles. (3) For processor activities, Meridian's privacy policy is not the correct notice vehicle — the employer should provide notice. (4) For controller activities, the notice is incomplete because it is muddled with processor disclosures. (5) This creates confusion about accountability and data subject rights channels.",
+      "detection_criteria": {
+        "required_keywords": ["processor", "controller", "dual role", "employer", "client", "PROC-001", "PROC-009", "distinguish", "confusion", "Section 2"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "DSAR-2025-HR-011 rejected as 'not data controller' but ROPA shows Meridian retains employee analytics as controller",
+      "description": "DSAR-2025-HR-011 was submitted by an employee of Meridian's client (Pinnacle Corp) requesting access to their data. Meridian rejected the request with the reason: 'Meridian is a data processor; please direct your request to your employer (Pinnacle Corp) as the data controller.' However, the ROPA entry PROC-007 shows that Meridian extracts anonymized workforce analytics from client employee data and retains it as a controller for 'benchmarking and product improvement' under legitimate interest. The ROPA notes: 'Aggregated data derived from client employee records — Meridian acts as independent controller for this processing.' This means Meridian does hold some data about this employee (or data derived from their records) in a controller capacity, and the blanket rejection of the DSAR was incorrect. The auditor must assess whether the 'anonymized' claim is sufficient to exclude this from DSAR scope, and whether the privacy policy adequately discloses this controller processing of derived employee data.",
+      "evidence_sources": ["evidence/dsar-log.csv", "evidence/data-processing-activity-records.csv", "evidence/privacy-policy.md"],
+      "expected_reasoning": "DSAR rejected as 'not controller' → but ROPA PROC-007 shows Meridian is controller for workforce analytics derived from client employee data → blanket rejection may be incorrect if anonymization is incomplete → privacy policy does not disclose this secondary controller processing → employees are not informed their data is used for Meridian's own benchmarking.",
+      "detection_criteria": {
+        "required_keywords": ["DSAR-2025-HR-011", "Pinnacle", "rejected", "processor", "PROC-007", "workforce analytics", "controller", "benchmarking", "anonymized"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Employee wellness survey consent obtained by Meridian but Meridian is processor — employer should obtain consent",
+      "description": "The consent management records show Meridian collecting consent directly from employees of client organizations for 'Employee Wellness Survey' participation (consent_category='wellness_survey'). However, as a data processor, Meridian should not be collecting consent directly from data subjects — the employer (controller) should obtain consent and instruct Meridian to process accordingly. The ROPA entry PROC-005 confirms: 'Meridian collects consent directly from employees via in-platform prompt.' The privacy policy Section 4 states consent is collected 'where required,' but does not clarify that the employer (not Meridian) is the appropriate entity to obtain consent in this B2B context. This creates a situation where employees may believe they have a direct privacy relationship with Meridian, when their rights should be exercised through their employer.",
+      "evidence_sources": ["evidence/consent-management-records.csv", "evidence/data-processing-activity-records.csv", "evidence/privacy-policy.md"],
+      "expected_reasoning": "The auditor must assess: (1) Meridian is a processor for client employee data → (2) consent should be obtained by the controller (employer) → (3) Meridian is collecting consent directly from employees → (4) this blurs the controller/processor boundary → (5) employees may not understand who is responsible for their data rights → (6) if the employer has not instructed Meridian to collect consent, this may be unauthorized processing.",
+      "detection_criteria": {
+        "required_keywords": ["wellness survey", "consent", "processor", "employer", "controller", "directly", "PROC-005", "in-platform", "B2B"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "ROPA shows performance analytics data shared with employer clients as aggregated reports but granularity is questionable",
+      "description": "The ROPA entry PROC-006 describes 'Performance Analytics Reporting' where Meridian provides employer clients with analytics reports derived from employee platform usage. The data elements listed include 'manager ratings, peer review scores, goal completion rates, training module completion, time-to-complete assessments.' The ROPA states these reports are 'aggregated at department level (minimum 5 employees).' However, the notes field adds: 'Aggregation threshold waived for executive-level employees per client request — individual-level reports provided for C-suite.' This means individual performance analytics are shared for executives, which is not aggregated data. The privacy policy Section 3 states analytics data is 'shared with your employer in aggregated, anonymized form.' The exception for executive-level employees contradicts the policy's claim of anonymization.",
+      "evidence_sources": ["evidence/data-processing-activity-records.csv", "evidence/privacy-policy.md"],
+      "expected_reasoning": "PROC-006 claims department-level aggregation with 5-employee minimum → but notes show threshold waived for executives → individual C-suite performance data shared → privacy policy promises 'aggregated, anonymized' → contradiction for executive employees → these individuals receive no notice that their analytics are individually identifiable.",
+      "detection_criteria": {
+        "required_keywords": ["PROC-006", "aggregation", "waived", "executive", "C-suite", "individual-level", "minimum 5", "anonymized", "contradicts"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Two DSARs from terminated employees rejected but retention schedule shows data retained for 7 years post-termination",
+      "description": "DSAR-2025-HR-009 and DSAR-2025-HR-013 were submitted by terminated employees of Meridian's clients. Both were rejected with the reason: 'Employee no longer active in client system; data not available.' However, the ROPA entry PROC-003 shows employment records are retained for '7 years post-termination for regulatory compliance.' If the data is retained for 7 years, it should be available for DSAR requests. The rejections appear to be procedural failures — the DSAR handling team may not have access to or knowledge of the retention archive. The privacy policy does not inform data subjects about their rights regarding retained data after employment termination.",
+      "evidence_sources": ["evidence/dsar-log.csv", "evidence/data-processing-activity-records.csv"],
+      "expected_reasoning": "Two terminated employee DSARs rejected as 'data not available' → PROC-003 shows 7-year retention post-termination → data exists but DSAR team did not access retention archives → procedural failure → also raises question about ex-employee privacy notice — terminated employees are not informed their data is still held.",
+      "detection_criteria": {
+        "required_keywords": ["DSAR-2025-HR-009", "DSAR-2025-HR-013", "terminated", "rejected", "not available", "7 years", "retained", "PROC-003", "archive"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "55 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["controller_processor", "HRIS", "B2B2C", "DSAR_handling", "employee_privacy", "consent_collection", "aggregation_threshold", "workforce_analytics", "judgment_calls"]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "task_id": "cc7.2-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:32:12.883345",
+  "score": {
+    "task_id": "cc7.2-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.3333333333333333,
+    "precision": 0.25,
+    "f1": 0.28571428571428575,
+    "score": 0.3333333333333333,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "customer-identity-resolution",
+          "CAS-SVC-013",
+          "7 business days",
+          "not integrated",
+          "1.2M events"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "CAS-SVC-013",
+          "authentication failures"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "quarterly audit",
+          "reconciliation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2361,
+    "output_tokens": 991
+  },
+  "raw_response": "**Finding 1: Delayed SIEM Integration for New Production Service (customer-identity-resolution)**  \n- **Section(s):** Security Monitoring Policy \u00a73 (SIEM Integration SLA; Coverage Requirement), Q4 2025 Deployment Log, SIEM Coverage Tracker  \n- **Why it's a gap:** The service \"customer-identity-resolution\" (CAS-SVC-013) was deployed to production on 2025-10-20. As of the end of Q4 (2025-12-31), the SIEM Coverage Tracker shows this service is still **Not Integrated** with the SIEM, with only a pending integration ticket and no logs/alert rules active. The policy mandates SIEM integration\u2014including log ingestion, alert rules, and verification\u2014**must be completed within 7 business days** of deployment. Integration is overdue by over two months, and this service processes sensitive customer data and 1.2M events/day, heightening risk.\n- **Severity:** **High**  \n  *Rationale: This is a new service handling high-volume, sensitive data, fully outside centralized monitoring for over two months, with potential gaps in anomaly detection and threat visibility. However, it is not marked \"Critical\" as the logs are still being generated and retained in CloudWatch.*\n\n---\n\n**Finding 2: Absence of Service-Specific Alerts and Verification for Pending Service**  \n- **Section(s):** Security Monitoring Policy \u00a73.2, \u00a74.1, SIEM Coverage Tracker  \n- **Why it's a gap:** The SIEM Coverage Tracker for \"customer-identity-resolution\" (CAS-SVC-013) shows \"alert_rules_count\" is still 0, and the \"notes\" field shows integration is blocked by missing log parser development. According to policy \u00a73.2 and \u00a74.1, SIEM integration is not considered complete until both log ingestion and at least one service-specific alert have been configured. This means no anomaly or error alerts are currently active for this service.\n- **Severity:** **High**  \n  *Rationale: Lack of alerting on a production data service creates a blind spot, preventing timely response to errors or security incidents as required by policy.*\n\n---\n\n**Finding 3: Incomplete SIEM Monitoring Inventory versus Deployment Registry**  \n- **Section(s):** Security Monitoring Policy \u00a75, SIEM Coverage Tracker, Q4 2025 Deployment Log  \n- **Why it's a gap:** Policy \u00a75 requires reconciliation of the SIEM service inventory with the deployment registry quarterly to identify and remediate monitoring gaps. The Q4 deployment log and the SIEM Coverage Tracker reveal a gap for the \"customer-identity-resolution\" service, indicating a breakdown in the required quarterly audit and follow-up process\u2014this gap evidently persists beyond a quarter.\n- **Severity:** **Medium**  \n  *Rationale: Indicates a deficiency in the periodic monitoring audit process, allowing a material monitoring exception to persist across reporting periods.*\n\n---\n\n**Finding 4: Incomplete Alert Coverage for Services Pending SIEM Integration**  \n- **Section(s):** Security Monitoring Policy \u00a74.1, SIEM Coverage Tracker  \n- **Why it's a gap:** Policy \u00a74.1 mandates every production service must have specific alerts (error anomalies, authentication failures, data access anomalies, health checks). For the pending service, with \"alert_rules_count\" at 0 and \"Integrated\" status absent, these controls are unenforced, leaving no automated detection for errors or suspicious activity on this service.\n- **Severity:** **High**  \n  *Rationale: Represents a direct failure to implement minimum alerting for a newly-deployed, customer-data-processing service, materially increasing detection and response risk.*\n\n---\n\n**Summary Table**\n\n| Title                                             | Policy Section(s)        | Gap / Issue                                                  | Severity |\n|---------------------------------------------------|-------------------------|--------------------------------------------------------------|----------|\n| Delayed SIEM Integration for New Service          | \u00a73, Deployments, Tracker| New production service >7 business days without SIEM logging | High     |\n| Absence of Service-Specific Alerts (Pending)      | \u00a73.2, \u00a74.1, Tracker     | No alerts on new service \u2014 required per policy                | High     |\n| Incomplete Inventory Reconciliation, Q4           | \u00a75, Deployments, Tracker| Quarterly SIEM/service registry audit has not closed gap      | Medium   |\n| Incomplete Alert Coverage (Pending Service)       | \u00a74.1, Tracker           | No anomaly/error/health check alerts for pending service      | High     |\n\n---\n\n**Note:** There are no material coverage or alerting gaps for the 13/14 services already integrated; all others match policy requirements for SIEM status, log types, alert counts, and ingestion checks. The above relates solely to the newly-deployed, yet-unmonitored \"customer-identity-resolution\" production service."
+}

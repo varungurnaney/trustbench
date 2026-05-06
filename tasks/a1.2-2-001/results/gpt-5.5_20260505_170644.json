@@ -1,0 +1,42 @@
+{
+  "task_id": "a1.2-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:06:44.064545",
+  "score": {
+    "task_id": "a1.2-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.14285714285714285,
+    "f1": 0.25,
+    "score": 1.0,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "235 minutes",
+          "240 minutes",
+          "RTO",
+          "5-minute margin",
+          "data growth",
+          "17.3%"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1718,
+    "output_tokens": 3210
+  },
+  "raw_response": "## Overall assessment\n\nPinnacle SaaS has a defined backup and recovery policy and the Q4 2025 restore test demonstrates that the tested restore completed successfully within the stated 4-hour RTO.\n\n- **Policy RTO:** 240 minutes / 4 hours  \n- **Q4 actual restore duration:** 235 minutes  \n- **Result:** Pass, with a 5-minute margin  \n- **Data integrity:** Passed \u2014 847/847 tables verified, checksum and row count validation passed\n\nHowever, based on the evidence provided, Pinnacle SaaS is **not yet fully supportable as meeting SOC 2 A1.2 for backup and recovery across the full in-scope environment**. The main gaps relate to incomplete test coverage, lack of RPO validation, and limited evidence that recovery procedures and backup monitoring are operating across all required systems.\n\n---\n\n## Findings\n\n| # | Finding | Related Document Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Restore test does not cover all in-scope production systems | **Backup and Recovery Policy \u00a72 Scope**; **Q4 Restore Test Report \u2013 backup_set / restore_timeline** | The policy scope includes PostgreSQL clusters `pin-db-prod-01` through `pin-db-prod-04`, S3 storage buckets `pin-prod-assets` and `pin-prod-uploads`, and Vault. The Q4 restore test only evidences restore of `pin-db-prod-01` and Vault-related application configuration. There is no evidence that the other production database clusters or S3 file storage were restored or validated. This means the organization has not demonstrated recovery capability for the full in-scope production environment. | **High** |\n| 2 | RPO objective is not validated by the restore test | **Backup and Recovery Policy \u00a73 Recovery Objectives**, **\u00a74.2 Continuous WAL Archiving**, **\u00a74.3 Incremental Backups**; **Q4 Restore Test Report \u2013 backup_set / rto_assessment** | The policy defines a 4-hour RPO, but the Q4 test only validates restoration from a full backup dated 2025-12-13. The report does not show testing of WAL replay, point-in-time recovery, incremental backup recovery, or verification that data loss would be limited to 4 hours or less. Because the RPO depends on continuous WAL archiving and/or incremental backups, those mechanisms should be tested and evidenced. | **High** |\n| 3 | RTO was met, but with minimal margin and no tracked remediation plan | **Backup and Recovery Policy \u00a73 Recovery Objectives**; **Q4 Restore Test Report \u2013 rto_assessment, quarter_over_quarter_comparison, recommendations** | The Q4 restore completed in 235 minutes against a 240-minute RTO, leaving only a 5-minute margin. Data volume increased 17.3% quarter over quarter, and restore duration increased 18.7%. The report identifies recommendations such as parallel restore and `pg_restore --jobs` tuning, but there is no evidence of assigned owners, due dates, risk acceptance, or remediation tracking. This creates a risk that future restores may exceed the committed RTO as data continues to grow. | **Medium** |\n| 4 | Recovery procedures are not evidenced at an operational runbook level | **SOC 2 A1.2 requirement**; **Backup and Recovery Policy \u00a76 Restore Testing**, **\u00a77 Failure Handling**; **Q4 Restore Test Report \u2013 restore_timeline** | The policy defines backup and restore testing requirements, and the report summarizes restore phases, but the evidence does not include detailed recovery runbooks or procedures for restoring data, systems, infrastructure, dependencies, application services, DNS/routing, validation steps, escalation paths, or failback. SOC 2 A1.2 expects recovery plan procedures to be designed, maintained, and monitored. A policy and one test summary alone may not be sufficient evidence of repeatable operational recovery procedures. | **Medium** |\n| 5 | Backup operation monitoring and failure handling are not evidenced | **Backup and Recovery Policy \u00a74.1 Daily Full Backups**, **\u00a74.2 Continuous WAL Archiving**, **\u00a77 Failure Handling** | The policy states that daily full backups must complete within the 02:00\u201306:00 UTC maintenance window, WAL archiving must maintain a maximum 15-minute lag, and failures must alert via PagerDuty within 5 minutes. The Q4 report does not provide evidence of backup job completion times, WAL archive lag metrics, backup monitoring dashboards, alert tests, failure simulations, or re-run/escalation evidence. As a result, the operating effectiveness of backup monitoring and failure handling cannot be confirmed from the provided evidence. | **Medium** |\n| 6 | Quarterly testing evidence is incomplete for the broader assessment period | **Backup and Recovery Policy \u00a76.1 Quarterly Restore Tests**, **\u00a76.2 Documentation**; **Q4 Restore Test Report \u2013 quarter_over_quarter_comparison** | The Q4 report references a Q3 test, but the detailed Q3 report and any Q1/Q2 restore test reports were not provided. The policy requires quarterly restore testing and documentation for each test. Without complete quarterly reports, timing details, integrity results, and sign-offs for each quarter, the auditor cannot fully verify that restore testing was consistently performed and documented throughout the period. | **Low** |\n| 7 | Approval evidence in the Q4 report could be stronger | **Backup and Recovery Policy \u00a76.2 Documentation**; **Q4 Restore Test Report \u2013 approved_by / sign_off** | The report lists \u201cApproved by: Sandra Nguyen, CISO\u201d and includes test lead sign-off, but the formal sign-off section only includes the test lead. There is no explicit CISO approval date, signature, workflow record, or approval comments. This is not a failure of the restore test itself, but stronger approval evidence would better support that restore testing results were reviewed and accepted by management. | **Low** |\n\n---\n\n## Conclusion\n\nPinnacle SaaS demonstrates a positive control posture for the specific Q4 restore test performed: the restore completed successfully, passed integrity checks, and met the documented 4-hour RTO.\n\nHowever, for SOC 2 A1.2 readiness, the evidence is **partially sufficient but not complete**. The most important gaps are:\n\n1. Restore testing does not cover all systems in policy scope.  \n2. The 4-hour RPO is not validated.  \n3. The 4-hour RTO is at risk due to shrinking margin and data growth.  \n4. Operational recovery procedures and backup monitoring evidence are limited."
+}

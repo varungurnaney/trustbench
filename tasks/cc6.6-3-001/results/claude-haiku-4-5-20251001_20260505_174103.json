@@ -1,0 +1,73 @@
+{
+  "task_id": "cc6.6-3-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:41:03.574817",
+  "score": {
+    "task_id": "cc6.6-3-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "schema-registry",
+          "PERMISSIVE",
+          "STRICT",
+          "mTLS",
+          "plaintext",
+          "Section 3.1",
+          "Kafka Connect"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "metrics-exporter",
+          "self-signed",
+          "Vault",
+          "legacy Helm",
+          "Section 3.1",
+          "all namespaces"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "exception process",
+          "Section 3.3",
+          "compensating controls",
+          "two services"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2180,
+    "output_tokens": 1579
+  },
+  "raw_response": "# CC6.6 Compliance Assessment \u2013 Findings Report\n**Nimbus Analytics Service Mesh Security Controls**  \n**Assessment Period:** Q4 2025  \n**Audit Date:** December 15, 2025\n\n---\n\n## Finding 1: Non-Compliant mTLS Configuration \u2013 schema-registry Service\n\n**Title:** schema-registry Operating in PERMISSIVE Mode \u2013 Violates mTLS Mandate\n\n**Policy Reference:** Section 3.1 \u2013 mTLS Requirement; Section 3.3 \u2013 Exceptions Process\n\n**Gap Description:**  \nThe schema-registry service in the data-ingestion namespace is configured with PeerAuthentication mode set to PERMISSIVE, which allows both mTLS and plaintext traffic. This directly violates the policy requirement that \"PeerAuthentication policy must be set to STRICT (no plaintext fallback).\" The service team has documented a compatibility issue with a legacy Kafka Connect plugin, but the audit report indicates no formal GRC exception has been approved. The policy explicitly requires that services unable to support mTLS must obtain written exception approval including business justification, compensating controls, and CISO sign-off (Section 3.3).\n\n**Severity:** **High**\n\n**Remediation Path:**  \n- Option A (Preferred): Upgrade or patch the Kafka Connect plugin to support mTLS, then enforce STRICT mode\n- Option B (Interim): Submit formal exception request to GRC process with remediation timeline\n- If Option B selected: Implement compensating controls (e.g., isolated namespace NetworkPolicy, egress filtering)\n\n---\n\n## Finding 2: Sidecar Not Injected \u2013 metrics-exporter Service\n\n**Title:** metrics-exporter Missing Istio Sidecar Proxy \u2013 No Service Mesh Protection\n\n**Policy Reference:** Section 3.1 \u2013 mTLS Requirement (\"Every production service must have an Istio sidecar proxy injected\")\n\n**Gap Description:**  \nThe metrics-exporter service has no Istio sidecar injected and is deployed using a legacy Helm chart that predates Istio adoption. The service uses a self-signed certificate (generated at deployment time) rather than certificates issued by HashiCorp Vault PKI. This service handles Prometheus metrics export from all namespaces and is therefore exposed to all services that require observability data. Without sidecar injection, the service cannot participate in mTLS enforcement, leaving it vulnerable to unauthorized access and man-in-the-middle attacks. The service operates entirely outside the service mesh security perimeter.\n\n**Severity:** **Critical**\n\n**Remediation Path:**  \n- Update Helm chart to enable sidecar injection (`istio-injection: enabled` label on namespace)\n- Update service to use Vault-issued certificates via Vault Agent sidecar\n- Implement strict RBAC policies limiting which services can scrape metrics\n- Establish mTLS between Prometheus and metrics-exporter\n- Timeline: Should be treated as priority remediation given cross-namespace exposure\n\n---\n\n## Finding 3: Certificate Management Non-Compliance \u2013 metrics-exporter PKI\n\n**Title:** Self-Signed Certificates Outside Vault PKI \u2013 Certificate Rotation Not Automated\n\n**Policy Reference:** Section 3.2 \u2013 Certificate Management (\"All service certificates are issued by HashiCorp Vault PKI engine\")\n\n**Gap Description:**  \nThe metrics-exporter service uses self-signed certificates generated by the legacy Helm chart at deployment time, rather than certificates issued by the Vault PKI (pki-nimbus-prod). This violates the stated certificate management requirement. Additionally, the audit report shows no automated certificate rotation mechanism (cert_rotation_hours listed as N/A), whereas the policy requires 72-hour automated rotation via Vault Agent. Manual certificate renewal would be required, creating operational risk and potential service disruptions if certificates expire before manual renewal occurs.\n\n**Severity:** **High**\n\n**Remediation Path:**  \n- Integrate metrics-exporter with HashiCorp Vault PKI for certificate issuance\n- Deploy Vault Agent as sidecar to manage certificate lifecycle\n- Configure automated 72-hour certificate rotation\n- Establish monitoring/alerting for certificate expiry (e.g., 30 days before expiration)\n\n---\n\n## Finding 4: System Boundary Control Gap \u2013 Metrics Exporter Access Control\n\n**Title:** Metrics Service Accessible to All Namespaces \u2013 Insufficient Network Segmentation\n\n**Policy Reference:** Section 4.1 \u2013 Kubernetes Network Policies (\"Default deny all ingress traffic; Explicitly allow only required service-to-service communication\")\n\n**Gap Description:**  \nThe metrics-exporter service is noted as handling \"Prometheus metrics export from all namespaces.\" However, there is no evidence in the provided documentation that explicit NetworkPolicies are in place to control which services can access this service. While the policy requires default-deny network policies with explicit allowlists, the broad access required by metrics-exporter creates a potential system boundary weakness. An unauthorized or compromised service could potentially access metrics containing sensitive information about system configuration and behavior.\n\n**Severity:** **Medium**\n\n**Remediation Path:**  \n- Document required prometheus scrape targets (which services need metrics access)\n- Implement NetworkPolicy in metrics-exporter namespace explicitly allowing ingress only from Prometheus/monitoring services\n- Use label selectors to scope access to authorized monitoring tooling\n- Include this finding in NetworkPolicy audit (verify all namespaces have deny-all default policies)\n\n---\n\n## Summary Table\n\n| Finding | Service(s) | Control Area | Severity | Status |\n|---------|-----------|--------------|----------|--------|\n| 1 | schema-registry | mTLS Enforcement | High | Non-Compliant |\n| 2 | metrics-exporter | Sidecar Injection | Critical | Non-Compliant |\n| 3 | metrics-exporter | Certificate Management | High | Non-Compliant |\n| 4 | metrics-exporter | Network Segmentation | Medium | Non-Compliant |\n\n---\n\n## Overall Assessment\n\n**Compliance Rating: NON-COMPLIANT**\n\n- **Compliant Services:** 13 of 15 (87%)\n- **Non-Compliant Services:** 2 of 15 (13%)\n\n### Critical Issues Requiring Immediate Attention:\n1. **metrics-exporter** lacks basic service mesh protections (sidecar, mTLS, Vault PKI)\n2. **schema-registry** operates outside policy requirements without formal exception\n\n### Recommendation:\nThe organization has established a strong service mesh security posture across the majority of production services. However, two services represent material gaps in the control environment:\n\n- **Immediate action required** on metrics-exporter (critical infrastructure service with cross-namespace exposure)\n- **Formal exception process or remediation** required for schema-registry within 30 days\n\nRecommend re-assessment after remediation to confirm CC6.6 control operating effectiveness."
+}

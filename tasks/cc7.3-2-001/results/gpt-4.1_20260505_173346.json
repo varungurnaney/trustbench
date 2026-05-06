@@ -1,0 +1,62 @@
+{
+  "task_id": "cc7.3-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:33:46.617047",
+  "score": {
+    "task_id": "cc7.3-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 0.3333333333333333,
+    "precision": 0.1111111111111111,
+    "f1": 0.16666666666666666,
+    "score": 0.3333333333333333,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "P2",
+          "after-hours",
+          "next business day",
+          "unauthorized access",
+          "queued",
+          "coverage gap"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "after-hours"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2237,
+    "output_tokens": 1368
+  },
+  "raw_response": "Below is an itemized review of the **Crestfield Data Solutions Incident Response Plan** against SOC 2 **CC7.3** requirements for **incident response, containment, remediation, and communication**, with specific attention to **operational alert routing and severity definitions**.\n\n---\n\n### 1. Inconsistent After-Hours Coverage for Major Incidents\n\n**Section:** 5.2 Alert Routing and On-Call\n\n**Why it's a gap:**  \nP2 (Major) alerts that occur outside business hours are only \u201cqueued and reviewed at the start of the next business day,\u201d rather than being routed to on-call responders for timely investigation. This approach could delay containment and remediation for incidents involving unauthorized access or potential data exposure, contravening best practices and SOC 2 expectations for prompt incident response.\n\n**Severity:** **High**\n\n---\n\n### 2. Limited Coverage of Third-Party/Vendor Incident Notification\n\n**Section:** 2. Scope; 7.3 Regulatory Notification\n\n**Why it's a gap:**  \nWhile the IRP scope includes third-party integrations, there are no concrete procedures or requirements for notification and coordination with third-party vendors when a shared incident occurs, or for addressing incidents initiated by or impacting vendors (e.g., supply chain compromises). SOC 2 expects the incident response process to include third-party notification/coordination as appropriate.\n\n**Severity:** **Medium**\n\n---\n\n### 3. No Explicit Retrospective Review of Alert Routing Effectiveness\n\n**Section:** 5.2 Alert Routing and On-Call; 9.3 Lessons Learned\n\n**Why it's a gap:**  \nThough the post-mortem process covers detection rule reviews, the plan lacks any mention of periodic or incident-driven review of alert routing workflows or SLAs (e.g., whether PagerDuty alerts were escalated as intended, or if coverage gaps occurred). Such review helps ensure that incident response remains effective and is aligned with operational realities.\n\n**Severity:** **Low**\n\n---\n\n### 4. Lack of Explicit Stakeholder Notification for All Incident Severities\n\n**Section:** 7.1 Internal Communication; 7.2 Customer Communication\n\n**Why it's a gap:**  \nThe plan focuses strongly on P1/P2 communications but leaves notification for P3/P4 incidents as discretionary (\"unless specifically requested by Incident Commander\") and suggests no structured approach for notifying internally affected business units or stakeholders. For transparency and consistency, there should be minimum notification requirements (even just summaries) for significant operational or security incidents, especially when internal business units may be impacted.\n\n**Severity:** **Low**\n\n---\n\n### 5. Scheduled Review of Plan May Be Delayed After Significant Change\n\n**Section:** 10.2 Plan Maintenance\n\n**Why it's a gap:**  \nThe plan states it will be \"reviewed annually or after any P1 incident.\" However, significant changes in systems, technology, threat landscape, or regulations that do **not** coincide with a P1 incident may not trigger an immediate review. SOC 2 expects timely review of IR plans after major operational changes, not just after P1 events or once a year.\n\n**Severity:** **Medium**\n\n---\n\n### 6. Limited Detail on Training and Familiarity of Staff\n\n**Section:** 10.1 Testing Schedule\n\n**Why it's a gap:**  \nThe plan mentions annual tabletop and bi-annual purple team exercises but does not detail mandatory incident response training for new hires, periodic refresher training for IR team or company-wide awareness (phishing response, reporting responsibilities). SOC 2 expects organizations to ensure all relevant personnel are familiar with their roles in the IR process.\n\n**Severity:** **Low**\n\n---\n\n### 7. Potentially Insufficient Granularity in Severity Assignment\n\n**Section:** 3. Severity Levels; 6.1 Incident Declaration\n\n**Why it's a gap:**  \nSeverity assignment is at the discretion of the Incident Commander. While examples and definitions are supplied, there are no documented tie-breakers or review/escalation processes should there be disagreement, bias or under-classification (e.g., if a P2 is mistakenly marked as P3, delaying alert triage). An explicit review or challenge process would help ensure incidents are accurately and consistently classified.\n\n**Severity:** **Low**\n\n---\n\n### 8. Absence of User Notification for Account-Related Incidents\n\n**Section:** 6.2 Containment; 7.2 Customer Communication\n\n**Why it's a gap:**  \nFor P2-level incidents involving user account compromise (e.g., API key or credential reset), the plan does not clearly require direct notice to affected customer users, which could delay their own mitigation efforts. SOC 2 expects communication to affected users\u2014especially if remediation steps are needed on their end.\n\n**Severity:** **Medium**\n\n---\n\n## **Summary Table**\n\n| # | Title                                                      | Section(s)           | Reason                                               | Severity |\n|---|------------------------------------------------------------|----------------------|------------------------------------------------------|----------|\n| 1 | Inconsistent After-Hours Coverage for Major Incidents      | 5.2                  | Delays for P2 after-hours incidents                  | High     |\n| 2 | Limited Coverage of Third-Party/Vendor Incident Notification| 2; 7.3               | Lacks procedures for third-party incidents           | Medium   |\n| 3 | No Explicit Retrospective Review of Alert Routing          | 5.2; 9.3             | No assessment of alert routing/SLA effectiveness     | Low      |\n| 4 | Lack of Explicit Stakeholder Notification (P3/P4)          | 7.1; 7.2             | No structured approach for lower-severity comms      | Low      |\n| 5 | Scheduled Review May Be Delayed After Significant Change   | 10.2                 | Not clearly triggered by significant env. changes    | Medium   |\n| 6 | Limited Detail on Training and Familiarity                 | 10.1                 | Insufficient training/awareness detail               | Low      |\n| 7 | Insufficient Granularity in Severity Assignment            | 3; 6.1               | No tie-breaker/escalation for severity conflicts     | Low      |\n| 8 | Absence of User Notification for Account-Related Incidents | 6.2; 7.2             | No guarantee users get notified to take remediation  | Medium   |\n\n---\n\n### **Note**\nMost core SOC 2 requirements for incident *detection, containment, remediation, post-incident activities, and communications* are addressed, with strong operational and technical detail. Gaps identified relate to operational coverage, communication with third parties, continuous improvement, and completeness of stakeholder notification. Addressing these will strengthen alignment with SOC 2 expectations and operational best practices."
+}

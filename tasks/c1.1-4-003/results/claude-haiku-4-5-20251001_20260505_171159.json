@@ -1,0 +1,87 @@
+{
+  "task_id": "c1.1-4-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:11:59.667464",
+  "score": {
+    "task_id": "c1.1-4-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-030",
+          "no PII",
+          "approved"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "pag_prod_support",
+          "requester_email",
+          "requester_name",
+          "plaintext",
+          "Restricted",
+          "no exception",
+          "field-level encryption"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "description",
+          "May contain PII",
+          "Confidential",
+          "ticket",
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Data Asset Inventory",
+          "quarterly review",
+          "support",
+          "not registered",
+          "Section 4.1",
+          "Section 4.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4389,
+    "output_tokens": 1335
+  },
+  "raw_response": "# SOC 2 C1.1 Compliance Assessment Report\n**Pinnacle Analytics Group | Q4 2025**\n\n---\n\n## FINDINGS\n\n### Finding 1: Unencrypted PII in Production Support Database\n**Policy Section:** POL-DCH-004, Section 5.2 (Data at Rest)\n\n**Description:**\nThe `pag_prod_support` database contains two columns classified as PII (Restricted data) that are stored in plaintext:\n- `tickets.requester_email` (varchar 255) \u2014 flagged as PII, field_encryption = No\n- `tickets.requester_name` (varchar 200) \u2014 flagged as PII, field_encryption = No\n\n**Gap:**\nThe Data Classification and Handling Policy explicitly requires field-level encryption for all Restricted PII columns (Section 5.2). No exception record (EXC-2025-030 or EXC-2025-031) covers the support database PII columns.\n\n**Why This Matters:**\n- Policy mandates field-level encryption for Restricted data\n- These fields meet the definition of Restricted (PII)\n- Database-level RDS encryption alone does not satisfy the field-level encryption requirement stated in Section 5.2\n- No compensating controls or risk assessment documented\n- This represents a direct policy violation without exception coverage\n\n**Severity:** **CRITICAL**\n\n---\n\n### Finding 2: Potential Unclassified PII in Support Ticket Descriptions\n**Policy Section:** POL-DCH-004, Section 4.1 (Data Inventory) and Section 5.2 (Data at Rest)\n\n**Description:**\nThe `tickets.description` column in `pag_prod_support` is classified as \"Confidential\" with no PII flag, yet the database notes explicitly state: \"May contain PII submitted by user but not classified as PII column.\"\n\n**Gap:**\n- This column is not registered as containing PII despite acknowledged risk\n- Data classification appears incorrect (should be Restricted if PII is stored)\n- If classified as Restricted, field-level encryption would be required but is not implemented\n- The Data Inventory (Section 4.1) should reflect actual data contents, not assumed contents\n\n**Why This Matters:**\n- Creates ambiguity about whether Restricted data encryption requirements apply\n- Manual notes contradict the formal PII_FLAG setting\n- Data Governance Office quarterly reviews (Section 4.2) may not be catching this inconsistency\n- Customer PII may not be adequately protected if this column contains it\n\n**Severity:** **HIGH**\n\n---\n\n### Finding 3: Missing Exception for Support Database PII Storage\n**Policy Section:** POL-DCH-004, Section 8 (Exceptions)\n\n**Description:**\nThe support database plaintext PII columns lack any CISO-approved exception. Two exceptions exist (EXC-2025-030 and EXC-2025-031), but neither addresses the support database.\n\n**Gap:**\nIf the organization intends to store unencrypted PII for operational reasons (e.g., search/routing), policy requires documented CISO approval with:\n- Risk assessment\n- Compensating controls\n- Quarterly review\n\nNone of these exist for `pag_prod_support`.\n\n**Why This Matters:**\n- Policy Section 8 requires all exceptions be formally approved and documented\n- Without an exception, the plaintext storage is a clear violation\n- No audit trail showing deliberate risk acceptance by leadership\n\n**Severity:** **HIGH**\n\n---\n\n### Finding 4: Training Awareness Does Not Demonstrate Control Implementation\n**Policy Section:** POL-DCH-004, Section 3 (Classification Levels) and general applicability\n\n**Description:**\nThe Q4 2025 security awareness training records show 15 employees (including Henry Thompson after retake) completed \"Data Handling and Classification\" training. However, this evidence demonstrates *awareness only*, not *control implementation*.\n\n**Gap:**\nTraining completion is a necessary but insufficient control for C1.1. The control requires:\n- Identification and maintenance of confidential information (requires active systems/processes)\n- This is demonstrated by the database encryption report and policy, not by training records\n\nTraining records do not evidence:\n- That data is actually classified upon creation\n- That classifications are maintained/updated\n- That data owners perform oversight\n- That the policy is enforced in practice\n\n**Why This Matters:**\nC1.1 focuses on the entity's ability to \"identify and maintain\" confidential information. Training addresses awareness but not the operational control itself. The provided evidence bundle should demonstrate identification mechanisms and maintenance procedures, not just awareness.\n\n**Severity:** **MEDIUM**\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Section | Severity | Status |\n|---------|---------|----------|--------|\n| Unencrypted PII in Support Database | 5.2 | CRITICAL | Not Excepted |\n| Unclassified PII Risk in Descriptions | 4.1, 5.2 | HIGH | Not Excepted |\n| Missing Exception for Support DB | 8 | HIGH | Not Excepted |\n| Training \u2260 Control Evidence | General | MEDIUM | Scope Issue |\n\n---\n\n## REMEDIATION PRIORITIES\n\n1. **Immediate (Before Type II engagement):**\n   - Encrypt `requester_email` and `requester_name` in support database, OR\n   - Submit CISO exception with risk assessment and compensating controls\n\n2. **Before fieldwork begins:**\n   - Reclassify or clarify `tickets.description` PII risk\n   - Document data classification procedures and evidence of ongoing identification/maintenance\n   - Provide data owner maintenance activity logs\n\n3. **Before conclusion of audit:**\n   - Demonstrate Data Governance Office's Q4 2025 Data Asset Inventory review to confirm findings resolution"
+}

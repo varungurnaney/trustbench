@@ -1,0 +1,74 @@
+{
+  "task_id": "cc6.1-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:42:48.520057",
+  "score": {
+    "task_id": "cc6.1-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.16666666666666666,
+    "f1": 0.2857142857142857,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 18,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "footnote",
+          "contractor",
+          "VPN",
+          "exempt",
+          "MFA",
+          "equivalent",
+          "Table 3-1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "emergency",
+          "break-glass",
+          "recommended",
+          "required",
+          "Section 7.3",
+          "revocation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "service account",
+          "Section 8.1",
+          "credential",
+          "rotation",
+          "password"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1859,
+    "output_tokens": 3651
+  },
+  "raw_response": "Below are the CC6.1 readiness findings identified from the single-document review of the Pinnacle Financial Services Access Control Policy.\n\n| # | Finding Title | Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | MFA Exemption for Remote Contractors Conflicts With MFA Requirement | Sections 3.2, footnote 3; 4.2 | Section 4.2 states MFA is required for all users accessing Pinnacle systems, but footnote 3 exempts certain remote contractors accessing through a client-provided VPN if the contractor\u2019s organization enforces \u201cequivalent authentication controls.\u201d The policy does not define how equivalency is assessed, documented, approved, or periodically revalidated. This creates a control bypass for third-party access to protected assets. | High |\n| 2 | Remote Contractor Approval Chain Omits Data Owner Approval | Section 3.2, Table 3-1 | Remote contractors require only Manager and Vendor Manager approval, while Section 3.1 requires Data Owner approval for Confidential or Restricted data access. This inconsistency could allow remote contractors to access sensitive systems or data without approval from the accountable data owner. | High |\n| 3 | Break-Glass Emergency Access Is Overly Broad and Weakly Governed | Section 7.3 | Emergency access grants full administrative privileges to production, can be invoked by any SRE team member, and uses a shared emergency credential. The policy does not require prior approval, time-bound access, mandatory post-use review, immediate credential rotation specific to break-glass use, or real-time monitoring. Post-incident review is only \u201crecommended,\u201d not required. | High |\n| 4 | Shared Emergency Credential Reduces Individual Accountability | Section 7.3 | The emergency access process relies on a shared credential in CyberArk. Although CyberArk checkout may provide some tracking, shared credentials inherently increase the risk of unclear attribution unless individual session recording, command logging, and mandatory review are explicitly required. The policy does not clearly require those safeguards for emergency access. | High |\n| 5 | Offboarding Procedures Do Not Cover All User Types or Systems | Section 6.1 | The termination process refers specifically to employee termination and does not explicitly address contractors, temporary workers, third-party users, vendors, service accounts, API keys, or third-party integrations. It also lists Okta, AWS IAM, CyberArk, and physical badges, but does not explicitly require revocation from other in-scope systems such as Temenos T24, PostgreSQL, Redis, Microsoft 365, Slack, ServiceNow, Jira, and Confluence. | High |\n| 6 | Termination Access Removal Timelines May Be Too Long for High-Risk Events | Section 6.1 | Okta suspension is required within 4 hours and AWS IAM removal within 24 hours. The policy does not distinguish between voluntary and involuntary terminations or high-risk terminations. For privileged users or involuntary terminations, auditors often expect immediate or near-real-time access revocation. | Medium |\n| 7 | Role Change Process Relies on Previous Manager and Allows Excessive Access for Up to 5 Business Days | Section 6.2 | The role-change process requires the previous manager to submit an access modification request. This creates a dependency on a manager who may no longer be responsible for the employee. The policy also allows IT Security up to 5 business days to adjust access, which may leave users with inappropriate access after transfer. There is no explicit HR-triggered transfer workflow or automated detection of job changes. | Medium |\n| 8 | RBAC Matrix Governance Is Not Sufficiently Defined | Sections 3.1, 3.2, 5.1 | The policy relies heavily on the approved RBAC matrix but does not define how often the RBAC matrix itself is reviewed, who approves changes to roles, how segregation-of-duties conflicts are identified, or how role permissions are validated against business need. Without governance over the RBAC model, inappropriate role definitions could be repeatedly approved. | Medium |\n| 9 | Access Provisioning Lacks Post-Provisioning Validation | Section 3.1 | The policy requires access requests, approvals, and provisioning within 2 business days, but it does not require verification that the access actually provisioned matches the approved request and RBAC role. There is also no explicit evidence requirement showing who provisioned access, when it was provisioned, and whether excessive permissions were avoided. | Medium |\n| 10 | Access Reviews May Not Include Data Owners or Complete Population Reconciliation | Section 5.1 | Quarterly reviews are performed by system owners, but the policy does not explicitly require Data Owner review for systems containing Confidential or Restricted data. It also does not describe how user listings are reconciled to authoritative sources such as HR records, Okta, vendor lists, or system-native accounts to ensure the review population is complete. | Medium |\n| 11 | Privileged Access Review Requirements Are Insufficiently Specific | Sections 5.2, 3.3 | Privileged access is reviewed monthly by the CISO, but session recording review is only sample-based and no sample size, risk criteria, or required remediation timeline is defined. The policy does not explicitly require review of all privileged users, privileged group memberships, failed privileged access attempts, or emergency access events. | Medium |\n| 12 | Service Account Controls Are Incomplete | Section 8.1 | Service accounts must be registered, have an owner, business purpose, naming convention, and be included in quarterly reviews. However, the policy does not prohibit interactive login, require least privilege, require credential rotation for service account passwords or secrets, require use of managed identities where possible, or define controls for orphaned service accounts when owners leave. | Medium |\n| 13 | API Key and OAuth Controls Do Not Fully Address Lifecycle Risk | Sections 3.2, 8.2 | API keys are rotated every 90 days and monitored, but the policy does not require least-privilege scoping, expiration enforcement, contract termination deprovisioning, OAuth consent approval, or periodic validation that third-party integrations still require access. Table 3-1 requires annual review, which may be insufficient for high-risk integrations accessing customer data. | Medium |\n| 14 | Authentication Control Coverage Across In-Scope Systems Is Ambiguous | Sections 2, 4 | The policy states that MFA is required for all users, but it does not explicitly require all in-scope systems to be federated through Okta or otherwise centrally enforce MFA. It does not address local accounts, direct database access, cloud console access outside SSO, emergency accounts, or legacy application accounts. This creates ambiguity around whether authentication controls are consistently enforced across all protected assets. | High |\n| 15 | Logical Access Architecture Requirements Are Not Fully Defined | Sections 1, 2, 9 | CC6.1 covers logical access security software, infrastructure, and architectures. The policy addresses identity, authentication, and access management, but does not define broader logical access architecture requirements such as network segmentation, firewall/security group governance, bastion hosts, private database access, administrative access paths, zero-trust or conditional access controls, or restrictions on direct production access. | Medium |\n| 16 | Exception Process Could Allow Significant Control Bypass Without Sufficient Oversight | Section 10 | Exceptions may be approved solely by the CISO and can last up to 6 months. The policy requires compensating controls and quarterly review, but it does not require risk acceptance by the business/data owner, independent review, automated expiration, or specific restrictions for high-risk exceptions such as MFA bypass or privileged access exceptions. | Medium |\n| 17 | Monitoring Requirements Do Not Define Review Ownership, Escalation, or Evidence Retention in Detail | Section 9 | Authentication logs are sent to Splunk, failed attempts are monitored, and weekly anomaly reports are reviewed by IT Security. However, the policy does not specify review evidence requirements, escalation timelines for anomalies, log integrity protections, access restrictions over logs, or time synchronization requirements. These details are important to demonstrate that monitoring supports logical access security objectives. | Low |\n| 18 | Emergency Access Review Is Recommended Rather Than Mandatory | Section 7.3 | The policy says post-incident review of emergency access is \u201crecommended within 5 business days.\u201d For production administrative access, post-use review should be mandatory, documented, and include validation of commands/actions performed, business justification, and confirmation that access was revoked or credentials were rotated. | High |"
+}

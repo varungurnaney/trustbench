@@ -1,0 +1,58 @@
+{
+  "task_id": "cc7.1m-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:30:59.034897",
+  "score": {
+    "task_id": "cc7.1m-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.125,
+    "f1": 0.2222222222222222,
+    "score": 0.2222222222222222,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "core-switch-01",
+          "285 minutes",
+          "hardware failure",
+          "EML-509"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "GEN-DC-01",
+          "generator",
+          "86 days",
+          "quarterly",
+          "deferred",
+          "January",
+          "EML-514",
+          "Section 5.3"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3135,
+    "output_tokens": 1495
+  },
+  "raw_response": "Certainly! Here\u2019s a readiness assessment of Bastion Technologies\u2019 equipment maintenance program relating to SOC 2 CC7.1 (\u201cThe entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.\u201d). Findings reference evidence and are categorized by severity.\n\n---\n\n### **Finding 1: Preventive Maintenance Generally Adhered To**\n\n- **Section:** Maintenance Policy Section 5.1 (Preventive Maintenance Schedule), Section 5.2 (Maintenance Records)\n- **Why:** The vast majority of preventive maintenance was completed within required intervals for UPS systems, HVAC units, fire suppression systems, PDUs, and network equipment (\u201cPass\u201d results, documented activities, valid change tickets).\n- **Severity:** _No gap/observation only_ (Positive evidence)\n\n---\n\n### **Finding 2: Deferred Diesel Generator Quarterly Maintenance**\n\n- **Section:** Maintenance Policy Section 5.1 (Preventive Maintenance Schedule); Section 5.2 (Records); Section 5.3 (Overdue Maintenance)\n- **Why:** The December 29, 2025, log (EML-514) shows that required quarterly maintenance for Diesel Generator GEN-DC-01 was **not performed within the standard 90-day interval**. While the generator remained operational (passing weekly self-tests), the policy requires a full load test, oil change, and filter replacement. Maintenance was deferred due to \u201ccompeting HVAC priorities.\u201d\n    - The log states 86 days since last maintenance by December 29th, **approaching but not yet exceeding the 90-day interval**; however, the quarterly schedule was not adhered to in December, and the next maintenance is not until January.\n    - Policy Section 5.3 specifies maintenance **overdue by more than 30 days** must be escalated (not yet triggered, but non-adherence and risk of approaching threshold is present).\n    - Section 5.2 requires all maintenance to be properly documented; the vendor/technician is listed as \"N/A\" and result is \"Pending\" for the deferred work.\n- **Severity:** **Medium**\n    - _Reasoning_: While no outage or operational failure occurred, proper preventive maintenance was not delivered within policy timelines. There\u2019s no evidence of formal escalation or risk assessment due to the planned deferral. This indicates a **potential for increased risk** if the deferral becomes the norm, and does not show \u201csystematic\u201d adherence to maintenance intervals.\n---\n\n### **Finding 3: Uptime Impact from Core Switch Hardware Failure (Incidence Response)**\n\n- **Section:** System Uptime Reports/SLA (Evidence of response effectiveness, not directly a maintenance scheduling gap)\n- **Why:** In November, core-switch-01 experienced 285 minutes of unplanned downtime due to hardware failure but was replaced within ~6 hours. Maintenance logs (EML-509) show that in November, annual preventive inspection and cleaning were performed after the incident and on the new hardware.\n    - Incident appears to have been remediated quickly, maintenance records updated, and new equipment properly added to the maintenance schedule.\n    - This demonstrates functioning maintenance and incident response processes; no evidence that preventive maintenance was overdue for the failed component.\n- **Severity:** _No gap/observation only_ (Positive evidence)\n---\n\n### **Finding 4: Just-in-Time vs. Proactively Scheduled Maintenance**\n\n- **Section:** Maintenance Policy Sections 5.1, 5.2, 5.3 (Scheduling and Documentation)\n- **Why:** The generator\u2019s quarterly maintenance was **not completed \u201cproactively\u201d but is being allowed to slip to the deadline** (86 of 90 days elapsed without escalation or completion). This is a pattern noted only for the generator this quarter, but such \u201cjust in time\u201d maintenance increases likelihood of overdue maintenance, missed escalations, or operational impact.\n    - Policy Section 5.1 expects preventive maintenance by the scheduled interval, not at/beyond the limit.\n    - Section 5.2 says work must be completed, documented, and next scheduled determined.\n- **Severity:** **Low**\n    - _Reasoning_: The risk has not yet materialized, and the practice was explained but not justified with a risk assessment or escalation. A more robust approach would include buffer scheduling, rescheduling priorities, or documented exception handling.\n---\n\n### **Finding 5: Maintenance Deferral Did Not Follow Formal Escalation Process**\n\n- **Section:** Maintenance Policy Section 5.3 (Overdue Maintenance, Escalation)\n- **Why:** When the generator quarterly maintenance was deferred in December, **there is no evidence of formal escalation to the IT Director**, risk assessment, or documentation of exception rationale, even though the policy requires this (especially as the 90-day window approached). The log notes Facilities team prioritization, but not a formal process or approval.\n- **Severity:** **Medium**\n    - _Reasoning_: Policy-mandated escalation/approval is designed to control risk for lapses in required maintenance. Relying only on informal team decision does not meet the defined process and could allow extended lapses without oversight.\n---\n\n### **Finding 6: Vendor Field Incomplete for Deferred Maintenance**\n\n- **Section:** Maintenance Policy Section 5.2 (Maintenance Records)\n- **Why:** For the deferred generator maintenance, the \u201cvendor\u201d and \u201ctechnician\u201d fields are \u201cN/A\u201d, and \u201cresult\u201d is \u201cPending\u201d, which is not a complete maintenance record as defined in policy (date, equipment ID, work performed, technician, result, next scheduled).\n- **Severity:** **Low**\n    - _Reasoning_: Isolated issue, but well-structured maintenance documentation is vital for traceability and future audits.\n---\n\n### **Summary Table**\n\n| Title                                      | Section                 | Gap/Explanation                                                                                                 | Severity   |\n|---------------------------------------------|-------------------------|----------------------------------------------------------------------------------------------------------------|------------|\n| Preventive Maintenance Generally Adhered To | 5.1, 5.2                | No gap \u2014 all other maintenance occurred per schedule and with full documentation                               | -          |\n| **Deferred Diesel Generator QM**            | 5.1, 5.2, 5.3           | Generator quarterly maintenance not delivered within policy interval, \u201cjust in time\u201d, not yet overdue but late  | **Medium** |\n| **Deferral Not Formally Escalated**         | 5.3                     | Deferred maintenance lacked formal risk assessment/escalation as required by policy                            | **Medium** |\n| Just-in-Time vs. Proactive Scheduling       | 5.1, 5.2, 5.3           | Maintenance performed just before max interval, not \u201cas scheduled\u201d; robust scheduling/buffers not documented   | Low        |\n| Vendor/Technician Fields Incomplete         | 5.2                     | Deferred generator maintenance entry incomplete per policy                                                     | Low        |\n\n---\n\n**Conclusion:**  \n_Bastion Technologies generally demonstrates effective and policy-compliant system component maintenance for Q4 2025. However, the sole exception\u2014deferred quarterly preventive maintenance of the primary generator\u2014highlights a moderate gap: preventive maintenance was not consistently delivered within established intervals, and the required escalation/risk assessment was not performed. While this did not cause operational failure, adherence to process is necessary for full CC7.1 compliance._"
+}

@@ -1,0 +1,63 @@
+{
+  "id": "cc7.1m-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "The entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/maintenance-policy.md",
+      "type": "policy",
+      "description": "Ridgeline Systems maintenance policy defining maintenance windows, patching SLAs, and emergency maintenance procedures"
+    },
+    {
+      "path": "evidence/patching-records-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "Patching records for Q4 2025 with 35 patch deployments across production, database, and corporate systems"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the maintenance policy and patching records for Ridgeline Systems. Assess whether SOC 2 CC7.1 maintenance requirements are met. Cross-reference patch deployment timestamps against the defined maintenance windows to identify any patches applied outside of approved windows.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Critical RDP patch applied outside maintenance window during business hours with no emergency change approval",
+      "description": "PATCH-4023 (November 12) shows a Critical RDP security patch (KB5045890) was applied to jump-srv-01 at 10:45 UTC on a Wednesday — during business hours. The maintenance window for production servers is MW-PROD-1 (Saturday 02:00-06:00 UTC). The maintenance_window field shows 'N/A' and the deployer notes state 'Patch is critical — applied immediately upon availability.' Policy Section 3.2 requires that maintenance outside designated windows requires emergency change approval (Section 6), and Section 6 requires IT Director approval. The change ticket CHG-2025-3455 exists but no emergency approval is documented. While the patch urgency is understandable for a Critical RDP vulnerability on a jump server, the policy requires emergency authorization even for Critical patches. The patch SLA (Section 4.1) allows 14 calendar days for Critical patches — this could have been applied during the next Saturday maintenance window (November 15) and still been within SLA.",
+      "evidence_sources": ["evidence/patching-records-q4-2025.csv", "evidence/maintenance-policy.md"],
+      "expected_reasoning": "The auditor should compare patch timestamps against maintenance windows. PATCH-4023 was applied Wednesday at 10:45 UTC. The policy defines MW-PROD-1 as Saturday 02:00-06:00 and MW-PROD-2 as Wednesday 02:00-04:00. 10:45 UTC is outside both windows. The notes confirm no emergency approval was obtained. The 14-day Critical SLA means the patch could have waited for the Saturday window. Compare with PATCH-4033 and PATCH-4034 which were Critical patches applied within the Wednesday window.",
+      "detection_criteria": {
+        "required_keywords": ["PATCH-4023", "KB5045890", "jump-srv-01", "10:45", "outside maintenance window", "no emergency approval", "business hours", "Section 6", "Wednesday"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Grafana patch applied during business hours on Wednesday with no maintenance window and no emergency approval",
+      "description": "PATCH-4013 (October 15) shows a High-severity Grafana security update was applied to monitoring-srv-01 at 14:22 UTC on a Wednesday — during business hours. The maintenance_window field shows 'N/A' and the notes state 'Applied during business hours — no maintenance window.' This is a production monitoring server patched outside any maintenance window without emergency change approval. While monitoring-srv-01 may be considered lower-risk than customer-facing servers, the policy Section 3.2 applies to all production systems. The High severity allows 30 calendar days for remediation, so there was ample time to schedule this within the next Saturday or Wednesday maintenance window.",
+      "evidence_sources": ["evidence/patching-records-q4-2025.csv", "evidence/maintenance-policy.md"],
+      "expected_reasoning": "The auditor should identify PATCH-4013 applied at 14:22 UTC on Wednesday October 15. The Wednesday maintenance window (MW-PROD-2) is 02:00-04:00 UTC. 14:22 UTC is 10+ hours outside the window. The notes explicitly state no maintenance window was used. High-severity patches have a 30-day SLA, so there was no urgency requiring an out-of-window deployment.",
+      "detection_criteria": {
+        "required_keywords": ["PATCH-4013", "monitoring-srv-01", "Grafana", "14:22", "business hours", "no maintenance window", "High", "30-day SLA"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "15 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["system_maintenance", "maintenance_window", "patching", "timestamp_analysis", "out_of_window", "emergency_change"]
+  }
+}

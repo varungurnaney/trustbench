@@ -1,0 +1,106 @@
+{
+  "id": "p1.1-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "P1.1",
+  "control_description": "The entity provides notice to data subjects about its privacy practices to meet the entity's objectives related to privacy.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/privacy-policy.md",
+      "type": "policy",
+      "description": "Nextera Health privacy policy describing data collection and sharing practices"
+    },
+    {
+      "path": "evidence/consent-management-records.csv",
+      "type": "log",
+      "description": "Consent management platform export showing user consent records and opt-in/opt-out status"
+    },
+    {
+      "path": "evidence/data-retention-schedule.csv",
+      "type": "spreadsheet",
+      "description": "Data retention schedule with retention periods by data category"
+    },
+    {
+      "path": "evidence/cookie-consent-config.json",
+      "type": "config",
+      "description": "CookieBot consent management platform configuration"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/network-architecture-overview.md",
+      "type": "architecture_diagram",
+      "description": "Network architecture overview — not relevant to P1.1"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 readiness assessment for Nextera Health, a digital health platform, covering Q3-Q4 2025. Review all provided evidence documents and assess compliance with P1.1 (Privacy Notice). Cross-reference the privacy policy against the consent management records, data retention schedule, and cookie consent configuration to identify genuine compliance gaps. Not all documents may be relevant to P1.1. Some apparent issues may have legitimate explanations — evaluate carefully before flagging.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Consent records show 312 users opted out of analytics but cookie config still loads tracking scripts",
+      "description": "The consent management records show 312 users (out of 2,847 total) have opted out of analytics tracking (consent_status='opted_out' for category 'analytics'). However, the CookieBot cookie consent configuration has a setting 'respect_opt_out' set to false for the analytics category, with a comment stating 'temporarily disabled during GA4 migration — re-enable after migration complete.' This means opt-out preferences are being ignored and analytics tracking continues regardless of user consent choices. The privacy policy Section 5 ('Your Choices') states users can 'opt out of non-essential analytics tracking at any time through our cookie preferences panel.' The consent mechanism is cosmetic — it records preferences but does not enforce them.",
+      "evidence_sources": ["evidence/consent-management-records.csv", "evidence/cookie-consent-config.json", "evidence/privacy-policy.md"],
+      "expected_reasoning": "Consent records show 312 opt-outs → cookie config has respect_opt_out=false → opt-out preferences not enforced → privacy policy promises opt-out capability → consent mechanism is non-functional → users are tracked despite explicit opt-out → critical privacy violation.",
+      "detection_criteria": {
+        "required_keywords": ["312", "opted_out", "respect_opt_out", "false", "GA4 migration", "not enforced", "cosmetic", "ignored"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "14 consent records show consent_date before privacy policy effective date — but these are pre-existing consents properly migrated",
+      "description": "The consent management records include 14 entries with consent_date values before the current privacy policy effective date of July 1, 2025 (dates ranging from March 2025 to June 2025). This initially appears concerning — consent obtained under a prior policy version. However, the migration_note field on these records states 'Migrated from v3.1 policy — consent scope unchanged, re-consent not required per DPO assessment DPO-2025-041.' The consent categories and scope did not change between policy versions, so re-consent was not legally required. This is NOT a finding — the migration was properly documented and assessed by the DPO.",
+      "evidence_sources": ["evidence/consent-management-records.csv"],
+      "expected_reasoning": "14 records with pre-policy consent dates → check migration_note field → DPO assessment DPO-2025-041 confirmed consent scope unchanged → re-consent not required → properly documented migration → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["migration", "DPO-2025-041", "pre-existing", "v3.1", "unchanged", "re-consent", "not required", "properly"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["violation", "gap", "deficiency", "non-compliant"]
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Privacy policy states 3-year retention but retention schedule shows 5 years for health assessment data",
+      "description": "The privacy policy Section 6 ('Data Retention') states: 'We retain your personal health information for a maximum of 3 years after your last interaction with the platform, after which it is securely deleted.' However, the data retention schedule shows that 'Health Assessment Data' (row 3) has a retention period of '5 years after last assessment' with the justification 'clinical validity requirements.' The privacy notice provides inaccurate information about how long health data is actually retained — a 2-year discrepancy for the most sensitive data category.",
+      "evidence_sources": ["evidence/privacy-policy.md", "evidence/data-retention-schedule.csv"],
+      "expected_reasoning": "Privacy policy Section 6 says 3-year retention → retention schedule row 3 shows 5 years for health assessment data → 2-year discrepancy → privacy notice is inaccurate on retention period for the most sensitive data category.",
+      "detection_criteria": {
+        "required_keywords": ["3 years", "5 years", "Health Assessment", "retention", "discrepancy", "Section 6", "inaccurate", "clinical validity"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Cookie consent banner does not separate health-specific tracking cookies from general analytics",
+      "description": "The cookie consent configuration groups all analytics cookies into a single 'analytics' category. However, the configuration includes a cookie named 'nh_health_session' (Nextera Health session tracker) that tracks which health assessment modules a user has completed. This health-specific behavioral tracking cookie is categorized alongside general analytics like Google Analytics. For a digital health platform handling sensitive health information, health-specific tracking cookies should be in a separate category with explicit consent, distinct from general website analytics. The privacy policy does not distinguish between general analytics and health-specific behavioral tracking.",
+      "evidence_sources": ["evidence/cookie-consent-config.json", "evidence/privacy-policy.md"],
+      "expected_reasoning": "nh_health_session cookie tracks health assessment module completion → grouped with general analytics → health behavioral data requires higher consent threshold → no separate consent category for health-specific tracking → privacy notice does not distinguish between tracking types.",
+      "detection_criteria": {
+        "required_keywords": ["nh_health_session", "health assessment", "analytics category", "sensitive", "separate", "grouped", "health-specific"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["consent_management", "cookie_consent", "retention_discrepancy", "health_data", "opt_out_enforcement", "red_herring", "noise_documents"]
+  }
+}

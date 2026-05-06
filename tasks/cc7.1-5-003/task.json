@@ -1,0 +1,119 @@
+{
+  "id": "cc7.1-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "To meet its objectives, the entity uses detection and monitoring procedures to identify changes to configurations that result in the introduction of new vulnerabilities, and susceptibilities to newly discovered vulnerabilities.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/vulnerability-management-policy.md",
+      "type": "policy",
+      "description": "Cascade Systems vulnerability management policy requiring SLA tracking for all severity tiers and 48-hour post-patch rescan"
+    },
+    {
+      "path": "evidence/remediation-sla-dashboard-q4.csv",
+      "type": "spreadsheet",
+      "description": "Q4 2025 remediation SLA dashboard with 25 vulnerabilities — Critical fully tracked, High severity with empty tracking fields"
+    },
+    {
+      "path": "evidence/patch-management-records-q4.csv",
+      "type": "log",
+      "description": "Patch management change records for Q4 2025 showing emergency and standard patches with post-validation details"
+    },
+    {
+      "path": "evidence/scan-coverage-report-q4-2025.md",
+      "type": "report",
+      "description": "Q4 2025 scan coverage report showing 100% subnet coverage and 13/13 weekly scans completed"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/pentest-executive-summary.md",
+      "type": "report",
+      "description": "Annual penetration test executive summary — point-in-time offensive assessment not directly relevant to vulnerability management program operational controls"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II audit of Cascade Systems for Q4 2025 (October 1 - December 31, 2025). Review all provided evidence and assess CC7.1 compliance for the vulnerability management program. Examine remediation SLA adherence across all severity tiers, patch management procedures, scan coverage, and process completeness. Cross-reference the SLA dashboard against patch management records to identify discrepancies. Pay attention to operational details that may reveal process gaps not immediately obvious from summary metrics. Not all documents may be relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "SLA tracking completely absent for all 7 High-severity vulnerabilities",
+      "description": "The remediation SLA dashboard shows 7 High-severity vulnerabilities (VULN-10005 through VULN-10011) with SLA status 'Unknown,' empty remediated_date fields, no days_to_remediate calculated, and escalation_status showing 'Not tracked.' Policy Section 4.2 explicitly requires SLA tracking for 'all severity tiers' with SLA deadline, current status, days remaining/past, and escalation status. The Critical tier (VULN-10001 through VULN-10004) has complete tracking with precise dates and 'Met' status. Medium and Low tiers also have proper tracking. Only the High tier is entirely untracked. Cross-referencing with patch management records reveals that many of these High vulnerabilities were likely remediated (e.g., CHG-2025-1203 patched fw-internal-08, CHG-2025-1207 upgraded pam-ha-02), but the SLA dashboard was never updated. This creates an audit evidence gap — the auditor cannot confirm whether High-severity vulnerabilities met the 30-day SLA because no tracking exists.",
+      "evidence_sources": [
+        "evidence/remediation-sla-dashboard-q4.csv",
+        "evidence/patch-management-records-q4.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should scan the SLA dashboard for completeness across all severity tiers. Critical: fully tracked, all Met. High: all 7 show 'Unknown' with empty fields. Medium: fully tracked. Low: fully tracked. This selective tracking gap is unusual — it suggests the team focused tracking rigor on Critical (highest visibility) but neglected High. Cross-referencing patch records shows the patches were probably applied, but without SLA tracking, compliance cannot be demonstrated. Policy Section 4.2 says 'SLA tracking is not optional for any severity tier.'",
+      "detection_criteria": {
+        "required_keywords": ["High-severity", "Unknown", "Not tracked", "VULN-10005", "VULN-10011", "Section 4.2", "all severity tiers", "empty fields", "audit evidence gap", "30-day SLA"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Post-patch vulnerability rescans not performed for 5 of 7 High-severity emergency patches",
+      "description": "Policy Section 6.2 requires a post-patch vulnerability rescan within 48 hours of patch deployment. The patch management records show that 5 of 7 emergency patches for High-severity vulnerabilities did not have post-patch rescans performed: CHG-2025-1203 (PAN-OS), CHG-2025-1207 (BeyondTrust), CHG-2025-1208 (FortiOS), CHG-2025-1210 (RDS), CHG-2025-1211 (FortiManager), and CHG-2025-1212 (Ivanti). Each record explicitly notes 'Post-patch rescan not performed' and 'ticket not updated.' In contrast, all 4 Critical-severity emergency patches (CHG-2025-1202, 1204, 1205, 1206) had post-patch rescans within 48 hours confirming remediation. This pattern mirrors the SLA tracking gap — Critical patches follow full process, High patches skip verification steps. Without post-patch rescans, the organization cannot confirm the patches actually resolved the vulnerabilities.",
+      "evidence_sources": [
+        "evidence/patch-management-records-q4.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should compare post-patch rescan compliance between Critical and High emergency patches. Critical: 4/4 with post-scan within 48 hours. High: 1/7 (only the standard maintenance patches got scanned, but emergency patches did not). The pattern is consistent: High-severity vulnerabilities receive less process rigor than Critical. The patch records are transparent about this — each missing rescan is documented with 'Not performed' — suggesting awareness but deprioritization.",
+      "detection_criteria": {
+        "required_keywords": ["post-patch rescan", "Section 6.2", "48 hours", "Not performed", "CHG-2025-1203", "CHG-2025-1207", "High-severity", "Critical patches compliant", "verification", "cannot confirm remediation"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Two Medium-severity vulnerabilities past SLA without risk acceptance",
+      "description": "VULN-10014 (CVE-2024-53677, Apache Struts on legacy-portal-04) is 10 days past its 90-day SLA with status 'SLA Breached.' The notes reference app retirement in H1 2026 but no risk acceptance has been filed. VULN-10020 (CVE-2024-11680, ProjectSend on dev-share-06) is 2 days past its SLA with status 'SLA Breached.' Both are flagged in the monthly report per policy Section 4.3 escalation, but neither has a formal risk acceptance per Section 5. While Medium-severity SLA breaches are less critical than the High-tier tracking gap, they demonstrate that the remediation process has multiple tiers of non-compliance.",
+      "evidence_sources": [
+        "evidence/remediation-sla-dashboard-q4.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should identify all SLA Breached entries in the dashboard. VULN-10014 and VULN-10020 both show breached status. Neither has a corresponding risk acceptance. While escalation is occurring (monthly report), the lack of formal risk acceptance means the vulnerabilities are in an unmanaged state — past SLA with no documented justification or compensating controls.",
+      "detection_criteria": {
+        "required_keywords": ["VULN-10014", "CVE-2024-53677", "legacy-portal-04", "VULN-10020", "CVE-2024-11680", "SLA Breached", "no risk acceptance", "10 days past", "monthly report"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Systemic process gap — High-severity vulnerabilities receive less rigor than Critical despite policy requirements",
+      "description": "A cross-cutting pattern emerges when examining all evidence together: Critical-severity vulnerabilities receive full process compliance (SLA tracking, post-patch rescans, Jira updates), while High-severity vulnerabilities systematically receive reduced rigor (no SLA tracking, no post-patch rescans, Jira tickets not updated). This is not an isolated oversight — it is a systemic gap affecting all 7 High-severity vulnerabilities consistently. Policy Section 4.2 makes no distinction in tracking requirements between severity tiers. The pattern suggests the team has informally adopted a two-tier process where only Critical receives full attention. This is a control design gap: the process that works well for Critical has not been extended to High, despite policy requirements. An auditor should note this as a systemic finding rather than individual ticket-level observations.",
+      "evidence_sources": [
+        "evidence/remediation-sla-dashboard-q4.csv",
+        "evidence/patch-management-records-q4.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should synthesize findings F-001 and F-002 into a systemic observation. The consistent pattern across all 7 High-severity items — no tracking, no rescans, no updates — cannot be coincidental. It represents an informal process where High is deprioritized despite policy requirements. This systemic nature makes it a more significant finding than individual SLA misses.",
+      "detection_criteria": {
+        "required_keywords": ["systemic", "pattern", "Critical vs High", "two-tier", "all 7 High", "consistent", "process gap", "Section 4.2", "no distinction", "informal"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["vulnerability_management", "SLA_tracking", "High_severity_gap", "post_patch_rescan", "process_maturity", "systemic_gap", "judgment", "cross_reference"]
+  }
+}

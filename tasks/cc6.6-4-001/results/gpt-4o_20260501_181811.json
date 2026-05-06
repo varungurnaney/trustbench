@@ -1,0 +1,85 @@
+{
+  "task_id": "cc6.6-4-001",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-01T18:18:11.887020",
+  "score": {
+    "task_id": "cc6.6-4-001",
+    "model": "gpt-4o",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.4,
+    "f1": 0.4444444444444445,
+    "score": 0.4444444444444445,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "EXC-NET-2025-003",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "prod-webhook-receiver"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "notification service",
+          "unencrypted HTTP",
+          "TLS-008"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "TLS-014",
+          "Elasticsearch",
+          "TLS 1.2",
+          "PII"
+        ],
+        "total_keywords": 4,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8255,
+    "output_tokens": 476
+  },
+  "raw_response": "## Finding 1: Unencrypted Traffic on Internal Notification Service\n- **Related Document Section**: TLS Configuration Audit, Network Security Policy Section 5.2\n- **Description**: The Notification Service (TLS-008) runs unencrypted HTTP on port 8080 for internal communications, contrary to the policy's requirement that inter-service communication within production VPCs must be encrypted (TLS 1.2 or higher).\n- **Severity**: Critical\n\n## Finding 2: Missing WAF Association for Webhook Receiver\n- **Related Document Section**: AWS Security Group Export, Network Security Policy Section 4.1\n- **Description**: The Webhook Receiver (prod-webhook-receiver) is a public-facing service but lacks WAF protection. This is non-compliant with the requirement that all public-facing HTTP/HTTPS endpoints must be protected by AWS WAF.\n- **Severity**: High\n\n## Finding 3: Usage of TLS 1.2 for Redis ElastiCache\n- **Related Document Section**: TLS Configuration Audit, Network Security Policy Section 5.2, Exception Register\n- **Description**: Redis ElastiCache (TLS-007) uses TLS 1.2 for internal connections. Although there is an active exception (EXC-NET-2025-004), this still represents a potential risk since TLS 1.3 is preferred for greater security.\n- **Severity**: Medium\n\n## Finding 4: Legacy Elasticsearch Deployment\n- **Related Document Section**: TLS Configuration Audit, Network Security Policy Section 5.1\n- **Description**: Elasticsearch Cluster (TLS-014) handles PII data using TLS 1.2. Though marked as compliant due to legacy status, policy requires TLS 1.3 for new deployments since January 2025.\n- **Severity**: Medium\n\n## Finding 5: Insufficient Documentation of Cross-VPC Peering\n- **Related Document Section**: AWS Security Group Export, Network Security Policy Section 3.1\n- **Description**: There is cross-VPC peering allowing traffic between production and staging for data sync. Exception (EXC-NET-2025-003) is documented, but detailed documentation of compensating controls is essential to verify constant policy compliance, especially concerning PII.\n- **Severity**: Low"
+}

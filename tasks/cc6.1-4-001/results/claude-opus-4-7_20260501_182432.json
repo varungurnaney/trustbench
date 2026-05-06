@@ -1,0 +1,93 @@
+{
+  "task_id": "cc6.1-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:24:32.499208",
+  "score": {
+    "task_id": "cc6.1-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-etl",
+          "exception",
+          "EXC-2025-004",
+          "approved",
+          "compensating",
+          "not a finding",
+          "mitigated"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "terraform",
+          "editor",
+          "expired",
+          "stale",
+          "one-time",
+          "still active",
+          "broad"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "monitoring",
+          "expired",
+          "renewal",
+          "exception",
+          "still",
+          "active"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-etl",
+          "2023",
+          "rotation",
+          "compensating",
+          "Vault",
+          "audit",
+          "effectiveness"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3571,
+    "output_tokens": 2027
+  },
+  "raw_response": "# CC6.1 Readiness Assessment \u2014 Vantage Corp Q4 2025\n\n## Scope of Review\nRelevant evidence: Access Control Policy (POL-AC-004), Security Exceptions Register, GCP Service Account Configuration. Vendor risk assessments and BCP marked as not relevant to CC6.1 and excluded from analysis.\n\n## Findings\n\n### Finding 1: Unremediated Terraform Import Service Account Key\n**Related to:** GCP service account configuration (`terraform-import@`); Exception EXC-2025-003; Policy \u00a75 (Service Accounts)\n\n**Gap:** Exception EXC-2025-003 was approved for a one-time, 30-day Terraform state import that expired on **2025-04-08**. The compensating control explicitly required key deletion after import, and the key was last used on 2025-03-12. However, as of the audit cutoff (12/28/2025), the service account `terraform-import@vantage-prod-2024.iam.gserviceaccount.com` still exists with an active key (`t3r4r5a6f7o8`) holding `roles/editor` \u2014 a highly privileged, project-wide role. The exception has been expired for ~9 months and the agreed-upon compensating control (deletion) was not executed.\n\n**Severity:** **High** \u2014 A dormant, unmanaged key with project Editor permissions presents significant lateral movement / privilege escalation risk, and represents a failure to honor a CISO-approved compensating control.\n\n---\n\n### Finding 2: Expired Exception for Monitoring Agent Key Still in Use\n**Related to:** GCP service account configuration (`monitoring-agent@`); Exception EXC-2025-002; Policy \u00a75\n\n**Gap:** Exception EXC-2025-002 covering the monitoring agent service account key expired on **2025-12-10**. The key (`x7y8z9w0v1u2`) was last used on 2025-12-28, indicating active use **18 days past exception expiry** without evidence of renewal, retirement, or migration to workload identity federation. This is a control failure within the audit period.\n\n**Severity:** **Medium** \u2014 Risk is partially mitigated by the read-only role scope, but the policy violation and lapsed governance occur within Q4 2025.\n\n---\n\n### Finding 3: Service Account Keys Configured Without Expiration\n**Related to:** GCP service account configuration (all three keyed accounts); Policy \u00a75\n\n**Gap:** All three existing service account keys (`legacy-etl`, `monitoring-agent`, `terraform-import`) have `expires: 9999-12-31` (effectively non-expiring). While the policy permits keys via approved exception, the compensating controls reference rotation (e.g., \"key rotated every 6 months\" for monitoring-agent), but no technical enforcement of expiration exists. For the legacy ETL key, the key dates from 2023-01-15 \u2014 nearly **3 years without rotation** \u2014 despite renewed exception EXC-2025-004.\n\n**Severity:** **Medium** \u2014 Lack of key rotation enforcement contradicts stated compensating controls and standard cryptographic hygiene.\n\n---\n\n### Finding 4: Legacy ETL Service Account Over-Privileged Relative to Stated Function\n**Related to:** GCP service account configuration (`legacy-etl@`); Exception EXC-2025-004; Policy \u00a74 (Privileged Access)\n\n**Gap:** The legacy ETL service account holds `roles/bigquery.dataEditor`, `roles/storage.objectAdmin`, and `roles/cloudsql.client` simultaneously. While the exception is active and approved, neither the exception nor the policy documents least-privilege scoping at the resource level (e.g., specific buckets, datasets, or instances). `storage.objectAdmin` at the project level grants broad write/delete on all buckets. The compensating controls listed (IP allowlisting, Vault storage, daily audit) address key compromise risk but not privilege scope.\n\n**Severity:** **Low** \u2014 Exception is validly approved and active, but readiness review should challenge whether least-privilege has been adequately demonstrated, especially as the key has been retained ~3 years.\n\n---\n\n### Finding 5: No Evidence of Quarterly Service Account Review for Q4 2025\n**Related to:** Policy \u00a76 (Access Reviews)\n\n**Gap:** Policy mandates quarterly service account reviews and monthly privileged access reviews by the CISO. Findings 1 and 2 (an expired one-time SA still active 9 months later, and a key in use past exception expiry) strongly suggest the Q4 2025 service account review either did not occur or did not detect known stale credentials. No review attestation evidence was provided.\n\n**Severity:** **High** \u2014 A functioning quarterly review should have caught both the dormant Terraform key and the expired monitoring exception. This indicates a control operating effectiveness gap, which is central to a Type II assessment.\n\n---\n\n## Items Considered and NOT Flagged\n\n- **EXC-2025-001 (Legacy ETL original):** Properly superseded by EXC-2025-004 \u2014 not a finding.\n- **EXC-2025-004 (Legacy ETL renewal):** Active, approved, with documented compensating controls and migration plan; acceptable as an exception.\n- **`app-backend`, `ci-deploy`, `data-export` service accounts:** Correctly use workload identity federation per policy \u00a75 \u2014 strong control posture.\n- **MFA / FIDO2 / IdP architecture:** Policy aligns well with CC6.1 expectations; no contradicting evidence.\n\n---\n\n## Summary\n\n| Severity | Count |\n|----------|-------|\n| Critical | 0 |\n| High | 2 |\n| Medium | 2 |\n| Low | 1 |\n\n**Overall readiness:** The access control architecture is well-designed, but **operating effectiveness gaps** in exception lifecycle management and quarterly access reviews would likely result in exceptions during a Type II audit. Priority remediation: delete the Terraform import service account/key and either renew or remediate the monitoring-agent exception immediately."
+}

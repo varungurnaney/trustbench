@@ -1,0 +1,69 @@
+{
+  "task_id": "cc7.2-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:30:58.537153",
+  "score": {
+    "task_id": "cc7.2-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.16666666666666666,
+    "f1": 0.25,
+    "score": 0.25,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "recommendation-engine-v2",
+          "2 alert rules"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": false,
+        "matched_keywords": [
+          "fraud-detection-sidecar",
+          "340K transactions",
+          "vendor dashboard",
+          "ALT-Q4-013"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "ALT-Q4-015",
+          "ALT-Q4-019",
+          "SLA breach",
+          "18 minutes",
+          "6 minutes",
+          "Black Friday",
+          "capacity"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3658,
+    "output_tokens": 3225
+  },
+  "raw_response": "## Overall CC7.2 Assessment\n\n**Conclusion: CC7.2 is partially met, but not fully operating effectively for Q4 2025.**\n\nZenith Commerce has a defined monitoring standard, SIEM integration requirements, alerting rules, response SLAs, daily reconciliation, and evidence that many alerts are reviewed and classified as true or false positives. However, the control has significant gaps in monitoring completeness and response effectiveness, especially for sensitive production services.\n\nThe Q4 change management summary does not provide meaningful evidence for CC7.2 and was not relied upon for this assessment.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Fraud-detection-sidecar is unmonitored in Datadog** | **Security Monitoring Standards:** Sections 3.2, 3.3, 4.1, 5.1. **Datadog Coverage Report:** `unmonitored_services`, `automated_reconciliation`. **Alert Log:** ALT-Q4-013. | The fraud-detection-sidecar was deployed on **2025-11-18** and remained without Datadog agent installation, log collection, or alert rules as of **2025-12-31**. This exceeds the required **3-business-day SIEM integration SLA**. The service processes sensitive payment-related data, device fingerprints, IP addresses, and transaction metadata for approximately **340K transactions/day**. Zenith also does not have direct access to raw sidecar logs, relying instead on a vendor dashboard. This creates a major blind spot for detecting malicious activity, errors, or anomalous behavior in a payment-adjacent production component. | **Critical** |\n| 2 | **Recommendation-engine-v2 has incomplete monitoring coverage** | **Security Monitoring Standards:** Sections 3.2, 4.1. **Datadog Coverage Report:** `partially_monitored_services`. | Recommendation-engine-v2 was deployed on **2025-12-08**. While the Datadog agent was installed by **2025-12-10**, only **2 alert rules** were configured. Required monitoring for authentication failures, latency anomalies, and data access monitoring was missing as of the Q4 coverage report. The service processes customer browsing behavior, purchase history, and personalization preferences and serves approximately **4.2M recommendation requests/day**. Partial monitoring limits Zenith\u2019s ability to detect anomalous access, service degradation, or potentially malicious activity affecting customer data. | **High** |\n| 3 | **Alert response SLAs were not consistently met for high-severity alerts** | **Security Monitoring Standards:** Section 4.2. **Q4 Alert Response Log:** ALT-Q4-015, ALT-Q4-019. | Two alert response SLA breaches occurred during Q4. ALT-Q4-015, a P2 error-rate spike, was acknowledged in **18 minutes** against a **15-minute SLA**. ALT-Q4-019, a P1 data exfiltration/API scraping alert, was acknowledged in **6 minutes** against a **5-minute SLA**. While the delays were relatively short, the P1 miss related to a true positive data exfiltration/API scraping event. The noted cause for one miss was on-call concurrency during Black Friday, indicating that staffing or escalation capacity may not be sufficient during peak-risk periods. | **Medium** |\n| 4 | **False positive tuning evidence is insufficient** | **Security Monitoring Standards:** Section 4.4. **Q4 Alert Response Log:** ALT-Q4-003, ALT-Q4-006, ALT-Q4-010, ALT-Q4-017, ALT-Q4-020. | The standards require alert rules with false positive rates over **20%** to be tuned within **5 business days**, with changes documented in the Datadog Audit Trail. The alert log shows multiple false positives, including latency anomalies, data exfiltration, SMS provider outage, partner maintenance, and seasonal batch activity. Based on the provided Q4 sample, several alert categories appear to have elevated false positive rates, but no Datadog Audit Trail evidence or tuning documentation was provided. Without evidence of tuning, Zenith cannot demonstrate that noisy alert rules are being managed to maintain effective anomaly detection. | **Medium** |\n| 5 | **Monitoring coverage is below full production coverage** | **Datadog Coverage Report:** `coverage_summary`. **Security Monitoring Standards:** Sections 3.2, 4.1, 5.1, 5.2. | The coverage report shows only **14 of 16 production services fully monitored**, with **1 partially monitored** and **1 unmonitored**, resulting in **87.5% full monitoring coverage**. CC7.2 expects monitoring of system components and their operation for anomalies. The standards also require all production services to forward required logs and have minimum alerting coverage. The current coverage level means Zenith cannot demonstrate complete monitoring across the production environment for Q4 2025. | **High** |\n| 6 | **Third-party and vendor monitoring evidence is incomplete** | **Security Monitoring Standards:** Section 6.1. **Datadog Coverage Report:** `unmonitored_services`, `compensating_controls`. | The standards require critical third-party services such as payment processors, CDN, and DNS to be monitored through synthetic checks with availability and latency alerting. The evidence includes some alerts related to external providers, such as Stripe and Twilio, but does not provide a complete inventory of critical third-party monitoring coverage, synthetic check configurations, or alert routing for CDN, DNS, payment processors, or the FraudShield vendor component. For the fraud-detection-sidecar, Zenith relies on the vendor dashboard and lacks direct raw log access. This limits the ability to independently monitor and analyze anomalies involving critical third-party components. | **Medium** |"
+}

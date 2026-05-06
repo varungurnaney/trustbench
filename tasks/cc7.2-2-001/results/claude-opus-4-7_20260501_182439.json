@@ -1,0 +1,85 @@
+{
+  "task_id": "cc7.2-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:24:39.047138",
+  "score": {
+    "task_id": "cc7.2-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "P2",
+          "business hours",
+          "after-hours",
+          "24/7",
+          "on-call"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Qualys",
+          "weekly",
+          "vulnerability",
+          "delay",
+          "critical"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "database",
+          "monitoring",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "annual",
+          "tabletop",
+          "testing",
+          "frequency",
+          "simulation",
+          "once"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1802,
+    "output_tokens": 2739
+  },
+  "raw_response": "# CC7.2 Readiness Assessment \u2014 Pinnacle SaaS Incident Response Plan\n\n## Overall Assessment\n\nThe IRP (POL-IR-001 v3.0) provides a reasonable framework for incident **response**, but CC7.2 is primarily concerned with **monitoring for anomalies and analyzing them to determine whether they represent security events**. The plan is weighted heavily toward post-detection response procedures and has notable gaps in the detection, anomaly definition, and analysis stages. Findings are detailed below.\n\n---\n\n## Findings\n\n### Finding 1: No defined anomaly detection criteria or alert tuning methodology\n- **Section:** 3.1 Monitoring Sources / 3.2 Alert Triage\n- **Gap:** The plan lists monitoring tools (Datadog, CrowdStrike, Proofpoint, Qualys) and Slack/email routing, but does not document **what conditions generate alerts**, the baseline of \"normal\" behavior, or the rules/signatures used to flag anomalies. CC7.2 specifically requires monitoring for anomalies indicative of malicious acts, natural disasters, and errors. Without documented detection use cases (e.g., impossible travel, privilege escalation, brute force, file integrity changes, configuration drift), an auditor cannot determine whether anomaly detection is designed to meet the entity's objectives.\n- **Severity:** **High**\n\n### Finding 2: No process to analyze events to determine whether they represent security incidents\n- **Section:** 2 Definitions / 3.2 Alert Triage\n- **Gap:** CC7.2 explicitly requires that \"anomalies are analyzed to determine whether they represent security events.\" The plan defines the difference between an *event* and an *incident* but provides no documented triage/analysis procedure, decision tree, or criteria the analyst uses to classify an alert as benign vs. a security event. Triage SLAs (15 minutes, next business day) describe timing, not methodology.\n- **Severity:** **High**\n\n### Finding 3: Slack/email-based alert routing with no acknowledgment or escalation enforcement\n- **Section:** 3.1 Monitoring Sources\n- **Gap:** All alert channels route to Slack channels or shared email inboxes. There is no mechanism described to ensure alerts are acknowledged, no automatic escalation if unacknowledged, and no on-call rotation paging tool referenced (e.g., PagerDuty, Opsgenie). Alerts in Slack channels can be missed, particularly outside business hours. The 24/7 SRE on-call mention applies only to P1 \u2014 P2 alerts have no documented after-hours coverage despite a 15-minute triage SLA.\n- **Severity:** **High**\n\n### Finding 4: Natural disasters and environmental anomalies not addressed\n- **Section:** 3.1 Monitoring Sources\n- **Gap:** CC7.2 explicitly calls out monitoring for \"natural disasters\" as a source of anomalies. The plan only covers logical/cyber sources. There is no reference to monitoring for AWS region/AZ availability events, environmental alerts, weather/seismic events affecting facilities or providers, or capacity/availability anomalies indicative of natural disasters.\n- **Severity:** **Medium**\n\n### Finding 5: No coverage of detection for errors affecting service objectives\n- **Section:** 3.1 Monitoring Sources\n- **Gap:** CC7.2 requires monitoring for *errors* affecting the ability to meet objectives, not only malicious activity. The plan does not address how operational errors (e.g., failed backups, replication lag, certificate expiration, batch job failures, data integrity errors) are detected, routed, or evaluated as potential security events. Datadog \"infrastructure logs\" is too vague to demonstrate coverage.\n- **Severity:** **Medium**\n\n### Finding 6: Missing log/source coverage\n- **Section:** 3.1 Monitoring Sources (table)\n- **Gap:** Several expected sources are not listed:\n  - Identity provider logs (Okta/Entra/SSO authentication anomalies)\n  - Database audit logs\n  - Network/VPC flow logs or WAF logs\n  - SaaS application audit logs (GitHub, Google Workspace, etc.)\n  - DLP events\n  \n  Without these, the monitoring program cannot reasonably claim to detect insider threats, account compromise, or data exfiltration \u2014 all key CC7.2 risks.\n- **Severity:** **High**\n\n### Finding 7: No periodic review of detection coverage or alert effectiveness\n- **Section:** 5.2 Lessons Learned / 6 Plan Testing\n- **Gap:** While 5.2 mentions detection rules are updated based on incident learnings, there is no proactive periodic review of detection coverage (e.g., quarterly use case review, MITRE ATT&CK mapping, false-positive/false-negative metrics, alert volume tuning). This leaves no evidence to demonstrate that monitoring evolves with the threat landscape.\n- **Severity:** **Medium**\n\n### Finding 8: Annual tabletop is the only form of testing\n- **Section:** 6 Plan Testing\n- **Gap:** Annual tabletop testing satisfies a baseline expectation, but does not validate that the **detection** capabilities work. There is no mention of detection validation activities such as purple team exercises, attack simulations (e.g., Atomic Red Team), or alert-firing tests to confirm monitoring tools generate expected alerts. This is a meaningful gap for CC7.2 specifically.\n- **Severity:** **Medium**\n\n### Finding 9: No defined metrics or KPIs for monitoring program\n- **Section:** Plan-wide\n- **Gap:** No metrics are defined for the monitoring program (e.g., MTTD, MTTA, MTTR, alert volume, alert closure rates, % of alerts triaged within SLA). Without metrics, management cannot demonstrate ongoing operating effectiveness of the control during the audit period.\n- **Severity:** **Medium**\n\n### Finding 10: Vulnerability scan results are not integrated into anomaly monitoring workflow\n- **Section:** 3.1 Monitoring Sources\n- **Gap:** Qualys scans produce only a \"weekly report to Security Lead\" with no defined alerting, severity-based response timelines, or remediation tracking. Critical vulnerabilities are anomalies that should trigger P-level response, not weekly reports.\n- **Severity:** **Low**\n\n### Finding 11: Contact list maintained outside the document with limited update frequency\n- **Section:** 8 Contact List\n- **Gap:** Quarterly updates may not reflect personnel changes quickly enough during an incident. While not directly a CC7.2 issue, stale contacts can delay anomaly analysis and escalation.\n- **Severity:** **Low**\n\n### Finding 12: No documented integration between monitoring tools (no SIEM/correlation)\n- **Section:** 3.1 Monitoring Sources\n- **Gap:** Each monitoring source routes independently to a different Slack channel or email. There is no central correlation/SIEM platform described, making cross-source anomaly detection (e.g., correlating CloudTrail with endpoint activity) difficult. This limits the entity's ability to detect sophisticated multi-stage anomalies.\n- **Severity:** **Medium**\n\n---\n\n## Summary of Severities\n\n| Severity | Count |\n|----------|-------|\n| Critical | 0 |\n| High     | 3 |\n| Medium   | 5 |\n| Low      | 2 |\n\n## Recommendation\n\nThe plan is reasonably mature for **incident response** but is **not sufficient on its own** to evidence CC7.2. Pinnacle should either expand this document or produce a complementary **Security Monitoring & Detection Standard** that documents detection use cases, log source inventory, anomaly analysis procedures, alert acknowledgment/escalation tooling, detection coverage reviews, and monitoring KPIs. Addressing the three High-severity findings should be considered prerequisite to a clean CC7.2 opinion."
+}

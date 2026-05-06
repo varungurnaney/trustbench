@@ -1,0 +1,97 @@
+{
+  "task_id": "p1.1-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:42:54.800040",
+  "score": {
+    "task_id": "p1.1-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3076923076923077,
+    "f1": 0.47058823529411764,
+    "score": 0.47058823529411764,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 13,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "Plaid",
+          "Experian",
+          "Braze",
+          "undisclosed",
+          "DSA-2025-005",
+          "DSA-2025-006",
+          "DSA-2025-007",
+          "not listed",
+          "bank credentials",
+          "SSN"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SSN",
+          "Experian",
+          "DSA-2025-006",
+          "PIA-2025-003",
+          "not listed",
+          "Section 2",
+          "undisclosed",
+          "credit"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PIA-2025-002",
+          "Plaid",
+          "October 2023",
+          "October 2024",
+          "overdue",
+          "bank credential"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Braze",
+          "DSA-2025-007",
+          "financial goal",
+          "savings target",
+          "investment risk",
+          "minimum",
+          "marketing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7640,
+    "output_tokens": 3621
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: P1.1 (Privacy Notice)\n\n## Verdant Fintech \u2014 Privacy Notice Review\n\n**Auditor Summary:** The privacy policy (v2.3, effective Sept 1, 2025) significantly understates the scope of data collection, sharing, and processing actually performed by Verdant. Cross-referencing against the third-party data sharing register (DSA-2025-001 through 007) and the PIA register reveals material omissions and contradictions. Several findings rise to **Critical** severity because they involve undisclosed processing of highly sensitive data (SSN, bank credentials) and contradict explicit statements in the notice.\n\nThe change management log and security awareness training report were reviewed and confirmed as not relevant to P1.1.\n\n---\n\n## Findings\n\n### Finding 1: Plaid bank account aggregation entirely omitted from privacy notice\n- **Document Section:** Privacy Policy \u00a75 (Third-Party Service Providers); \u00a72 (Information We Collect)\n- **Gap:** The privacy policy lists only AWS, Stripe, Twilio, and Zendesk as service providers. However, DSA-2025-005 confirms Plaid Inc. is a core processor used by ~78% of active users, receiving bank credentials, account/routing numbers, 12 months of transaction history, balances, and account holder names. Section 2 mentions account linking is \"processed through secure third-party services\" without naming Plaid or describing the scope (transaction history, persistent OAuth tokens, daily refresh). Data subjects cannot give informed consent for processing they are not told about.\n- **Severity:** **Critical**\n\n### Finding 2: Experian credit bureau integration and SSN collection omitted from privacy notice\n- **Document Section:** Privacy Policy \u00a72 (Information We Collect); \u00a75 (Third-Party Service Providers)\n- **Gap:** DSA-2025-006 confirms collection of full SSN, DOB, and address, with transmission to Experian and persistent HSM-encrypted SSN storage for ~34% of US users. The privacy policy makes no mention of (a) SSN as a data category collected, (b) Experian as a service provider, (c) credit score tracking as a feature, or (d) the legal basis for SSN processing. SSN is the highest-sensitivity PII element processed; failing to disclose it is a material omission.\n- **Severity:** **Critical**\n\n### Finding 3: Braze marketing platform and financial behavioral data sharing not disclosed\n- **Document Section:** Privacy Policy \u00a75 (Third-Party Service Providers); \u00a73 (How We Use Your Information)\n- **Gap:** DSA-2025-007 confirms Verdant shares email, first name, financial goal category, savings target amount, investment risk profile, behavioral segments (e.g., \"high-saver,\" \"investment-curious\"), push tokens, and engagement scores with Braze. Braze is not listed in \u00a75, and \u00a73 does not disclose that financial profile data is used to build marketing segments. PIA-2025-004 itself flags that \"financial behavioral data in a marketing context may surprise users.\" This is precisely the kind of unexpected processing that requires explicit notice.\n- **Severity:** **High**\n\n### Finding 4: \"We share only the minimum information necessary... typically limited to your email address and name\" is materially false\n- **Document Section:** Privacy Policy \u00a75 (Third-Party Service Providers)\n- **Gap:** This statement directly contradicts the data sharing register: AWS receives all encrypted personal/financial data; Plaid receives bank credentials and transaction history; Experian receives SSN; Braze receives savings targets, risk profiles, and behavioral segments; Zendesk support agents may view financial data shared in tickets. The statement is misleading and creates compliance and consumer-protection risk (potential FTC \u00a75 unfair/deceptive practices exposure).\n- **Severity:** **Critical**\n\n### Finding 5: International data transfers understated\n- **Document Section:** Privacy Policy \u00a75; missing dedicated international transfers section\n- **Gap:** The privacy policy contains no section addressing international data transfers, transfer mechanisms (SCCs), or data subject rights regarding cross-border processing. The DSA register shows transfers to the US for Stripe, Twilio, Zendesk, Plaid, Experian, and Braze, all relying on Standard Contractual Clauses. EU users have no notice of these transfers or the safeguards applied.\n- **Severity:** **High**\n\n### Finding 6: Sub-processors not disclosed and no mechanism for change notification\n- **Document Section:** Privacy Policy \u00a75; \u00a711 (Changes)\n- **Gap:** Six of seven processors permit sub-processors per the DSA register, but the privacy policy does not (a) acknowledge the use of sub-processors, (b) provide a link to a sub-processor list, or (c) commit to notifying users of sub-processor changes. \u00a711 only commits to notice of \"material changes\" to the policy itself.\n- **Severity:** **Medium**\n\n### Finding 7: Legal basis statements inconsistent with actual practice\n- **Document Section:** Privacy Policy \u00a74 (Legal Basis for Processing)\n- **Gap:** \u00a74 states marketing relies on \"consent,\" but DSA-2025-007 lists Braze legal basis as \"Legitimate interest (marketing) + Consent (marketing emails).\" The use of legitimate interest for behavioral segmentation/profiling is not disclosed to users. Additionally, \u00a74 does not address the consent legal basis for Plaid bank linking or Experian credit checks, since those features and processors are not disclosed at all.\n- **Severity:** **High**\n\n### Finding 8: Data retention disclosure incomplete with respect to third-party processors\n- **Document Section:** Privacy Policy \u00a76 (Data Retention)\n- **Gap:** The retention section only addresses Verdant's own systems. PIA-2025-004 acknowledges that \"Braze data retention may exceed Verdant's retention policies\" (mitigated via DPA but not disclosed to users). Users are not told that retention periods at processors (Plaid, Braze, Experian) may differ from Verdant's stated periods.\n- **Severity:** **Medium**\n\n### Finding 9: \"We do not sell your personal or financial information\" \u2014 verify scope under CCPA/CPRA\n- **Document Section:** Privacy Policy \u00a75; \u00a78 (Your Rights)\n- **Gap:** The policy states no sale, but \u00a78 simultaneously offers a California \"opt out of the sale of personal information\" right, which is internally inconsistent. More substantively, sharing financial behavioral segments with Braze for cross-context behavioral advertising may meet CCPA/CPRA's broad \"sharing\" definition, which requires a \"Do Not Sell or Share\" link and disclosure. The policy lacks a CCPA/CPRA-specific disclosure section (categories sold/shared, retention by category, sensitive PI category for SSN).\n- **Severity:** **High**\n\n### Finding 10: Sensitive Personal Information (SPI) category not disclosed\n- **Document Section:** Privacy Policy \u00a72; \u00a78\n- **Gap:** Under CPRA and similar frameworks, SSN, financial account credentials/numbers, and precise account information qualify as Sensitive Personal Information requiring distinct notice and a right to limit use. The policy does not categorize any data as SPI, does not provide a \"Limit Use of Sensitive Personal Information\" right, and does not separately describe purposes for SPI processing.\n- **Severity:** **High**\n\n### Finding 11: Notice does not describe automated decision-making / profiling\n- **Document Section:** Privacy Policy \u00a73; \u00a78\n- **Gap:** Verdant generates \"spending insights and financial recommendations,\" builds behavioral marketing segments (Braze), and operates fraud detection. None of these profiling activities are disclosed as such, no rights regarding profiling/automated decisions are offered, and users are not told that financial behavior is used to create marketing segments.\n- **Severity:** **Medium**\n\n### Finding 12: Effective date / change notification gap relative to recent processor onboarding\n- **Document Section:** Privacy Policy v2.3, effective Sept 1, 2025; \u00a711\n- **Gap:** Braze was onboarded in Q1 2025 (DSA effective Jan 15, 2025), and the Braze SDK v4.2 was deployed in October 2025 (CHG-2025-Q4-002). The Sept 2025 privacy policy refresh did not incorporate Braze, Plaid, or Experian disclosures \u2014 indicating the change-management process does not trigger privacy notice updates when material processing changes occur. This is a process gap that will continue to produce future P1.1 deficiencies.\n- **Severity:** **High**\n\n### Finding 13: Supporting PIA evidence weakens reliance on internal review controls\n- **Document Section:** PIA Register (PIA-2025-002 Plaid; PIA-2025-003 Experian)\n- **Gap:** While PIAs are not the privacy notice itself, P1.1 depends on having an accurate basis for the notice. The Plaid PIA is **14 months overdue** (last assessed October 2023, due October 2024), and the Experian PIA review is also overdue (due August 2025, still in progress in December 2025). The two highest-risk processing activities lack current privacy assessments, which undermines management's ability to ensure the privacy notice accurately reflects current practice.\n- **Severity:** **High**\n\n---\n\n## Overall Conclusion on P1.1\n\n**P1.1 is NOT met.** The privacy notice fails to provide data subjects with accurate, complete notice of Verdant's privacy practices. Specifically:\n\n- Three significant processors handling the most sensitive data (Plaid, Experian, Braze) are entirely undisclosed.\n- An affirmative statement in \u00a75 about minimum data sharing is materially false.\n- SSN \u2014 the most sensitive data element processed \u2014 is not disclosed as collected.\n- Required jurisdictional disclosures (CCPA/CPRA SPI, international transfers, sub-processors) are absent.\n- The privacy notice update process does not appear to be linked to processor onboarding or material change events.\n\n**Recommended remediation priority:**\n1. Immediate (within 30 days): Republish privacy policy disclosing Plaid, Experian, Braze, and SSN collection; correct the false \"email address and name only\" statement.\n2. Short-term (within 60 days): Add international transfers, sub-processor, SPI, and CCPA/CPRA sections; complete overdue PIAs for Plaid and Experian.\n3. Process control (within 90 days): Implement a change-management gate requiring Privacy Team review and privacy notice update assessment for any new processor or data category."
+}

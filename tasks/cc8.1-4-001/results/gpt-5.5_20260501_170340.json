@@ -1,0 +1,139 @@
+{
+  "task_id": "cc8.1-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T17:03:40.527116",
+  "score": {
+    "task_id": "cc8.1-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 6,
+    "gaps_total": 6,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "holiday freeze"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "CHG-415"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-410",
+          "holiday freeze",
+          "Thanksgiving",
+          "CISO",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-411",
+          "48",
+          "business hours",
+          "retrospective",
+          "late"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-407",
+          "CHG-411",
+          "segregation",
+          "SRE",
+          "deployed"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "quorum",
+          "Security Lead",
+          "absent",
+          "customer data",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-007",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "post-implementation",
+          "verification",
+          "missing",
+          "No",
+          "2 hours"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-008",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-412",
+          "security review",
+          "developed",
+          "segregation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3610,
+    "output_tokens": 5157
+  },
+  "raw_response": "## CC8.1 Readiness Assessment Findings \u2014 Q4 2025\n\nNo **Critical** findings were identified. The following control gaps were noted.\n\n| # | Finding title | Related section / evidence | Why it\u2019s a gap | Severity |\n|---|---|---|---|---|\n| 1 | High-risk change approved without required CAB quorum and security participation | **Change Management Policy \u00a73.2 Approval**, \u00a73.4 Testing; **CAB minutes \u2014 Nov. 18, 2025**; **Change log CHG-409** | CHG-409, a **High-risk** customer data export endpoint, was approved at a CAB meeting where quorum was explicitly **not met** because the Security Lead was absent. The policy requires CAB quorum of VP Engineering + Security Lead + at least one other CAB member. High/Critical changes also require Security team review before deployment; the change log only shows test results and no security review. | **High** |\n| 2 | Post-implementation verification missing for completed change | **Change Management Policy \u00a73.5 Post-Implementation Review**; **Change log CHG-409** | Policy requires the change owner to verify successful deployment within 2 hours and record verification in Jira. CHG-409 is marked Completed, but `post_impl_verified = No` and no post-implementation date is recorded. | **Medium** |\n| 3 | Kernel patch incorrectly processed as a Standard Change | **Change Management Policy \u00a74 Standard Change Catalog, SC-001**; **Change log CHG-405** | CHG-405 was categorized as Standard under SC-001, but SC-001 only covers **non-kernel** OS security patches. CHG-405 was a **kernel security patch**, so it did not meet the pre-approved standard change criteria and should have gone through the normal approval process or had a documented exception. | **Medium** |\n| 4 | Non-emergency changes deployed during holiday freeze without documented exception | **Change Management Policy \u00a75 Change Freeze**; **Change log CHG-410 and CHG-415** | The policy defines holiday freeze periods of **Nov. 25\u201330** and **Dec. 20\u2013Jan. 2**. CHG-410 was deployed Nov. 26 during the Thanksgiving freeze, and CHG-415 was deployed Dec. 20 during the year-end freeze. Neither was categorized as Emergency, and no documented freeze exception or CISO approval was provided. | **Medium** |\n| 5 | Emergency change retrospective review not completed within required timeframe | **Change Management Policy \u00a72 Emergency Changes and \u00a73.2 Approval**; **Change log CHG-411**; **CAB minutes \u2014 Dec. 9, 2025** | Emergency changes require retrospective CAB review within **48 business hours**. CHG-411 was deployed Dec. 1, but the retrospective CAB review occurred Dec. 9, approximately 6 business days later. This indicates the emergency change review process was not performed timely. | **Medium** |\n| 6 | Production deployments performed by non-SRE personnel | **Change Management Policy \u00a73.3 Segregation of Duties**; **SDLC Overview \u2014 Environments**; **Change log CHG-407 and CHG-411** | Policy states production deployments are executed by the **SRE team**, not the development team. The SDLC overview also states Production access is for the SRE team for deployment only. However, CHG-407 was deployed by Maya Jackson, and CHG-411 was deployed by Alice Chen, neither of whom are identified as SRE deployers in the evidence. This weakens segregation of duties and production access controls. | **Medium** |\n| 7 | Security review for high-risk change was not independent | **Change Management Policy \u00a73.3 Segregation of Duties and \u00a73.4 Testing**; **Change log CHG-412** | CHG-412 was a High-risk TLS cipher suite change and included a security review. However, the review was performed by Maya Jackson, who also developed the change. While the policy does not explicitly state the security reviewer must be different, this creates a self-review issue and does not provide effective independent security oversight for a High-risk change. | **Medium** |\n| 8 | Possible untracked production-impacting SSO/Okta change | **Change Management Policy \u00a71 Purpose and \u00a73.1 Submission**; **Incident log INC-302**; **Change log** | INC-302 references SSO login failures \u201cafter Okta upgrade,\u201d but no corresponding planned Okta upgrade change appears in the Q4 change log. If the Okta upgrade or related configuration change was managed by Stratos, it should have been documented, assessed, tested, and approved through change management. This indicates potential incomplete capture of production-impacting third-party identity provider changes. | **Low** |"
+}

@@ -1,0 +1,83 @@
+{
+  "task_id": "cc6.3-4-002",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-05T17:12:01.989094",
+  "score": {
+    "task_id": "cc6.3-4-002",
+    "model": "gpt-4o",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.15,
+    "f1": 0.2608695652173913,
+    "score": 0.2608695652173913,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 20,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "bi-reporting",
+          "exception"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "clinical-ops-write",
+          "patient_records",
+          "RBAC matrix",
+          "PHI"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DAR-Q4-2025-017",
+          "Privacy Officer",
+          "CISO",
+          "approval",
+          "patient_records",
+          "incomplete"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-065",
+          "svc-legacy-sync",
+          "expired",
+          "write access",
+          "reverted"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3991,
+    "output_tokens": 579
+  },
+  "raw_response": "Based on the provided evidence, I have identified the following findings regarding the control CC6.3 compliance at Orion Health Systems:\n\n### Finding 1: Unauthorized Direct Access Grant\n1. **Title:** Unauthorized Direct Access Grant to K. Shah\n2. **Section:** Exception Process (PQ7) & Access Authorization (3.1)\n3. **Gap:** Karen Shah, granted direct SELECT access to `patient_records` and `prescriptions`, circumventing the defined RBAC matrix which specifies data access via de-identified views requiring Privacy Officer approval. This additional access was provisioned by a DBA prior to full approval chain completion, bypassing required approvals.\n4. **Severity:** High\n\n### Finding 2: Expired Access Exception for svc-legacy-sync\n1. **Title:** Expired Temporary Write Access Not Revoked for Service Account\n2. **Section:** Exception Process (7), Temporary Elevated Access (5.2)\n3. **Gap:** Exception EXC-2025-065 expired, yet the `svc-legacy-sync` service account retains write privileges. According to the policy, this access should be reverted to read-only once the exception expires.\n4. **Severity:** Critical\n\n### Finding 3: Provision Without Full Approval\n1. **Title:** Data Provision Without Complete Approval Chain\n2. **Section:** Access Request Process (3.2)\n3. **Gap:** Request DAR-Q4-2025-017 for K. Shah was provisioned without data owner and privacy officer approval, not adhering to the requirement for complete approval prior to PHI data access provisioning.\n4. **Severity:** High\n\n### Finding 4: Role Defining Conflicts\n1. **Title:** Custom Role Usage Without Proper Exception Documentation\n2. **Section:** Access Authorization (3.1)\n3. **Gap:** The \"clinical-ops-write\" role is not defined in the approved RBAC matrix and appears to have write access to sensitive clinical tables without an exception request or approval documented. Custom roles are prohibited without CISO-approved exceptions.\n4. **Severity:** Medium\n\n### Finding 5: Incomplete PHI Access Controls\n1. **Title:** Insufficient Documentation of Least Privilege and Access Review\n2. **Section:** Least Privilege (3.3), Access Reviews (6)\n3. **Gap:** The 'bi-reporting' role allows broad access to PHI without documentation of individualized least-privilege assessment or quarterly access review evidence. This lacks corroborating evidence of systematic least privilege assessments being conducted as per the quarterly requirement.\n4. **Severity:** Medium\n\nOverall, while Orion Health Systems has robust mechanisms in place for defining data access roles and managing exceptions, there are critical areas where implementation and enforcement need strengthening to fully align with their policy requirements and the SOC 2 Trust Services Criteria under control CC6.3."
+}

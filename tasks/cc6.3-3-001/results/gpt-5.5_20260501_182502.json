@@ -1,0 +1,102 @@
+{
+  "task_id": "cc6.3-3-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:25:02.531538",
+  "score": {
+    "task_id": "cc6.3-3-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 1.0,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "developer_debug",
+          "write access",
+          "CISO",
+          "approval",
+          "ALL TABLES",
+          "least privilege",
+          "charlie",
+          "diana"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "evan",
+          "segregation",
+          "etl_pipeline",
+          "developer_debug",
+          "TRUNCATE",
+          "no expiration"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "analytics_readonly",
+          "production",
+          "replica",
+          "masking",
+          "PII",
+          "bypass",
+          "clearview_production"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "marketing",
+          "CISO",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "postgres",
+          "2023"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2011,
+    "output_tokens": 4285
+  },
+  "raw_response": "## Overall readiness assessment for CC6.3\n\nClearView Analytics is **not ready** for CC6.3 based on the evidence provided. The policy establishes role-based approval requirements, least privilege expectations, and periodic review requirements; however, the production database grants and Q4 2025 access tickets show multiple inconsistencies, including excessive privileges, missing required approvals, expired or non-expiring access, and weak segregation of duties.\n\n---\n\n## Findings\n\n### 1. Developers have broad production read/write access without required approvals\n\n**Related sections / evidence**  \n- Policy: Section 2, \u201cData Classification\u201d  \n- Policy: Section 3.1, \u201cDatabase Access\u201d  \n- PostgreSQL grants: `developer_debug` role on `clearview_production`  \n- Tickets: DAR-403, DAR-405\n\n**Why this is a gap**  \nThe `developer_debug` role has `SELECT`, `INSERT`, `UPDATE`, and `DELETE` privileges on **ALL TABLES** in the production customer database. Users `charlie.wong`, `diana.jones`, and `evan.smith` are assigned this role.\n\nDAR-403 and DAR-405 were granted with only **Manager approval**, despite requesting read-write access to Confidential production data across all tables. The policy requires:\n\n- Approved Jira ticket with business justification for all customer database access.\n- For Confidential data, Data Owner, Manager, and Privacy Officer approval per the classification table.\n- For write access to any customer database, CISO approval.\n\nThe tickets do not include Data Owner, Privacy Officer, or CISO approval. The \u201cALL TABLES\u201d access also violates least privilege.\n\n**Severity:** Critical\n\n---\n\n### 2. ETL and developer access creates segregation of duties and excessive privilege risk\n\n**Related sections / evidence**  \n- Policy: Section 3.1, \u201cDatabase Access\u201d  \n- Policy: CC6.3 least privilege and segregation of duties expectation  \n- PostgreSQL grants: `etl_pipeline`, `developer_debug`  \n- PostgreSQL memberships: `evan.smith` assigned to both `developer_debug` and `etl_pipeline`  \n- Ticket: DAR-407\n\n**Why this is a gap**  \nThe `etl_pipeline` role has `SELECT`, `INSERT`, `UPDATE`, `DELETE`, and `TRUNCATE` on **ALL TABLES** in production. `evan.smith` has both `developer_debug` and `etl_pipeline` roles, creating an elevated access combination that allows broad production data modification and destructive operations.\n\nDAR-407 was approved by Manager and VP Engineering only, with **no CISO approval**, even though it includes read-write access to production customer data. The ticket also has **no expiration date**, which conflicts with least privilege and timely removal of access.\n\nThe combination of developer debugging access and ETL pipeline privileges presents a segregation of duties concern because the same user can both maintain/debug code paths and directly modify or truncate production data.\n\n**Severity:** High\n\n---\n\n### 3. Data science production access exceeds approved ticket scope\n\n**Related sections / evidence**  \n- Policy: Section 3.1, \u201cDatabase Access\u201d  \n- Policy: Section 4, \u201cReview and Audit\u201d  \n- PostgreSQL grants: `data_science_team` role on `clearview_production`  \n- Tickets: DAR-401, DAR-402\n\n**Why this is a gap**  \nDAR-401 approved `alice.chen` for read access to `customer_events`. DAR-402 approved `bob.martinez` for read access to `customer_profiles`.\n\nHowever, the `data_science_team` role grants both users `SELECT` access to:\n\n- `customers`\n- `customer_events`\n- `customer_profiles`\n- `subscriptions`\n- `invoices`\n- `support_tickets`\n\nThis access is materially broader than the specific tables approved in the tickets. The grants provide access to additional customer and potentially sensitive business data without documented approval. This is inconsistent with least privilege and the policy requirement that customer database access be based on approved business justification.\n\n**Severity:** High\n\n---\n\n### 4. Restricted / unmasked PII access lacks required approvals\n\n**Related sections / evidence**  \n- Policy: Section 2, \u201cData Classification\u201d  \n- Policy: Section 3.4, \u201cAnalytics and Reporting\u201d  \n- Ticket: DAR-406\n\n**Why this is a gap**  \nDAR-406 requested read access to **unmasked PII** classified as **Restricted** for `alice.chen`. The ticket shows approvals from Data Owner, Manager, and Privacy Officer.\n\nHowever, the policy\u2019s data classification table requires **Data Owner, CISO, and Legal** approval for Restricted data. DAR-406 does not show CISO or Legal approval.\n\nAlthough Section 3.4 requires Privacy Officer approval for unmasked access and limits it to 30 days, that does not override the Restricted data approval requirement in Section 2. The approval chain is therefore incomplete.\n\n**Severity:** High\n\n---\n\n### 5. Expired unmasked PII access was not evidenced as removed\n\n**Related sections / evidence**  \n- Policy: Section 3.4, \u201cAnalytics and Reporting\u201d  \n- Policy: Section 4, \u201cReview and Audit\u201d  \n- PostgreSQL grants: `data_science_team` on `clearview_analytics`  \n- Ticket: DAR-406  \n- Grant report date: 2025-12-28\n\n**Why this is a gap**  \nDAR-406 had an expiration date of **2025-12-15**. The PostgreSQL role report was generated on **2025-12-28**, after the expiration date. The evidence still shows `alice.chen` as a member of `data_science_team`, which has broad access in the analytics database.\n\nThe evidence does not demonstrate that the unmasked PII access was technically removed or that masking was re-applied after expiration. For time-limited access, ClearView should be able to show that access was revoked when the approval expired.\n\n**Severity:** Medium\n\n---\n\n### 6. Analytics database access is not consistently read-only\n\n**Related sections / evidence**  \n- Policy: Section 3.4, \u201cAnalytics and Reporting\u201d  \n- PostgreSQL grants: `data_science_team` on `clearview_analytics`\n\n**Why this is a gap**  \nThe policy states that analysts access customer data through a **read-only analytics replica** and that PII fields are masked by default.\n\nHowever, the `data_science_team` role has `SELECT` and `CREATE` privileges on **ALL TABLES** in `clearview_analytics`. The `CREATE` privilege is inconsistent with a strictly read-only analytics model and may allow users to create derived tables, copies of sensitive data, or objects that bypass intended governance controls.\n\nThe evidence also does not show how PII masking is technically enforced for the analytics role.\n\n**Severity:** Medium\n\n---\n\n### 7. Service and system roles lack supporting approval evidence and may be over-privileged\n\n**Related sections / evidence**  \n- Policy: Section 3.1, \u201cDatabase Access\u201d  \n- PostgreSQL grants: `app_service`, `etl_pipeline`, `support_tool`, `analytics_readonly`, `marketing_integration`\n\n**Why this is a gap**  \nSeveral service or system roles have production customer database access, including:\n\n- `app_service`: `SELECT`, `INSERT`, `UPDATE`, `DELETE` on all tables.\n- `etl_pipeline`: `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE` on all tables.\n- `support_tool`: `SELECT`, `UPDATE` on customer-related tables.\n- `analytics_readonly`: `SELECT` on all tables.\n- `marketing_integration`: `SELECT` on customer, event, and profile tables.\n\nThe policy states that all customer database access requires an approved Jira ticket with business justification. The evidence provided does not include corresponding authorization records for several of these roles, especially roles with write or destructive privileges.\n\nFor roles with write access, such as `app_service`, `etl_pipeline`, and `support_tool`, the policy requires CISO approval. That approval was not evidenced.\n\n**Severity:** High\n\n---\n\n### 8. Access grants use \u201cALL TABLES,\u201d which is not aligned with least privilege\n\n**Related sections / evidence**  \n- Policy: Section 3.1, \u201cDatabase Access\u201d  \n- Policy: CC6.3 least privilege requirement  \n- PostgreSQL grants: `app_service`, `analytics_readonly`, `etl_pipeline`, `developer_debug`, `data_science_team` on analytics\n\n**Why this is a gap**  \nMultiple roles are granted access to **ALL TABLES**, including roles used by developers, analysts, applications, and ETL processes. Broad grants increase the risk that users or services can access data beyond their role responsibilities or business justification.\n\nExamples include:\n\n- `developer_debug`: read/write/delete on all production tables.\n- `etl_pipeline`: read/write/delete/truncate on all production tables.\n- `analytics_readonly`: read access to all production tables.\n- `data_science_team`: broad access in the analytics database.\n\nThis approach is inconsistent with least privilege because access is not limited to specific approved tables, functions, or datasets.\n\n**Severity:** High\n\n---\n\n### 9. Periodic access review effectiveness is not evidenced\n\n**Related sections / evidence**  \n- Policy: Section 4, \u201cReview and Audit\u201d  \n- PostgreSQL grants with dates as far back as 2023  \n- Active role memberships as of 2025-12-28\n\n**Why this is a gap**  \nThe policy requires quarterly reviews of data access authorizations and monthly access reporting by the Data Governance team. However, the evidence provided does not include quarterly review records, review sign-offs, remediation tracking, or monthly access reports.\n\nSeveral high-risk grants remain active, including the `developer_debug` role granted in 2023 and broad all-table access for multiple roles. This suggests that periodic reviews are either not occurring effectively or are not identifying and remediating excessive access.\n\n**Severity:** Medium\n\n---\n\n### 10. Policy contains inconsistent approval requirements for Confidential data\n\n**Related sections / evidence**  \n- Policy: Section 2, \u201cData Classification\u201d  \n- Policy: Section 3.1, \u201cDatabase Access\u201d\n\n**Why this is a gap**  \nThe data classification table states that access to **Confidential** data requires:\n\n- Data Owner approval\n- Manager approval\n- Privacy Officer approval\n\nHowever, Section 3.1 states that read-only access to Confidential data requires only **Data Owner approval**.\n\nThis creates ambiguity in the authorization process and may lead to inconsistent ticket approvals. Clear approval requirements are necessary to support consistent access authorization under CC6.3.\n\n**Severity:** Low"
+}

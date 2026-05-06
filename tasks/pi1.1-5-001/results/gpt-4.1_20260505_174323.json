@@ -1,0 +1,56 @@
+{
+  "task_id": "pi1.1-5-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:43:23.250616",
+  "score": {
+    "task_id": "pi1.1-5-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.25,
+    "f1": 0.3333333333333333,
+    "score": 0.3333333333333333,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "2.1%",
+          "SESSION_TIMEOUT_MIN",
+          "CIRCUIT_BREAKER_THRESHOLD",
+          "RETRY_BACKOFF_MS",
+          "behavioral",
+          "environment parity",
+          "staging",
+          "production"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "Exception Register",
+          "Section 4.2"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2499,
+    "output_tokens": 1079
+  },
+  "raw_response": "### 1. **Undocumented Configuration Drift Affecting Application Behavior**\n\n**Relevant Section:**  \n- SDLC Policy Section 4.2 (\u201cEnvironment Parity\u201d)  \n- Weekly Configuration Drift Reports (Nov 19\u2013Dec 29, 2025)\n\n**Why It's a Gap:**  \n- The policy allows up to 5% configuration drift, with the explicit requirement that \"known and documented differences\" must be registered with justification in the Environment Parity Exception Register.\n- Since November 19, 2025, 11 parameters have been consistently drifted between staging and production, contributing to a 2.1% drift (below the 5% tolerance).\n- Many of these differences (e.g., `SESSION_TIMEOUT_MIN`, `CIRCUIT_BREAKER_THRESHOLD`, `RETRY_BACKOFF_MS`) directly affect application behavior\u2014not merely scaling. These impact how sessions, error handling, and circuit breaking work in production, compared to staging.\n- The drift persists for 40+ days without any entries in the Exception Register, which is required by policy for intentional, acceptable differences.\n- This undermines assurance that \"code validated in staging must behave identically in production,\" a key control for complete and accurate processing per PI1.1.\n- As a result, changes can pass staging that would behave differently in production, increasing undetected risk of bugs or failures.\n\n**Severity:**  \n**High**  \n- Policy drift tolerance is not a blanket approval; required exception documentation is missing, and the drifted parameters directly impact processing logic, not just performance or resource scaling.\n\n---\n\n### 2. **Policy Exception Process Not Followed**\n\n**Relevant Section:**  \n- SDLC Policy Section 4.2 (\u201cEnvironment Parity\u201d)  \n- Weekly Configuration Drift Reports\n\n**Why It's a Gap:**  \n- The policy states that environment drift is allowed only if \"known and documented\" in the Exception Register. No documentation exists for the 11 ongoing drifted parameters.\n- Platform Engineering indicated a business justification (\"staging does not need production-scale settings\"), but failed to record these in the Exception Register as required, especially given several parameters affect runtime logic.\n- Lapses in following the SDLC policy exception process create an accountability and audit trail gap, undermining the processing objectives for complete and accurate change control.\n\n**Severity:**  \n**Medium**  \n- The increased risk is somewhat mitigated by engineering awareness and weekly reporting, but the process breakdown weakens controls and could enable future unreviewed risks.\n\n---\n\n### 3. **Staging Validation May Not Cover Production-Only Logic**\n\n**Relevant Section:**  \n- Deployment Pipeline (staging-validation stage),  \n- SDLC Policy 4.2 (\u201cCode validated in staging must behave identically in production\u201d)\n\n**Why It's a Gap:**  \n- The deployment pipeline mandates that staging is validated (including performance and integration tests) before production deploy, and performance tests target production baseline.\n- However, with parameters such as session timeout, retry strategy, and circuit breaker thresholds differing between staging and production, certain real-world behaviors (e.g., session expiration, rate limiting, error recovery) are not accurately tested in staging before go-live.\n- This reduces the ability to detect processing accuracy/integrity issues pre-release and is a gap against the objective that processing is \u201ccomplete, accurate, and timely.\u201d\n\n**Severity:**  \n**Medium**  \n- The risk is more than theoretical, as it directly undermines the effectiveness of the key environment parity control. However, pipeline structure and ongoing drift monitoring reduce likelihood of unnoticed catastrophic failures.\n\n---\n\n### 4. **Threshold-Focused Compliance Overlooks Application Risk**\n\n**Relevant Section:**  \n- SDLC Policy Section 4.2 (5% Drift Tolerance)\n- Weekly Drift Reports\n\n**Why It's a Gap:**  \n- The policy-compliant focus on the aggregate percentage (<5%) is missing risk-weighting for behaviorally significant parameters.  \n- The intent of environment parity is not only numerical parity, but aligned processing logic between validation and live environments. \u201cSession, error handling, and circuit breaker\u201d controls are material to application integrity, irrespective of the number of drifted parameters.\n- This shows a gap between documented control objectives and operational control assurance.\n\n**Severity:**  \n**Medium**  \n- Not immediately catastrophic, but the design could enable future \u201ccompliant but risky\u201d configurations that would escape exception or risk review.\n\n---\n\n## Summary Table\n\n| Finding Title                                         | Section(s)                 | Gap Description                                                                                                       | Severity |\n|-------------------------------------------------------|----------------------------|----------------------------------------------------------------------------------------------------------------------|----------|\n| Undocumented Configuration Drift Affecting Application Behavior | Policy 4.2, Drift Reports  | Drifted parameters impacting business logic remain undocumented, contrary to policy and PI1.1 objectives              | High     |\n| Policy Exception Process Not Followed                 | Policy 4.2, Drift Reports  | Required documentation for environment-specific exceptions missing; policy compliance broken                          | Medium   |\n| Staging Validation May Not Cover Production-Only Logic| Pipeline, Policy 4.2       | Staging testing cannot detect issues specific to production configurations                                           | Medium   |\n| Threshold-Focused Compliance Overlooks Application Risk| Policy 4.2, Drift Reports  | Aggregate drift % is not risk-based\u2014critical-logic parameters need additional review irrespective of count            | Medium   |"
+}

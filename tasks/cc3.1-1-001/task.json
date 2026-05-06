@@ -1,0 +1,84 @@
+{
+  "id": "cc3.1-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC3.1",
+  "control_description": "The entity specifies objectives with sufficient clarity to enable the identification of risks to the achievement of its objectives. The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/risk-management-policy.md",
+      "type": "policy",
+      "description": "Blueline Software Inc. risk management policy defining the risk assessment framework and governance structure"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the risk management policy for Blueline Software Inc. and assess whether it adequately addresses SOC 2 CC3.1 requirements for risk identification and assessment. Identify any gaps or missing elements.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No risk appetite statement defined",
+      "description": "The policy does not include a risk appetite statement. CC3.1 requires the entity to specify objectives with sufficient clarity to enable risk identification. A risk appetite statement defines the level and types of risk the organization is willing to accept in pursuit of its objectives. Without a risk appetite statement, the organization has no documented threshold for determining when a risk level is acceptable versus unacceptable, when risk treatment is required versus optional, or what level of residual risk is tolerable. The risk treatment section (Section 5) lists strategies including 'Accept -- Formally accept the risk with appropriate approval' but does not define what constitutes 'appropriate approval' for different risk levels or what the acceptable risk threshold is.",
+      "evidence_sources": ["evidence/risk-management-policy.md"],
+      "expected_reasoning": "Search the policy for terms like 'risk appetite', 'risk tolerance', 'acceptable risk', 'risk threshold'. None exist. The policy defines risk ratings (Section 4.2) but does not define what those ratings mean for treatment requirements. Compare to a mature policy that would say 'Critical risks require Board approval for acceptance' or 'the organization has a low appetite for security risks.' Without risk appetite, the risk rating matrix is disconnected from treatment decisions.",
+      "detection_criteria": {
+        "required_keywords": ["risk appetite", "risk tolerance", "threshold", "acceptable risk", "missing", "not defined", "no statement"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No risk register maintenance or review cadence requirement",
+      "description": "The policy does not define a risk register, specify its required contents, or mandate a review cadence. Section 4.1 requires an annual risk assessment, but there is no requirement to maintain a living risk register between assessments. CC3.1 requires ongoing risk identification and assessment -- a point-in-time annual assessment alone is insufficient. There is no mention of quarterly risk register reviews, risk owner review frequency, or how newly identified risks are tracked between annual assessments. The SGC (Section 3.1) reviews 'identified risks' quarterly but there is no documented register for them to review.",
+      "evidence_sources": ["evidence/risk-management-policy.md"],
+      "expected_reasoning": "Search for 'risk register', 'register', 'risk inventory', 'risk log', 'review cadence', 'quarterly review'. The policy mentions 'identified risks' but does not define a risk register or its maintenance requirements. The annual assessment (Section 4.1) produces risk identifications, but there is no mechanism to track these risks over time, update ratings as conditions change, or add new risks between annual cycles.",
+      "detection_criteria": {
+        "required_keywords": ["risk register", "register", "maintenance", "review cadence", "quarterly", "missing", "not defined", "tracking"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Risk owner assignment uses permissive language -- 'should' instead of 'must'",
+      "description": "Section 3.2 states 'Each risk should have an assigned owner.' The use of 'should' makes risk ownership advisory rather than mandatory. Without a required risk owner, there is no accountability for monitoring individual risks, implementing treatment plans, or reporting status changes. Compare to Section 3.1 which correctly defines specific SGC members by name, while risk ownership is left optional.",
+      "evidence_sources": ["evidence/risk-management-policy.md"],
+      "expected_reasoning": "Section 3.2 uses 'should' for risk owner assignment. This is permissive language, not a requirement. An auditor should flag this because without mandatory ownership, risks may go unmonitored. The policy uses 'shall' in Section 4.1 for the annual assessment (mandatory) but 'should' for risk ownership (advisory).",
+      "detection_criteria": {
+        "required_keywords": ["should", "risk owner", "permissive", "not required", "mandatory", "optional", "accountability"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No risk acceptance approval requirements defined by risk level",
+      "description": "Section 5 lists 'Accept' as a risk treatment strategy with 'appropriate approval' but does not define approval authorities by risk level. A mature risk management framework requires escalating approval authority based on risk severity -- for example, the risk owner may accept Low risks, the CISO may accept Medium and High risks, and Critical risks require Board approval. The absence of defined approval levels means any individual could theoretically accept a Critical risk without governance oversight.",
+      "evidence_sources": ["evidence/risk-management-policy.md"],
+      "expected_reasoning": "Section 5 mentions 'appropriate approval' for risk acceptance but does not define what that means. There are no tiered approval requirements (e.g., CISO for High, Board for Critical). This leaves a gap where risk acceptance decisions lack defined governance.",
+      "detection_criteria": {
+        "required_keywords": ["accept", "approval", "appropriate", "risk level", "Critical", "Board", "undefined", "governance"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "5 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["risk_assessment", "single_document", "policy_review", "risk_appetite", "risk_register", "permissive_language"]
+  }
+}

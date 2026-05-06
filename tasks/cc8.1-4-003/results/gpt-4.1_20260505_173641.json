@@ -1,0 +1,85 @@
+{
+  "task_id": "cc8.1-4-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:36:41.050197",
+  "score": {
+    "task_id": "cc8.1-4-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-706",
+          "violation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "CISO",
+          "NOT OBTAINED",
+          "dual approval",
+          "Section 4",
+          "emergency"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "developer",
+          "segregation",
+          "SRE",
+          "Section 3.4"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CISO",
+          "delegate",
+          "after-hours",
+          "unavailable",
+          "fallback",
+          "emergency"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2617,
+    "output_tokens": 1760
+  },
+  "raw_response": "Certainly! Here is a structured assessment of Meridian Analytics\u2019s SOC 2 CC8.1 readiness for Q4 2025, based on your evidence. All findings are grounded in the evidence and the CC8.1 criteria (\u201cthe entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes\u2026\u201d). \n\n---\n\n## 1. **Emergency Change Approved Without Dual Authorization**\n\n**Section:**  \nChange log (CHG-708: Emergency fix: Auth token expiry miscalculation), CAB minutes (Dec 9, 2025), Change Management Policy (Section 4)\n\n**Why it\u2019s a gap:**  \nThe change log for CHG-708 (December 2, 2025) documents an emergency change that was approved only by the VP Engineering. CISO (or security delegate) approval was not obtained due to unavailability. Per the Change Management Policy (Section 4), all emergency changes **require dual verbal approval (VP Engineering + CISO)**. The CAB minutes confirm this policy violation and recommend remediations (adding CISO delegate, improving on-call SRE process), but there is no evidence that the actual Q4 change itself was authorized per policy.\n\n**Severity:**  \n**Critical**\n\n**Rationale:**  \nThis is a direct violation of a control specifically in place to address high-risk, high-severity changes (emergencies defining the \u201chighest bar\u201d). The lack of dual approval for a critical fix (on a financial/data system) could expose the organization to unauthorized, potentially risky (security, data integrity) production changes.\n\n---\n\n## 2. **Segregation of Duties Bypass: Developer Deployed Own Emergency Change**\n\n**Section:**  \nChange log (CHG-708), CAB minutes (Dec 9, 2025), Change Management Policy (Section 3.4 - Segregation of Duties)\n\n**Why it\u2019s a gap:**  \nFor CHG-708, \"developer (Anika Patel) deployed the change because the SRE on-call engineer did not respond.\" The Change Management Policy (Section 3.4) requires **developers must not deploy their own changes**; production deploys are to be completed only by the SRE team.\n\n**Severity:**  \n**High**\n\n**Rationale:**  \nThis is a significant process breakdown: the policy was bypassed due to a personnel gap. Even in emergencies, the lack of controls allows a developer to promote changes to production unsupervised, increasing risk of error or unreviewed code, especially critical in regulated financial data environments.\n\n---\n\n## 3. **CISO Delegate (Emergency) Not Defined Nor Documented**\n\n**Section:**  \nCAB minutes (Dec 9, 2025), Change Management Policy (Section 4 - Emergency Changes)\n\n**Why it\u2019s a gap:**  \nThe CAB minutes explicitly recommend \u201cestablish a secondary CISO delegate for after-hours emergencies.\u201d The lack of such a delegate in policy or practice contributed to the above control failures (unable to satisfy emergency dual-approval during off-hours). The policy refers only to \"CISO,\" with no documented alternate or escalation path.\n\n**Severity:**  \n**Medium**\n\n**Rationale:**  \nThe absence of a designated delegate increases likelihood that emergency changes (often at night/weekends) cannot be authorized per policy\u2014effectively creating a \u201csingle point of failure.\u201d\n\n---\n\n## 4. **SRE On-Call Coverage Gaps Led to Break in Control**\n\n**Section:**  \nCAB minutes (Dec 9, 2025), Change Management Policy (Section 3.4, 3.5, and SRE roles)\n\n**Why it\u2019s a gap:**  \nDocumentation notes SRE on-call \u201cdid not respond to page\" during the emergency. The responsibility for deploying production changes falls to SRE (ensuring segregation and controls), but a lack of backup/on-call escalation enabled the developer to deploy.\n\n**Severity:**  \n**Medium**\n\n**Rationale:**  \nSimilar to the CISO point above: process depends on specific personnel being responsive 24x7. Policy needs to explicitly address backup or escalation, especially for after-hours changes, to avoid bypassing control requirements.\n\n---\n\n## 5. **Emergency Change CAB Retrospectives Occurred Timely, but Root Cause and Remediation Not Evidently Closed**\n\n**Section:**  \nChange log (CHG-708 and CHG-704), CAB minutes (Nov 4 and Dec 9, 2025), Change Management Policy (Section 4)\n\n**Why it\u2019s a gap:**  \nEmergency changes are reviewed in CAB as required and corrective actions (e.g., \u201cupdate code review checklist for SQL injection,\u201d \u201cestablish after-hours delegates/backups\u201d) are identified. However, your evidence for Q4 does **not confirm** these actions were tracked to closure (e.g., checklist was indeed updated, delegates assigned, on-call backup process created). There\u2019s no audit evidence that mitigations were implemented post-CAB.\n\n**Severity:**  \n**Low**\n\n**Rationale:**  \nWhile not a direct violation, SOC 2 expects issues/deficiencies raised in control retrospectives to be addressed promptly; lack of follow-up evidence means potential repeat of breakdowns seen in Q4.\n\n---\n\n## 6. **No Evidence of Policy Exception Approval for SRE or CISO Absence**\n\n**Section:**  \nChange Management Policy (general); Change log (CHG-708/CAB minutes)\n\n**Why it\u2019s a gap:**  \nWhen required stakeholders (SRE and CISO) are unavailable for emergency change approval or deployment, there is no documentation of a formal exception process being invoked/recorded\u2014only that the process was bypassed in practice. The policy doesn't clarify what to do if required signatories are unavailable and an urgent business/operational need exists.\n\n**Severity:**  \n**Medium**\n\n**Rationale:**  \nFor a critical financial services system, lack of a documented fallback/exception control is an operational risk. SOC 2 expects clear, documented exception procedures.\n\n---\n\n## **Positive Notes (No Findings; For Reference/Balance)**\n\n- **Normal and Standard Changes:** All normal and standard changes appear to follow stated change management process: CAB approval, segregation enforced, tested in staging, evidenced security review for high-risk, deployment during approved windows or with documented CAB exceptions.\n- **Emergency Changes (other than CHG-708):** CHG-704 is fully compliant (dual verbal approval, tested, rapid deployment, timely CAB review, root cause analysis and remediation action assigned).\n- **Change windows and exceptions:** CAB minutes and change log show that exceptions (e.g., CHG-706) are discussed, justified, and approved by CAB per policy.\n- **Change Failure Rate:** No failed deploys/rollbacks in Q4, suggesting an effective pre-deployment review and testing process for non-emergency changes.\n\n---\n\n# **Summary Table (All Findings)**\n\n| #  | Title                                                     | Section                    | Reason                                                                                         | Severity  |\n|----|-----------------------------------------------------------|----------------------------|------------------------------------------------------------------------------------------------|-----------|\n| 1  | Emergency Change Lacked Required Dual Approval            | CHG-708/cab min/policy     | Emergency deployed with only VP Eng approval, not CISO + VP Eng as required                    | Critical  |\n| 2  | Segregation of Duties Broken on Emergency Deploy          | CHG-708/cab min/policy     | Developer deployed own change due to SRE unavailability, in violation of policy                | High      |\n| 3  | No CISO Delegate for After-Hours Emergencies              | CAB min/policy             | No alternate approval path for CISO absence documented                                         | Medium    |\n| 4  | SRE On-Call Gap Allowed Policy Bypass                     | CAB min/policy             | No SRE backup/on-call coverage led to control breakdown                                       | Medium    |\n| 5  | Root Cause Remediation Tracking Not Evident               | CAB min/change log/policy  | No evidence that CAB-assigned remediation actions closed                                       | Low       |\n| 6  | No Policy Exception Mechanism Documented for Stakeholder Absence | CAB min/policy             | Lack of clear fallback/exception process in policy or logs for situations with critical staff unavailability | Medium    |\n\n\n---\n\n**Recommendations are implied in findings above; close gaps via updated policy, delegate assignment, on-call/backup processes, exception handling, and audit remediation closure.**\n\n**Tip:** Remediate high/critical issues immediately; document all improvements and changes made as a result of these Q4 incidents for your SOC 2 attestation and auditor follow-up."
+}

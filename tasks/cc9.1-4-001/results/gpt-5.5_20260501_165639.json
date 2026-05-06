@@ -1,0 +1,118 @@
+{
+  "task_id": "cc9.1-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T16:56:39.749341",
+  "score": {
+    "task_id": "cc9.1-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "DataRobot",
+          "SOC 2",
+          "exception",
+          "compensating"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "HubSpot",
+          "SOC 2",
+          "exception"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Stripe",
+          "carve-out",
+          "GCP",
+          "subservice",
+          "independent",
+          "assessment",
+          "policy"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Snowflake",
+          "pending",
+          "review",
+          "Critical",
+          "PII",
+          "SOC 2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "High",
+          "business review",
+          "SendGrid",
+          "HubSpot",
+          "Zendesk",
+          "Amplitude"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "carve-out",
+          "subservice",
+          "Amplitude",
+          "GCP",
+          "independent",
+          "assessment"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2160,
+    "output_tokens": 4793
+  },
+  "raw_response": "Based on the evidence reviewed for Q4 2025, the SOC 2 gaps for DataRobot and HubSpot are **not findings by themselves** because both have active CISO-approved exceptions with documented risk assessments and compensating controls. DPAs also appear to be in place for all listed active vendors.\n\n### Findings\n\n| # | Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Independent assessment of carve-out subservice organizations is not evidenced | **Third-Party Vendor Risk Management Policy**, Section 4.2 \u2014 Subservice Organization Monitoring; **Vendor Inventory**, `subservice_orgs` | The policy requires Quantum to independently assess subservice organizations when a vendor\u2019s SOC 2 uses the carve-out method. Several Critical/High vendors use carve-out subservice organizations, including Stripe, HubSpot, Amplitude, SendGrid, DataRobot, and Lattice. AWS is listed separately as a vendor, which may partially address AWS-related carve-outs, but there is no evidence of independent assessment for GCP, which appears as a carve-out subservice organization for Stripe, HubSpot, and Amplitude. This creates an unmitigated monitoring gap for downstream providers supporting vendors that process customer PII, financial data, or behavioral data. | High |\n| 2 | Annual security assessments/questionnaires for Critical and High vendors are not evidenced | **Third-Party Vendor Risk Management Policy**, Section 2 \u2014 Vendor Classification; Section 3 \u2014 Onboarding Requirements | The policy requires Critical vendors to have an annual security assessment and High vendors to have an annual security questionnaire. The vendor inventory tracks SOC 2 status, DPA status, business reviews, and subservice organizations, but does not evidence annual security assessments/questionnaires for most Critical and High vendors such as AWS, Datadog, Stripe, Okta, Snowflake, SendGrid, Zendesk, and Amplitude. Questionnaires are referenced only for exception cases or some Medium vendors. Without documented annual assessments/questionnaires, Quantum cannot demonstrate that required vendor risk mitigation activities were consistently performed. | Medium |\n| 3 | SOC 2 monitoring records contain timing inconsistencies for Critical vendors | **Third-Party Vendor Risk Management Policy**, Section 4.1 \u2014 SOC 2 Report Review; **Vendor Inventory**, `soc2_report_period`, `soc2_review_date`, `soc2_review_notes` | The inventory includes SOC 2 review data that appears internally inconsistent. AWS is listed with a SOC 2 report period of `2025-04-01 to 2026-03-31`, but the report was reviewed on `2025-07-15`, before the Type II period could have ended. Snowflake is listed with a report period of `2025-01-01 to 2025-12-31`, but the notes state the report was received on `2025-12-15`, also before the period ended, and the review remains pending. While Snowflake\u2019s review may not yet be overdue if the 90-day review window applies, the current evidence is insufficient to confirm that valid issued SOC 2 reports were reviewed in accordance with policy. | Medium |"
+}

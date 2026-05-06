@@ -1,0 +1,77 @@
+{
+  "task_id": "cc8.1-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:47:40.126762",
+  "score": {
+    "task_id": "cc8.1-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-905",
+          "CHG-910",
+          "SC-003",
+          "patch versions only",
+          "major version",
+          "Express.js",
+          "PostgreSQL",
+          "standard change"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-910",
+          "PostgreSQL",
+          "PHI",
+          "data integrity",
+          "bypassed",
+          "patient data",
+          "major version"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "SC-003",
+          "patch versions",
+          "classification",
+          "major",
+          "minor",
+          "catalog"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2988,
+    "output_tokens": 1422
+  },
+  "raw_response": "| # | Short title | Document section / evidence | Why it\u2019s a gap | Severity |\n|---|---|---|---|---|\n| 1 | Major version upgrades were improperly classified as Standard changes | **Change Management Policy \u00a74 Standard Change Catalog, SC-003**; **Q4 Change Log CHG-905 and CHG-910**; **CAB Minutes Dec. 11, 2025** | SC-003 permits only \u201cDependency updates \u2014 patch versions only,\u201d with scope limited to \u201cThird-party library patch updates only.\u201d CHG-905 upgraded Express.js from 4.x to 5.0 and CHG-910 upgraded PostgreSQL from 14.9 to 15.4. Both are major version upgrades and do not meet the catalog\u2019s patch-only condition. As a result, these changes bypassed the Normal change process, including CAB approval, formal risk/impact assessment, rollback documentation, and full testing evidence requirements. | **High** |\n| 2 | PostgreSQL major upgrade lacked appropriate data/infrastructure change scrutiny | **Change Log CHG-910**; **Policy \u00a73.1 Submission and \u00a73.2 Testing**; **Policy \u00a74 SC-003** | CHG-910 was a database platform upgrade from PostgreSQL 14.9 to 15.4 but was processed as a low-risk Standard dependency update. PostgreSQL is core infrastructure/data platform software, not merely a third-party application library patch. There is no evidence of CAB approval, staging validation, rollback plan, impact assessment, or PHI/data integrity validation, despite the potential impact to patient data availability and integrity. | **High** |\n| 3 | Express.js major framework migration bypassed Normal change approval | **Change Log CHG-905**; **Policy \u00a73.1, \u00a73.2, \u00a73.3, and \u00a74 SC-003** | CHG-905 migrated Express.js from 4.x to 5.0 and was logged as Standard under SC-003. A major application framework upgrade can introduce behavioral, routing, middleware, authentication, or API compatibility changes. The evidence only shows CI tests passed and no CAB approval. The change should have been treated as a Normal change requiring full change request details, risk/impact assessment, testing evidence, rollback plan, and CAB approval. | **High** |\n| 4 | Possible minor version update also classified as patch-only Standard change | **Change Log CHG-904**; **Policy \u00a74 SC-003** | CHG-904 is described as \u201cUpgrade React from 18.2 to 18.3 (patch).\u201d Under semantic versioning, a change from 18.2.x to 18.3.x appears to be a minor version change, not a patch version change. The policy\u2019s SC-003 wording allows patch version only, identified as x.y.Z. This suggests inconsistent interpretation or enforcement of the Standard Change Catalog. While less significant than the major upgrades, it indicates the version-scope control is not operating consistently. | **Medium** |\n| 5 | CAB identified misclassification concern but no evidence of formal remediation or retroactive review | **CAB Minutes Dec. 11, 2025** | Karen Liu raised concerns that CHG-905 and CHG-910 exceeded SC-003 scope. The action item was to clarify SC-003 language, but the evidence does not show that the two completed changes were retroactively reviewed, reclassified, risk-assessed, or formally accepted by CAB. There is also no evidence that the classification issue was tracked to closure during Q4. This weakens governance over unauthorized or improperly categorized changes. | **Medium** |\n| 6 | Standard change classification lacks evidence of independent validation before deployment | **Policy \u00a73.4 Segregation of Duties**; **Change Log CHG-905 and CHG-910**; **CAB Minutes Dec. 11, 2025** | The change log states that the developer classified CHG-905 and CHG-910 as Standard changes. Although SRE deployed them, there is no evidence that someone independent validated whether the changes actually met SC-003 criteria before deployment. For Standard changes, pre-approval is acceptable only when the change clearly meets catalog conditions. The misclassifications indicate the process relies too heavily on submitter judgment without an effective gate or review. | **Medium** |"
+}

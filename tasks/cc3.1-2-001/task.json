@@ -1,0 +1,50 @@
+{
+  "id": "cc3.1-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC3.1",
+  "control_description": "The entity specifies objectives with sufficient clarity to enable the identification of risks to the achievement of its objectives. The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/risk-management-policy.md",
+      "type": "policy",
+      "description": "CloudVault Inc. risk management policy defining risk register review cadence requirements by classification level"
+    },
+    {
+      "path": "evidence/risk-register.csv",
+      "type": "spreadsheet",
+      "description": "Active risk register with 15 risks including review dates, risk owners, and treatment plans"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the risk management policy and risk register for CloudVault Inc. and assess whether the organization is meeting its SOC 2 CC3.1 obligations for risk identification and assessment. Cross-reference the risk register against the policy's review cadence requirements. Look carefully at review dates and risk classifications.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "CV-RISK-013 Critical risk not reviewed for 14 months -- quarterly review required",
+      "description": "CV-RISK-013 (cross-border data transfer non-compliance) is rated Critical (Likelihood 4, Impact 5, Rating 20). Policy Section 3.2 requires Critical risks to be reviewed quarterly with a maximum review interval of 90 days. The last_review_date is 2024-10-18 and the next_review_date is 2025-01-18. As of the end of Q4 2025 (December 31, 2025), this risk has not been reviewed in approximately 14 months -- over 4x the maximum 90-day interval. The notes reference a legal review completed in October 2024 and 'Awaiting EU regulatory guidance update,' suggesting the review was deferred pending external input. However, the policy does not provide an exception for deferring reviews while awaiting external guidance. A Critical-rated risk related to regulatory compliance with cross-border data transfers has been unmonitored for over a year.",
+      "evidence_sources": ["evidence/risk-register.csv", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "Scan the risk register for review dates. CV-RISK-013 has last_review_date = 2024-10-18 and next_review_date = 2025-01-18. The next review was due in January 2025 -- nearly 12 months ago. Policy Section 3.2 requires quarterly reviews (90-day maximum) for Critical risks. The 14-month gap is the largest review overdue in the register. The risk notes explain the delay ('awaiting EU regulatory guidance') but this is not a valid exemption.",
+      "detection_criteria": {
+        "required_keywords": ["CV-RISK-013", "Critical", "14 months", "2024-10-18", "quarterly", "90 days", "overdue", "cross-border", "not reviewed"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "12 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["risk_assessment", "risk_register", "review_cadence", "overdue_review", "Critical_risk", "date_gap"]
+  }
+}

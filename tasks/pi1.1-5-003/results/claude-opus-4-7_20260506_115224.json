@@ -1,0 +1,76 @@
+{
+  "task_id": "pi1.1-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:52:24.113989",
+  "score": {
+    "task_id": "pi1.1-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 0.4615384615384615,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "loyalty_tier",
+          "preferred_language",
+          "silently dropped",
+          "schema evolution",
+          "44 days",
+          "record count",
+          "field-level",
+          "DIC-6028",
+          "business team",
+          "not available"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-9112",
+          "BigDecimal",
+          "AmountReconciler",
+          "reconciliation",
+          "false positive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-9101",
+          "SchemaEvolutionHandler",
+          "partner-feed-gamma",
+          "DIC-6028",
+          "schema evolution"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 9346,
+    "output_tokens": 3328
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment: PI1.1\n## Atlas Integration Corp \u2014 Q4 2025\n\n**Control Under Review:** PI1.1 \u2014 Processing objectives for complete, accurate, and timely processing.\n\n---\n\n## Executive Summary\n\nWhile record-count reconciliation shows uniformly \"Pass\" results across Q4 2025, the evidence reveals a **fundamental gap between the entity's stated processing objectives and what is actually being measured**. The reconciliation framework validates *throughput* (records in = records out) but does not validate *completeness* (all relevant data fields are captured and made available). A partner schema change on November 15, 2025 resulted in 44+ days of silent data loss that passed every reconciliation check. This points to a control design weakness, not merely an operational lapse.\n\n---\n\n## Findings\n\n### Finding 1: Schema Evolution Event Not Treated as a Processing Integrity Incident\n**Related Section:** SDLC Policy \u00a76.1 (Input Validation), \u00a76.3 (Dead Letter Queue); DIC-6028 through DIC-6049\n\n**Gap:** On November 15, 2025 (DIC-6028), the schema_conformance check generated a Warn status for partner-feed-gamma due to two new fields (`loyalty_tier`, `preferred_language`). Data ops acknowledged the alert but took no remediation action, citing \"fields are optional and unused.\" As of December 29, 2025 (44 days later), the fields continue to be silently dropped, no schema update is planned, and the business team has been told the data is \"not available in feed\" (DIC-6038). The policy does not define a workflow for partner-initiated schema changes, escalation paths when schema drift is detected, or a requirement to engage data engineering when the source feed evolves. This means processing integrity is silently degraded without any control trigger.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Reconciliation Definition Conflates Record Count with Completeness\n**Related Section:** SDLC Policy \u00a76.2 (Data Reconciliation)\n\n**Gap:** Section 6.2 defines reconciliation as record count match (\u00b10.01%) and SHA-256 checksums on \"key fields.\" It does not require field-level completeness validation against the partner contract or source schema. Consequently, every reconciliation check from Nov 15 onward shows \"Pass\" while two fields per record are being dropped \u2014 exactly the failure mode the auditor was instructed to look for. PI1.1 requires the entity to define what constitutes \"complete\" processing; the current definition is incomplete because it cannot detect data loss that occurs *before* the destination count is established.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: DLQ Threshold Bypassed Because Validation \"Passes\" on Unknown Fields\n**Related Section:** SDLC Policy \u00a76.1, \u00a76.3; DIC-6028\n\n**Gap:** DIC-6028 documents that the DLQ alert threshold (100 records) was triggered but records were *not* quarantined \"because schema validation passed (unknown fields are dropped not rejected).\" The Avro schema configuration is permissive \u2014 unknown fields are silently dropped rather than routed to DLQ. This is inconsistent with \u00a76.1's intent that \"malformed records are quarantined for manual review.\" Schema-evolution events are effectively invisible to the DLQ control. The 48-hour DLQ resolution SLA also did not apply because no records were quarantined.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Open High-Severity SAST Bug Directly Affects Schema Evolution Processing\n**Related Section:** SDLC Policy \u00a74.1 (SAST Quality Gate); SonarQube finding SQ-9101\n\n**Gap:** SQ-9101 is an open High-severity NPE bug in `SchemaEvolutionHandler.java` first detected December 15, 2025, explicitly affecting partner-feed-gamma. Per \u00a74.1, High findings must be remediated within 30 days. While not yet past SLA, the existence of this bug is causally linked to the schema-drift incident in Finding 1 \u2014 Atlas's own engineers identified that schema evolution handling is broken, yet pipeline operations continue without any compensating control or feed pause. There is no evidence that High SAST findings are correlated with processing integrity incidents during triage.\n\n**Severity:** **High**\n\n---\n\n### Finding 5: Reconciliation Logic Itself Contains a Known Bug\n**Related Section:** SDLC Policy \u00a76.2; SonarQube finding SQ-9112\n\n**Gap:** SQ-9112 (Medium) identifies floating-point `==` comparison in `AmountReconciler.java` instead of `BigDecimal.compareTo`. The reconciliation control upon which PI1.1 substantially relies is itself defective and could produce false positives (i.e., report \"Pass\" when amounts differ at sub-cent precision). The reconciliation amount logic should be treated as safety-critical code with stricter review and test coverage than general business logic.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: Acknowledged-but-Unscheduled TODO in Schema Validator\n**Related Section:** SDLC Policy \u00a74.2 (Data Quality Rules); SonarQube finding SQ-9109\n\n**Gap:** SQ-9109 contains a TODO comment in `SchemaValidator.java`: \"handle schema evolution for optional fields \u2014 acknowledged but no timeline.\" This was first detected October 5, 2025 \u2014 40 days *before* the November 15 schema event. The known weakness was documented in code, not tracked in an issue, not assigned a remediation date, and not raised as a processing integrity risk. This represents a control failure in the prioritization process: code-level risks to PI1.1 are not being escalated outside the static-analysis tool.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Staging Validation Does Not Address Partner-Initiated Schema Changes\n**Related Section:** SDLC Policy \u00a75.2 (Staging Validation for Data Pipelines)\n\n**Gap:** \u00a75.2 requires staging validation only for \"data pipeline changes\" \u2014 i.e., changes initiated by Atlas. There is no equivalent control for changes initiated by partners (i.e., changes to the upstream feed format). Atlas's policy implicitly assumes feed schemas are static, which the November 15 event demonstrates is false. PI1.1 readiness requires a control that detects, evaluates, and approves partner schema changes before production processing continues.\n\n**Severity:** **High**\n\n---\n\n### Finding 8: No Field-Level Completeness Monitoring or Business Stakeholder Notification\n**Related Section:** SDLC Policy \u00a76 (Processing Integrity, overall); DIC-6038\n\n**Gap:** DIC-6038 records that on December 1, the business team asked about loyalty_tier data and was told it was \"not available in the feed\" \u2014 when in fact it had been arriving and being silently dropped for 16 days. There is no control requiring data engineering to notify business owners of detected schema changes, nor any field-level completeness dashboard for stakeholders. The processing integrity definition does not include a \"fitness for purpose\" element, even though PI1.1 expects processing objectives to be tied to the entity's commitments and system requirements.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 9: DLQ Items Reviewed by \"Automated\" \u2014 Reviewer Attribution Insufficient\n**Related Section:** SDLC Policy \u00a76.3; DIC-6008, DIC-6017\n\n**Gap:** Multiple DLQ events (e.g., DIC-6008 with 3 quarantined records, DIC-6017 with 2 records) list the reviewer as \"automated.\" \u00a76.3 requires review and resolution within 48 hours but does not specify whether automated triage satisfies \"review.\" For audit evidence, individual accountability for DLQ resolution decisions is not preserved, weakening the audit trail expected for PI1.1.\n\n**Severity:** **Low**\n\n---\n\n### Finding 10: SDLC Policy Lacks Explicit Mapping to PI1.1 Processing Objectives\n**Related Section:** SDLC Policy \u00a71 (Purpose), \u00a76 (Processing Integrity)\n\n**Gap:** Although \u00a76 is titled \"Processing Integrity,\" the policy does not enumerate processing objectives in terms of completeness, accuracy, and timeliness as required by PI1.1. Tolerances are defined for record counts (0.01%) but not for field completeness, latency/timeliness (no max processing-time SLA appears), or transformation accuracy in production (only in staging per \u00a75.2). Without explicit objectives, the control cannot be evaluated against measurable criteria.\n\n**Severity:** **Medium**\n\n---\n\n## Recommended Remediation Priorities\n\n| Priority | Action |\n|----------|--------|\n| 1 | Define processing objectives explicitly: completeness (field-level), accuracy, timeliness with measurable thresholds. |\n| 2 | Reconfigure Avro/Protobuf validation to flag (not silently drop) unknown fields and route schema-drift events to DLQ. |\n| 3 | Establish a partner-schema-change control: detection, business owner notification, engineering review, and feed-pause decision. |\n| 4 | Resolve SQ-9101 (schema evolution NPE) and SQ-9112 (reconciliation floating-point bug) before the next audit window. |\n| 5 | Convert TODO comments in PI-relevant code (SQ-9109) into tracked issues with remediation dates. |\n| 6 | Implement field-level completeness monitoring with a dashboard visible to business data consumers. |\n\n**Overall PI1.1 Readiness:** **Not Ready** \u2014 Material weaknesses exist in both control design (Findings 1, 2, 3, 7, 10) and control operation (Findings 4, 8). Recommend remediation before Type II observation period progresses further."
+}

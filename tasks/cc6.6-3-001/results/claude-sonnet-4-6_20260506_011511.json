@@ -1,0 +1,77 @@
+{
+  "task_id": "cc6.6-3-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T01:15:11.539088",
+  "score": {
+    "task_id": "cc6.6-3-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 2,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "schema-registry",
+          "PERMISSIVE",
+          "STRICT",
+          "mTLS",
+          "plaintext",
+          "Section 3.1",
+          "no exception",
+          "Kafka Connect"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "metrics-exporter",
+          "no sidecar",
+          "self-signed",
+          "Vault",
+          "mutual authentication",
+          "legacy Helm",
+          "Section 3.1",
+          "all namespaces"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Section 3.3",
+          "no formal exception",
+          "compensating controls",
+          "remediation plan",
+          "CISO approval"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2180,
+    "output_tokens": 2079
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 CC6.6 Findings Report\n\n**Entity:** Nimbus Analytics\n**Control:** CC6.6 \u2014 Logical Access Security: External Threat Protection\n**Observation Period:** Q4 2025\n**Assessment Date:** December 15, 2025\n**Auditor Reference:** POL-SEC-2025-003 v2.0 cross-referenced against Service Mesh TLS Audit Report\n\n---\n\n## Executive Summary\n\nOf 15 production services audited, **13 are compliant** with the mTLS policy requirements established in POL-SEC-2025-003. **2 services present compliance gaps** of differing severity. Both non-compliant services deviate from the core mTLS mandate in Section 3.1 and neither has a documented exception on file per the process defined in Section 3.3. One finding carries **High** severity due to the absence of any mutual authentication; the other carries **Medium** severity due to a degraded authentication posture that accepts plaintext connections.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: metrics-exporter Lacks Sidecar Injection and Operates Without Mutual Authentication\n\n**Severity:** \ud83d\udd34 High\n\n**Affected Service:** `metrics-exporter` (namespace: `internal-tools`)\n\n**Policy Reference:** POL-SEC-2025-003, Section 3.1 \u2014 mTLS Requirement; Section 3.3 \u2014 Exceptions\n\n**Observation:**\n\nThe `metrics-exporter` service has no Istio sidecar proxy injected (`sidecar_injected = No`), placing it entirely outside the service mesh. As a result, it operates with no PeerAuthentication policy (`peer_authentication_mode = N/A`) and no mutual authentication of any kind. Its TLS certificate is self-signed and generated at deploy time by a legacy Helm chart rather than being issued by the authorised internal PKI (HashiCorp Vault `pki-nimbus-prod`). TLS version in use is 1.2, below the TLS 1.3 standard observed across all compliant services. Critically, no certificate rotation is configured (`cert_rotation_hours = N/A`), and the certificate carries a long-lived expiry of March 2026.\n\n**Why This Is a Gap:**\n\nSection 3.1 mandates that *every* production service must have an Istio sidecar proxy injected and that PeerAuthentication must be set to STRICT with no plaintext fallback. This service satisfies none of those requirements. The absence of mutual authentication means any workload \u2014 including potentially unauthorised or compromised services \u2014 can communicate with `metrics-exporter` without presenting a valid client certificate. This is compounded by the service's scope: the audit notes confirm it handles Prometheus metrics export *from all namespaces*, meaning it has broad cross-namespace visibility into the production environment. A service with such privileged reach presents a meaningful lateral movement risk if its communication channels are not authenticated and encrypted to the required standard.\n\nAdditionally, the self-signed certificate is not governed by the Vault PKI chain of trust and is not subject to OCSP stapling or CRL distribution as required by Section 3.2, meaning certificate validity cannot be reliably verified or revoked in an incident scenario.\n\nNo formal exception is documented per Section 3.3. The notes reference the service being a \"legacy Helm chart that predates Istio adoption,\" but this context does not constitute an approved exception and there is no evidence of a business justification, compensating controls, time-bound remediation plan, or CISO approval.\n\n**Recommended Remediation:**\n\n- Migrate `metrics-exporter` to a sidecar-injected deployment and enforce STRICT PeerAuthentication as an immediate priority.\n- Replace the self-signed certificate with a Vault-issued certificate integrated into the standard 72-hour rotation cycle.\n- If remediation requires a transition period, initiate a formal GRC exception per Section 3.3 with CISO approval and a defined remediation deadline.\n- Evaluate whether cross-namespace access for this service can be scoped down via NetworkPolicy (Section 4.1) as an interim compensating control.\n\n---\n\n### Finding 2: schema-registry Accepts Plaintext Connections Due to PERMISSIVE PeerAuthentication Mode\n\n**Severity:** \ud83d\udfe0 Medium\n\n**Affected Service:** `schema-registry` (namespace: `data-ingestion`)\n\n**Policy Reference:** POL-SEC-2025-003, Section 3.1 \u2014 mTLS Requirement; Section 3.3 \u2014 Exceptions\n\n**Observation:**\n\nThe `schema-registry` service has an Istio sidecar injected and is operating on TLS 1.3 with a Vault-issued certificate on the standard 72-hour rotation cycle. However, its PeerAuthentication mode is set to `PERMISSIVE` rather than `STRICT`. In PERMISSIVE mode, the Istio proxy accepts both mTLS-authenticated connections and unauthenticated plaintext connections simultaneously. The audit notes attribute this to a compatibility issue with a legacy Kafka Connect plugin.\n\n**Why This Is a Gap:**\n\nSection 3.1 explicitly requires PeerAuthentication to be set to STRICT with *no plaintext fallback*. PERMISSIVE mode directly contradicts this requirement. While the sidecar is present and capable of performing mutual authentication, the PERMISSIVE setting means that client certificate presentation is optional \u2014 a connecting service that does not present a certificate will not be rejected. This undermines the authentication assurance that mTLS is intended to provide, as the origin and identity of connecting workloads cannot be guaranteed for all traffic flows.\n\nThe `data-ingestion` namespace handles customer event data ingestion (as noted for the adjacent `data-collector` service), making unauthenticated access to the schema registry \u2014 which governs the structure of that data \u2014 a relevant risk. An adversary or misconfigured internal service communicating over plaintext could interact with `schema-registry` without any cryptographic identity verification.\n\nAs with Finding 1, no formal exception has been filed per Section 3.3. The Kafka Connect compatibility issue may constitute a legitimate business justification, but without a documented exception including compensating controls and a remediation timeline, this represents an unapproved deviation from policy.\n\n**Recommended Remediation:**\n\n- Investigate and resolve the Kafka Connect plugin compatibility issue; evaluate whether a plugin upgrade, alternative connector configuration, or mTLS passthrough option can enable a transition to STRICT mode.\n- If resolution requires time, file a formal GRC exception per Section 3.3 with documented compensating controls (e.g., NetworkPolicy restrictions limiting which services can reach `schema-registry`) and a target date for transitioning to STRICT mode.\n- Confirm via mesh telemetry whether any current traffic to `schema-registry` is actually arriving as plaintext; if so, identify and remediate those upstream callers.\n\n---\n\n## Summary Table\n\n| # | Service | Namespace | Severity | Policy Section | Issue |\n|---|---------|-----------|----------|----------------|-------|\n| 1 | `metrics-exporter` | `internal-tools` | \ud83d\udd34 High | \u00a73.1, \u00a73.2, \u00a73.3 | No sidecar; no mutual auth; self-signed cert; no rotation; no exception on file |\n| 2 | `schema-registry` | `data-ingestion` | \ud83d\udfe0 Medium | \u00a73.1, \u00a73.3 | PERMISSIVE mode allows plaintext; no exception on file |\n\n---\n\n## Observations on Overall Control Posture\n\nThe following positive observations are noted and support the overall maturity of the control environment:\n\n- **13 of 15 services (87%)** are fully compliant with STRICT mTLS enforcement, demonstrating broad operational adoption of the policy.\n- Certificate issuance is consistently routed through the authorised Vault PKI (`pki-nimbus-prod`) for all compliant services, with uniform 72-hour rotation cycles.\n- TLS 1.3 is the standard across all mesh-enrolled services, reflecting current cryptographic best practice.\n- The policy itself (POL-SEC-2025-003) is well-structured, CISO-approved, and includes a formal exceptions process \u2014 the gap is in exception *adherence*, not exception *process design*.\n- Network segmentation controls (Section 4) and ingress/egress controls (Section 5) were not the subject of this audit cycle but represent areas for separate evidence collection.\n\n---\n\n## CC6.6 Readiness Conclusion\n\nNimbus Analytics has established a substantive and largely operational control in support of CC6.6. The two identified findings, if left unaddressed, represent deviations from stated policy that a SOC 2 auditor would likely note as **exceptions** in a Type II report. Neither finding has an approved exception on file, which is itself a secondary gap in each case. **Remediation of Finding 1 should be prioritised given the service's privileged cross-namespace access and total absence of mutual authentication.**"
+}

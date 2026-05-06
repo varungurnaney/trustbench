@@ -1,0 +1,50 @@
+{
+  "id": "cc9.1-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC9.1",
+  "control_description": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions or from the use of vendors and business partners.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/vendor-management-policy.md",
+      "type": "policy",
+      "description": "Helios Analytics vendor risk management policy defining vendor tiers, SOC 2 review requirements, and assessment schedules"
+    },
+    {
+      "path": "evidence/vendor-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Vendor inventory with 14 vendors listing tier, SOC 2 report dates, review status, and DPA status"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the vendor management policy and vendor inventory for Helios Analytics. Assess whether the organization is meeting its SOC 2 CC9.1 obligations for vendor risk mitigation. Cross-reference the vendor inventory against the policy requirements to identify any compliance gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Critical vendor Palantir Foundry SOC 2 report expired 4 months ago with no renewal",
+      "description": "Palantir Foundry (HL-V-006) is a Critical-tier vendor providing data analytics infrastructure that processes customer PII. The vendor inventory shows its SOC 2 report covers the period 2023-10-01 to 2024-07-31, meaning the report period ended on July 31, 2024 — over 16 months ago. The SOC 2 review date is listed as 2024-10-15, and the notes column reads 'Clean opinion. Annual renewal expected.' However, no updated report has been received. Policy Section 4.1 requires Critical vendors to have their SOC 2 report reviewed annually. Helios Analytics is operating with a stale, expired SOC 2 assessment for a Critical vendor that processes customer PII.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "The auditor must examine the soc2_report_period column for each Critical vendor and calculate whether the report period is current. Most vendors have report periods ending in mid-to-late 2025. Palantir Foundry's report period ended July 31, 2024 — this is buried among 14 vendor rows. The notes say 'renewal expected' but no new report has been received. For a Critical vendor processing customer PII, a 16-month gap in SOC 2 coverage is a significant finding.",
+      "detection_criteria": {
+        "required_keywords": ["Palantir Foundry", "2024-07-31", "expired", "Critical", "SOC 2", "customer PII", "no updated report", "16 months"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "12 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["vendor_management", "soc2_report_expiration", "cross_reference", "spreadsheet_analysis"]
+  }
+}

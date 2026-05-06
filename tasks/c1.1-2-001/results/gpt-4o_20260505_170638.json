@@ -1,0 +1,76 @@
+{
+  "task_id": "c1.1-2-001",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-05T17:06:38.682666",
+  "score": {
+    "task_id": "c1.1-2-001",
+    "model": "gpt-4o",
+    "scoring_method": "detection_only",
+    "recall": 0.5,
+    "precision": 0.5,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": false,
+        "matched_keywords": [
+          "legacy-reporting",
+          "TLS 1.0"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-reporting",
+          "auto-renewal",
+          "No",
+          "manual"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "internal-tools",
+          "auto-renewal",
+          "manual"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "legacy-reporting"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2407,
+    "output_tokens": 447
+  },
+  "raw_response": "Based on the TLS configuration audit report and certificate inventory provided, the following findings are noted:\n\n### Finding 1: Use of Obsolete TLS Version\n**Section**: TLS Configuration Audit Report  \n**Gap Explanation**: The endpoint `legacy-reporting.crestline.com` is using TLS 1.0, which is considered obsolete and insecure. Modern security standards require at least TLS 1.2 or preferably TLS 1.3 to ensure strong encryption and protection against known vulnerabilities.  \n**Severity**: High\n\n### Finding 2: Non-Auto-Renewal of Certificates\n**Section**: TLS Configuration Audit Report, Certificate Inventory  \n**Gap Explanation**: Several internal endpoints (`internal-tools.crestline.net`, `grafana.crestline.net`, `kibana.crestline.net`, `vault.crestline.net`, `jenkins.crestline.net`, `legacy-reporting.crestline.com`) have certificates that do not have auto-renewal enabled. While these expire in 2026, the lack of auto-renewal increases the risk of certificate expiration leading to service disruption or insecure connections if not monitored and renewed manually.  \n**Severity**: Medium\n\n### Finding 3: Conflicting Monitoring Alert Days\n**Section**: Certificate Inventory  \n**Gap Explanation**: For the `vault.crestline.net` certificate, the monitoring alert days are set at 60, which may not provide sufficient time for manual renewal processes or addressing any potential issues, given its heightened security sensitivity (4096-bit key and restricted data classification). Aligning alert configuration with operational contingencies is necessary.  \n**Severity**: Low\n\n### Finding 4: Inconsistent TLS Protocol Usage\n**Section**: TLS Configuration Audit Report  \n**Gap Explanation**: While most endpoints are using TLS 1.2 and above, the use of a mix of protocol versions (e.g., both TLS 1.2 and TLS 1.3) across endpoints could indicate inconsistency in encryption posture or policy enforcement. Standardizing the use of TLS 1.3 across endpoints would align with best security practices and reduce potential exposure to risks associated with older protocols.  \n**Severity**: Low"
+}

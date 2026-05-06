@@ -1,0 +1,73 @@
+{
+  "task_id": "cc6.3-2-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:32:39.272232",
+  "score": {
+    "task_id": "cc6.3-2-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "TRUNCATE",
+          "customers",
+          "row 22",
+          "Restricted",
+          "QA",
+          "destructive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Finance",
+          "payment_transactions",
+          "INSERT",
+          "UPDATE",
+          "segregation",
+          "write access"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "svc-etl-legacy",
+          "owner",
+          "ALL TABLES",
+          "SELECT",
+          "least privilege"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3189,
+    "output_tokens": 2012
+  },
+  "raw_response": "# CC6.3 Compliance Assessment \u2014 Data Access Control Findings\n\n## Summary\n**Total Findings:** 8  \n**Critical:** 3 | **High:** 4 | **Medium:** 1 | **Low:** 0\n\n---\n\n## Finding 1: Destructive Permissions on Restricted Data by Non-DBA Role\n\n**Title:** QA Analyst Granted TRUNCATE on Restricted Production Table\n\n**Policy Section:** 3.2 (Destructive Operations)\n\n**Description of Gap:**  \nRow 22 grants Diego Martinez (qa-analyst role) TRUNCATE privilege on `zenith_prod.customers`, which is classified as Restricted. Policy 3.2 explicitly prohibits destructive operations (DELETE, TRUNCATE, DROP) on production tables classified as Restricted for non-DBA roles. TRUNCATE is a destructive operation that requires written approval, change management ticket, DBA execution, and backup verification\u2014none of which are evidenced in the matrix.\n\n**Severity:** **Critical**\n\n---\n\n## Finding 2: Finance Department Write Access to Restricted Financial Tables\n\n**Title:** Finance Personnel Granted INSERT/UPDATE on Restricted Payment Transactions\n\n**Policy Section:** 3.3 (Segregation of Duties)\n\n**Description of Gap:**  \nRow 21 grants Femi Okonkwo (Finance department, app-readwrite role) SELECT, INSERT, and UPDATE privileges on `zenith_prod.payment_transactions`, classified as Restricted. Policy 3.3 explicitly states: \"Finance department personnel must not have direct write access to financial transaction tables (payment_transactions, invoices, revenue_reports). Finance team members may only have read access; all write operations must flow through the application layer with audit logging.\"\n\nThe matrix note itself flags this: \"Payment reconciliation access \u2014 requires review.\" This violates the segregation of duties principle.\n\n**Severity:** **Critical**\n\n---\n\n## Finding 3: Junior DBA Granted Full Admin Privileges\n\n**Title:** Junior DBA Assigned ALL PRIVILEGES on All Schemas\n\n**Policy Section:** 3.1 (Least Privilege and RBAC)\n\n**Description of Gap:**  \nRows 27\u201328 grant Hiroshi Tanaka (Junior DBA, dba-admin role) ALL PRIVILEGES on both `zenith_prod` and `zenith_analytics`. While the dba-admin role is policy-compliant for DBAs, the designation \"Junior DBA\" suggests this individual may not have the experience level to justify unrestricted access to all production schemas containing Restricted and Confidential data. The policy does not differentiate privilege levels within the DBA role based on seniority.\n\nAdditionally, there is no evidence of role differentiation or mentoring controls that would typically govern junior staff access to sensitive production systems.\n\n**Severity:** **High**\n\n---\n\n## Finding 4: Legacy Service Account with Overly Broad Access\n\n**Title:** Legacy ETL Service Account Granted SELECT on ALL TABLES\n\n**Policy Section:** 3.1 (Least Privilege and RBAC) and 5.1 (Service Accounts Governance)\n\n**Description of Gap:**  \nRows 29\u201330 grant `svc-etl-legacy` SELECT privilege on ALL TABLES across both `zenith_prod` and `zenith_analytics` schemas. This violates least-privilege principles by granting blanket access to all tables regardless of classification level (Restricted, Confidential, Internal).\n\nAdditionally, the matrix provides no designated human owner, documented business purpose, or evidence of inclusion in quarterly reviews as required by Policy 5.1. The account is marked as \"Legacy\" with no decommissioning plan evident.\n\n**Severity:** **High**\n\n---\n\n## Finding 5: Absence of Data Masking for Non-DBA Roles Accessing Restricted Data\n\n**Title:** Data Analysts Accessing Restricted Tables Without Masking Controls\n\n**Policy Section:** 3.4 (Data Masking)\n\n**Description of Gap:**  \nRows 6\u20138 (Alice Chen), 15\u201316 (Elena Santos), and 35\u201336 (Liam Morrison) are data-analyst roles accessing `zenith_analytics` tables. While these analysts access analytics schema (not production), the policy states in Section 3.4: \"Non-DBA, non-application roles accessing Restricted tables must use masked views that redact PII fields.\"\n\nThe permission matrix does not indicate whether these data analysts are accessing masked views or direct tables. Given the lack of explicit masking controls documented, and considering that analytics tables like `customer_metrics` may contain derived PII, there is insufficient evidence that masking controls are in place.\n\n**Severity:** **High**\n\n---\n\n## Finding 6: Service Account Owner Not Documented for Billing Service\n\n**Title:** Billing Service Account Missing Documented Owner\n\n**Policy Section:** 5.1 (Service Accounts Governance)\n\n**Description of Gap:**  \nRows 13\u201314 grant `svc-billing` INSERT and UPDATE access on Restricted and Confidential tables. While row 13 lists \"Aisha Patel\" as the owner in the owner column, row 14 does not, creating inconsistency. More significantly, Policy 5.1 requires service accounts to have a \"designated human owner, documented business purpose, and be included in quarterly reviews.\"\n\nThe matrix provides no evidence that `svc-billing` has formal documentation of its business purpose, quarterly review status, or assigned ownership with documented responsibility.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 7: Engineer Access to UPDATE Payment Transactions\n\n**Title:** Engineering Staff Granted UPDATE on Restricted Payment Transactions\n\n**Policy Section:** 3.3 (Segregation of Duties) and 3.1 (Least Privilege)\n\n**Description of Gap:**  \nRows 4\u20135 and 13\u201314 show that application service accounts (`svc-app-api` and `svc-billing`) have SELECT, INSERT, UPDATE on `zenith_prod.payment_transactions` (Restricted) and `zenith_prod.invoices` (Confidential). While these are application service accounts (not individual developers), the UPDATE privilege on Restricted financial transaction data requires scrutiny.\n\nPolicy 3.1 specifies the svc-application role should have \"SELECT, INSERT, UPDATE\" on \"Application-specific tables,\" but payment_transactions is inherently a sensitive financial table that typically should not be modified by application code directly\u2014it should be append-only. The UPDATE privilege exceeds the restrictive nature typically required for Restricted data.\n\n**Severity:** **High**\n\n---\n\n## Finding 8: No Evidence of Quarterly Access Review Completion\n\n**Title:** Quarterly Review Requirement Not Evidenced\n\n**Policy Section:** 4.2 (Quarterly Reviews)\n\n**Description of Gap:**  \nPolicy 4.2 requires: \"System owners review all database access grants quarterly. Excessive or inappropriate access revoked within 5 business days.\"\n\nThe permission matrix does not include evidence of when the last quarterly review was performed, who conducted it, or what access was revoked. Multiple permissions are dated months apart (ranging from January 2024 to October 2025), with no documented review cycles, approval confirmations, or revocation records. This is a process control gap preventing verification that the control is operating effectively.\n\n**Severity:** **High**\n\n---\n\n## Summary Table\n\n| Finding # | Title | Severity | Policy Section |\n|-----------|-------|----------|----------------|\n| 1 | Destructive Permissions on Restricted Data by Non-DBA | Critical | 3.2 |\n| 2 | Finance Write Access to Payment Transactions | Critical | 3.3 |\n| 3 | Junior DBA Full Admin Privileges | High | 3.1 |\n| 4 | Legacy Service Account Overly Broad Access | High | 5.1 |\n| 5 | Data Masking Not Evidenced | High | 3.4 |\n| 6 | Billing Service Account Owner Documentation Gap | Medium | 5.1 |\n| 7 | UPDATE Privilege on Restricted Payment Data | High | 3.1/3.3 |\n| 8 | Quarterly Access Review Not Evidenced | High | 4.2 |\n\n---\n\n## Overall Readiness Assessment for CC6.3\n\n**Status:** NOT READY for Type II attestation\n\nThe control demonstrates policy documentation and role-based structure, but has **multiple material gaps** in execution and evidence:\n- **Critical gaps** in segregation of duties and destructive operation controls\n- **Missing compensating controls** (data masking documentation)\n- **Process evidence gaps** (quarterly reviews)\n- **Service account governance deficiencies**\n\n**Immediate remediation required** before proceeding with SOC 2 Type II assessment."
+}

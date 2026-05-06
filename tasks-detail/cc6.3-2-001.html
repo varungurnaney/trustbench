@@ -1,0 +1,45 @@
+---
+layout: default
+title: "cc6.3-2-001"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>cc6.3-2-001</h2>
+    <p class="section-subtitle">CC6.3 · D2 · detection_only</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D2</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">100%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are reviewing the data access controls for Zenith Software as part of a SOC 2 Type II readiness assessment covering Q4 2025. Review the data access policy and the database permission matrix. Cross-reference the policy requirements against the actual permissions granted. Identify any permissions that violate the policy's least-privilege or segregation of duties requirements. Pay careful attention to every row in the permission matrix.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/data-access-policy.md</code> — Zenith Software data access authorization policy with data classification and least-privilege requirements</li>
+<li><code>evidence/database-permission-matrix.csv</code> — PostgreSQL production database permission matrix showing all users, roles, schemas, and granted privileges as of December 15, 2025</li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="badge badge-blue">gap</span></td><td>critical</td><td><strong>User d.martinez has TRUNCATE privilege on production customers table buried in row 22 of the matrix</strong><br><span style="font-size:13px;color:var(--text-dim)">Row 22 of the database permission matrix shows user d.martinez (Diego Martinez, QA department) has been granted TRUNCATE on the zenith_prod.customers table. TRUNCATE allows irreversible bulk deletion ...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>User f.okonkwo in Finance has INSERT and UPDATE on payment_transactions — segregation of duties violation</strong><br><span style="font-size:13px;color:var(--text-dim)">The permission matrix shows f.okonkwo (Femi Okonkwo, Finance department) with INSERT and UPDATE privileges on the zenith_prod.payment_transactions table. Policy Section 3.3 states: 'Finance department...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Service account svc-etl-legacy has SELECT on all schemas without a designated owner</strong><br><span style="font-size:13px;color:var(--text-dim)">The permission matrix shows svc-etl-legacy with SELECT on ALL TABLES across both zenith_prod and zenith_analytics schemas. The grant was issued by the postgres superuser on 2024-02-10. Policy Section ...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-high">100%</td><td>100%</td><td>19%</td><td>32%</td><td>3/3</td><td>16</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-high">100%</td><td>100%</td><td>30%</td><td>46%</td><td>3/3</td><td>10</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-high">100%</td><td>100%</td><td>43%</td><td>60%</td><td>3/3</td><td>7</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-high">100%</td><td>100%</td><td>38%</td><td>55%</td><td>3/3</td><td>8</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-high">100%</td><td>100%</td><td>38%</td><td>55%</td><td>3/3</td><td>8</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-high">100%</td><td>100%</td><td>60%</td><td>75%</td><td>3/3</td><td>5</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.3-2-001">GitHub</a></p></footer>
+</div>

@@ -1,0 +1,91 @@
+{
+  "task_id": "cc7.1-3-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T19:41:21.359725",
+  "score": {
+    "task_id": "cc7.1-3-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.4444444444444444,
+    "f1": 0.6153846153846153,
+    "score": 0.8888888888888888,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "eu-west-1",
+          "10.20.6.0",
+          "10.20.7.0",
+          "GDPR",
+          "Critical",
+          "data residency",
+          "production"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "10.10.20.0",
+          "IoT",
+          "Building Management",
+          "firewall rule",
+          "badge readers",
+          "HVAC"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "10.10.21.0",
+          "Lab",
+          "Research",
+          "separate AD domain",
+          "credentials",
+          "not provisioned"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "81.8%",
+          "100%",
+          "18 of 22",
+          "153 assets",
+          "coverage gap",
+          "Section 3.3"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3528,
+    "output_tokens": 4096
+  },
+  "raw_response": "## Overall Assessment\n\nNimbusCore is **not meeting CC7.1 readiness expectations** for vulnerability detection and monitoring during the Q4 2025 observation period.\n\nThe vulnerability management policy requires **100% scan coverage of all registered subnets each scan cycle**, but the Q4 2025 Qualys report shows only **18 of 22 registered subnets scanned \u2014 81.8% coverage**. Several uncovered subnets are production and/or critical, including EU production VPCs containing GDPR customer data.\n\n---\n\n## Cross-Referenced Coverage Gap Summary\n\n| Subnet ID | Subnet | Environment | Classification | Owner | Asset Count | Scan Status |\n|---|---:|---|---|---|---:|---|\n| SUB-019 | 10.10.20.0/24 | Production | Medium | Facilities Engineering | 28 | Not scanned |\n| SUB-020 | 10.10.21.0/24 | Non-Production | Medium | R&D Engineering | 15 | Not scanned |\n| SUB-021 | 10.20.6.0/24 | Production | Critical | Platform Engineering | 68 | Not scanned |\n| SUB-022 | 10.20.7.0/24 | Production | Critical | Platform Engineering | 42 | Not scanned |\n\nTotal uncovered assets based on the inventory: **153 assets**.\n\n---\n\n# Findings\n\n## 1. Vulnerability scan coverage did not meet the 100% policy requirement\n\n**Related section:**  \n- Vulnerability Management Policy, Section 3.3 \u2014 Scan Coverage Requirement  \n- Q4 2025 Qualys VMDR Scan Coverage Report, Summary  \n- Enterprise Asset Inventory, SUB-001 through SUB-022\n\n**Why this is a gap:**  \nThe policy states that all network segments and subnets in the enterprise asset inventory must be included in vulnerability scanning scope and that coverage must achieve **100% of registered subnets** each scan cycle.\n\nHowever, the Q4 2025 report shows:\n\n- Total registered subnets: **22**\n- Subnets scanned: **18**\n- Coverage percentage: **81.8%**\n- Subnets not scanned: **4**\n\nThis means NimbusCore did not perform vulnerability detection across all registered information assets during the observation period. The missing subnets include production and critical environments.\n\n**Severity:** High\n\n---\n\n## 2. Critical EU production VPCs were not scanned\n\n**Related section:**  \n- Enterprise Asset Inventory, SUB-021 and SUB-022  \n- Q4 2025 Qualys VMDR Scan Coverage Report, `not_scanned_subnets`  \n- Vulnerability Management Policy, Sections 2 and 3.3\n\n**Why this is a gap:**  \nTwo critical production EU subnets were not scanned:\n\n- SUB-021 \u2014 10.20.6.0/24, AWS Production VPC \u2014 eu-west-1a, **68 assets**, Critical, GDPR customer data\n- SUB-022 \u2014 10.20.7.0/24, AWS Production VPC \u2014 eu-west-1b, **42 assets**, Critical, GDPR customer data\n\nThe stated reason is that the Qualys Cloud Agent was not deployed due to a data residency review. The report notes that the review is expected to complete by the end of Q1 2026, meaning these critical production assets remained outside vulnerability detection for the entire Q4 2025 observation period.\n\nBecause these are critical production workloads containing GDPR customer data, the lack of vulnerability scanning creates a significant detection gap for newly discovered vulnerabilities and configuration-related exposures.\n\n**Severity:** Critical\n\n---\n\n## 3. IoT and building management subnet was not scanned for more than one scan cycle\n\n**Related section:**  \n- Enterprise Asset Inventory, SUB-019  \n- Q4 2025 Qualys VMDR Scan Coverage Report, `not_scanned_subnets`  \n- Vulnerability Management Policy, Sections 3.2 and 3.3\n\n**Why this is a gap:**  \nThe IoT and Building Management subnet was not scanned:\n\n- SUB-019 \u2014 10.10.20.0/24, Production, Medium classification, 28 assets\n- Notes: HVAC, access control, badge readers\n\nThe report states that Qualys cannot reach the subnet because a firewall rule request has been pending since October 15, 2025. The report further notes that this request has been pending for **75+ days**.\n\nThe policy requires gaps to be documented and remediated within one scan cycle. This gap persisted across Q4 and was not remediated within the required timeframe. In addition, IoT and building management systems can introduce operational and physical security risks if vulnerabilities are not detected.\n\n**Severity:** High\n\n---\n\n## 4. Lab and Research Network lacks credentialed scanning coverage\n\n**Related section:**  \n- Enterprise Asset Inventory, SUB-020  \n- Q4 2025 Qualys VMDR Scan Coverage Report, `not_scanned_subnets`  \n- Vulnerability Management Policy, Section 3.4 \u2014 Authenticated Scanning\n\n**Why this is a gap:**  \nThe Lab and Research Network was not scanned:\n\n- SUB-020 \u2014 10.10.21.0/24, Non-Production, Medium classification, 15 assets\n\nThe stated reason is that scan credentials were not provisioned because the lab environment uses a separate Active Directory domain.\n\nThe policy requires infrastructure scans to use credentialed scanning, with scan accounts managed through CyberArk. The existence of a separate AD domain does not appear to have been addressed through credential provisioning, exception handling, or compensating controls.\n\nEven though the subnet is non-production, it remains a registered NimbusCore-managed network segment and is in scope under the policy.\n\n**Severity:** Medium\n\n---\n\n## 5. Coverage gaps were not remediated within one scan cycle\n\n**Related section:**  \n- Vulnerability Management Policy, Section 3.3  \n- Q4 2025 Qualys VMDR Scan Coverage Report, Notes and `not_scanned_subnets`\n\n**Why this is a gap:**  \nThe policy states that any scan coverage gaps must be documented and remediated within one scan cycle.\n\nSeveral gaps remained unresolved during Q4 2025:\n\n- IoT subnet firewall rule request pending since October 15, 2025\n- EU production subnets blocked by data residency review, expected completion end of Q1 2026\n- Lab subnet credentials not provisioned\n\nThe evidence shows documentation of the gaps, but not timely remediation. For several subnets, the timeline exceeds the expected remediation window and leaves assets outside the vulnerability detection program.\n\n**Severity:** High\n\n---\n\n## 6. Asset discovery does not fully align to inventory for scanned subnets\n\n**Related section:**  \n- Vulnerability Management Policy, Section 5.2 \u2014 Coverage Reporting  \n- Q4 2025 Qualys VMDR Scan Coverage Report, `scanned_subnets`  \n- Enterprise Asset Inventory\n\n**Why this is a gap:**  \nEven within the 18 scanned subnets, several subnets had fewer assets discovered than expected. Examples include:\n\n| Subnet | Expected Assets | Discovered Assets | Difference |\n|---|---:|---:|---:|\n| 10.10.4.0/24 \u2014 Application Servers Production | 45 | 43 | 2 |\n| 10.10.6.0/24 \u2014 Build and CI/CD Infrastructure | 12 | 11 | 1 |\n| 10.10.8.0/24 \u2014 Engineering Workstations | 120 | 112 | 8 |\n| 10.10.9.0/24 \u2014 Business Workstations | 85 | 80 | 5 |\n| 10.10.11.0/24 \u2014 Staging | 30 | 28 | 2 |\n| 10.20.0.0/24 \u2014 AWS Production us-east-1a | 180 | 175 | 5 |\n| 10.20.1.0/24 \u2014 AWS Production us-east-1b | 160 | 155 | 5 |\n| 10.20.2.0/24 \u2014 AWS Production us-west-2a | 95 | 92 | 3 |\n\nFor scanned subnets, the detailed report indicates at least **31 expected assets were not discovered**. This creates a risk that vulnerabilities on those assets are not being detected, especially because several of the gaps are in production and critical environments.\n\n**Severity:** Medium\n\n---\n\n## 7. Authenticated scan success was below the policy expectation\n\n**Related section:**  \n- Vulnerability Management Policy, Section 3.4 \u2014 Authenticated Scanning  \n- Q4 2025 Qualys VMDR Scan Coverage Report, Summary\n\n**Why this is a gap:**  \nThe policy requires all infrastructure scans to use credentialed scanning. The Q4 report shows an authenticated scan success rate of **96.2%**, meaning a portion of assets were likely scanned without successful authentication or not authenticated at all.\n\nThe report does not provide:\n\n- Which assets failed authenticated scanning\n- Whether failed authenticated scans were rescanned\n- Whether exceptions were approved\n- Whether failed authentication affected critical or production systems\n\nUnauthenticated scans provide less reliable vulnerability detection because they may miss missing patches, insecure software versions, local configuration weaknesses, and privilege-dependent vulnerabilities.\n\n**Severity:** Medium\n\n---\n\n## 8. Evidence does not demonstrate required coverage across all scanning tools\n\n**Related section:**  \n- Vulnerability Management Policy, Section 3.1 \u2014 Scanning Tools  \n- Vulnerability Management Policy, Section 3.2 \u2014 Scan Frequency  \n- Q4 2025 Qualys VMDR Scan Coverage Report\n\n**Why this is a gap:**  \nThe policy identifies multiple tools for vulnerability scanning:\n\n- Qualys VMDR \u2014 network infrastructure and server vulnerability scanning\n- AWS Inspector \u2014 cloud-native workload vulnerability assessment\n- Rapid7 InsightVM \u2014 endpoint vulnerability scanning\n\nThe evidence provided is limited to a Qualys VMDR scan coverage report. There is no evidence showing Q4 2025 operation of:\n\n- AWS Inspector for AWS workloads\n- Rapid7 InsightVM for corporate endpoints\n- Weekly scans for internet-facing assets\n- Bi-weekly scans for internal production systems\n- Monthly scans for corporate endpoints and network infrastructure\n\nWithout evidence from the other required scanning tools and scan frequencies, NimbusCore cannot demonstrate that the vulnerability detection program operated as designed across all asset types during Q4 2025.\n\n**Severity:** Medium\n\n---\n\n## 9. Scan coverage report contains data inconsistencies\n\n**Related section:**  \n- Q4 2025 Qualys VMDR Scan Coverage Report, Summary and detailed subnet listings  \n- Enterprise Asset Inventory  \n- Vulnerability Management Policy, Section 5.2 \u2014 Coverage Reporting\n\n**Why this is a gap:**  \nThere are inconsistencies between the inventory and the scan report summary.\n\nThe asset inventory lists 22 subnets with a total of **1,092 assets** based on the provided asset counts. However, the scan report summary states:\n\n- Total assets in inventory: **1,247**\n- Total assets discovered by scan: **1,089**\n\nAdditionally, summing the asset counts for the 18 scanned subnets in the detailed report results in approximately:\n\n- Expected assets in scanned subnets: **939**\n- Discovered assets in scanned subnets: **908**\n\nThese figures do not reconcile to the summary totals. This weakens the reliability of management\u2019s coverage reporting and makes it difficult to determine the true population of assets subject to vulnerability detection.\n\n**Severity:** Medium\n\n---\n\n# Conclusion\n\nNimbusCore has a defined vulnerability management policy, an asset inventory, and evidence of vulnerability scanning activity. However, the Q4 2025 evidence shows material gaps in operating effectiveness:\n\n- Only **18 of 22 registered subnets** were scanned.\n- **153 inventoried assets** were in completely unscanned subnets.\n- Two unscanned subnets are **critical EU production environments** containing GDPR customer data.\n- Several scanned subnets had fewer discovered assets than expected.\n- Authenticated scanning did not fully succeed.\n- Evidence was not provided for all required scanning tools and frequencies.\n- Coverage reporting contains inconsistencies.\n\nBased on the evidence reviewed, NimbusCore is **not ready to conclude that CC7.1 is operating effectively** for vulnerability detection across all information assets during Q4 2025."
+}

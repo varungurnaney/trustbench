@@ -1,0 +1,47 @@
+---
+layout: default
+title: "cc6.6-5-002"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>cc6.6-5-002</h2>
+    <p class="section-subtitle">CC6.6 · D5 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D5</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">53%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are a SOC 2 auditor evaluating Meridian SaaS' system boundary controls for the Q4 2025 observation period. Review the boundary policy, network architecture, admin tool access logs, and penetration test report. Assess whether CC6.6 requirements for system boundary protection are met. Consider whether any boundary bypasses are adequately controlled, whether compensating controls are sufficient, and whether the overall boundary architecture is effective. Apply professional judgment to determine materiality.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/boundary-policy.md</code> — Meridian SaaS system boundary and access control policy requiring all traffic to traverse CloudFront, WAF, Kong API Gateway, and internal ALB</li>
+<li><code>evidence/network-architecture.md</code> — Network architecture document showing standard traffic flow and the admin tool's direct bypass path</li>
+<li><code>evidence/admin-access-logs.csv</code> — Four days of admin tool access logs showing user actions, source IPs, and operations performed</li>
+<li><code>evidence/pentest-report-q3.json</code> — Q3 2025 external penetration test report covering all endpoints including the admin tool</li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Admin tool bypasses WAF and API Gateway with no remaining technical blocker for migration</strong><br><span style="font-size:13px;color:var(--text-dim)">The admin tool (admin.internal.meridian.io:8443) bypasses CloudFront, WAF, and Kong API Gateway, routing directly from VPN to internal ALB. Policy Section 3.1 states 'No production service shall accep...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Admin tool audit logs not forwarded to SIEM for correlation and anomaly detection</strong><br><span style="font-size:13px;color:var(--text-dim)">The penetration test finding TV-MRD-2025-003 identifies that admin tool actions are logged to CloudWatch but not forwarded to Splunk SIEM. Policy Section 5.1 states 'Kong API Gateway logs forwarded to...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>low</td><td><strong>Service account and internal cron accessing admin tool from non-VPN IP</strong><br><span style="font-size:13px;color:var(--text-dim)">The admin access logs show a request from IP 10.0.4.15 (internal-cron@meridian.io) on December 18, performing a 'cleanup_expired_sessions' action. This IP (10.0.4.15) is in the production VPC CIDR ran...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-low">55%</td><td>100%</td><td>38%</td><td>55%</td><td>3/3</td><td>8</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-bad">36%</td><td>67%</td><td>25%</td><td>36%</td><td>2/3</td><td>8</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-mid">75%</td><td>100%</td><td>60%</td><td>75%</td><td>3/3</td><td>5</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-high">80%</td><td>67%</td><td>100%</td><td>80%</td><td>2/3</td><td>2</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-bad">22%</td><td>67%</td><td>13%</td><td>22%</td><td>2/3</td><td>15</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-low">50%</td><td>67%</td><td>40%</td><td>50%</td><td>2/3</td><td>5</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.6-5-002">GitHub</a></p></footer>
+</div>

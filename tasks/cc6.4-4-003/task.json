@@ -1,0 +1,103 @@
+{
+  "id": "cc6.4-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.4",
+  "control_description": "The entity restricts physical access to facilities and protected information assets to meet the entity's objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/physical-security-policy.md",
+      "type": "policy",
+      "description": "Vanguard Data Services physical security policy defining visitor management, badge controls, and data center access procedures"
+    },
+    {
+      "path": "evidence/visitor-log-q4-2025.csv",
+      "type": "log",
+      "description": "Visitor sign-in log for Q4 2025 with 35 entries showing visitor details, escort status, and areas accessed"
+    },
+    {
+      "path": "evidence/badge-access-log-q4-2025.csv",
+      "type": "log",
+      "description": "Badge access log for Q4 2025 with 55 entries showing employee and contractor badge swipes"
+    },
+    {
+      "path": "evidence/after-hours-exception-register.csv",
+      "type": "exception_register",
+      "description": "Register of approved after-hours access exceptions and special authorizations for Q4 2025"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/data-center-audit-report.md",
+      "type": "report",
+      "description": "Third-party colocation provider's annual physical security audit summary — informational only, not part of the company's direct physical controls"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Vanguard Data Services' physical access controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the physical security policy, visitor log, badge access log, after-hours exception register, and any supporting documentation. Assess whether CC6.4 requirements for restricting physical access are met. Carefully distinguish between genuine control gaps and apparent issues that have valid explanations or documented approvals. Not all provided documents may be relevant to this control.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "Visitor accessed server room — appears suspicious but visitor log shows approved Infrastructure Director escort for authorized audit walkthrough",
+      "description": "Visitor log entry VIS-0215 shows external auditor Claire Nakamura from PKM Advisory accessing the 'Server Room, Network Closet' on November 19, 2025. Visitor access to restricted zones initially appears as a control violation. However, the visitor log shows escort_status as 'Escorted,' the host employee is 'Raj Kapoor (Infrastructure Director),' and the purpose field states 'SOC 2 Type II audit walkthrough — physical security control observation.' Policy Section 6.5 explicitly permits visitor access to Restricted zones when escorted by the Infrastructure Director or CISO for approved audit or regulatory activities. The visit was pre-registered (pre_registered field is 'Yes') and ID was verified. This is NOT a finding — auditor walkthroughs of restricted areas are a normal and expected part of SOC 2 compliance and are explicitly authorized by policy.",
+      "evidence_sources": [
+        "evidence/visitor-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The model should notice a visitor accessing restricted zones (Server Room, Network Closet) and investigate. Cross-referencing with the policy shows Section 6.5 permits escorted access by Infrastructure Director or CISO for audit activities. The visitor log confirms the escort, purpose, pre-registration, and ID verification. This follows the policy exception exactly. The model should dismiss this as properly authorized.",
+      "detection_criteria": {
+        "required_keywords": ["Claire Nakamura", "VIS-0215", "PKM Advisory", "SOC 2 audit", "Raj Kapoor", "Section 6.5", "escorted", "Infrastructure Director"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": ["not a finding", "properly authorized", "audit walkthrough", "policy exception", "dismissed"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Visitor left unescorted in restricted area for 2 hours — host employee departed building during visit",
+      "description": "Visitor log entry VIS-0221 shows vendor representative Tony Alvarez from DataPure Cleaning Services visiting on December 5, 2025, hosted by employee Mark Delaney, with purpose 'deep cleaning of server room and network closet.' The escort_status shows 'Partial — host departed early.' The notes field states: 'Mark Delaney badged out at AP-MAIN-01 at 14:22 per badge log. Vendor continued cleaning server room until 16:15 checkout. Approximately 2 hours unescorted in restricted zone.' Cross-referencing the badge access log confirms Mark Delaney (B-6003) exited at 14:22 (ACL-5042). Policy Section 6.3 requires the host employee to maintain continuous escort of non-employees in restricted zones with 'no exceptions for brief departures.' A cleaning vendor alone in the server room for 2 hours could access, photograph, or tamper with equipment.",
+      "evidence_sources": [
+        "evidence/visitor-log-q4-2025.csv",
+        "evidence/badge-access-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The model should review visitor log entries for escort compliance. VIS-0221 shows 'Partial — host departed early' as the escort status. The notes detail a 2-hour gap where the vendor was alone in the server room. The badge log corroborates the host employee's departure. The contrast with VIS-0215 (properly escorted auditor) is instructive — one follows the policy, the other violates it.",
+      "detection_criteria": {
+        "required_keywords": ["Tony Alvarez", "VIS-0221", "DataPure Cleaning", "Mark Delaney", "14:22", "unescorted", "2 hours", "Section 6.3", "server room", "Partial"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Three visitor badges not returned — no evidence of deactivation or investigation",
+      "description": "Visitor log entries VIS-0208, VIS-0218, and VIS-0225 show badge_returned as 'No.' VIS-0208 (October 22, supplier James Whitford) notes 'Visitor departed via rear exit, badge not returned.' VIS-0218 (November 25, consultant Brenda Lawson) notes 'Visitor forgot badge — called to request return, not yet returned.' VIS-0225 (December 15, vendor Paul Estrada) notes 'Badge left in conference room, found next morning.' Policy Section 6.7 requires unreturned badges to be deactivated by end of business on the visit day and an incident report filed. None of the three entries show evidence of deactivation or incident reporting. While temporary visitor badges have limited access (General Office only), the pattern of unreturned badges without follow-up indicates a procedural gap.",
+      "evidence_sources": [
+        "evidence/visitor-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The model should scan the visitor log for badge_returned = 'No' entries. Three instances appear across the quarter. Policy Section 6.7 has specific procedures for unreturned badges (same-day deactivation plus incident report). None of the three entries reference deactivation or incident reports. While the risk of visitor badges is lower than employee badges, the pattern indicates the unreturned badge procedure is not being followed.",
+      "detection_criteria": {
+        "required_keywords": ["VIS-0208", "VIS-0218", "VIS-0225", "badge not returned", "Section 6.7", "deactivation", "incident report", "three", "unreturned"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["physical_security", "red_herring", "visitor_management", "escort_violation", "unreturned_badges", "audit_walkthrough"]
+  }
+}

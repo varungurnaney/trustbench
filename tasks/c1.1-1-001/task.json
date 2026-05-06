@@ -1,0 +1,84 @@
+{
+  "id": "c1.1-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "C1.1",
+  "control_description": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/encryption-policy.md",
+      "type": "policy",
+      "description": "Crestline Data Systems data protection and encryption policy"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the provided encryption policy for Crestline Data Systems. Assess whether the policy adequately addresses SOC 2 Confidentiality criteria C1.1 and CC6.7 requirements for data protection and encryption. Identify any gaps, missing requirements, or weaknesses that an auditor would flag.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "No encryption at rest requirement for databases or cloud storage",
+      "description": "The policy covers encryption in transit (Section 4.1), endpoint encryption (Section 4.2), and email encryption (Section 4.3), but contains no section or requirement for encryption at rest for databases, cloud storage (S3 buckets), or application data stores. For a SOC 2 confidentiality control, encryption at rest is a foundational requirement. The omission means Confidential and Restricted data in databases or object storage could be stored in plaintext without violating any stated policy.",
+      "evidence_sources": ["evidence/encryption-policy.md"],
+      "expected_reasoning": "Section 4 covers transit, endpoints, and email encryption but completely omits encryption at rest. No mention of S3 server-side encryption, RDS encryption, or EBS volume encryption. This is a fundamental gap for C1.1 confidentiality.",
+      "detection_criteria": {
+        "required_keywords": ["encryption at rest", "database", "storage", "S3", "missing", "omission", "not addressed", "plaintext"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No key rotation schedule or policy defined",
+      "description": "Section 5 covers key generation, storage, and access controls but does not define any key rotation requirements. There is no specified rotation frequency (e.g., annual rotation), no automated rotation mandate, and no procedure for emergency key rotation after a suspected compromise. SOC 2 expects encryption key lifecycle management including regular rotation.",
+      "evidence_sources": ["evidence/encryption-policy.md"],
+      "expected_reasoning": "Section 5 (Key Management) addresses generation, storage, and access but omits rotation entirely. No rotation schedule, no automated rotation, no emergency rotation procedure. Key lifecycle is incomplete.",
+      "detection_criteria": {
+        "required_keywords": ["key rotation", "rotation schedule", "lifecycle", "no rotation", "missing", "frequency", "automated rotation"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Internal mTLS requirement uses weak 'where feasible' language",
+      "description": "Section 4.1 states internal service-to-service communications 'should use mutual TLS (mTLS) where feasible.' The word 'should' combined with 'where feasible' creates an unenforceable standard. An auditor would flag that internal east-west traffic between microservices handling Confidential data has no mandatory encryption requirement.",
+      "evidence_sources": ["evidence/encryption-policy.md"],
+      "expected_reasoning": "The phrase 'should use mTLS where feasible' is not a mandatory control. For Confidential data flowing between services, this creates a gap where internal traffic could be unencrypted without policy violation.",
+      "detection_criteria": {
+        "required_keywords": ["mTLS", "where feasible", "should", "internal", "service-to-service", "mandatory", "weak language", "unenforceable"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No certificate renewal or expiration monitoring process defined",
+      "description": "Section 6 specifies certificate requirements (validity, key size, CA) but does not define any process for monitoring certificate expiration, automated renewal, or alerting before certificates expire. Without proactive monitoring, expired certificates could cause outages or force emergency bypasses that weaken encryption posture.",
+      "evidence_sources": ["evidence/encryption-policy.md"],
+      "expected_reasoning": "Section 6 defines certificate standards but has no renewal process, no expiration monitoring, no alerting, and no automation. This is a procedural gap that could lead to expired certificates.",
+      "detection_criteria": {
+        "required_keywords": ["certificate", "expiration", "renewal", "monitoring", "automated", "alerting", "process"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["encryption", "data_protection", "policy_review", "single_document", "encryption_at_rest", "key_management"]
+  }
+}

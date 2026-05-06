@@ -1,0 +1,46 @@
+---
+layout: default
+title: "pi1.1-4-002"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>pi1.1-4-002</h2>
+    <p class="section-subtitle">PI1.1 · D4 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D4</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">2</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">1</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">44%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are a SOC 2 auditor evaluating Horizon Data Corp's processing integrity controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the SDLC policy, input validation configuration, and data integrity check logs. Assess whether PI1.1 requirements for complete and accurate processing are met. Examine validation rules for adequacy and check whether integrity controls are operating effectively. Not all failures indicate control gaps — distinguish between isolated incidents with appropriate response and systemic issues.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/sdlc-policy.md</code> — Horizon Data Corp SDLC policy defining input validation requirements, code review standards, and data integrity controls</li>
+<li><code>evidence/input-validation-rules.json</code> — API input validation configuration for 6 endpoints with field-level validation rules and rate limiting</li>
+<li><code>evidence/data-integrity-check-logs.csv</code> — Data integrity check execution logs for Q4 2025 with 44 entries across order, payment, inventory, and bulk import pipelines</li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="difficulty d4">red_herring</span></td><td>medium</td><td><strong>DIC-4510 order ingestion failure with 3 record discrepancy — properly detected and resolved</strong><br><span style="font-size:13px;color:var(--text-dim)">DIC-4510 (October 4) shows a record count discrepancy: 15,234 source records vs 15,231 destination records (3 missing). This initially appears to be a processing integrity failure. However, the integr...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>Bulk import accepts partial files without user notification — 153 records silently dropped</strong><br><span style="font-size:13px;color:var(--text-dim)">DIC-4527 (November 12) shows the bulk-import-validation pipeline processed only 11,847 of 12,000 records — 153 rows were rejected due to malformed CSV formatting. The action_taken field states 'Import...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Webhook URL validation accepts internal network addresses — no scheme or domain restriction</strong><br><span style="font-size:13px;color:var(--text-dim)">The input validation rules for /api/v2/webhooks validate the URL field as format 'uri' but the note states 'VALIDATION GAP: No URL scheme restriction or domain allowlist enforced. Accepts any URI incl...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-low">50%</td><td>100%</td><td>33%</td><td>50%</td><td>2/2</td><td>5</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-low">40%</td><td>100%</td><td>25%</td><td>40%</td><td>2/2</td><td>7</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-low">57%</td><td>100%</td><td>40%</td><td>57%</td><td>2/2</td><td>4</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-bad">36%</td><td>100%</td><td>22%</td><td>36%</td><td>2/2</td><td>8</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-bad">36%</td><td>100%</td><td>22%</td><td>36%</td><td>2/2</td><td>8</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-low">44%</td><td>100%</td><td>29%</td><td>44%</td><td>2/2</td><td>6</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/pi1.1-4-002">GitHub</a></p></footer>
+</div>

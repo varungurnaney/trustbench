@@ -1,0 +1,154 @@
+{
+  "task_id": "cc8.1-4-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T17:03:25.647066",
+  "score": {
+    "task_id": "cc8.1-4-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.8571428571428571,
+    "f1": 0.923076923076923,
+    "score": 0.923076923076923,
+    "gaps_detected": 6,
+    "gaps_total": 6,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-414",
+          "holiday freeze"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "CHG-415"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-410",
+          "log4j",
+          "holiday freeze",
+          "Thanksgiving",
+          "CISO",
+          "November 26",
+          "approval",
+          "maintenance window"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-411",
+          "48",
+          "business hours",
+          "December 1",
+          "December 9",
+          "retrospective",
+          "SLA",
+          "late",
+          "exceeded"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-407",
+          "CHG-411",
+          "maya.jackson",
+          "alice.chen",
+          "segregation",
+          "SRE",
+          "deployed",
+          "same person",
+          "developer"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "quorum",
+          "Security Lead",
+          "high risk",
+          "customer data",
+          "November 18",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-007",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "post-implementation",
+          "verification",
+          "missing",
+          "No",
+          "2 hours"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-008",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-412",
+          "maya.jackson",
+          "security review",
+          "same person",
+          "developed",
+          "segregation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4141,
+    "output_tokens": 3708
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC8.1 Change Management\n**Entity:** Stratos Inc. | **Period:** Q4 2025 (Oct 1 \u2013 Dec 31, 2025)\n**Assessor:** Compliance Audit | **Control:** CC8.1\n\n---\n\n## Executive Summary\n\nThe change management program at Stratos Inc. is substantively designed and generally operating. A written policy exists, CAB meetings were held regularly, segregation of duties is structurally enforced, and emergency changes were linked to documented incidents with retrospective reviews. However, **seven control deficiencies** were identified through cross-referencing the policy, change log, CAB minutes, and incident log. These deficiencies range in severity and represent areas where design intent broke down in practice during the observation period.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: CHG-410 Deployed During Holiday Freeze Without Required CISO Approval\n\n**Relevant Policy Section:** POL-CHG-005, Section 5 (Change Freeze)\n\n**Evidence Referenced:** CHG-410 (change log notes); CAB minutes (no corresponding entry)\n\n**Gap Description:**\nCHG-410 (patch log4j dependency) was deployed on November 26, 2025, which falls within the Thanksgiving holiday freeze window (November 25\u201330). The policy explicitly requires CISO approval *in addition to* VP Engineering approval for any change \u2014 including Standard changes \u2014 deployed during a freeze period. The change log notes state: *\"Deployed during holiday freeze. No CISO approval documented.\"* No CISO approval appears in the Jira ticket notes, the CAB minutes, or any other provided evidence.\n\nAdditionally, the deployment occurred outside the designated maintenance window (deployed at 14:00 UTC on a Wednesday, not Saturday 02:00\u201306:00 UTC), which is a secondary violation. While SC-004 covers dependency updates, Standard changes still carry a maintenance window condition per the Standard Change Catalog.\n\nThis is not a borderline case \u2014 the notes themselves acknowledge the gap, meaning the team was aware of the policy requirement and the approval was not obtained.\n\n**Severity: High**\n> Freeze period controls exist specifically to protect system stability during sensitive operational windows. Bypassing CISO approval removes a mandated compensating oversight layer. A SOC 2 auditor would flag this as a clear operating effectiveness failure.\n\n---\n\n### Finding 2: CHG-409 Approved at CAB Without Required Quorum (High-Risk Change)\n\n**Relevant Policy Section:** POL-CHG-005, Section 3.2 (Approval); Section 3.4 (Testing \u2014 Security review for High/Critical risk)\n\n**Evidence Referenced:** CHG-409 (change log); CAB minutes, November 18, 2025\n\n**Gap Description:**\nCHG-409 (Add customer data export endpoint) carries a High risk rating. The policy requires two distinct controls for High-risk changes:\n1. CAB quorum: VP Engineering + Security Lead + at least one other member.\n2. Security team review before deployment.\n\nThe November 18 CAB meeting minutes explicitly note: *\"Security Lead was not present for this high-risk approval.\"* Only two members attended (Derek Huang and Raj Patel), which does not satisfy the quorum definition \u2014 the policy specifically names the Security Lead as a required quorum participant, not merely any two of three members.\n\nFurthermore, the change log for CHG-409 contains no security review attachment (unlike CHG-402 and CHG-412, which correctly included `security-review.pdf`). This suggests the security review required for High-risk changes under Section 3.4 was also not completed prior to deployment.\n\nThis is a compounded finding: both the approval quorum requirement and the mandatory security review requirement failed for the same change.\n\n**Severity: High**\n> A customer data export endpoint is a data-sensitive change with privacy and security implications. The Security Lead's required involvement exists precisely for changes of this nature. Both the structural approval control and the substantive security review control failed simultaneously.\n\n---\n\n### Finding 3: CHG-412 Security Review Performed by the Developer of the Change (Independence Violation)\n\n**Relevant Policy Section:** POL-CHG-005, Section 3.3 (Segregation of Duties); Section 3.4 (Security Review)\n\n**Evidence Referenced:** CHG-412 (change log notes); CAB minutes, December 2, 2025\n\n**Gap Description:**\nCHG-412 (Update TLS cipher suites) is a High-risk change, requiring Security team review before deployment per Section 3.4. The change log notes state: *\"Security review by maya.jackson (same person who developed the change).\"* Maya Jackson is listed as both the developer and the security reviewer for this change.\n\nSection 3.3 establishes a segregation of duties principle: the engineer who develops a change must not be the same person who approves it. While the formal CAB approval was handled separately (the December 2 CAB meeting, with quorum met), the security review is a substantive pre-deployment control \u2014 not merely a procedural checkbox. Allowing a developer to self-certify the security adequacy of their own change defeats the independent assurance purpose of the security review requirement.\n\nThe CAB minutes do not identify this independence issue; the minutes simply note \"Security review completed,\" suggesting the conflict was not caught at the approval stage.\n\n**Severity: Medium**\n> The violation is partially mitigated by the fact that Maya Jackson is the Security Lead by role and that the CAB separately approved the change with quorum. However, independent review is a foundational principle of change control, and a self-review creates a gap that auditors and penetration testers look for specifically on security-sensitive configuration changes like cipher suite updates.\n\n---\n\n### Finding 4: CHG-409 Post-Implementation Verification Not Completed\n\n**Relevant Policy Section:** POL-CHG-005, Section 3.5 (Post-Implementation Review)\n\n**Evidence Referenced:** CHG-409 (change log \u2014 `post_impl_verified: No`, `post_impl_date: [blank]`)\n\n**Gap Description:**\nSection 3.5 requires the change owner to verify successful deployment within 2 hours and record that verification in the Jira ticket. CHG-409 shows `post_impl_verified: No` with no post-implementation date recorded, despite the change being marked as \"Completed.\"\n\nA change marked \"Completed\" without a corresponding verification record means the completion status itself is unsupported by evidence. For a High-risk change (customer data export endpoint), the absence of post-implementation verification is particularly notable because the deployment could have introduced defects, data exposure risks, or performance issues that would remain undetected without a formal verification step.\n\n**Severity: Medium**\n> This is an evidence completeness issue with direct relevance to SOC 2 Type II testing. An auditor sampling this ticket would find a completed change with no verification record, which is a straightforward operating effectiveness failure. The risk is amplified by the High risk rating and the compounding issues already identified for this ticket in Finding 2.\n\n---\n\n### Finding 5: CHG-407 Deployed by the Same Person Who Developed the Change (SoD Violation)\n\n**Relevant Policy Section:** POL-CHG-005, Section 3.3 (Segregation of Duties)\n\n**Evidence Referenced:** CHG-407 (change log \u2014 developer: `maya.jackson`, deployer: `maya.jackson`)\n\n**Gap Description:**\nSection 3.3 states that production deployments are to be executed by the SRE team, not the development team. This is a structural segregation of duties control designed to ensure that no single individual can both write and deploy a production change. CHG-407 shows maya.jackson as both the developer and the deployer.\n\nThis also occurred with CHG-411 (alice.chen listed as both developer and deployer). Both were emergency changes, and it is acknowledged that emergency situations can strain normal SoD controls. However, the policy does not contain an explicit emergency exception to the SRE deployment requirement \u2014 the emergency exception covers *approval* (verbal authorization), not the deployment executor requirement.\n\nThese are noted as two instances of the same pattern, though CHG-407 and CHG-411 are addressed together here as a single finding type given the shared emergency context.\n\n**Severity: Medium**\n> The emergency context is a meaningful mitigating factor, and both changes were linked to active incidents with documented postmortems. However, the policy does not carve out an exception to SRE-only deployments for emergencies, and two instances in a single quarter establishes a pattern. Stratos should either formally document an emergency SoD exception procedure or ensure SRE is engaged even during urgent incidents.\n\n---\n\n### Finding 6: CHG-411 Retrospective CAB Review Exceeded the 48-Business-Hour Requirement\n\n**Relevant Policy Section:** POL-CHG-005, Section 2 (Emergency change category \u2014 \"retrospective CAB review within 48 business hours\")\n\n**Evidence Referenced:** CHG-411 (change log notes); CAB minutes, December 9, 2025\n\n**Gap Description:**\nCHG-411 was deployed on December 1, 2025. The policy requires retrospective CAB review within 48 business hours of an emergency change. The retrospective review occurred at the December 9 CAB meeting \u2014 6 business days after deployment, as noted in the change log.\n\nBy contrast, CHG-403 was reviewed at the next CAB meeting on October 23 (2 days later), and CHG-407 was reviewed on November 11 (1 day later), both within the required window. CHG-411 substantially missed the deadline.\n\nFor CHG-414 (December 22 emergency during holiday freeze), the retrospective review occurred December 30, which is noted as 6 business days later but with the explicit context that December 23\u201327 were holidays. Depending on how \"business hours\" is interpreted with the holiday closure, CHG-414's delay may be defensible. CHG-411, however, has no such contextual explanation and is a clear overage.\n\n**Severity: Low**\n> The retrospective review did ultimately occur and the change was approved retroactively. The finding reflects a timeliness failure rather than a complete absence of oversight. However, the 48-business-hour requirement is a defined policy threshold, and missing it for a Critical emergency change without documented justification is a gap that auditors will note.\n\n---\n\n### Finding 7: CHG-405 Classified as Standard But Involves a Kernel Patch (Catalog Condition Not Met)\n\n**Relevant Policy Section:** POL-CHG-005, Section 4 (Standard Change Catalog, SC-001)\n\n**Evidence Referenced:** CHG-405 (change log \u2014 title: \"Kernel security patch CVE-2025-8834\", notes: \"Per SC-001\")\n\n**Gap Description:**\nSC-001 in the Standard Change Catalog explicitly covers *\"OS security patches (non-kernel)\"* as a pre-approved standard change. CHG-405 is titled \"Kernel security patch CVE-2025-8834\" \u2014 a kernel-level patch, which falls outside the scope of SC-001 by explicit policy language.\n\nKernel patches carry elevated risk compared to non-kernel OS patches: they require system reboots, can cause compatibility issues, and affect the foundational layer of the operating system. The policy's exclusion of kernel patches from the pre-approved catalog reflects a deliberate risk-based decision. By applying the SC-001 classification to a kernel patch, the change bypassed the CAB approval process that would otherwise have been required for a Normal change.\n\nWhile the deployment was during a maintenance window and auto-rollback was noted, these are conditions of the catalog entry, not substitutes for the approval requirement that should have applied given the change type.\n\n**Severity: Low**\n> The change appears operationally sound (security patch, maintenance window, auto-rollback). However, the misclassification resulted in a required approval being bypassed, and if this pattern continued across multiple periods it could represent a systematic circumvention of CAB oversight for kernel-level changes. The finding is process-design adherence rather than evidence of harm.\n\n---\n\n## Summary Table\n\n| # | Finding | Ticket(s) | Policy Section | Severity |\n|---|---------|-----------|---------------|----------|\n| 1 | Holiday freeze deployment without CISO approval | CHG-410 | \u00a75 Change Freeze | **High** |\n| 2 | CAB quorum not met + security review missing for High-risk change | CHG-409 | \u00a73.2, \u00a73.4 | **High** |\n| 3 | Security review performed by the change developer (independence failure) | CHG-412 | \u00a73.3, \u00a73.4 | **Medium** |\n| 4 | Post-implementation verification not completed or documented | CHG-409 | \u00a73.5 | **Medium** |\n| 5 | Developer deployed own change to production (SoD \u2014 emergency context) | CHG-407, CHG-411 | \u00a73.3 | **Medium** |\n| 6 | Emergency retrospective CAB review exceeded 48-business-hour deadline | CHG-411 | \u00a72 | **Low** |\n| 7 | Kernel patch misclassified as Standard change (SC-001 excludes kernel) | CHG-405 | \u00a74 (SC-001) | **Low** |\n\n---\n\n## Observations Not Raised as Findings\n\nThe following items were considered and determined not to constitute reportable deficiencies, with rationale:\n\n- **CHG-414 (holiday freeze, CISO approval via Slack):** The policy requires CISO approval but does not specify the medium. CISO approval was obtained and documented (Slack DM at 03:02), representing a reasonable emergency accommodation. The retrospective CAB delay is attributable to documented holiday closure. No finding raised, though Stratos should consider formalizing acceptable approval channels.\n- **CHG-415 (deployed at start of holiday freeze window):** The change was approved and scheduled before the freeze began, and the December 20 deployment time (02:00 UTC) coincides with the boundary of the freeze start. Given that the CAB explicitly approved the December 20 schedule with knowledge of the freeze timing, this reflects a planning decision rather than a control failure.\n- **All emergency changes (CHG-403, CHG-407, CHG-411, CHG-414):** All were linked to documented incidents in the incident log, all had postmortems completed, and all received retrospective CAB review (timeliness noted separately for CHG-411). The emergency change process is operating as designed in substance.\n- **Single approver (Derek Huang) across all Normal changes:** While concentration of approval authority in one individual is a design consideration worth noting for management, it does not violate the written policy, which names the CAB process (not multiple individual approvers) as the approval mechanism.\n\n---\n\n## Recommended Remediation Priorities\n\n1. **(High \u2014 Immediate)** Formalize an emergency exception procedure for freeze periods that documents the CISO approval requirement in a durable, auditable format (not Slack DM alone). Consider a dedicated emergency approval workflow in Jira.\n2. **(High \u2014 Immediate)** Implement a compensating control requiring Security Lead attendance for all High and Critical risk CAB approvals, or establish a documented delegation process when the Security Lead is unavailable.\n3. **(Medium \u2014 Near-term)** Update the emergency change procedure to explicitly address SRE deployment requirements during active incidents, either confirming SRE must always deploy or documenting the emergency exception conditions.\n4. **(Medium \u2014 Near-term)** Enforce independence of security reviewers in the Jira workflow \u2014 the security review field should require a different assignee than the developer field.\n5. **(Low \u2014 Process improvement)** Revise the Standard Change Catalog entry for SC-001 to add a positive-confirmation step for kernel vs. non-kernel classification, or require a brief Normal change process for all kernel patches."
+}

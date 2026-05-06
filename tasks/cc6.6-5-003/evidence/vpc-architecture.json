@@ -1,0 +1,151 @@
+{
+  "export_metadata": {
+    "account_id": "112233445566",
+    "region": "us-east-1",
+    "exported_by": "aws-vpc-auditor v1.5",
+    "export_timestamp": "2025-12-22T14:30:00Z"
+  },
+  "vpcs": [
+    {
+      "vpc_id": "vpc-0xprod001",
+      "vpc_name": "crestline-production",
+      "cidr_block": "10.0.0.0/16",
+      "environment_tag": "production",
+      "subnets": [
+        {"subnet_id": "sub-prod-pub-1a", "cidr": "10.0.1.0/24", "az": "us-east-1a", "type": "public"},
+        {"subnet_id": "sub-prod-pub-1b", "cidr": "10.0.2.0/24", "az": "us-east-1b", "type": "public"},
+        {"subnet_id": "sub-prod-app-1a", "cidr": "10.0.10.0/24", "az": "us-east-1a", "type": "private"},
+        {"subnet_id": "sub-prod-app-1b", "cidr": "10.0.11.0/24", "az": "us-east-1b", "type": "private"},
+        {"subnet_id": "sub-prod-data-1a", "cidr": "10.0.20.0/24", "az": "us-east-1a", "type": "private"},
+        {"subnet_id": "sub-prod-data-1b", "cidr": "10.0.21.0/24", "az": "us-east-1b", "type": "private"},
+        {"subnet_id": "sub-prod-ml-1a", "cidr": "10.0.30.0/24", "az": "us-east-1a", "type": "private"},
+        {"subnet_id": "sub-prod-ml-1b", "cidr": "10.0.31.0/24", "az": "us-east-1b", "type": "private"}
+      ]
+    },
+    {
+      "vpc_id": "vpc-0xshared001",
+      "vpc_name": "crestline-shared-compute",
+      "cidr_block": "10.50.0.0/16",
+      "environment_tag": "shared",
+      "subnets": [
+        {"subnet_id": "sub-shared-staging-1a", "cidr": "10.50.1.0/24", "az": "us-east-1a", "type": "private", "usage": "staging-workloads"},
+        {"subnet_id": "sub-shared-staging-1b", "cidr": "10.50.2.0/24", "az": "us-east-1b", "type": "private", "usage": "staging-workloads"},
+        {"subnet_id": "sub-shared-prod-ml-overflow-1a", "cidr": "10.50.10.0/24", "az": "us-east-1a", "type": "private", "usage": "production-ml-training-overflow"},
+        {"subnet_id": "sub-shared-prod-ml-overflow-1b", "cidr": "10.50.11.0/24", "az": "us-east-1b", "type": "private", "usage": "production-ml-training-overflow"}
+      ],
+      "notes": "Shared VPC hosting both staging workloads and production ML training overflow. Created to consolidate GPU instances for cost optimization. Staging uses sub-shared-staging subnets. Production ML training overflow uses sub-shared-prod-ml-overflow subnets when dedicated production GPU capacity is exhausted."
+    },
+    {
+      "vpc_id": "vpc-0xdev001",
+      "vpc_name": "crestline-development",
+      "cidr_block": "10.60.0.0/16",
+      "environment_tag": "development",
+      "subnets": [
+        {"subnet_id": "sub-dev-1a", "cidr": "10.60.1.0/24", "az": "us-east-1a", "type": "private"},
+        {"subnet_id": "sub-dev-1b", "cidr": "10.60.2.0/24", "az": "us-east-1b", "type": "private"}
+      ]
+    },
+    {
+      "vpc_id": "vpc-0xmgmt001",
+      "vpc_name": "crestline-management",
+      "cidr_block": "10.70.0.0/16",
+      "environment_tag": "management",
+      "subnets": [
+        {"subnet_id": "sub-mgmt-1a", "cidr": "10.70.1.0/24", "az": "us-east-1a", "type": "private"},
+        {"subnet_id": "sub-mgmt-1b", "cidr": "10.70.2.0/24", "az": "us-east-1b", "type": "private"}
+      ]
+    }
+  ],
+  "vpc_peering_connections": [
+    {
+      "peering_id": "pcx-0xsharedprod01",
+      "requester_vpc": "vpc-0xshared001",
+      "requester_name": "crestline-shared-compute",
+      "accepter_vpc": "vpc-0xprod001",
+      "accepter_name": "crestline-production",
+      "status": "active",
+      "route_table_entries": [
+        {
+          "direction": "shared-to-production",
+          "destination_cidr": "10.0.20.0/23",
+          "description": "Access to production data subnets for ML training data retrieval"
+        },
+        {
+          "direction": "production-to-shared",
+          "destination_cidr": "10.50.10.0/23",
+          "description": "Route to shared ML overflow subnets for training job orchestration"
+        }
+      ]
+    },
+    {
+      "peering_id": "pcx-0xmgmtprod01",
+      "requester_vpc": "vpc-0xmgmt001",
+      "requester_name": "crestline-management",
+      "accepter_vpc": "vpc-0xprod001",
+      "accepter_name": "crestline-production",
+      "status": "active",
+      "route_table_entries": [
+        {
+          "direction": "management-to-production",
+          "destination_cidr": "10.0.0.0/16",
+          "description": "Monitoring and CI/CD access to production"
+        }
+      ]
+    }
+  ],
+  "security_groups_cross_vpc": [
+    {
+      "group_id": "sg-shared-ml-overflow",
+      "group_name": "shared-ml-training-overflow",
+      "vpc_id": "vpc-0xshared001",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-shared-001",
+          "protocol": "tcp",
+          "port_range": "8080-8090",
+          "source": "10.0.30.0/23",
+          "description": "ML training orchestration from production ML subnets"
+        },
+        {
+          "rule_id": "sgr-shared-002",
+          "protocol": "tcp",
+          "port_range": "443",
+          "source": "10.0.20.0/23",
+          "description": "Training data retrieval from production data subnets (S3 gateway)"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-shared-003",
+          "protocol": "tcp",
+          "port_range": "443",
+          "destination": "10.0.20.0/23",
+          "description": "Model artifact storage to production data subnets"
+        }
+      ]
+    },
+    {
+      "group_id": "sg-shared-staging",
+      "group_name": "shared-staging-workloads",
+      "vpc_id": "vpc-0xshared001",
+      "inbound_rules": [
+        {
+          "rule_id": "sgr-shared-004",
+          "protocol": "tcp",
+          "port_range": "8080",
+          "source": "10.50.1.0/23",
+          "description": "Internal staging service traffic"
+        }
+      ],
+      "outbound_rules": [
+        {
+          "rule_id": "sgr-shared-005",
+          "protocol": "tcp",
+          "port_range": "443",
+          "destination": "0.0.0.0/0",
+          "description": "Staging outbound HTTPS"
+        }
+      ]
+    }
+  ]
+}

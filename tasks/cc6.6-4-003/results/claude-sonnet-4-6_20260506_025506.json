@@ -1,0 +1,86 @@
+{
+  "task_id": "cc6.6-4-003",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T02:55:06.324954",
+  "score": {
+    "task_id": "cc6.6-4-003",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "Cloud Armor"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-data-export-lb",
+          "external",
+          "no Cloud Armor",
+          "signed URLs",
+          "WAF",
+          "customer data"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-webhook-waf",
+          "XSS",
+          "LFI",
+          "RFI",
+          "rate limiting",
+          "adaptive protection"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-mgmt-vpc",
+          "Cloud IDS",
+          "not deployed",
+          "peering",
+          "production",
+          "CI/CD",
+          "management VPC"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2922,
+    "output_tokens": 2482
+  },
+  "raw_response": "# CC6.6 Compliance Assessment \u2014 Vertex Data\n**Auditor Review | Q4 2025 Observation Period**\n\n---\n\n## Scope and Methodology\n\nCC6.6 requires that the entity implement logical access security measures to protect against threats from sources **outside its system boundaries**. This encompasses perimeter controls including WAF/DDoS protection, intrusion detection, network segmentation, and egress filtering. I reviewed the Perimeter Security and Boundary Protection Policy (VTX-SEC-POL-006), Cloud Armor WAF export, and Cloud IDS deployment status. The vendor review schedule was set aside as it does not bear on system boundary controls.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Cloud IDS Not Deployed on Management VPC\n\n**Document:** Cloud IDS Deployment Status (vtx-mgmt-vpc row) / Policy \u00a74.1\n\n**Gap:**\nPolicy \u00a74.1 states that Cloud IDS *must be deployed on all production VPC networks*. The management VPC (`vtx-mgmt-vpc`) has no IDS endpoint deployed \u2014 the record shows `Not Deployed` with no compensating sensor in place. This gap is materially significant for two compounding reasons:\n\n1. **The network's function elevates risk.** The management VPC hosts CI/CD runners and monitoring infrastructure \u2014 assets that, if compromised by an external threat, could provide an adversary with the ability to inject malicious code into production deployments or suppress security alerting. These are high-value targets from an external attacker's perspective.\n\n2. **VPC peering creates a lateral movement path.** The notes field confirms that `vtx-mgmt-vpc` peers with production via `vtx-shared-vpc`. A threat actor who traverses the external boundary into the management VPC \u2014 or who pivots from a compromised CI/CD pipeline endpoint \u2014 would have a direct network path toward production assets with no IDS visibility along that route. East-west traffic crossing that peering link is entirely uninspected.\n\nThe absence of IDS here represents a blind spot at one of the most sensitive chokepoints in the environment.\n\n**Severity: High**\n\n---\n\n### Finding 2: External Load Balancer (`vtx-prod-data-export-lb`) Has No Cloud Armor Policy\n\n**Document:** Cloud Armor WAF Export (`load_balancers_without_cloud_armor[1]`) / Policy \u00a73.1\n\n**Gap:**\nPolicy \u00a73.1 is unambiguous: *all public-facing endpoints must be served through Google Cloud Load Balancer with Cloud Armor security policies*. The `vtx-prod-data-export-lb` is explicitly typed as `external`, meaning it accepts traffic from outside the system boundary, yet `cloud_armor_policy` is null.\n\nThe notes characterize the endpoint as serving customer bulk data exports authenticated via signed URLs with a 1-hour TTL. This description actually heightens the concern rather than mitigating it:\n\n- **No WAF rules are enforced.** There is no OWASP CRS coverage (SQLi, XSS, LFI, RFI), meaning a web application attack against this endpoint would not be intercepted at the perimeter.\n- **No rate limiting or DDoS protection.** Adaptive Protection is unavailable without a policy, leaving the endpoint exposed to volumetric and application-layer denial-of-service attacks.\n- **Signed URL authentication is not a substitute for perimeter inspection.** Authentication controls govern *who* can request data; WAF controls govern *how* requests are structured. A valid signed URL can still carry a malicious payload.\n- **The data sensitivity of this endpoint amplifies the risk.** An endpoint explicitly designed for bulk customer data export, with no application-layer filtering, is an attractive target.\n\n**Severity: High**\n\n---\n\n### Finding 3: Webhook WAF Policy Has Materially Incomplete Rule Coverage\n\n**Document:** Cloud Armor WAF Export (`vtx-prod-webhook-waf`) / Policy \u00a73.1\n\n**Gap:**\nThe webhook WAF policy (`vtx-prod-webhook-waf`) is applied to an external-facing endpoint but contains only a single OWASP preconfigured rule (SQLi) out of the four deployed on the frontend and API policies. XSS, LFI, and RFI protections are absent. Additionally, `adaptive_protection` is set to `false`, whereas both other production policies enable it.\n\nPolicy \u00a73.1 requires OWASP ModSecurity Core Rule Set coverage and Adaptive Protection (DDoS) for all public-facing endpoints; it does not carve out an exception for webhook ingestion endpoints. Two specific concerns arise:\n\n- **Webhook endpoints are a common injection vector.** Payloads delivered via webhooks from external systems (e.g., partner integrations, third-party event sources) are an established path for server-side request forgery, path traversal (LFI), and remote file inclusion (RFI) attacks. The absence of those rules means these attack classes pass uninspected.\n- **No Adaptive Protection means no machine-learning-based anomaly detection.** Unusual traffic patterns targeting the webhook endpoint \u2014 a potential signal of automated probing or a coordinated attack \u2014 will not generate automated alerts or mitigations.\n\nThere is no documented exception or risk acceptance on file justifying the reduced posture, and the policy text does not differentiate between endpoint types.\n\n**Severity: Medium**\n\n---\n\n### Finding 4: IDS Severity Filter Set to MEDIUM on Staging VPC \u2014 Below Policy Threshold\n\n**Document:** Cloud IDS Deployment Status (vtx-staging-vpc row) / Policy \u00a74.1\n\n**Gap:**\nThe staging VPC IDS instance (`vtx-ids-staging-usc1`) is configured with a `threat_severity_filter` of `MEDIUM`, meaning LOW and INFORMATIONAL severity detections are suppressed and not forwarded to the SIEM. Both production IDS endpoints are configured at `INFORMATIONAL`, capturing the full severity spectrum.\n\nPolicy \u00a74.1 does not explicitly grant a different standard for staging. While a risk-based argument could be made that staging warrants less sensitivity, this creates a documented inconsistency with two practical implications for CC6.6:\n\n- **Staging environments often share service accounts, secrets, or API credentials with production through misconfiguration.** A low-severity reconnaissance event (e.g., port scanning, credential enumeration probing) in staging that prefigures a production attack would be invisible to the SIEM.\n- **There is no documented risk acceptance or policy exception** for the reduced severity threshold in staging. Without that, the deviation is an unacknowledged noncompliance with the entity's own policy rather than a deliberate, reviewed posture.\n\nThis finding is reduced in severity by the fact that staging does not directly process production customer data and lacks the confirmed peering risk present in the management VPC.\n\n**Severity: Low**\n\n---\n\n### Finding 5: Policy Scope Excludes Management VPC and Explicitly Named Non-Production Environments\n\n**Document:** Perimeter Security and Boundary Protection Policy \u00a72 (Scope)\n\n**Gap:**\nPolicy \u00a72 defines the scope of VTX-SEC-POL-006 as GCP infrastructure in `us-central1` and `europe-west1`, then enumerates a specific list of resource types: production GKE clusters, Cloud SQL instances, Cloud Storage buckets, Cloud Load Balancers, and Cloud Armor WAF policies. Notably absent from the explicit scope are:\n\n- The **management VPC** and its CI/CD and monitoring infrastructure\n- **Staging and development environments** (also in scope of the Shared VPC model described in \u00a76.1)\n\nThe policy's own network segmentation section (\u00a76.1) acknowledges that the Shared VPC model includes vtx-prod, vtx-staging, and vtx-dev as service projects, yet the policy's protective controls (IDS, WAF, egress) are scoped only to production resource types. This creates a structural gap: the policy simultaneously acknowledges the broader network architecture and declines to govern it.\n\nThis is relevant as a root cause contributor to Finding 1 \u2014 if the management VPC is outside the policy's scope, there is no policy obligation to deploy IDS there, even though it is peered to production and presents external-facing attack surface through its CI/CD infrastructure. The policy scope should be revised to explicitly include all VPCs with network paths to production.\n\n**Severity: Medium**\n\n---\n\n### Finding 6: Policy Review Cycle Is Overdue\n\n**Document:** Perimeter Security and Boundary Protection Policy \u00a77\n\n**Gap:**\nSection 7 states the policy is reviewed quarterly and lists the next scheduled review as June 2025. The current observation period is Q4 2025, meaning the policy has not been demonstrably reviewed for at least two quarters. There is no updated version or revised review date reflected in the v2.4 document, which retains its March 2025 effective date.\n\nFor CC6.6, a stale policy is a procedural gap: the entity cannot demonstrate that its boundary protection requirements have been assessed against current threat conditions, infrastructure changes (e.g., the management VPC peering, addition of new load balancers), or emerging attack patterns during the observation period. The missed review cycle also means the scope deficiency identified in Finding 5 has not been corrected through the entity's own governance process.\n\n**Severity: Low**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Policy Reference |\n|---|---------|----------|-----------------|\n| 1 | Cloud IDS not deployed on management VPC | **High** | Policy \u00a74.1 |\n| 2 | External data export LB has no Cloud Armor policy | **High** | Policy \u00a73.1 |\n| 3 | Webhook WAF has incomplete OWASP coverage and no Adaptive Protection | **Medium** | Policy \u00a73.1 |\n| 4 | Staging IDS severity filter below policy standard, no documented exception | **Low** | Policy \u00a74.1 |\n| 5 | Policy scope excludes management VPC and non-production environments | **Medium** | Policy \u00a72 |\n| 6 | Perimeter security policy review is at least two quarters overdue | **Low** | Policy \u00a77 |\n\n---\n\n## Overall Assessment\n\n**CC6.6: Does Not Meet Requirements** for the Q4 2025 observation period.\n\nTwo high-severity findings represent direct deviations from the entity's own written policy and leave material attack surface unprotected: an external-facing bulk data endpoint with no WAF coverage, and a network segment hosting privileged infrastructure with no intrusion detection and a confirmed path to production. These findings are not compensated by other controls in evidence. The medium and low findings indicate the policy governance framework itself is weakening, which, if unaddressed, will compound the control gaps over subsequent periods."
+}

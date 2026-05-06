@@ -1,0 +1,44 @@
+{
+  "task_id": "pi1.1-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T12:57:32.074761",
+  "score": {
+    "task_id": "pi1.1-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.125,
+    "f1": 0.2222222222222222,
+    "score": 1.0,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-8906",
+          "SQ-8913",
+          "SQ-8920",
+          "High",
+          "unassigned",
+          "SSRF",
+          "Log Injection",
+          "XXE"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3245,
+    "output_tokens": 4104
+  },
+  "raw_response": "## Overall Assessment\n\n**PI1.1 is not fully met based on the evidence provided.**\n\nThe SDLC policy contains some processing integrity concepts\u2014input validation, reconciliation, checksums, SAST quality gates, and remediation SLAs\u2014but it does **not sufficiently define processing objectives** for what constitutes **complete, accurate, and timely processing** across Arcadia\u2019s systems. In addition, several SAST findings are open beyond policy-defined remediation timelines, indicating that the stated control expectations are not operating consistently.\n\n---\n\n## SAST SLA Cross-Reference Summary\n\n| SAST Finding | Severity | First Detected | Status | Policy SLA | Assessment |\n|---|---:|---:|---|---|---|\n| SQ-8937 \u2013 SQL Injection | Critical | 2025-12-15 | Open | Must block merge / fixed before merge | Critical open risk; evidence says PR is blocking merge, but remediation is not complete |\n| SQ-8906 \u2013 SSRF | High | 2025-09-14 | Open | Resolve within 30 days | **Overdue** by more than 2 months; no owner or remediation plan |\n| SQ-8913 \u2013 Log Injection | High | 2025-08-22 | Open | Resolve within 30 days | **Overdue** by more than 3 months; no action taken |\n| SQ-8920 \u2013 XXE | High | 2025-09-08 | Open | Resolve within 30 days | **Overdue** by more than 2 months; no owner assigned |\n| Medium findings | Medium | Various | Open/Resolved | Resolve within 90 days | No clear SLA breach yet for open items, but several affect processing accuracy/security |\n| Low findings | Low | Various | Open | Best effort | Not SLA exceptions under policy |\n\n---\n\n## Compliance Findings\n\n| # | Short Title | Related Document Section | Why It\u2019s a Gap | Severity |\n|---:|---|---|---|---|\n| 1 | Processing objectives are not fully defined for completeness, accuracy, and timeliness | SDLC Policy \u00a76 \u201cProcessing Integrity\u201d, \u00a76.1 \u201cInput Validation\u201d, \u00a76.2 \u201cData Integrity\u201d | The policy references input validation, record count reconciliation, and checksum verification, but it does not define measurable processing objectives by system, workflow, or data pipeline. PI1.1 expects the entity to define what constitutes **complete, accurate, and timely** processing. The policy does not specify expected record counts, acceptable error thresholds, reconciliation frequency, processing time windows, latency targets, exception handling requirements, or owners for monitoring those objectives. | High |\n| 2 | No documented timeliness objectives for processing | SDLC Policy \u00a76 \u201cProcessing Integrity\u201d | The policy addresses input validation and some data integrity controls, but it does not define timeliness expectations such as batch completion windows, API processing SLAs, queue processing thresholds, retry timing, stale transaction handling, or escalation procedures for delayed processing. This leaves the \u201ctimely processing\u201d component of PI1.1 insufficiently addressed. | High |\n| 3 | High-severity SAST findings exceeded remediation SLA | SDLC Policy \u00a74.1 \u201cStatic Analysis\u201d | The policy requires High findings to be resolved within 30 calendar days. Three High vulnerabilities remain open well beyond the SLA: SQ-8906 SSRF, first detected 2025-09-14; SQ-8913 Log Injection, first detected 2025-08-22; and SQ-8920 XXE, first detected 2025-09-08. These are still open as of 2025-12-28. This indicates the quality gate and remediation process is not operating effectively. | High |\n| 4 | High-severity findings lack ownership and remediation plans | SDLC Policy \u00a74.1 \u201cStatic Analysis\u201d | SQ-8906, SQ-8913, and SQ-8920 are open High vulnerabilities and are marked as unassigned or with no meaningful action taken. For example, SQ-8906 has \u201cNo remediation plan documented,\u201d SQ-8913 says \u201cno action taken,\u201d and SQ-8920 has \u201cno owner assigned.\u201d The policy sets SLA expectations but the evidence shows insufficient governance, escalation, and accountability for overdue security defects. | High |\n| 5 | Critical SQL injection remains open at period end | SDLC Policy \u00a74.1 \u201cStatic Analysis\u201d; \u00a76.1 \u201cInput Validation\u201d | SQ-8937 is a Critical SQL injection vulnerability detected on 2025-12-15 and still open as of 2025-12-28. The notes state that PR #4602 is in review and blocking merge, which suggests the quality gate may be functioning; however, the vulnerability remains unresolved. If this finding exists in production or a protected branch, it would violate the Critical severity requirement to prevent merge until fixed. It also directly affects processing integrity because SQL injection can compromise accuracy and completeness of processed data. | Critical |\n| 6 | Open medium findings may affect processing accuracy without documented PI impact assessment | SDLC Policy \u00a74.1 \u201cStatic Analysis\u201d; \u00a76.1 \u201cInput Validation\u201d; \u00a76.2 \u201cData Integrity\u201d | Several open Medium findings may directly affect accurate processing, including SQ-8909 in DiscountEngine, SQ-8923 in Transaction handling, SQ-8931 in PricingCalculator, and SQ-8939 in RiskScorer. While these are not yet beyond the 90-day remediation SLA, the evidence does not show that Arcadia assessed their impact on processing integrity, applied compensating controls, or confirmed that affected outputs remain complete and accurate. | Medium |\n| 7 | Data integrity requirements are stated but not evidenced as implemented | SDLC Policy \u00a76.2 \u201cData Integrity\u201d | The policy says critical data processing pipelines must implement record count reconciliation and checksum verification, but the provided evidence does not identify which pipelines are critical, whether reconciliations are actually performed, how exceptions are tracked, or whether checksum failures are monitored and resolved. A policy statement alone does not demonstrate that the entity uses processing objectives in operation. | Medium |\n| 8 | Quality gate policy does not clearly link SAST exceptions to processing integrity risk | SDLC Policy \u00a74.1 \u201cStatic Analysis\u201d; \u00a76 \u201cProcessing Integrity\u201d | The SAST policy defines remediation SLAs by severity, but it does not require classification of findings based on potential impact to processing completeness, accuracy, or timeliness. Bugs or vulnerabilities in pricing, payment, reporting, search, transaction, or risk scoring logic may have direct PI impact, but the process evidence does not show PI-specific triage or escalation. | Medium |\n\n---\n\n## Conclusion\n\nArcadia has a reasonable starting framework in the SDLC policy, including SAST scanning, code review, testing expectations, input validation, and reconciliation concepts. However, for SOC 2 PI1.1 readiness, the evidence is insufficient because:\n\n1. Processing objectives are not explicitly defined for **complete, accurate, and timely** processing.\n2. Critical and High SAST findings show control operation gaps.\n3. Several overdue High vulnerabilities lack ownership and remediation plans.\n4. Data integrity requirements are policy-level only and not evidenced as implemented.\n5. SAST remediation is not clearly tied to processing integrity impact.\n\n**Readiness conclusion: Not ready / partially designed but not operating effectively for PI1.1.**"
+}

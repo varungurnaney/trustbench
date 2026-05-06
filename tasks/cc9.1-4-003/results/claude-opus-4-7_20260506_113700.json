@@ -1,0 +1,72 @@
+{
+  "task_id": "cc9.1-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:37:00.574168",
+  "score": {
+    "task_id": "cc9.1-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 0.4444444444444445,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "MongoDB Atlas",
+          "Elevated",
+          "risk acceptance",
+          "CISO",
+          "compensating"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "LaunchDarkly",
+          "scope change",
+          "customer segmentation",
+          "August 2025",
+          "reassessment",
+          "internal-only"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Stripe",
+          "Auth0",
+          "Critical",
+          "missing",
+          "authentication"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3629,
+    "output_tokens": 2578
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment: CC9.1\n## Solaris Tech Inc. \u2014 Observation Period: Q4 2025 (Oct 1 \u2013 Dec 31, 2025)\n\n## Executive Summary\n\nThe vendor risk management program at Solaris Tech demonstrates a generally mature framework with defined tiers, documented assessment procedures, and evidence of ongoing monitoring. However, cross-referencing the policy against the vendor inventory and risk assessment log reveals several control gaps. Notably, the MongoDB Atlas elevated risk has been appropriately documented with a formal risk acceptance and compensating controls \u2014 this is **not** a finding.\n\n---\n\n## Findings\n\n### Finding 1: LaunchDarkly Scope Change Reassessment Not Performed\n- **Related Section:** Vendor Policy \u00a74.4 (Scope Change Reassessment); Vendor Inventory (ST-V-009); Risk Assessment Log (ST-V-009)\n- **Gap:** The vendor inventory notes that LaunchDarkly was \"Granted access to customer segmentation data August 2025 for targeted rollouts.\" Per Policy \u00a74.4, access to a new data category (internal-only \u2192 customer data) is explicitly listed as a material change requiring a reassessment within 30 days. The risk assessment log shows LaunchDarkly's last assessment was dated **2025-05-15** \u2014 *before* the scope change \u2014 and still describes the data scope as \"Internal -- production configuration flags only ... No customer data access at time of assessment.\" No refreshed assessment appears in the log, and the deadline (approximately September 2025) has passed. Additionally, the inventory still classifies LaunchDarkly as \"High\" tier rather than re-evaluating whether Critical tier is now appropriate given customer data access.\n- **Severity:** **High**\n\n---\n\n### Finding 2: Incomplete Vendor Inventory \u2014 Missing Risk Assessments for Critical Vendors\n- **Related Section:** Vendor Policy \u00a74.3 (Annual Risk Assessments); Risk Assessment Log\n- **Gap:** Policy \u00a74.3 requires all Critical and High tier vendors to undergo an annual risk assessment. The inventory lists 4 Critical vendors (AWS, Snowflake, Stripe, Auth0) and 5 High vendors. However, the risk assessment log contains entries for only 7 vendors. Specifically, **Stripe (ST-V-003)** and **Auth0 (ST-V-004)** \u2014 both Critical tier vendors processing customer PII / authentication credentials \u2014 have no documented risk assessment in the log, despite the inventory marking them as \"Current.\" This is either a documentation gap (assessments performed but not logged) or a control failure (assessments not performed for two of the highest-risk vendors).\n- **Severity:** **High**\n\n---\n\n### Finding 3: Critical Vendor Business Review Cadence Not Met\n- **Related Section:** Vendor Policy \u00a74.2 (Business Reviews); Vendor Inventory\n- **Gap:** Policy \u00a74.2 requires **quarterly** business reviews for Critical vendors. The vendor inventory shows that all four Critical vendors (AWS, Snowflake, Stripe, Auth0) have a `last_business_review` date of **2025-12-10** with no prior review dates evident for the Q4 observation period or earlier quarters in 2025. There is no evidence that Q1, Q2, or Q3 2025 business reviews occurred for Critical vendors, nor evidence of more than a single review during the Q4 observation period. Auditors will request the prior business review records to confirm cadence.\n- **Severity:** **Medium**\n\n---\n\n### Finding 4: High-Tier Vendor Semi-Annual Business Review Evidence Insufficient\n- **Related Section:** Vendor Policy \u00a74.2 (Business Reviews); Vendor Inventory\n- **Gap:** Policy \u00a74.2 requires **semi-annual** business reviews for High-tier vendors. All five High-tier vendors (Datadog, Twilio, MongoDB Atlas, PagerDuty, LaunchDarkly) show a single `last_business_review` date of **2025-10-01**. No prior 2025 review (which should have occurred around April 2025) is evidenced. Without documentation of the prior semi-annual review, the cadence requirement cannot be verified.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: Twilio Sub-Processor Notification Delay \u2014 No Evidence of Remediation Tracking\n- **Related Section:** Risk Assessment Log (ST-V-006); Incident Response Plan \u00a77.4\n- **Gap:** The Twilio risk assessment notes a minor finding: a 15-day delay in sub-processor notification, with the vendor \"committed to timely notification.\" However, there is no evidence of:\n  - A tracked remediation item or follow-up validation,\n  - Updated contractual remedy or escalation,\n  - A subsequent verification that timely notification has occurred since the commitment.\n  Per Policy \u00a74.4, changes to subservice organizations are a material trigger for reassessment, making timely notification a control-relevant dependency. The finding appears to have been closed informally.\n- **Severity:** **Low**\n\n---\n\n### Finding 6: No Documented Business Continuity / Disruption Risk Mitigation Activities\n- **Related Section:** CC9.1 Control Scope (Business Disruptions)\n- **Gap:** CC9.1 explicitly addresses risk mitigation activities for **both** vendor risk *and* potential business disruptions. The evidence provided is exclusively focused on the vendor dimension. There is no business continuity plan, disaster recovery plan, business impact analysis, or BCP testing evidence provided. Without these, the control as a whole cannot be deemed effective for SOC 2 readiness, even if the vendor risk component is mature.\n- **Severity:** **High**\n\n---\n\n### Finding 7: SOC 2 Report Review Documentation Not Evidenced\n- **Related Section:** Vendor Policy \u00a74.1 (SOC 2 Report Review)\n- **Gap:** Policy \u00a74.1 requires that SOC 2 reviews \"document scope, opinion type, CUECs, and subservice organizations.\" The vendor inventory shows `soc2_status: Current` for all Critical/High vendors, but no SOC 2 review records or worksheets were provided as evidence. In particular, documentation of CUEC mapping (complementary user entity controls Solaris Tech is responsible for implementing) is critical SOC 2 evidence. Auditors will request these working papers.\n- **Severity:** **Medium**\n\n---\n\n## Items Reviewed and Determined NOT to Be Findings\n\n- **MongoDB Atlas elevated risk rating (ST-V-007):** Properly documented with root cause analysis, formal CISO risk acceptance dated 2025-10-25, and four specific compensating controls. This represents the control operating as designed.\n- **Medium/Low tier vendors lacking SOC 2 reviews:** Consistent with policy (\u00a72 only requires SOC 2 for Critical/High tiers).\n\n---\n\n## Recommended Priority Actions\n\n1. **Immediate:** Complete LaunchDarkly scope-change reassessment and re-tier evaluation.\n2. **Immediate:** Locate or perform Stripe and Auth0 annual risk assessments.\n3. **Before audit:** Produce business continuity / disaster recovery evidence to satisfy the disruption portion of CC9.1.\n4. **Before audit:** Compile historical business review records and SOC 2 review working papers (with CUECs) for all Critical and High vendors."
+}

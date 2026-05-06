@@ -1,0 +1,92 @@
+{
+  "task_id": "cc7.3-5-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T19:44:24.059398",
+  "score": {
+    "task_id": "cc7.3-5-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 0.4,
+    "precision": 0.2857142857142857,
+    "f1": 0.3333333333333333,
+    "score": 0.3333333333333333,
+    "gaps_detected": 2,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-803",
+          "returned for revision",
+          "Marco DeLuca"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-806",
+          "minimum of 3",
+          "Section 4.2",
+          "DDoS"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-804",
+          "ransomware"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-804",
+          "PM-804-AI-08",
+          "network egress restrictions",
+          "not started",
+          "supply chain",
+          "ransomware"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-805"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6705,
+    "output_tokens": 4012
+  },
+  "raw_response": "# Compliance Audit Findings \u2013 CC7.3 Post-Mortem Quality Assessment\n\n## Finding 1: Incomplete Post-Mortem \u2013 INC-2025-803 (API Rate Limiting Bypass)\n\n**Title:** Post-Mortem Quality Standards Not Met \u2013 Returned for Revision but Not Resubmitted\n\n**Policy Reference:** IRP-POL-2025-009, Section 4.2 (Quality Standards) and Section 4.3 (Post-Mortem Review)\n\n**Gap Description:**\nINC-2025-803 was returned for revision by reviewer Marco DeLuca on November 14, 2025, with explicit direction to address missing elements:\n- Incident timeline with timestamps\n- 5-Whys root cause analysis (original submission lacks structured analysis)\n- Quantified impact assessment (number of tenants affected, document IDs exposed)\n- Remediation details\n- Detection improvement recommendations\n\nAs of the evidence cutoff date (January 8, 2026), this post-mortem remains incomplete and unsigned. The incident register shows post-mortem status as \"Complete\" with reviewer sign-off marked \"No \u2014 returned for revision Nov 14,\" but no resubmission date or revised document is provided. The 3 action items are listed, but only 2 are shown as completed, leaving the post-mortem governance incomplete.\n\n**Severity:** **High**\n\n**Rationale:**\n- The policy explicitly requires post-mortems to be submitted, reviewed, and signed off within defined timelines (Section 4.1: SEV-2 due within 5 business days). This incident violated the standard.\n- The quality deficiencies identified by the reviewer directly relate to Control CC7.3's requirement to \"understand\" security incidents\u2014quantified impact and structured root cause analysis are essential to understanding.\n- The outstanding revision creates a control gap: action items cannot be properly prioritized or tracked without a complete post-mortem.\n- Non-compliance with the organization's own post-mortem standard undermines the entire incident response program's effectiveness.\n\n---\n\n## Finding 2: Inadequate Preventive Action Items \u2013 INC-2025-806 (DDoS Attack)\n\n**Title:** Post-Mortem Action Items Insufficient in Scope and Depth\n\n**Policy Reference:** IRP-POL-2025-009, Section 4.2 (Quality Standards) \u2013 \"Minimum of 3 action items\"\n\n**Gap Description:**\nINC-2025-806 contains only 2 preventive action items (PM-806-AI-01 and PM-806-AI-02), both marked complete. The 5-Whys root cause analysis identifies a systemic gap: **no security review gate exists in the feature launch process**. However, the preventive actions do not adequately address this root cause:\n\n- **PM-806-AI-01** addresses endpoint-level rate limiting (tactical).\n- **PM-806-AI-02** adds a security review to the launch checklist (process improvement).\n\nMissing action items should include:\n- Retrospective security review of all recent feature launches to identify similar gaps\n- Audit of existing infrastructure configurations (DNS, API endpoints, CDN settings) for similar exposure\n- Implementation of automated security hardening checks in CI/CD for infrastructure-as-code\n- Training for engineering teams on security architecture review requirements\n- Definition of security review SLAs and escalation paths\n\n**Severity:** **High**\n\n**Rationale:**\n- The policy explicitly requires a minimum of 3 action items per post-mortem. This post-mortem falls short and was signed off despite this.\n- The root cause analysis correctly identifies a process failure (no security review gate), but the remediation is minimalist. PM-806-AI-02 alone does not ensure all features launched without security review have been retrofitted.\n- For a SaaS provider with Fortune 500 customers, a 30-minute customer impact window due to missing security review is significant. The action items do not reflect the systemic nature of the risk.\n- Incomplete action item scope increases risk of similar incidents recurring through other features or infrastructure components.\n\n---\n\n## Finding 3: Delayed Action Item Completion \u2013 INC-2025-804 and INC-2025-805\n\n**Title:** Critical and High Priority Action Items Overdue or Not Started\n\n**Policy Reference:** IRP-POL-2025-009, Section 4.4 (Action Item Governance)\n\n**Gap Description:**\n**INC-2025-804 (Ransomware \u2013 SEV-1):**\n- 9 action items assigned. Only 5 completed as of January 8, 2026.\n- Outstanding items: PM-804-AI-06 (Sigstore/Cosign), PM-804-AI-07 (supply chain training), PM-804-AI-08 (network egress restrictions), PM-804-AI-09 (CI/CD hardening).\n- Target dates: January 15, 31, and February 15, 2026.\n- Status: \"Not Started\" for 4 items with target dates already passed or imminent as of audit date.\n\n**INC-2025-805 (Unauthorized Database Access \u2013 SEV-2):**\n- 5 action items assigned. Only 3 completed as of January 8, 2026.\n- Incident occurred December 3\u20134, 2025. Post-mortem due by December 11, 2025 (5 business days). Post-mortem marked complete and signed off December 11. However, specific action items are not detailed in the provided documentation, and the incident register shows 3 of 5 incomplete.\n\n**Severity:** **High**\n\n**Rationale:**\n- Policy Section 4.4 states: \"14-day overdue escalation to CISO. 30-day overdue escalation to CTO.\" Items with January 15, 31, and February 15 targets are approaching or have passed escalation thresholds.\n- INC-2025-804 is a SEV-1 ransomware incident. The uncompleted items (network egress restrictions, container image provenance, supply chain training) are critical to preventing recurrence. Their \"Not Started\" status 7+ weeks post-incident is a control weakness.\n- The metrics dashboard shows only 23 of 30 action items (77%) completed in Q4 2025 with 3 overdue, indicating a systemic issue with action item execution governance, not isolated to these incidents.\n\n---\n\n## Finding 4: Insufficient Detection Improvement Recommendations \u2013 INC-2025-806\n\n**Title:** Post-Mortem Detection Recommendations Fail to Drive Preventive Control Enhancement\n\n**Policy Reference:** IRP-POL-2025-009, Section 4.2 (Quality Standards) \u2013 \"Detection improvement recommendations\"\n\n**Gap Description:**\nINC-2025-806 post-mortem states: \"Cloudflare detected the DDoS within 8 minutes \u2014 adequate for this attack type. Recommendation: None \u2014 existing detection and auto-mitigation were effective.\"\n\nThis conclusion is problematic:\n- The root cause analysis (5-Whys #5) identifies that \"no security review gate exists in the feature launch process.\" The incident would not have occurred if the real-time sync feature had undergone security architecture review.\n- The detection recommendation should focus on **detection gaps that preceded the incident**, not just the DDoS detection phase.\n- A more complete recommendation would be: *\"Implement automated detection of new customer-facing endpoints that lack rate limiting configuration, to identify infrastructure exposure before feature launch.\"*\n- The post-mortem does not address detection of the root cause (missing security review gate) or early warning signs (newly launched features without security hardening review).\n\n**Severity:** **Medium**\n\n**Rationale:**\n- While the post-mortem correctly addresses the immediate containment (DDoS detection was effective), it misses the opportunity to identify preventive detection controls that would have caught the configuration gap before customer impact.\n- CC7.3 requires entities to \"understand\" incidents, including identification of detection gaps. This post-mortem's detection section is shallow.\n- The policy requires detection improvement recommendations as a standard component. Stating \"none\" without deeper analysis of what could have been detected earlier is inadequate.\n\n---\n\n## Finding 5: Post-Mortem Completion Rate and Governance Visibility Gap\n\n**Title:** Inconsistent Post-Mortem Governance Data \u2013 Discrepancies Between Register and Metrics Dashboard\n\n**Policy Reference:** IRP-POL-2025-009, Section 4.3 and 4.4\n\n**Gap Description:**\nThe Q4 2025 metrics dashboard (Section 2: Post-Mortem Metrics) reports:\n- 6 post-mortems required (presumably for 6 SEV-1/SEV-2 incidents in Q4)\n- 5 completed on time\n- 1 returned for revision\n- 3 action items overdue\n\nHowever, the incident register lists **7 incidents**, of which 6 are SEV-1 or SEV-2 requiring post-mortems:\n- INC-2025-801 (SEV-1) \u2013 Complete, signed off\n- INC-2025-802 (SEV-2) \u2013 Complete, signed off\n- INC-2025-803 (SEV-2) \u2013 Complete, **NOT signed off** (returned for revision, not resubmitted)\n- INC-2025-804 (SEV-1) \u2013 Complete, signed off\n- INC-2025-805 (SEV-2) \u2013 Complete, signed off\n- INC-2025-806 (SEV-2) \u2013 Complete, signed off\n- INC-2025-807 (SEV-3) \u2013 Not required\n\n**Discrepancy:** The metrics show \"5 completed on time\" and \"1 returned for revision,\" which aligns with 6 required post-mortems. However, INC-2025-803 is marked \"Complete\" in the register with reviewer sign-off \"No\" \u2014 a logical inconsistency. Is it complete but unsigned, or incomplete?\n\n**Severity:** **Medium**\n\n**Rationale:**\n- The metrics dashboard and incident register should be in perfect alignment. The discrepancy creates uncertainty about actual post-mortem governance compliance.\n- A post-mortem that is \"returned for revision\" should not be counted as \"complete\" until the revision is submitted and approved.\n- This ambiguity undermines confidence in the organization's incident response governance reporting and may indicate weak controls over post-mortem tracking.\n\n---\n\n## Finding 6: Lack of Systemic Root Cause Analysis \u2013 Supply Chain Risk Pattern\n\n**Title:** Recurring Incident Pattern Not Identified in Post-Mortem Governance\n\n**Policy Reference:** IRP-POL-2025-009, Section 4.2 (Quality Standards) and IRP-POL Section 7 (Plan Testing)\n\n**Gap Description:**\nThe incident register and post-mortems reveal a significant pattern:\n\n1. **INC-2025-804 (Ransomware):** Root cause = compromised Docker base image from public Docker Hub. Ransomware embedded in image entrypoint.\n2. **INC-2025-806 (DDoS):** Root cause = feature (real-time sync) launched without security architecture review, resulting in missing rate limiting.\n\nBoth incidents have supply chain / development process root causes:\n- INC-2025-804: Docker supply chain (unvetted external images used in CI/CD)\n- INC-2025-806: Internal process (missing security review gate in feature launch)\n\nThe post-mortems for INC-2025-804 and INC-2025-806 are treated as independent incidents. **There is no documented evidence of cross-incident correlation or systemic pattern analysis.** The action items from INC-2025-804 (Docker digest pinning, image scanning, Falco runtime security, private registry) and INC-2025-806 (security review gate) do not cross-reference or build on each other, though they address related supply chain risks.\n\nAdditionally, plan testing in Section 7 (Feb 2025 tabletop, Aug 2025 tabletop, Sep 2025 red team) does not appear to have specifically tested supply chain security controls. The red team findings are not detailed in the evidence provided.\n\n**Severity:** **Medium**\n\n**Rationale:**\n- CC7.3 requires the entity to \"understand\" incidents. Understanding includes identifying patterns and systemic risks, not just responding to isolated events.\n- Two major incidents in a single quarter with supply chain / development process root causes suggests a systemic control gap that individual post-mortems may not capture.\n- The lack of coordinated action items or cross-incident referencing suggests that lessons from INC-2025-804 were not applied to prevent INC-2025-806, or that supply chain security is not treated as an enterprise-wide program.\n- Plan testing should specifically validate supply chain security controls. The provided evidence does not demonstrate this.\n\n---\n\n## Finding 7: SEV-1 Incident \u2013 Missing Critical Documentation\n\n**Title:** INC-2025-801 Post-Mortem Documentation Not Provided for Review\n\n**Policy Reference:** IRP-POL-2025-009, Section 4.1, 4.2, and 4.3\n\n**Gap Description:**\nThe incident register lists **INC-2025-801 (SEV-1: Unauthorized access to enterprise document storage \u2013 SSRF vulnerability)** with:\n- Detection: October 7, 2025, 05:20 UTC\n- Triage: October 7, 2025, 05:32 UTC (12 minutes \u2013 meets SLA)\n- Containment: October 7, 2025, 06:15 UTC (0.9 hours \u2013 meets SLA)\n- Resolution: October 7, 2025, 20:00 UTC (14.7 hours \u2013 meets SLA)\n- Post-mortem status: Complete\n- Reviewer: Lars Eriksson (CISO)\n- Sign-off: Yes \u2013 Oct 11\n- Action items: 7 total, 7 completed\n\nHowever, the actual post-mortem document for INC-2025-801 is **not included in the evidence bundle provided for audit review.** This is a critical gap:\n- The post-mortem cannot be independently verified to meet quality standards (Section 4.2).\n- The action items and their justification cannot be assessed.\n- For a SEV-1 incident involving unauthorized access to customer documents (potential data breach), the post-mortem is essential evidence of proper response and understanding.\n\n**Severity:** **Critical**\n\n**Rationale:**\n- A SEV-1 data breach incident requires the highest level of post-mortem rigor and documentation.\n- The inability to produce the post-mortem document for audit review indicates either: (a) documentation does not exist, (b) documentation exists but was not provided, or (c) documentation governance is inadequate.\n- For SOC 2 Type II compliance, evidence of CISO review and sign-off for data breach incidents must be demonstrable and complete.\n- Without this document, the audit cannot confirm CC7.3 compliance for the organization's most critical incident type.\n\n---\n\n## Summary Table\n\n| Finding | Title | Severity | Control Impact |\n|---------|-------|----------|-----------------|\n| 1 | Incomplete Post-Mortem \u2013 INC-2025-803 | High | Remediation action items not prioritized; incident understanding incomplete |\n| 2 | Inadequate Preventive Actions \u2013 INC-2025-806 | High | Minimum action item requirement not met; systemic risk not fully addressed |\n| 3 | Delayed Action Item Completion \u2013 INC-2025-804/805 | High | Critical and High priority items not started; escalation governance may not be functioning |\n| 4 | Insufficient Detection Recommendations \u2013 INC-2025-806 | Medium | Prevention-focused detection gaps not identified; continuous improvement not demonstrated |\n| 5 | Post-Mortem Governance Inconsistencies | Medium | Metrics and register do not align; uncertainty about completion status |\n| 6 | Lack of Systemic Root Cause Correlation | Medium | Supply chain risk pattern not identified across incidents; lessons not shared |\n| 7 | Missing Critical SEV-1 Post-Mortem Documentation | Critical | Cannot verify compliance for data breach incident; documentation governance failure |\n\n---\n\n## Conclusion\n\nHelix Collaboration demonstrates a **functional incident response program** with documented policies, timely response SLAs, and executive review. However, **post-mortem quality and governance show material gaps** that weaken the \"understand\" component of CC7.3. The organization has defined robust quality standards but inconsistently enforces them. The absence of the SEV-1 (data breach) post-mortem documentation is a critical control failure that must be resolved immediately.\n\n**Recommendation:** Do not issue SOC 2 Type II attestation for CC7.3 until: (1) INC-2025-801 post-mortem is produced and verified, (2) INC-2025-803 revision is submitted and signed off, (3) INC-2025-806 action items are expanded to meet policy minimum, and (4) post-mortem governance reconciliation is completed."
+}

@@ -1,0 +1,103 @@
+{
+  "id": "cc6.1-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.1",
+  "control_description": "The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events to meet the entity's objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/access-control-policy.md",
+      "type": "policy",
+      "description": "CrestPoint Technologies access control policy defining termination SLAs and access revocation requirements"
+    },
+    {
+      "path": "evidence/termination-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 employee termination log showing 25 terminations with Okta disable timestamps and SLA compliance"
+    },
+    {
+      "path": "evidence/access-review-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 quarterly access review completion records for 15 systems"
+    },
+    {
+      "path": "evidence/okta-login-audit.csv",
+      "type": "log",
+      "description": "Okta login audit log showing authentication events for terminated employees during and after the revocation window"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating CrestPoint Technologies' access revocation and termination controls under CC6.1 for Q4 2025 (October 1 - December 31, 2025). CrestPoint is a B2B SaaS company handling enterprise customer data. Review all evidence to assess whether termination procedures are operating effectively. Several issues require professional judgment to determine materiality. Consider the overall population, the circumstances of each deviation, and whether the control is operating at a level that provides reasonable assurance.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Termination TERM-Q4-024 for Diana Vasquez exceeded 24-hour SLA by 52 hours during holiday weekend",
+      "description": "Diana Vasquez (TERM-Q4-024) was terminated on Friday December 19 at 4:30 PM EST (voluntary departure). Her Okta account was not disabled until Monday December 22 at 9:15 AM EST — 64.75 hours after termination, exceeding the 24-hour SLA by approximately 41 hours. The note indicates 'IT on-call not staffed Dec 19-21 holiday schedule.' The Okta audit log shows no login attempts by Diana during the gap. The auditor must determine: does the 96% SLA compliance rate (24 of 25 terminations within SLA) represent reasonable assurance, or does this single miss — specifically caused by a known staffing gap during holidays — indicate a systemic risk? The termination was voluntary, lowering the insider threat risk, but the policy makes no exception for holidays or weekends.",
+      "evidence_sources": ["evidence/termination-log-q4.csv", "evidence/access-control-policy.md", "evidence/okta-login-audit.csv"],
+      "expected_reasoning": "The auditor must weigh: (1) 96% compliance rate is high but not 100%, (2) the miss was caused by a predictable staffing gap — every holiday weekend termination would face the same issue, (3) no actual unauthorized access occurred during the gap, (4) the policy has no holiday exception, (5) this is a systemic design issue (no holiday on-call for offboarding) not a random failure. A reasonable auditor might distinguish between the individual instance (low risk) and the systemic gap (moderate risk). The question is whether 96% provides 'reasonable assurance' or whether the predictable holiday gap undermines confidence.",
+      "detection_criteria": {
+        "required_keywords": ["Diana Vasquez", "TERM-Q4-024", "December 19", "December 22", "64 hours", "holiday", "96%", "on-call", "staffing"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Access review for Salesforce CRM completed by the same person who provisions access",
+      "description": "The Q4 access review for Salesforce CRM (AR-Q4-010) was completed by Laura Simmons, Sales Operations Manager. Laura is also listed as the Salesforce administrator who provisions and modifies access for the sales team. The policy (Section 5.1) states reviews should be performed by 'system owners or their delegates' but does not explicitly require independence between the access administrator and the reviewer. This is a self-review scenario — Laura is reviewing the access she herself granted. She reported zero findings and zero revocations across 45 access grants. The auditor must determine whether the zero-findings result from a genuinely clean environment or whether the self-review arrangement undermines the control's effectiveness.",
+      "evidence_sources": ["evidence/access-review-q4.csv", "evidence/access-control-policy.md"],
+      "expected_reasoning": "The auditor must assess: (1) self-review creates an inherent conflict of interest, (2) zero findings on 45 grants is unusual — most reviews surface at least minor issues, (3) the policy technically permits this arrangement, (4) Salesforce CRM contains enterprise customer data, (5) the auditor cannot determine from the evidence alone whether access is truly clean or whether the review was rubber-stamped. This is a control design weakness rather than a control operating failure.",
+      "detection_criteria": {
+        "required_keywords": ["Laura Simmons", "Salesforce", "AR-Q4-010", "self-review", "provisions", "zero findings", "same person", "administrator"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Involuntary termination TERM-Q4-016 for Marcus Hall had Okta disabled in 22 hours but AWS access key remained active for 5 additional days",
+      "description": "Marcus Hall (TERM-Q4-016) was involuntarily terminated on November 14 at 10:00 AM (termination type: involuntary — performance). His Okta account was disabled at 8:00 AM November 15 (within the 24-hour SLA). However, the termination log notes that his AWS IAM access key was not deactivated until November 19 — 5 days after termination. The Okta audit log shows no Okta login attempts after termination, but the Okta audit does not cover direct AWS API access via access keys (which bypass Okta entirely). The access control policy (Section 6.1) requires 'all cloud infrastructure access removed within 24 hours.' The auditor must determine whether the Okta-focused termination SLA gives a false sense of security when other access channels (AWS access keys) are not revoked within the same timeframe.",
+      "evidence_sources": ["evidence/termination-log-q4.csv", "evidence/access-control-policy.md", "evidence/okta-login-audit.csv"],
+      "expected_reasoning": "This finding requires understanding that Okta disablement alone does not revoke all access. AWS access keys operate independently of Okta SSO — a user whose Okta is disabled can still use AWS access keys for API calls. For an involuntary termination (higher risk than voluntary), 5 additional days of active AWS credentials is a significant exposure. The 96% Okta SLA compliance is misleading if non-Okta access channels have a different, slower revocation process. The auditor should examine whether the termination checklist addresses all access channels or only Okta.",
+      "detection_criteria": {
+        "required_keywords": ["Marcus Hall", "TERM-Q4-016", "involuntary", "AWS", "access key", "5 days", "November 14", "November 19", "Okta disabled", "bypass"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Three access reviews completed within final 48 hours of the 15-business-day SLA window",
+      "description": "Of the 15 Q4 access reviews, three were completed on the final day of the SLA window (business day 15): AR-Q4-003 (GitHub Enterprise), AR-Q4-007 (Datadog), and AR-Q4-012 (Jira Cloud). While technically compliant, the pattern of last-minute completions — combined with all three reporting zero findings — raises a question about review thoroughness. Policy Section 5.2 requires reviewers to 'verify each user's continued need for access,' which implies substantive review. The auditor must determine whether last-day completion with zero findings suggests cursory review or simply reflects a lower-risk system population.",
+      "evidence_sources": ["evidence/access-review-q4.csv", "evidence/access-control-policy.md"],
+      "expected_reasoning": "The auditor must weigh: (1) technical compliance — all three were within SLA, (2) the zero-findings pattern across all three last-day reviews could indicate rubber-stamping, (3) alternatively, these may genuinely be lower-risk systems with clean populations, (4) without additional evidence (e.g., review work papers), the auditor cannot definitively determine thoroughness. This is an observation rather than a definitive finding — the auditor might request prior quarter data to identify patterns.",
+      "detection_criteria": {
+        "required_keywords": ["AR-Q4-003", "AR-Q4-007", "AR-Q4-012", "last day", "final day", "zero findings", "thoroughness", "cursory"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["termination", "SLA_compliance", "holiday_staffing", "self_review", "access_review", "materiality", "judgment", "multi_channel_revocation"]
+  }
+}

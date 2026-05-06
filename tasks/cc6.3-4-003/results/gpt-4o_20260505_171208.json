@@ -1,0 +1,83 @@
+{
+  "task_id": "cc6.3-4-003",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-05T17:12:08.873666",
+  "score": {
+    "task_id": "cc6.3-4-003",
+    "model": "gpt-4o",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.14285714285714285,
+    "f1": 0.25,
+    "score": 0.25,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 20,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "COMPLIANCE_AUDITOR",
+          "PCI",
+          "masking"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "j.crawford",
+          "ACCOUNTADMIN",
+          "Risk Analytics",
+          "DBA team"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "MARKETING_ANALYTICS",
+          "cardholder_data",
+          "masking",
+          "PCI",
+          "h.park",
+          "s.mehta",
+          "b.chen"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SVC_DATA_PIPELINE",
+          "SYSADMIN",
+          "minimum"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3633,
+    "output_tokens": 616
+  },
+  "raw_response": "Based on the provided documents and evidence, here are the findings related to data access authorization controls for control CC6.3 at Vertex Financial:\n\n### Finding 1: Unauthorized Access to PCI Data by Marketing Analytics\n1. **Title**: Unauthorized PCI Data Access by Marketing Team\n2. **Related Section**: POL-DAP-2025-011 Section 3.3 \u2014 Segregation of Duties\n3. **Gap Description**: The policy prohibits marketing personnel from accessing raw PCI data. However, multiple users under the MARKETING_ANALYTICS role have access to the `cardholder_data` table in the PAYMENTS schema without a masking policy applied (e.g., users h.park, s.mehta, b.chen).\n4. **Severity**: Critical\n\n### Finding 2: Inappropriate Grant of ACCOUNTADMIN Access\n1. **Title**: Inappropriate ACCOUNTADMIN Role Grant\n2. **Related Section**: POL-DAP-2025-011 Section 3.1 \u2014 RBAC Requirements\n3. **Gap Description**: The policy states that the ACCOUNTADMIN role is restricted to the DBA team. However, j.crawford from Risk Analytics was granted ACCOUNTADMIN privileges without a formal request and is not part of the DBA team.\n4. **Severity**: High\n\n### Finding 3: Unmasked Access to PCI Data\n1. **Title**: Lack of Masking Policy for PCI Data\n2. **Related Section**: POL-DAP-2025-011 Section 4.2 \u2014 Data Masking\n3. **Gap Description**: The policy requires dynamic data masking for non-DBA roles accessing PCI-scoped tables. However, no masking policy is applied to the cardholder data accessed by the MARKETING_ANALYTICS role.\n4. **Severity**: High\n\n### Finding 4: Service Account Privileges Violation\n1. **Title**: Service Account with Broad Privileges\n2. **Related Section**: POL-DAP-2025-011 Section 5.1 \u2014 Governance\n3. **Gap Description**: The policy prohibits the use of broad roles like SYSADMIN for service accounts. The SVC_DATA_PIPELINE service account is assigned SYSADMIN privileges, which contradicts the policy requirement for minimum necessary privileges.\n4. **Severity**: Medium\n\n### Finding 5: Infrequent Monthly Access Review for PCI-Scoped Roles\n1. **Title**: Inadequate Frequency of Access Reviews for PCI-Scoped Access\n2. **Related Section**: POL-DAP-2025-011 Section 6 \u2014 Access Reviews\n3. **Gap Description**: The policy requires monthly review of PCI-scoped access. However, the exception register and access records do not indicate specific monthly review activities for PCI-scoped roles such as COMPLIANCE_AUDITOR.\n4. **Severity**: Medium\n\nEach finding indicates deviations from the documented policy, potentially impacting SOC 2 compliance and elevating risks associated with data access and data protection."
+}

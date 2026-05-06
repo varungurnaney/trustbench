@@ -1,0 +1,58 @@
+{
+  "task_id": "cc6.6-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T18:40:05.061140",
+  "score": {
+    "task_id": "cc6.6-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2222222222222222,
+    "f1": 0.3636363636363636,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "FW-018",
+          "9300",
+          "0.0.0.0/0",
+          "Elasticsearch",
+          "sg-prod-analytics",
+          "outbound",
+          "data exfiltration"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "FW-019",
+          "webhook",
+          "0.0.0.0/0",
+          "partner",
+          "inbound"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1866,
+    "output_tokens": 2601
+  },
+  "raw_response": "# CC6.6 Readiness Assessment: Production Firewall Rules Review\n\n## Summary\nReviewed 23 security group rules across the production VPC. The overall architecture follows a reasonable tiered design (ALB \u2192 app \u2192 data/cache, with bastion-mediated SSH). However, several outbound rules to `0.0.0.0/0` lack sufficient restriction, and one rule appears materially misconfigured. Findings below.\n\n---\n\n## Finding 1: Elasticsearch Transport Port Open Outbound to Internet (Any Destination)\n- **Rule(s):** FW-018 \u2014 `sg-prod-analytics` outbound tcp/9300 to `0.0.0.0/0`\n- **Gap:** Port 9300 is the Elasticsearch inter-node transport protocol. Allowing outbound traffic on this port to *any* internet destination is highly unusual and inconsistent with least privilege. Elasticsearch transport traffic should be confined to a known cluster CIDR or specific endpoint security groups, not the open internet. This pattern is also a known data exfiltration vector (the description \"data export pipeline\" suggests sensitive data egress to an unconstrained destination). The rule was last modified 2025-04-22 \u2014 out of step with the bulk update on 2025-06-10, suggesting it may not have been reviewed in the most recent baseline.\n- **Severity:** **Critical**\n\n## Finding 2: Unrestricted Outbound HTTPS from Multiple Tiers\n- **Rule(s):** FW-008 (app tier), FW-017 (analytics), FW-021 (monitoring) \u2014 all outbound tcp/443 to `0.0.0.0/0`\n- **Gap:** While outbound HTTPS to third parties (Stripe, Twilio, S3, PagerDuty, Slack) is operationally common, CC6.6 expects egress controls that constrain communication with external sources. Allowing 0.0.0.0/0 means a compromised workload could exfiltrate data to any destination. Mitigations expected: an egress proxy with allow-listed FQDNs, AWS VPC endpoints for S3, or destination-restricted prefix lists for known SaaS providers. No evidence such controls exist.\n- **Severity:** **High**\n\n## Finding 3: HTTP (Port 80) Open to Internet Without Documented Redirect Enforcement\n- **Rule(s):** FW-002 \u2014 `sg-prod-alb-public` inbound tcp/80 from `0.0.0.0/0`\n- **Gap:** The description states \"redirect to HTTPS,\" but there is no supporting evidence (ALB listener configuration, redirect rule export) confirming the redirect is enforced. If the listener serves content rather than redirecting, plaintext traffic could be processed. Additionally, no evidence of TLS minimum version, cipher policy, or WAF in front of the public ALB is provided \u2014 relevant context for CC6.6 boundary protection.\n- **Severity:** **Medium**\n\n## Finding 4: Webhook Endpoint Exposed to Entire Internet Without Source Restriction\n- **Rule(s):** FW-019 \u2014 `sg-prod-webhook` inbound tcp/443 from `0.0.0.0/0`\n- **Gap:** Inbound webhooks from \"partners\" are open to the entire internet. While webhook receivers commonly cannot predict source IPs, most major partners (Stripe, GitHub, Twilio, etc.) publish IP allow-lists. There is no evidence of (a) IP-based restriction via prefix lists, (b) WAF protection, (c) HMAC signature validation enforcement, or (d) rate limiting. Without compensating controls documented, exposure is broader than necessary.\n- **Severity:** **Medium**\n\n## Finding 5: Bastion SSH Source Is a /16 \u2014 Potentially Overbroad\n- **Rule(s):** FW-012 \u2014 `sg-prod-bastion` inbound tcp/22 from `10.3.0.0/16`\n- **Gap:** The description identifies this as the \"VPN CIDR.\" A /16 represents 65,536 addresses. CC6.6 expects narrowly scoped access to administrative entry points. Best practice is to restrict to the smallest CIDR containing actual VPN client pool addresses, or better, to integrate with SSM Session Manager / Zero Trust access (eliminating port 22 exposure entirely). No evidence of MFA enforcement on the bastion, session logging, or just-in-time access is provided.\n- **Severity:** **Medium**\n\n## Finding 6: Prometheus Scrape Range Spans Entire VPC CIDR\n- **Rule(s):** FW-014 \u2014 `sg-prod-monitoring` inbound tcp/9090 from `10.0.0.0/16`\n- **Gap:** Prometheus scraping is typically initiated *by* the monitoring system (outbound scrape) rather than received from arbitrary VPC sources. Allowing inbound on 9090 from the entire production /16 means any compromised resource in production can reach the metrics service. Source should be a specific security group (e.g., `sg-prod-monitoring-collector`) rather than a broad CIDR.\n- **Severity:** **Low/Medium**\n\n## Finding 7: No Evidence of Periodic Firewall Rule Review\n- **Rule(s):** All rules; metadata field `last_modified` only.\n- **Gap:** CC6.6 readiness typically requires evidence that firewall rules are *reviewed* on a defined cadence (e.g., quarterly), not just that they exist. The export shows last-modified dates but no review attestation, ticket references, change-management approvals, or a documented owner per rule. FW-018 (April 2025) and FW-017 (September 2025) are out of sync with the rest of the baseline (June 2025), with no explanation. Auditor will likely request the rule-review procedure and most recent attestation.\n- **Severity:** **Medium**\n\n## Finding 8: No Default-Deny / Stateful Egress Documentation\n- **Rule(s):** All security groups (implicit).\n- **Gap:** Security groups are deny-by-default, which helps. However, the evidence package contains no information on (a) Network ACLs at the subnet layer (defense in depth), (b) AWS Network Firewall or equivalent for inspection of egress, (c) VPC Flow Logs being enabled, or (d) GuardDuty / IDS coverage. CC6.6 expects layered boundary protection; security groups alone may be insufficient at audit.\n- **Severity:** **Medium**\n\n## Finding 9: Description Field as the Only Justification Control\n- **Rule(s):** All rules.\n- **Gap:** Business justification is captured only in free-text descriptions. There is no linkage to a change ticket, requestor, approver, or expiration/review date per rule. Auditors expect the rule lifecycle (request \u2192 approve \u2192 implement \u2192 review \u2192 retire) to be evidenced.\n- **Severity:** **Low**\n\n---\n\n## Recommended Priority Actions\n1. **Immediately remediate FW-018** (Elasticsearch 9300 to 0.0.0.0/0) \u2014 restrict to specific destination SG/CIDR or remove.\n2. **Constrain outbound 443** rules using egress proxy, VPC endpoints, or destination prefix lists (FW-008, FW-017, FW-021).\n3. **Document and produce evidence** of: quarterly firewall reviews, WAF in front of public ALB and webhook endpoints, VPC Flow Logs, and bastion access controls (MFA/session recording).\n4. **Tighten** FW-014 to source security group rather than /16 CIDR.\n5. **Validate** FW-002 redirect behavior is enforced at the ALB listener level."
+}

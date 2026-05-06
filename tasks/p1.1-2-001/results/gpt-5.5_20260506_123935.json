@@ -1,0 +1,58 @@
+{
+  "task_id": "p1.1-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T12:39:35.110638",
+  "score": {
+    "task_id": "p1.1-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "footnote",
+          "analytics",
+          "exempt",
+          "indefinitely",
+          "retention",
+          "longitudinal"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "_ga",
+          "Mixpanel",
+          "mp_",
+          "strictly_necessary",
+          "false",
+          "analytics"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2289,
+    "output_tokens": 2980
+  },
+  "raw_response": "## Readiness Assessment Findings for SOC 2 TSC P1.1 \u2014 Privacy Notice\n\n| # | Finding Title | Related Document Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Product analytics and telemetry retained indefinitely | Data retention schedule \u2014 Row 7, \u201cProduct Analytics and Telemetry\u201d; Footnote 3 | The retention period is not defined as a finite period. Row 7 points to Footnote 3, which states analytics and telemetry data is retained indefinitely for longitudinal analysis. The data elements include IP addresses, session IDs, user agent strings, page views, and feature usage, which may be personal data or linkable identifiers. There is also no deletion method and no scheduled review of the indefinite retention exemption. This creates a risk that privacy notices do not accurately disclose retention practices or that data is retained beyond what data subjects would reasonably expect. | High |\n| 2 | Analytics cookies incorrectly classified as \u201cStrictly Necessary\u201d | OneTrust configuration \u2014 `cookie_categories.strictly_necessary.cookies` | Google Analytics cookies `_ga`, `_ga_MEASUREMENT_ID`, `_gid`, and Mixpanel cookie `mp_crestline_mixpanel` are classified as \u201cStrictly Necessary.\u201d Their stated purposes are analytics, product telemetry, visitor tracking, capacity planning, and service reliability tracking. These are not essential for the website to function and should generally be categorized as performance/analytics cookies requiring consent where applicable. Misclassification means users may be told these cookies \u201ccannot be switched off,\u201d resulting in inaccurate notice and potential collection before valid consent. | High |\n| 3 | \u201cStrictly Necessary\u201d category includes third-party analytics providers | OneTrust configuration \u2014 `cookie_categories.strictly_necessary` | The strictly necessary category includes cookies from Google LLC and Mixpanel Inc. The description says these cookies are \u201cessential for the website to function,\u201d but the listed purposes involve analytics and telemetry. This creates a notice gap because data subjects may not be clearly informed that third-party analytics providers are receiving identifiers or telemetry data under an essential-cookie label. | High |\n| 4 | Rest-of-world cookie configuration provides implied consent with no granular controls | OneTrust configuration \u2014 `geo_rules.rest_of_world` | For users outside the EU/EEA and California, the configuration uses `default_consent: implied`, `banner_type: informational`, and `granular_categories: false`. However, the cookie inventory includes performance, functional, and targeting cookies that are marked as requiring consent. Without granular controls, users may not receive meaningful notice or choice by category, especially for advertising cookies such as Meta, Google Ads, and LinkedIn. This may result in privacy practices that differ from what the notice implies. | Medium |\n| 5 | Cookie scan appears stale relative to the monthly scanning requirement | OneTrust configuration \u2014 `scanner_schedule`, `last_scan_date`, `last_updated` | The configuration states that scanning occurs monthly, but the last scan date shown is `2025-01-15`, while the configuration was last updated on `2025-02-10`. If this is the current production configuration, the cookie inventory may not have been validated after the latest configuration update or within the expected monthly cadence. An outdated cookie inventory can cause the privacy notice or cookie banner to omit new cookies, list obsolete cookies, or misstate providers, purposes, and durations. | Medium |\n| 6 | Privacy notice alignment cannot be fully verified from provided evidence | Data retention schedule \u2014 Footnote 4; OneTrust configuration overall | The retention schedule states that retention periods comply with \u201cCrestline SaaS Privacy Policy v4.2,\u201d but the actual privacy policy/privacy notice was not provided. P1.1 requires that notice be provided to data subjects about privacy practices. Without reviewing the notice itself, it cannot be confirmed that data subjects are informed of the data categories collected, purposes of processing, cookie categories, third-party providers, retention periods, or the indefinite analytics retention practice. | Medium |\n| 7 | Local legal retention exceptions are not fully defined | Data retention schedule \u2014 Row 6, \u201cEmployee HR Data\u201d | The retention period for Employee HR Data is listed as \u201c2 years after employment termination,\u201d but the notes state it is \u201csubject to local labor law retention minimums.\u201d If local requirements override the stated retention period, the schedule should identify the applicable jurisdictional periods or reference a maintained jurisdiction-specific schedule. Otherwise, employee data may be retained for longer than the published period without a clearly defined retention basis communicated to data subjects. | Low |\n| 8 | California advertising cookie notice/choice is not fully evidenced | OneTrust configuration \u2014 `geo_rules.california`; `cookie_categories.targeting` | The California rule uses `default_consent: opt-out` and includes targeting cookies from Meta, Google, and LinkedIn. The configuration does not show whether the banner or notice includes \u201cDo Not Sell or Share My Personal Information,\u201d Global Privacy Control handling, or equivalent California-specific disclosures. Because targeting cookies may constitute cross-context behavioral advertising or sharing, the privacy notice and cookie controls should clearly disclose this and provide an effective opt-out. | Medium |\n\n## Overall Assessment\n\nThe provided controls partially support P1.1 because they show a structured retention schedule and a cookie consent management configuration. However, there are material readiness gaps that could cause privacy notices to be incomplete or inaccurate.\n\nThe most significant issues are:\n\n- Indefinite retention of analytics and telemetry data without a defined review or deletion process.\n- Misclassification of Google Analytics and Mixpanel cookies as \u201cStrictly Necessary.\u201d\n- Insufficient evidence that the external privacy notice accurately reflects the actual retention and cookie practices.\n\nThese issues should be remediated before relying on the controls as evidence of readiness for SOC 2 P1.1."
+}

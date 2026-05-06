@@ -1,0 +1,116 @@
+{
+  "report_id": "DR-TEST-2025-Q4",
+  "report_title": "Quarterly DR Failover Test Report -- Q4 2025",
+  "organization": "Zenith Cloud Inc.",
+  "test_date": "2025-11-15",
+  "test_type": "Full DR Failover",
+  "primary_region": "us-east-1",
+  "dr_region": "us-west-2",
+  "test_lead": "Carlos Reyes, Director of Infrastructure",
+  "approved_by": "Lisa Nakamura, CISO",
+  "participants": [
+    "Carlos Reyes -- Infrastructure",
+    "Priya Mehta -- Database Engineering",
+    "Jason Liu -- Platform Engineering",
+    "Sarah Kim -- Site Reliability Engineering",
+    "Tom Wallace -- Security Operations"
+  ],
+  "failover_timeline": {
+    "test_start": "2025-11-15T14:00:00Z",
+    "phase_1_database_failover": {
+      "start": "2025-11-15T14:00:00Z",
+      "end": "2025-11-15T16:25:00Z",
+      "duration_minutes": 145,
+      "steps": [
+        {"step": "Promote RDS read replica to primary", "duration_minutes": 8, "status": "success"},
+        {"step": "WAL replay and consistency verification", "duration_minutes": 42, "status": "success", "notes": "12 minutes of WAL replay. 30 minutes for consistency checks across 847 tables."},
+        {"step": "Update application database connection strings", "duration_minutes": 5, "status": "success"},
+        {"step": "Verify referential integrity", "duration_minutes": 35, "status": "success"},
+        {"step": "ElastiCache failover and warm-up", "duration_minutes": 28, "status": "success", "notes": "Cache miss rate initially 100%. Warm-up to 85% hit rate took 28 minutes."},
+        {"step": "S3 cross-region replication lag verification", "duration_minutes": 12, "status": "success", "notes": "All objects replicated. Maximum lag observed: 4 minutes 22 seconds."},
+        {"step": "Database performance validation", "duration_minutes": 15, "status": "success", "notes": "Query performance within 15% of production baseline."}
+      ]
+    },
+    "phase_2_application_deployment": {
+      "start": "2025-11-15T16:25:00Z",
+      "end": "2025-11-15T18:03:00Z",
+      "duration_minutes": 98,
+      "steps": [
+        {"step": "Scale Kubernetes cluster from 2 to 8 nodes", "duration_minutes": 18, "status": "success", "notes": "EC2 instance provisioning for 6 additional nodes."},
+        {"step": "Container image pull across new nodes", "duration_minutes": 45, "status": "delayed", "notes": "Container images not pre-cached in DR region ECR. Total pull size: 12.4 GB across 6 nodes. Average pull time per node: 7.5 minutes. This was the primary bottleneck."},
+        {"step": "Pod scheduling and startup", "duration_minutes": 20, "status": "success", "notes": "124 pods scheduled across 8 nodes. 3 pods failed initial health checks due to database connection pool exhaustion. Resolved by increasing pool size."},
+        {"step": "Service health check stabilization", "duration_minutes": 15, "status": "success", "notes": "All 5 Tier 1 services reporting healthy after pod restart cycle."}
+      ]
+    },
+    "phase_3_dns_and_traffic": {
+      "start": "2025-11-15T18:03:00Z",
+      "end": "2025-11-15T18:55:00Z",
+      "duration_minutes": 52,
+      "steps": [
+        {"step": "Route 53 health check failure detection", "duration_minutes": 2, "status": "success", "notes": "Health checks detected primary region failure. 3 consecutive failures at 30-second intervals."},
+        {"step": "DNS record update to DR region", "duration_minutes": 1, "status": "success"},
+        {"step": "DNS propagation", "duration_minutes": 12, "status": "success", "notes": "TTL 60 seconds. Most resolvers updated within 5 minutes."},
+        {"step": "CDN cache invalidation", "duration_minutes": 22, "status": "delayed", "notes": "CloudFront continued routing to primary region origin due to cached DNS. Required manual cache invalidation via CloudFront API. This step was NOT in the DR runbook. CDN cache invalidation procedure to be added to runbook."},
+        {"step": "End-to-end traffic validation", "duration_minutes": 15, "status": "success", "notes": "Synthetic transactions confirmed all Tier 1 services accepting live traffic. API response times within 20% of production baseline."}
+      ]
+    },
+    "phase_4_performance_validation": {
+      "start": "2025-11-15T18:55:00Z",
+      "end": "2025-11-15T19:32:00Z",
+      "duration_minutes": 37,
+      "steps": [
+        {"step": "Load test at 50% production traffic", "duration_minutes": 15, "status": "success"},
+        {"step": "Load test at 100% production traffic", "duration_minutes": 15, "status": "success", "notes": "P99 latency 340ms vs production baseline 280ms. Within acceptable range."},
+        {"step": "Background job processing verification", "duration_minutes": 7, "status": "success", "notes": "All job queues processing. No stuck jobs."}
+      ]
+    },
+    "test_end": "2025-11-15T19:32:00Z",
+    "total_duration_minutes": 332
+  },
+  "rto_assessment": {
+    "target_minutes": 240,
+    "actual_minutes": 332,
+    "result": "FAIL",
+    "overage_minutes": 92,
+    "overage_percent": 38.3,
+    "notes": "RTO exceeded by 92 minutes. Primary contributors: container image pull (45 min unplanned), CDN cache invalidation (22 min unplanned). Without these two issues, estimated time would have been 265 minutes -- still above RTO but closer."
+  },
+  "data_integrity": {
+    "rpo_achieved": true,
+    "max_data_loss_observed_seconds": 262,
+    "max_data_loss_observed_minutes": 4.37,
+    "rpo_target_minutes": 60,
+    "notes": "RPO met. Maximum observed lag was 4 minutes 22 seconds for S3 objects. Database WAL replay was current to within 30 seconds of failover initiation."
+  },
+  "issues_and_remediation": [
+    {
+      "issue": "Container images not pre-cached in DR region ECR",
+      "severity": "high",
+      "remediation": "Implement ECR cross-region replication for all production images. ETA: December 15, 2025.",
+      "owner": "Jason Liu"
+    },
+    {
+      "issue": "CDN cache invalidation not in DR runbook",
+      "severity": "medium",
+      "remediation": "Add CloudFront cache invalidation step to DR runbook. Consider automated invalidation via Lambda trigger. ETA: December 1, 2025.",
+      "owner": "Sarah Kim"
+    },
+    {
+      "issue": "Warm standby cluster capacity insufficient (2 nodes vs 8 production)",
+      "severity": "medium",
+      "remediation": "Increase warm standby to 4 nodes to reduce scaling time. Cost impact: approximately $2,400/month. Pending budget approval.",
+      "owner": "Carlos Reyes"
+    },
+    {
+      "issue": "Database connection pool exhaustion during pod startup",
+      "severity": "low",
+      "remediation": "Increase default connection pool size in DR configuration. Add connection pool pre-warming to startup sequence.",
+      "owner": "Priya Mehta"
+    }
+  ],
+  "sign_off": {
+    "test_lead": "Carlos Reyes",
+    "date": "2025-11-15",
+    "comments": "DR failover test completed. RTO not met (332 min vs 240 min target). RPO met. All Tier 1 services successfully failed over and validated. Key bottlenecks identified with specific remediation actions. This test was valuable in identifying gaps that would impact a real disaster scenario. Recommend expediting remediation actions and re-testing in Q1 2026."
+  }
+}

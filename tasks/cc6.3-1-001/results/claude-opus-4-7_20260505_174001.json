@@ -1,0 +1,85 @@
+{
+  "task_id": "cc6.3-1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:40:01.025204",
+  "score": {
+    "task_id": "cc6.3-1-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "least privilege",
+          "minimum necessary",
+          "department",
+          "missing"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "classification",
+          "sensitive",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "segregation",
+          "duties",
+          "write",
+          "approval",
+          "same",
+          "missing",
+          "single"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "role change",
+          "transfer",
+          "accumulation",
+          "creep",
+          "retain"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1434,
+    "output_tokens": 2846
+  },
+  "raw_response": "# Compliance Readiness Assessment: CC6.3 \u2014 Quorum Digital Data Access Authorization Policy\n\n## Executive Summary\n\nThe Quorum Digital Data Access Authorization Policy (POL-DA-2025-001, v1.4) provides a foundational framework for access management and addresses several elements of CC6.3, including role-based access control, an approval workflow, periodic reviews, and termination procedures. However, **significant gaps exist** in the explicit treatment of least privilege, segregation of duties, data classification, and lifecycle management triggers beyond termination. The policy is **not yet fully aligned** with CC6.3 in its current form.\n\nBelow are the detailed findings.\n\n---\n\n## Findings\n\n### Finding 1: Absence of Explicit Least Privilege Principle\n- **Section:** Section 3 (Access Authorization), generally\n- **Gap:** CC6.3 explicitly requires access management to be based on \"least privilege principles.\" The policy never uses the term \"least privilege\" nor defines a guiding principle that access should be limited to the minimum necessary to perform job functions. The role table in \u00a73.1 grants broad \"Read access to department data\" or \"Read-write access to department data\" without requiring tailoring to the specific tasks of the requestor.\n- **Severity:** **High**\n\n---\n\n### Finding 2: No Segregation of Duties (SoD) Framework\n- **Section:** Missing entirely (would belong in Section 3)\n- **Gap:** CC6.3 requires segregation of duties to prevent conflicts of interest and fraud (e.g., the same individual should not be able to both develop code and deploy it to production, or both request and approve their own access). The policy contains no SoD matrix, no list of incompatible duty combinations, and no controls to detect or prevent SoD conflicts during provisioning. Notably, the approval matrix in \u00a73.1 does not prohibit a manager from approving access for themselves or family members, nor does it specify an independent reviewer.\n- **Severity:** **Critical**\n\n---\n\n### Finding 3: No Data Classification Scheme\n- **Section:** Section 4 (Data Protection)\n- **Gap:** The policy references \"sensitive data\" and \"customer information\" but does not define a data classification scheme (e.g., Public, Internal, Confidential, Restricted) and does not tie access controls to classification levels. CC6.3 expects access decisions to consider the sensitivity of the asset. Without classification, approvers cannot consistently evaluate whether requested access aligns with the data's risk level.\n- **Severity:** **High**\n\n---\n\n### Finding 4: No Access Modification / Role Change Procedure\n- **Section:** Section 3 and Section 6\n- **Gap:** The policy addresses provisioning (\u00a73.2) and revocation upon termination (\u00a76.1), but is silent on **role changes, transfers, and promotions**. CC6.3 explicitly addresses authorization, **modification**, AND removal. When an employee changes departments or roles, prior access should be reviewed and removed if no longer needed (preventing \"access accumulation\" or \"privilege creep\"). No procedure exists for this.\n- **Severity:** **High**\n\n---\n\n### Finding 5: Insufficient Privileged Access Controls\n- **Section:** Section 3.1 (Administrator and Service Account roles)\n- **Gap:** Administrator and Service Account roles are listed but with no additional controls beyond an approval requirement. There is no mention of: multi-factor authentication for privileged access, just-in-time access, session recording, periodic credential rotation for service accounts, or enhanced logging. CC6.3 expects heightened controls commensurate with risk.\n- **Severity:** **High**\n\n---\n\n### Finding 6: Quarterly Access Reviews Lack Rigor\n- **Section:** Section 5 (Access Reviews)\n- **Gap:** The review process states only that IT reviews access quarterly. CC6.3 expects access reviews to be performed by **business owners or managers** who understand the user's job function \u2014 not solely IT, which lacks the business context to validate appropriateness. Additionally, the policy does not specify:\n  - Who must attest to the review results\n  - The remediation process when inappropriate access is identified\n  - Required timelines for revoking inappropriate access\n  - Whether privileged accounts are reviewed more frequently\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: Review Retention Period Likely Inadequate\n- **Section:** Section 5.2\n- **Gap:** Review documentation is retained for only 12 months. SOC 2 audits typically cover a 12-month period, and auditors often need to review evidence covering the full audit window plus prior periods for trend analysis. A 12-month retention is the bare minimum and may create gaps if audits are delayed.\n- **Severity:** **Low**\n\n---\n\n### Finding 8: Contractor Access Lacks Defined Approval & Re-validation\n- **Section:** Section 3.3 and Section 6.2\n- **Gap:** Contractor access is \"based on Statement of Work\" with no explicit approval workflow defined (unlike employees in \u00a73.2). Additionally, there is no requirement to re-validate access for long-running engagements or when the SOW scope changes. The 48-hour removal window after contract end (\u00a76.2) is also slow relative to the 24-hour employee window \u2014 contractors typically present equal or greater risk.\n- **Severity:** **Medium**\n\n---\n\n### Finding 9: 24-Hour Termination Window May Be Too Slow for High-Risk Departures\n- **Section:** Section 6.1\n- **Gap:** A 24-hour disablement window is acceptable for routine departures but does not address involuntary terminations or high-risk separations, which generally require immediate (real-time) revocation, ideally before notice is given to the employee. The policy makes no distinction.\n- **Severity:** **Medium**\n\n---\n\n### Finding 10: Weak Language Throughout (\"Should\" vs. \"Must\")\n- **Section:** Section 4.3 (Non-Production Environments)\n- **Gap:** \u00a74.3 states non-production environments \"**should** use synthetic or anonymized data where possible.\" This language is permissive rather than prescriptive. For SOC 2 control evidence, controls must be operating with consistent rigor; \"should\" creates auditor interpretation risk and may indicate the control is not consistently performed.\n- **Severity:** **Medium**\n\n---\n\n### Finding 11: No Defined Process for Emergency / Break-Glass Access\n- **Section:** Missing (related to Section 8 Exceptions)\n- **Gap:** While \u00a78 addresses exceptions in general, there is no specific procedure for emergency access (e.g., production incident response). Absent a defined break-glass process with logging and post-incident review, emergency access is either obtained through unauthorized channels or delayed inappropriately.\n- **Severity:** **Medium**\n\n---\n\n### Finding 12: Monitoring Section Lacks Specificity\n- **Section:** Section 7 (Monitoring)\n- **Gap:** The monitoring section is a single sentence stating that \"data access patterns are monitored for anomalies.\" There is no description of what is logged, retention period for logs, what constitutes an anomaly, alert thresholds, or who reviews alerts on what cadence. While CC6.3 is primarily about authorization, monitoring is critical to detecting unauthorized access decisions.\n- **Severity:** **Low** (other controls such as CC7.x cover monitoring more directly)\n\n---\n\n## Recommended Remediation Priorities\n\n| Priority | Finding |\n|----------|---------|\n| 1 | Define and codify Segregation of Duties matrix (Finding 2) |\n| 2 | Add explicit Least Privilege principle and enforcement requirements (Finding 1) |\n| 3 | Establish a Data Classification scheme tied to access tiers (Finding 3) |\n| 4 | Add Role Change / Transfer access review procedure (Finding 4) |\n| 5 | Strengthen Privileged Access Controls (Finding 5) |\n| 6 | Have business owners (not IT) perform periodic reviews (Finding 6) |\n\n## Overall Readiness Conclusion\n\n**Status: NOT READY** for CC6.3 attestation in current form. The policy's structural framework is reasonable, but the absence of explicit least-privilege language, any segregation-of-duties construct, and a data classification regime \u2014 all of which are foundational expectations of CC6.3 \u2014 represents material gaps that auditors will flag. Recommend revision to v1.5 prior to audit fieldwork."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "a1.2-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "A1.2",
+  "control_description": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup and recovery infrastructure, and recovery plan procedures to meet its objectives. Backup and recovery processes include procedures for recovery of data, systems, and infrastructure to meet the entity's availability commitments and system requirements.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/backup-recovery-policy.md",
+      "type": "policy",
+      "description": "Pinnacle SaaS backup and recovery policy defining RPO/RTO targets and restore testing requirements"
+    },
+    {
+      "path": "evidence/restore-test-report-q4.json",
+      "type": "report",
+      "description": "Q4 2025 quarterly restore test report with detailed timing breakdown, data integrity results, and RTO assessment"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the backup and recovery policy and Q4 2025 restore test report for Pinnacle SaaS. Assess whether the organization is meeting its SOC 2 A1.2 obligations for backup and recovery. Cross-reference the restore test results against the policy's defined recovery objectives.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Restore time of 3 hours 55 minutes leaves only 5-minute margin against 4-hour RTO",
+      "description": "The Q4 2025 restore test completed in 3 hours 55 minutes (235 minutes) against a 4-hour (240 minute) RTO target, leaving only a 5-minute margin (2.1%). The timing breakdown shows: database restore 148 minutes, application configuration restore 42 minutes, data integrity verification 28 minutes, application health checks 17 minutes. The restore test technically passes, but the margin is critically thin. The database restore phase alone consumed 63% of the total RTO window. The report notes data volume was 178.4 GB, up from 152.1 GB in Q3 (17.3% growth). At this growth rate, the next quarterly restore will likely exceed the RTO. The report's summary section states 'RTO: PASS' without flagging the margin concern — the risk is buried in the timing details.",
+      "evidence_sources": ["evidence/restore-test-report-q4.json", "evidence/backup-recovery-policy.md"],
+      "expected_reasoning": "The auditor should examine the restore test timing details and compare total restore time against the RTO target. The summary says 'PASS' but 235 minutes out of 240 is a 5-minute margin. Combined with 17.3% data growth quarter-over-quarter, the next test is likely to fail. The auditor should flag this as a trending risk even though the current test passes.",
+      "detection_criteria": {
+        "required_keywords": ["3 hours 55 minutes", "235 minutes", "240 minutes", "RTO", "5-minute margin", "database restore", "148 minutes", "data growth", "17.3%"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "12 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["backup", "recovery", "RTO", "restore_testing", "trending_risk", "margin_analysis"]
+  }
+}

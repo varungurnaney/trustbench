@@ -1,0 +1,57 @@
+{
+  "task_id": "pi1.1-4-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:42:38.738622",
+  "score": {
+    "task_id": "pi1.1-4-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.08333333333333333,
+    "f1": 0.15384615384615385,
+    "score": 0.15384615384615385,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-7203",
+          "false positive",
+          "PartnerApiClient",
+          "Section 4.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-7207",
+          "XXE",
+          "XmlDataIngester",
+          "30-day SLA",
+          "no exception",
+          "unassigned",
+          "escalation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4142,
+    "output_tokens": 1902
+  },
+  "raw_response": "Below is an assessment of each relevant SAST finding for Q4 2025 against PI1.1, focusing on whether processing objectives for *complete, accurate, and timely processing* are in place and followed. I\u2019ve omitted purely \u201cCode Smell\u201d (style) findings unless they have a real impact on integrity.\n\n---\n\n### 1. **SQ-7203: SSRF Vulnerability in PartnerApiClient.java**\n- **Section:** SAST Findings, SAST Exception Register, SDLC Policy (4.2 False Positive Management)\n- **Gap Analysis:**  \n  - This finding is marked as a High-severity SSRF but is documented in the exception register with detailed technical justification.\n  - Reviewed and approved by AppSec Lead and in compliance with section 4.2 of SDLC policy.\n  - **Gap:** *None.* The process for documenting and approving false positives is followed and aligns with PI1.1 objectives for completeness and accuracy.\n- **Severity:** N/A (Valid Exception)\n\n---\n\n### 2. **SQ-7207: XXE Vulnerability in XmlDataIngester.java**\n- **Section:** SAST Findings, SDLC Policy (Quality Gate and SLA)\n- **Gap Analysis:**  \n  - High-severity XXE finding, flagged 2025-09-10, still open and unassigned as of 2025-12-29.\n  - No documented exception or evidence of remediation/investigation.\n  - Not escalated as required by policy; process gap in follow-up and timeliness (breach of 30-day SLA per SDLC Section 4.1/4.3).\n  - **Gap:** *Timely processing is lacking for this high-severity item. No evidence of exception assessment, remediation, or required escalation.*\n- **Severity:** **High**\n\n---\n\n### 3. **SQ-7201: Hard-coded Credentials in TestConfig.java**\n- **Section:** SAST Findings, Code Review, SDLC Policy (4.1/5.2)\n- **Gap Analysis:**\n  - Medium-severity, resolved and migrated to Vault as of Oct 25.\n  - Shows timely and correct application of processing integrity objectives.\n  - **Gap:** *None.* Remediation aligns with policy, supporting accurate and complete processing.\n- **Severity:** N/A (Remediated)\n\n---\n\n### 4. **SQ-7204/SQ-3811: Null Pointer in ReportBuilder.java**\n- **Section:** SAST Findings, Merge Requests (MR-3811), SDLC Policy (4.1/3.2)\n- **Gap Analysis:**\n  - Medium bug, in code review as of review period end.\n  - Shows in-progress investigation and peer review within reasonable time frame.\n  - **Gap:** *None (as of Q4 close).* Process and review actively in flight, aligns with policy.\n- **Severity:** N/A (Timely Processing; not overdue)\n\n---\n\n### 5. **SQ-7213: Weak Hash (MD5) for Checksums in ChecksumValidator.java**\n- **Section:** SAST Findings, MR-3805, SAST Exception Register, SDLC Policy (4.2, 5.2)\n- **Gap Analysis:**\n  - Medium vulnerability, with analysis in both SAST register and code review records.\n  - Use of MD5 justified for non-security checksum, migration to SHA-256 underway for new features (MR-3805: \u201cSHA-256 instead of MD5 per review\u201d), legacy compatibility rationale documented elsewhere.\n  - **Gap:** *None major\u2014appears technically justified for legacy cases, with migration for new code. Exception process followed or in review for newly written features.*\n- **Severity:** **Low** (For legacy use only; risk mitigated and tracked for upgrade)\n\n---\n\n### 6. **SQ-7217: CORS Origins Not Validated in CorsFilter.java**\n- **Section:** SAST Findings, MR-3825, SDLC Policy (4.1)\n- **Gap Analysis:**\n  - Medium vulnerability, marked resolved on Nov 20 (\u201cRestricted to known origins Nov 20\u201d).\n  - **Gap:** *None. Timely remediation and policy alignment observed.*\n- **Severity:** N/A (Remediated)\n\n---\n\n### 7. **SQ-7211: SQL Injection in LegacyReportDao.java**\n- **Section:** SAST Findings, MR-3860, SDLC Policy (4.1)\n- **Gap Analysis:**\n  - Medium vulnerability; refactoring in progress, with target completion soon after period end.\n  - **Gap:** *None for Q4; in progress and not overdue.*\n- **Severity:** N/A (Being remediated)\n\n---\n\n### 8. **SQ-7219/MR-3845: Floating Point Equality in InvoiceCalculator.java**\n- **Section:** SAST Findings, MR-3845, SDLC Policy (4.1)\n- **Gap Analysis:**\n  - Medium bug, PR in review for migration to BigDecimal.\n  - **Gap:** *None. Remediation underway per objective.*\n- **Severity:** N/A (Being remediated)\n\n---\n\n### 9. **SQ-7221: Basic Authentication in AdminPortalAuth.java**\n- **Section:** SAST Findings, SDLC Policy (4.1)\n- **Gap Analysis:**\n  - Medium vulnerability (should be High for security, but SAST marks as Medium).\n  - Migration to OAuth2 planned for Q1 2026; still open as of Q4 2025 close.\n  - No exception filed, but not overdue per 90-day SLA for Medium.\n  - **Gap:** *No timeliness gap as of end Q4, but ongoing exposure; verify that the processing objective includes planning for this remediation.*\n- **Severity:** **Medium** (Monitored, but not yet overdue)\n\n---\n\n### 10. **Other SAST False Positives (EXC-SAST-2025-038, -041, -047)**\n- **Section:** SAST Exception Register, SDLC Policy (4.2)\n- **Gap Analysis:**\n  - All related findings are false positives, with detailed technical justification, reviewed, and entered in the exception register per policy.\n  - **Gap:** *None. Exception process demonstrates accuracy and completeness in processing SAST results.*\n- **Severity:** N/A (Exceptions)\n\n---\n\n## Summary Table\n\n| Finding          | Title                                      | Section                             | Gap Description                                                                                           | Severity |\n|------------------|--------------------------------------------|-------------------------------------|-----------------------------------------------------------------------------------------------------------|----------|\n| SQ-7203          | SSRF in PartnerApiClient.java              | SAST, Exception Register, SDLC 4.2  | No gap\u2014exception process followed                                                                         | N/A      |\n| SQ-7207          | XXE in XmlDataIngester.java                | SAST, SDLC Policy 4.1/4.3           | No remediation/exception/escalation; breach of policy for high severity                                   | **High** |\n| SQ-7213          | Weak Hash (MD5) in ChecksumValidator.java  | SAST, Exception Register            | Legacy non-security usage documented, new use migrated                                                    | **Low**  |\n| SQ-7221          | Basic Authentication in AdminPortalAuth    | SAST                                | Remediation planned but not overdue as of Q4; verify that risk is accepted and tracked                    | **Medium** |\n| All SAST FPs     | (Multiple)                                 | SAST Exception Register, SDLC 4.2   | Exception process consistently documents and justifies exclusions                                         | N/A      |\n| All others (timely fixes in code review) | (Multiple medium bugs, etc.)   | MR Records, SAST                    | No gap\u2014remediation or review in progress, within SLA                                                      | N/A      |\n\n---\n\n## **Key Gaps for PI1.1**\n1. **SQ-7207: XXE in XmlDataIngester.java**  \n   - **Why a Gap:** High-severity, unassigned and unremediated as of Q4 end, not escalated per policy, indicating SAST processing objectives for timely follow-up were not met.\n2. **SQ-7213: MD5 Hash Use**  \n   - **Why a Gap:** Acceptable only because *context* (non-security use) is justified, and new code moves to stronger hash. Minimal risk due to legacy use, but continued attention is needed.\n3. **SQ-7221: Basic Auth**  \n   - **Why a Gap:** Remediation is planned, not overdue, but evidences that risk acceptance is temporary, not permanent.\n\n**All other findings and exceptions appear to be processed in accordance with PI1.1 objectives, with adequate documentation, technical rationale, and timely follow-up.**\n\n---\n\n### **Conclusion**\nVantage Analytics meets PI1.1 requirements for most SAST findings and exception processing, but the XXE (SQ-7207) remains a significant gap due to lack of action within required timelines for a high-severity issue. All other exceptions and in-progress items indicate adherence to defined SAST processing objectives (policy, completeness, accuracy, and timeliness)."
+}

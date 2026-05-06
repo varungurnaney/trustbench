@@ -1,0 +1,88 @@
+{
+  "task_id": "c1.1-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:14:02.346829",
+  "score": {
+    "task_id": "c1.1-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.6666666666666666,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "pag_staging",
+          "EXC-2025-030",
+          "synthetic",
+          "no PII",
+          "approved",
+          "not a finding"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "pag_prod_support",
+          "requester_email",
+          "requester_name",
+          "plaintext",
+          "Restricted",
+          "no exception",
+          "ticket routing",
+          "field-level encryption"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "description",
+          "May contain PII",
+          "free-text",
+          "Confidential",
+          "ticket",
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "quarterly review",
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6006,
+    "output_tokens": 2203
+  },
+  "raw_response": "# SOC 2 C1.1 Readiness Assessment \u2014 Pinnacle Analytics Group\n## Q4 2025 (October 1 \u2013 December 31, 2025)\n\n## Scope of Review\n\nI reviewed the following evidence:\n- **Data Classification and Handling Policy (POL-DCH-004 v3.1)** \u2014 relevant; defines encryption requirements\n- **Database encryption status report (2025-12-18)** \u2014 relevant; primary technical evidence\n- **CISO-approved exceptions register** \u2014 relevant; addresses two specific deviations\n- **Q4 2025 security awareness training records** \u2014 *Not relevant to C1.1 encryption controls* as labeled, and excluded from the encryption analysis. (Note: training records *can* be tangentially relevant to C1.1 since the control covers identification/handling of confidential info broadly, but for this assessment focused on encryption posture, they were excluded.)\n\nI cross-referenced Section 5.2 (\"Field-level encryption is required for all Restricted PII columns\") against each row of the encryption status report, then verified whether each apparent deviation was covered by an active CISO exception.\n\n---\n\n## Findings\n\n### Finding 1: Restricted PII stored in plaintext in `pag_prod_support.tickets` without exception\n\n- **Title:** Unencrypted PII columns in production support database\n- **Policy reference:** Section 5.2 (Data at Rest) \u2014 \"Field-level encryption is required for all Restricted PII columns.\"\n- **Gap:** The database encryption status report shows two columns in `pag_prod_support.tickets` classified as **Restricted** with `pii_flag = Yes` and `field_encryption = No`:\n  - `requester_email` (varchar(255)) \u2014 \"PLAINTEXT \u2014 stored unencrypted for ticket routing and search\"\n  - `requester_name` (varchar(200)) \u2014 \"PLAINTEXT \u2014 stored unencrypted for display in support dashboard\"\n  \n  These columns are direct violations of Section 5.2's field-level encryption mandate for Restricted PII. Unlike the staging database (EXC-2025-030) and the report cache (EXC-2025-031), there is **no CISO-approved exception** in the exceptions register covering `pag_prod_support`. The operational justifications in the \"notes\" field (routing, search, dashboard display) are technical workarounds, not approved exceptions, and no compensating controls are documented.\n- **Severity:** **High** \u2014 Restricted PII (real customer email addresses and names) is stored in plaintext in a production database in violation of policy, without the exception process required by Section 8 having been followed.\n\n---\n\n### Finding 2: Potential undeclared PII in `tickets.description` not addressed by classification\n\n- **Title:** Free-text field likely contains Restricted PII but is not classified or encrypted as such\n- **Policy reference:** Section 3 (Classification Levels) and Section 5.2 (Data at Rest)\n- **Gap:** The `pag_prod_support.tickets.description` column is classified as **Confidential** with `pii_flag = No`, but the report's own notes state: *\"May contain PII submitted by user but not classified as PII column.\"* Per Section 3, data containing PII must be classified as **Restricted** and receive field-level encryption. The current treatment (\"not classified as PII column\") appears to be an administrative workaround that bypasses the policy's handling requirements rather than a substantive control. There is no exception on file for this either, and no compensating control such as DLP scanning or PII redaction is documented.\n- **Severity:** **Medium** \u2014 The risk is real but probabilistic (depends on user input). At-rest RDS encryption provides baseline protection, but field-level encryption required by 5.2 is absent and the classification appears to have been chosen to avoid the requirement.\n\n---\n\n### Finding 3: Exception EXC-2025-031 review timing inconsistency\n\n- **Title:** Exception \"last_review_date\" precedes assessment period end and may not reflect current quarter\n- **Policy reference:** Section 8 (Exceptions) \u2014 \"quarterly review\" required\n- **Gap:** Both exceptions show `last_review_date = 2025-12-10`, which is within Q4 2025 and acceptable. However, EXC-2025-031 (report cache) relies on the assertion that aggregated data has k-anonymity \u2265 50 and contains no PII, with quarterly content audits by Data Governance. The evidence package does not include the actual Q4 2025 content audit report or the synthetic data verification report referenced as compensating controls for EXC-2025-030. Without this artifact, the auditor cannot confirm the compensating controls are operating effectively.\n- **Severity:** **Low** \u2014 Process appears sound on paper; this is an evidence-completeness gap rather than a control failure. Request the underlying audit reports during fieldwork.\n\n---\n\n## Items Reviewed and **Not** Flagged\n\n- **`pag_staging` unencrypted fields** \u2014 Properly covered by EXC-2025-030 (synthetic data only, isolated VPC, monthly automated scans, current review). Not a finding.\n- **`pag_prod_reporting.report_cache.report_data` JSONB unencrypted** \u2014 Properly covered by EXC-2025-031 (aggregated data, k-anonymity, current review). Not a finding, though see Finding 3 regarding evidence of the compensating audit.\n- **`orders.total_amount` (Confidential, no field-level encryption)** \u2014 Policy Section 5.2 requires field-level encryption only for **Restricted PII columns**, not all Confidential data. RDS-level AES-256 encryption satisfies the at-rest requirement for Confidential financial data. Not a finding.\n- **`company_name`, `generated_by`, primary keys** \u2014 Not PII, classified appropriately. Not findings.\n- **Training records (EMP-008 initial fail)** \u2014 Outside the scope of C1.1 encryption review as the document itself notes; remediated via successful retake on 2025-11-22 in any case.\n\n---\n\n## Summary\n\n| Severity | Count |\n|----------|-------|\n| Critical | 0 |\n| High     | 1 |\n| Medium   | 1 |\n| Low      | 1 |\n\n**Overall readiness:** The control is **partially effective**. The exception process is functioning well for the two known staging/reporting deviations, but Finding 1 represents a material gap: production Restricted PII stored in plaintext without going through the documented exception process. This should be remediated (either by implementing field-level encryption with searchable encryption / blind index techniques, or by filing a formal CISO exception with documented compensating controls) before the SOC 2 Type II observation period."
+}

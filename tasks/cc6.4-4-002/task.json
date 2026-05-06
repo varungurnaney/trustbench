@@ -1,0 +1,104 @@
+{
+  "id": "cc6.4-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.4",
+  "control_description": "The entity restricts physical access to facilities and protected information assets to meet the entity's objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/physical-security-policy.md",
+      "type": "policy",
+      "description": "Solaris Tech Group physical security policy defining badge lifecycle management, visitor controls, and CCTV requirements"
+    },
+    {
+      "path": "evidence/badge-access-log-q4-2025.csv",
+      "type": "log",
+      "description": "Badge access log for Q4 2025 with 55 entries showing badge swipes including after-hours and denied entries"
+    },
+    {
+      "path": "evidence/access-card-provisioning-records.csv",
+      "type": "spreadsheet",
+      "description": "Access card provisioning and deprovisioning records for Q4 2025 showing badge lifecycle events"
+    },
+    {
+      "path": "evidence/after-hours-exception-register.csv",
+      "type": "exception_register",
+      "description": "Register of approved after-hours and special access exceptions for Q4 2025"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/environmental-monitoring-log-q4-2025.csv",
+      "type": "log",
+      "description": "Server room environmental sensor readings — temperature and humidity monitoring data not directly relevant to physical access controls"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Solaris Tech Group's physical access controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the physical security policy, badge access log, access card provisioning records, after-hours exception register, and any supporting documentation. Assess whether CC6.4 requirements for restricting physical access are met. Be careful to distinguish between genuine control gaps and situations with valid justification or proper approvals.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "Badge access denied for former employee appears alarming but badge was properly deactivated on termination date",
+      "description": "Badge access log entry ACL-4038 shows a DENIED badge swipe for former employee Andrea Walsh (B-5088) at AP-MAIN-01 on November 12, 2025 at 08:45. This initially appears concerning — a terminated employee attempting facility access. However, the access card provisioning records show B-5088 was deactivated on November 1, 2025, the exact termination date, in compliance with the policy's same-day deactivation requirement (Section 4.5). The denied swipe indicates the access control system is working correctly — the badge was deactivated and the system rejected the access attempt. The denied event should be investigated as a potential social engineering attempt, but it is NOT a physical access control gap. The deactivation control operated as designed.",
+      "evidence_sources": [
+        "evidence/badge-access-log-q4-2025.csv",
+        "evidence/access-card-provisioning-records.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The model should notice the DENIED swipe for Andrea Walsh (terminated). Cross-referencing provisioning records confirms B-5088 was deactivated on November 1, the termination date, before the November 12 swipe attempt. The system correctly denied access. This validates the deactivation control rather than indicating a gap. The model should dismiss this as the control working correctly.",
+      "detection_criteria": {
+        "required_keywords": ["Andrea Walsh", "B-5088", "Denied", "November 1", "November 12", "deactivated", "Section 4.5", "control working"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": ["not a finding", "control operating as designed", "properly deactivated", "system working correctly", "dismissed"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Badge provisioned for contractor 12 days before approved contract start date",
+      "description": "Access card provisioning record PROV-0087 shows badge CTR-0145 was provisioned for contractor Luis Ortega (NexGen Consulting) on October 8, 2025, with zone access to 'General Office, Network Closet.' However, the provisioning record shows the contract_start_date as October 20, 2025. The badge was active and usable 12 days before the contractor's engagement officially began. Policy Section 4.6 states 'Contractor badges shall be activated on or after the contract start date, not before.' Badge access log entries ACL-4012 and ACL-4015 confirm Luis Ortega used the badge on October 10 and October 14, both before the contract start date. Pre-activation of contractor badges creates an uncontrolled access window where the contractor has facility access before the sponsoring team's supervision and work order are in effect.",
+      "evidence_sources": [
+        "evidence/access-card-provisioning-records.csv",
+        "evidence/badge-access-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The model should review provisioning records and compare badge activation dates to contract start dates. CTR-0145 was activated October 8 with a contract start of October 20 — a 12-day early activation. The badge access log confirms the contractor actually used the badge during this pre-contract period. This violates Section 4.6. The model should also check whether any exception was filed (none exists in the exception register).",
+      "detection_criteria": {
+        "required_keywords": ["Luis Ortega", "CTR-0145", "October 8", "October 20", "12 days", "NexGen Consulting", "Section 4.6", "contract start date", "pre-activation"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Contractor badge not deactivated 18 days after contract end date",
+      "description": "Access card provisioning record PROV-0082 shows contractor badge CTR-0139 (assigned to Janet Yee, Brightworks Electric) has a contract_end_date of November 30, 2025, but the deactivation_date field is blank as of December 18, 2025 (the provisioning report date). The badge status shows 'Active.' Policy Section 4.7 requires contractor badges to be deactivated within 1 business day of the contract end date. The badge has been active for 18 calendar days past the contract end. While no badge swipes for CTR-0139 appear in the access log after November 30, the badge remains technically active and could be used.",
+      "evidence_sources": [
+        "evidence/access-card-provisioning-records.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The model should scan provisioning records for badges where the contract_end_date has passed but the deactivation_date is blank or the status is still Active. CTR-0139 ended November 30 but remains Active with no deactivation. This violates Section 4.7's 1-business-day deactivation requirement. While no post-contract swipes are logged, the active badge represents unmitigated risk.",
+      "detection_criteria": {
+        "required_keywords": ["Janet Yee", "CTR-0139", "Brightworks Electric", "November 30", "deactivation", "Active", "Section 4.7", "1 business day", "18 days"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["physical_security", "red_herring", "badge_lifecycle", "contractor_access", "provisioning", "deactivation"]
+  }
+}

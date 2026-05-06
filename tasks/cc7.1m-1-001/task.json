@@ -1,0 +1,71 @@
+{
+  "id": "cc7.1m-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "The entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/maintenance-policy.md",
+      "type": "policy",
+      "description": "Crestline Technologies system maintenance policy covering preventive maintenance, patching, vendor maintenance, and documentation requirements"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the system maintenance policy for Crestline Technologies. Assess whether it adequately addresses SOC 2 CC7.1 requirements for maintaining system components. Identify any gaps or missing elements that an auditor would flag regarding the completeness of the maintenance program.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No maintenance window schedule or defined maintenance windows",
+      "description": "The maintenance policy does not define any maintenance windows — there is no specification of when maintenance activities may be performed, what days and times are designated for maintenance, how long maintenance windows last, or how maintenance windows are communicated to stakeholders. Section 3 describes maintenance categories and Section 4 addresses patching, but neither defines when these activities should occur. Without defined maintenance windows, maintenance could be performed at any time including peak business hours, there is no predictable schedule for stakeholders to plan around, and there is no framework for distinguishing between in-window and out-of-window maintenance activities. CC7.1 requires that maintenance be performed in a controlled manner, which includes scheduling maintenance during appropriate windows to minimize business disruption.",
+      "evidence_sources": ["evidence/maintenance-policy.md"],
+      "expected_reasoning": "The policy has sections on maintenance categories, patching, vendor access, and documentation, but never defines when maintenance should be performed. There is no maintenance window schedule, no definition of permitted maintenance hours, and no communication process for planned maintenance. This is a fundamental gap in a maintenance program.",
+      "detection_criteria": {
+        "required_keywords": ["maintenance window", "schedule", "timing", "when", "hours", "missing", "not defined", "business hours"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No patching frequency or patch SLA timeframes defined",
+      "description": "Section 4.3 states patches 'should be deployed in a timely manner based on the severity of the vulnerability or issue being addressed' but does not define specific patching frequencies or SLA timeframes. There is no specification for how often systems should be patched (e.g., monthly patch cycles), no defined SLAs per severity level (e.g., Critical patches within 14 days, High within 30 days), and no requirement for regular patch status reporting. The word 'should' rather than 'must' makes the requirement advisory rather than mandatory. Without defined patch cadence and SLAs, there is no measurable standard for patching timeliness, and the organization cannot track or report on patch SLA compliance.",
+      "evidence_sources": ["evidence/maintenance-policy.md"],
+      "expected_reasoning": "Section 4.3 uses vague language ('timely manner') and advisory tone ('should') without defining specific patch frequencies or SLAs. An auditor cannot verify compliance with an undefined standard. Industry best practice is monthly patching with severity-based SLAs for critical patches.",
+      "detection_criteria": {
+        "required_keywords": ["Section 4.3", "timely manner", "patch frequency", "SLA", "severity", "undefined", "should", "monthly"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No preventive maintenance schedule or frequency defined",
+      "description": "Section 3.1 lists preventive maintenance activities (hardware inspections, log rotation, performance reviews, certificate renewals, license renewals) but does not specify how frequently these activities should be performed. There is no preventive maintenance schedule, no defined intervals for hardware inspections, no calendar for certificate renewal checks, and no periodic review cadence. Without a defined schedule, preventive maintenance may be performed inconsistently or not at all. Section 6.2 mentions maintaining 'next scheduled maintenance date' for each equipment asset, but there is no policy defining what determines that schedule.",
+      "evidence_sources": ["evidence/maintenance-policy.md"],
+      "expected_reasoning": "Section 3.1 describes what preventive maintenance includes but not how often it should occur. Section 6.2 references 'next scheduled maintenance date' implying a schedule should exist, but the policy does not define it. Hardware inspections, certificate renewals, and license renewals all have natural cadences that should be specified.",
+      "detection_criteria": {
+        "required_keywords": ["preventive maintenance", "schedule", "frequency", "Section 3.1", "how often", "interval", "missing", "hardware inspection"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["system_maintenance", "maintenance_window", "patch_frequency", "policy_review", "single_document"]
+  }
+}

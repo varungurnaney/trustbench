@@ -1,0 +1,58 @@
+{
+  "task_id": "cc6.4-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:45:46.917235",
+  "score": {
+    "task_id": "cc6.4-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "Rachel Simmons",
+          "B-2847",
+          "Terminated",
+          "24 hours",
+          "badge deactivation",
+          "Section 4.3"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CCTV",
+          "90 days",
+          "30 days",
+          "retention",
+          "Appendix A",
+          "Section 5.3"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5784,
+    "output_tokens": 2934
+  },
+  "raw_response": "# CC6.4 Physical Access Control Readiness Assessment\n## Helios Systems\n\n---\n\n## Executive Summary\n\nThe physical security policy is generally well-structured and addresses most CC6.4 requirements (badge access, CCTV, visitor management, termination procedures). However, cross-referencing the policy against the badge access log and the policy's own configuration appendix reveals several material compliance gaps, including a critical termination control failure and an internally inconsistent CCTV retention configuration.\n\n---\n\n## Findings\n\n### Finding 1: Terminated Employee Retained Active Badge Access Beyond Required Deactivation Window\n**Document Section:** Policy \u00a74.3 (Termination and Deactivation); Access Log entry ACL-0947\n\n**Gap Description:**\nSection 4.3 requires badge deactivation within 24 hours of the termination effective date. Log entry ACL-0947 shows badge B-2847 (Rachel Simmons, Customer Support) successfully granted access at AP-MAIN-01 on **2025-11-17 08:42:09**, with a recorded termination date of **2025-11-15**. This is approximately **48 hours after** the deactivation deadline, and the badge was still active and used to enter the facility. This is a direct control failure with evidence of unauthorized physical access by a terminated individual.\n\n**Severity:** **Critical**\n\nThis finding alone is likely to result in a CC6.4 exception in a SOC 2 examination. It indicates both a process breakdown (HR-to-Facilities notification or workflow) and a monitoring failure (the access was not detected or alerted on in real time).\n\n---\n\n### Finding 2: CCTV Retention Configuration Contradicts Policy Requirement\n**Document Section:** Policy \u00a75.3 (Retention) vs. Appendix A (System Configuration Summary)\n\n**Gap Description:**\nSection 5.3 states CCTV footage \"shall be retained for a minimum of 90 days.\" However, Appendix A documents the Milestone XProtect retention period as **30 days**. The system as configured cannot meet the policy commitment, and any incident discovered more than 30 days after occurrence would lack supporting video evidence. This is an internal policy-vs-configuration inconsistency that an auditor will identify immediately.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: After-Hours CCTV Monitoring Relies on Single Point of Failure\n**Document Section:** Policy \u00a75.2 (Monitoring)\n\n**Gap Description:**\nAfter-hours surveillance depends on motion-detection alerts sent to a single on-call Facilities team member. There is no documented escalation path, acknowledgment requirement, response SLA, or backup monitor. If the on-call individual is unavailable or misses an alert, no compensating control exists. CC6.4 expects monitoring to be effective on a continuous basis.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 4: No Evidence of Quarterly Access Review Performed\n**Document Section:** Policy \u00a74.4 (Quarterly Access Review)\n\n**Gap Description:**\nThe policy mandates quarterly review of all badge authorizations and flagging of stale access (90+ days unused). No review artifacts, sign-offs, stale-access reports, or remediation logs have been provided as evidence. For SOC 2, the existence of the policy is insufficient \u2014 operating effectiveness must be demonstrated. Additionally, the late deactivation in Finding 1 suggests the review process may not be operating as designed.\n\n**Severity:** **High**\n\n---\n\n### Finding 5: Loading Dock Classified as General Office Zone\n**Document Section:** Policy \u00a73.2 (Access Points), AP-DOCK-01\n\n**Gap Description:**\nThe loading dock (AP-DOCK-01) is classified as \"General Office\" with only an HID iCLASS SE reader (no PIN, no escort requirement noted). Loading docks are typical ingress points for unauthorized persons, deliveries, and equipment movement, and industry practice treats them as restricted or semi-restricted zones with additional controls (e.g., dual-factor, supervision during deliveries, separate logging). The current classification appears under-controlled relative to risk.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: Network Closet Lacks PIN Requirement Despite Restricted Classification\n**Document Section:** Policy \u00a73.2 (Access Points), AP-NET-01\n\n**Gap Description:**\nServer Rooms A and B (also Restricted) require badge **plus PIN** (two-factor). The Network Closet (AP-NET-01), classified equally as Restricted, requires only badge swipe. This is an inconsistent application of the restricted-zone control standard, since the network closet typically contains core switching, routing, and potentially cabling that affords access to protected information assets.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Visitor Access Activity Not Represented in Provided Log\n**Document Section:** Policy \u00a76 (Visitor Management); Access Log scope\n\n**Gap Description:**\nThe Q4 2025 access log contains 55 entries, all of which are employee badge swipes. No visitor check-in/check-out records, visitor badge issuances, or escort logs were provided. CC6.4 requires evidence that visitor controls (pre-registration, ID verification, escort, badge return) are operating effectively. Without these records, an auditor cannot test \u00a76 controls.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 8: Badge Collection Procedure Not Verifiable\n**Document Section:** Policy \u00a74.3 (Termination and Deactivation)\n\n**Gap Description:**\nThe policy requires the physical badge to be collected on the last day of employment, but there is no documented chain-of-custody form, acknowledgment, or attestation evidencing collection. Combined with Finding 1 (a terminated employee's badge still functioning two days post-termination), the lack of a collection control creates risk that physical badges remain in former-employee possession.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 9: No Documented Failed-Access or Anomaly Review Process\n**Document Section:** Policy \u00a73.1 (Access Control System) and broader\n\n**Gap Description:**\nThe Genetec system logs grant/deny events and is configured with a 3-attempt lockout, but the policy does not describe who reviews denied-access events, lockouts, after-hours access, or anomalous patterns (e.g., a terminated employee's badge being used). Had such a review existed, ACL-0947 would likely have been detected. Detective controls over the access log are absent.\n\n**Severity:** **High**\n\n---\n\n### Finding 10: DR Site (Charlotte) Controls Not Described\n**Document Section:** Policy \u00a72 (Scope) and \u00a73.2 (Access Points)\n\n**Gap Description:**\nThe policy explicitly includes the disaster recovery site at 3200 Commerce Way, Charlotte, NC within scope, but the access points table lists only the Raleigh location. No badge readers, CCTV coverage, or visitor procedures are specified for the DR site. Protected information assets at the DR facility are therefore not demonstrably covered by the documented controls.\n\n**Severity:** **High**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Terminated employee badge active 48+ hours post-termination | Critical |\n| 2 | CCTV retention misconfigured (30 days vs. 90-day policy) | High |\n| 4 | No evidence of quarterly access reviews | High |\n| 9 | No log monitoring / anomaly detection process | High |\n| 10 | DR site controls undocumented | High |\n| 3 | Single point of failure in after-hours monitoring | Medium |\n| 5 | Loading dock under-classified | Medium |\n| 6 | Network closet lacks PIN despite Restricted status | Medium |\n| 7 | No visitor activity evidence provided | Medium |\n| 8 | Badge collection at termination not verifiable | Medium |\n\n## Recommended Priority Actions\n\n1. **Immediate:** Investigate ACL-0947, document root cause of late deactivation, and implement automated HR-to-Facilities deprovisioning workflow with same-day SLA.\n2. **Immediate:** Reconcile CCTV retention \u2014 either reconfigure XProtect to 90 days or update the policy (and assess whether 30 days meets entity objectives).\n3. **Short-term:** Produce Q3 and Q4 2025 access review evidence; institute monthly stale-access reporting.\n4. **Short-term:** Define and operate a log review procedure covering terminated-user attempts, after-hours access, and lockouts.\n5. **Short-term:** Document and evidence DR site physical controls equivalent to corporate office."
+}

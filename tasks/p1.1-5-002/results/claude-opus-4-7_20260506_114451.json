@@ -1,0 +1,115 @@
+{
+  "task_id": "p1.1-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:44:51.383382",
+  "score": {
+    "task_id": "p1.1-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.38461538461538464,
+    "f1": 0.5555555555555556,
+    "score": 0.5555555555555556,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 13,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "processor",
+          "controller",
+          "dual role",
+          "employer",
+          "client",
+          "PROC-009",
+          "distinguish"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DSAR-2025-HR-011",
+          "rejected",
+          "processor",
+          "PROC-007",
+          "workforce analytics",
+          "controller",
+          "benchmarking",
+          "anonymized"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "wellness survey",
+          "consent",
+          "processor",
+          "employer",
+          "controller",
+          "directly",
+          "PROC-005",
+          "in-platform",
+          "B2B"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "PROC-006",
+          "aggregation",
+          "waived",
+          "executive",
+          "C-suite",
+          "individual-level",
+          "anonymized",
+          "contradicts"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "DSAR-2025-HR-009",
+          "DSAR-2025-HR-013",
+          "rejected",
+          "not available",
+          "7 years",
+          "retained",
+          "PROC-003"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8923,
+    "output_tokens": 3500
+  },
+  "raw_response": "# SOC 2 P1.1 Readiness Assessment \u2014 Meridian HR\n\n## Control Scope Reminder\nP1.1 requires that the entity provides notice to data subjects about its privacy practices to meet privacy objectives. Notice must be (a) accurate, (b) complete, (c) accessible to data subjects, and (d) cover all processing the entity performs \u2014 including processing where the entity acts as a controller.\n\nBelow are the findings identified from the evidence reviewed. The SOC 2 readiness checklist itself was largely informational; the substantive findings come from the privacy policy, ROPA, consent records, and DSAR log.\n\n---\n\n## Finding 1: Privacy notice does not disclose Meridian's controller role for cross-client benchmarking\n\n**Document/Section:** Privacy Policy \u00a73 (How We Use Information), \u00a74 (Legal Basis); ROPA PROC-007\n\n**Gap:** The ROPA identifies PROC-007 (Workforce Benchmarking Analytics) as a processing activity in which Meridian acts as an **independent controller** under Art. 6(1)(f) legitimate interest, deriving anonymized profiles from client employee data and exporting to Snowflake (US). The privacy policy does not disclose this activity. Section 3 only references \"workforce analytics reports shared with your employer in aggregated, anonymized form\" \u2014 it does not tell employees that Meridian itself uses their data as a controller for a separate commercial product (benchmarking sold to other clients). It also does not surface Meridian's legitimate interest assessment, the right to object, or that anonymization has not been formally validated against re-identification risk. This is the most material disclosure gap because Meridian directs employees to their employer for rights requests (\u00a77), but employer redirection is invalid for processing where Meridian is the controller.\n\n**Severity:** Critical\n\n---\n\n## Finding 2: Wellness survey processing misrepresented as processor activity in notice; no clear controller identification at point of consent\n\n**Document/Section:** Privacy Policy \u00a73, \u00a75, \u00a77; Consent Records (all WC-* records, \"data_controller_identified = No\"); ROPA PROC-005\n\n**Gap:** Consent for the wellness survey is collected directly by Meridian via in-platform prompts branded as \"Meridian HR,\" yet none of the 5,321 consent records identify the data controller on the consent form. The privacy policy makes no mention of a wellness survey, the categories of data collected (stress, mental health indicators \u2014 special category data implications), the consent legal basis, the 12-month retention period (per ROPA), or how to withdraw consent. Notice at the point of collection is incomplete, and the standalone privacy policy omits the activity entirely. Given self-reported mental health indicators are involved, this is a high-impact omission.\n\n**Severity:** Critical\n\n---\n\n## Finding 3: Executive-level individual performance reporting not disclosed\n\n**Document/Section:** Privacy Policy \u00a73; ROPA PROC-006\n\n**Gap:** PROC-006 notes that aggregation thresholds are waived for C-suite employees at 23 of 187 client organizations, providing individual-level performance reports to clients. The privacy policy implies all analytics are \"aggregated, anonymized\" (\u00a73), which is materially misleading for executive data subjects. Notice does not describe the conditions under which individual-level analytics are generated.\n\n**Severity:** High\n\n---\n\n## Finding 4: Privacy notice not accessible/delivered to the primary data subjects (employees)\n\n**Document/Section:** Privacy Policy \u00a77; DSAR log (multiple \"redirected to employer\" entries)\n\n**Gap:** The privacy policy is hosted on Meridian's marketing website and is written for \"customer administrators\" and \"direct contacts.\" Employees of client organizations \u2014 the largest population of data subjects \u2014 have no documented channel through which Meridian's notice is delivered to them. P1.1 requires notice be provided to data subjects, not just made available on a website they may not visit. For processing where Meridian is a controller (PROC-007, PROC-005 wellness), reliance on the employer to forward notice is not sufficient.\n\n**Severity:** High\n\n---\n\n## Finding 5: International transfer disclosure incomplete\n\n**Document/Section:** Privacy Policy \u00a75; ROPA PROC-007, PROC-009, PROC-010, PROC-011\n\n**Gap:** The policy lists Snowflake, HubSpot, SendGrid as service providers but does not disclose that personal data (including data derived from employee records via PROC-007) is transferred to the United States, the transfer mechanism (SCCs / adequacy / TIA), or the rights and risks associated with such transfers. GDPR Art. 13(1)(f) disclosure expectations are not met, and SOC 2 P1.1 expects transparency about cross-border flows.\n\n**Severity:** High\n\n---\n\n## Finding 6: Service provider list in notice is inconsistent with ROPA\n\n**Document/Section:** Privacy Policy \u00a75; ROPA PROC-009 through PROC-012\n\n**Gap:** Section 5 lists AWS, Stripe, SendGrid, Snowflake, and HubSpot. The ROPA additionally identifies Google Analytics (PROC-009) and Zendesk (PROC-012) as processors handling personal data, and Stripe is referenced in the policy but not in the ROPA. Inconsistency undermines the accuracy of the notice and creates an audit exception under P1.1's accuracy criterion.\n\n**Severity:** Medium\n\n---\n\n## Finding 7: Retention disclosures incomplete and inconsistent\n\n**Document/Section:** Privacy Policy \u00a76; ROPA PROC-003, PROC-005, PROC-007, PROC-008\n\n**Gap:** \u00a76 states \"client contract + 90 days\" generally and \"24 months\" for direct contacts. The ROPA shows materially different retention periods that the notice does not surface: 7 years post-termination for employment records (PROC-003), 7 years for benefits (PROC-008), 12 months for wellness data (PROC-005), and **indefinite** retention for benchmarking data in Snowflake (PROC-007). Notice is materially incomplete.\n\n**Severity:** High\n\n---\n\n## Finding 8: Notice does not describe choice/consent withdrawal mechanisms for activities where consent is the basis\n\n**Document/Section:** Privacy Policy \u00a74, \u00a77; ROPA PROC-005, PROC-011; Consent records (WC-0007 withdrawal)\n\n**Gap:** The notice mentions \"you may withdraw consent at any time\" but does not describe how (e.g., the in-platform toggle evidenced in WC-0007), nor for which processing activities consent is the basis. P1.1 requires data subjects to understand how to exercise choice.\n\n**Severity:** Medium\n\n---\n\n## Finding 9: Notice does not address former employees / former-data-subject rights\n\n**Document/Section:** Privacy Policy \u00a77; DSAR-2025-HR-009, DSAR-2025-HR-013\n\n**Gap:** Two former-employee DSARs were rejected on the basis that \"data not available in active systems,\" yet PROC-003 confirms 7-year post-termination retention. The privacy notice does not explain to former employees how to exercise rights against retained data, and the operational practice contradicts the ROPA. While this is primarily a P5.1 (access) issue, it is also a P1.1 gap because the notice fails to inform former employees of their rights regarding retained employment records.\n\n**Severity:** High\n\n---\n\n## Finding 10: Notice fails to identify Meridian's dual role (processor vs. controller)\n\n**Document/Section:** Privacy Policy (entire); ROPA roles column\n\n**Gap:** The ROPA carefully distinguishes processor vs. controller activities, but the privacy policy never explains this distinction to data subjects. Without it, an employee cannot determine which rights to direct to their employer and which to direct to Meridian. This contributed directly to DSAR-2025-HR-011, where Meridian rejected a request without checking its controller-side processing (benchmarking). Notice clarity on roles is a P1.1 expectation in a B2B2C context.\n\n**Severity:** High\n\n---\n\n## Finding 11: Special category (health) data processing not flagged in notice\n\n**Document/Section:** Privacy Policy \u00a72, \u00a74; ROPA PROC-005, PROC-008\n\n**Gap:** Benefits administration (PROC-008) involves health data and disability status; the wellness survey (PROC-005) collects self-reported mental health indicators. The notice mentions these data types but does not identify them as special category data, does not state the Art. 9 condition relied upon, and does not describe additional safeguards. P1.1 expects notice of sensitive data handling.\n\n**Severity:** Medium\n\n---\n\n## Finding 12: Notice does not describe data subjects' right to lodge a complaint with a supervisory authority\n\n**Document/Section:** Privacy Policy \u00a77\n\n**Gap:** Standard GDPR Art. 13(2)(d) disclosure missing. While GDPR-specific, this is an accepted SOC 2 P1.1 expectation where the entity is GDPR-subject (Dublin HQ).\n\n**Severity:** Low\n\n---\n\n## Finding 13: No version history or change-notification commitment to employees\n\n**Document/Section:** Privacy Policy \u00a79\n\n**Gap:** Material changes are communicated only to \"customer administrators.\" Employee data subjects \u2014 including those who consented to the wellness survey directly with Meridian \u2014 receive no commitment of notification when notice changes. For controller-role processing this is a notice gap.\n\n**Severity:** Medium\n\n---\n\n## Summary of Severity\n\n| Severity | Count |\n|---|---|\n| Critical | 2 |\n| High | 5 |\n| Medium | 4 |\n| Low | 1 |\n\n## Overall P1.1 Conclusion\n\n**Not Ready.** The privacy notice is materially incomplete with respect to the processing activities Meridian performs as an independent controller (benchmarking, wellness surveys), and it is not effectively delivered to the primary data subject population (employees of client organizations). The \"redirect to employer\" model documented in the DSAR log reinforces an inaccurate picture in the notice that Meridian only acts as a processor. Findings 1, 2, 4, and 7 should be remediated before audit fieldwork begins; the remaining findings should be addressed in a refreshed v3.0 of the privacy policy with a parallel employee-facing notice surfaced at the point of platform login and at the point of any consent-based collection."
+}

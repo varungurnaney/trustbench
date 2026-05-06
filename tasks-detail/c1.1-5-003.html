@@ -1,0 +1,49 @@
+---
+layout: default
+title: "c1.1-5-003"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>c1.1-5-003</h2>
+    <p class="section-subtitle">C1.1 · D5 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D5</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">5</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">72%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are a SOC 2 auditor evaluating Arbor Data Platforms' encryption key management controls under C1.1 and CC6.7. Review all evidence to assess whether key lifecycle controls are operating effectively. This assessment requires nuanced professional judgment on several interconnected issues: (1) Whether DB-ADP-004's 2-day tolerance overage is a material deficiency or a properly handled variance given the immediate CISO notification, exception filing, and corrective actions. (2) Whether the pattern of database key rotations consistently hitting the exact 14-day tolerance boundary indicates the control is 'operating' or 'barely operating.' (3) Whether the organization's own CISO quarterly review identifying these patterns represents strong governance or an admission of control weakness. Weigh the difference between technical compliance (within tolerance) and operational health.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/encryption-key-policy.md</code> — Arbor Data Platforms encryption key lifecycle policy defining rotation schedules, tolerance windows, and escalation procedures</li>
+<li><code>evidence/key-rotation-tracker.csv</code> — Key rotation tracker showing all rotation events including three database keys at exactly 14-day tolerance boundary and one at 16 days</li>
+<li><code>evidence/ciso-exception-register.csv</code> — CISO exception register including temporary exception for DB-ADP-004 tolerance overage</li>
+<li><code>evidence/quarterly-encryption-review-q4.md</code> — CISO quarterly encryption review identifying the pattern of rotations consistently hitting tolerance boundaries</li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>DB-ADP-004 key rotation exceeded 14-day tolerance by 2 days — properly escalated but still a control exception</strong><br><span style="font-size:13px;color:var(--text-dim)">DB-ADP-004 (adp-prod-analytics-pii-key) protecting Restricted PII data was rotated 16 days after the scheduled date, exceeding the 14-day tolerance by 2 days. The auditor must exercise careful judgmen...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>Systemic pattern of database key rotations at tolerance boundary indicates the re-encryption process cannot reliably complete within the rotation schedule</strong><br><span style="font-size:13px;color:var(--text-dim)">All four database field-encryption key rotations in the review period hit the boundary: DB-ADP-001 at 14 days, DB-ADP-002 at 14 days, DB-ADP-003 at 14 days (all at exact tolerance), and DB-ADP-004 at ...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Application key rotation trending toward tolerance boundary — APP-ADP-003 at exactly 7 days</strong><br><span style="font-size:13px;color:var(--text-dim)">The quarterly review (Observation 2) notes that application key APP-ADP-003 completed rotation at exactly 7 days — the maximum tolerance for application keys. While this is one instance (not yet a pat...</span></td></tr>
+<tr><td><strong>F-004</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Single point of failure in key rotation execution — all manual rotations performed by Robert Chen</strong><br><span style="font-size:13px;color:var(--text-dim)">The key rotation tracker shows every manual rotation (all APP and DB keys) was performed by Robert Chen. If Robert Chen is unavailable (vacation, illness, departure), no one else appears to be trained...</span></td></tr>
+<tr><td><strong>F-005</strong></td><td><span class="badge badge-blue">gap</span></td><td>low</td><td><strong>CISO quarterly review demonstrates strong governance but recommendations lack enforcement timelines</strong><br><span style="font-size:13px;color:var(--text-dim)">The CISO quarterly encryption review identifies the pattern of boundary-hitting rotations and makes four specific recommendations including automation evaluation and pre-flight checks. However, the re...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-high">80%</td><td>80%</td><td>80%</td><td>80%</td><td>4/5</td><td>5</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-high">80%</td><td>80%</td><td>80%</td><td>80%</td><td>4/5</td><td>5</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-mid">73%</td><td>80%</td><td>67%</td><td>73%</td><td>4/5</td><td>6</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-high">80%</td><td>80%</td><td>80%</td><td>80%</td><td>4/5</td><td>5</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-mid">67%</td><td>80%</td><td>57%</td><td>67%</td><td>4/5</td><td>7</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-low">50%</td><td>40%</td><td>67%</td><td>50%</td><td>2/5</td><td>3</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/c1.1-5-003">GitHub</a></p></footer>
+</div>

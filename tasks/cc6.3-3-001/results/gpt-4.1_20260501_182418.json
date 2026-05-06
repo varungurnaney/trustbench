@@ -1,0 +1,98 @@
+{
+  "task_id": "cc6.3-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:24:18.073807",
+  "score": {
+    "task_id": "cc6.3-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.8,
+    "precision": 0.5,
+    "f1": 0.6153846153846154,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "developer_debug",
+          "write access",
+          "CISO",
+          "approval",
+          "ALL TABLES",
+          "least privilege",
+          "charlie",
+          "diana"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "evan",
+          "segregation",
+          "etl_pipeline",
+          "developer_debug",
+          "TRUNCATE",
+          "no expiration"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "production",
+          "PII",
+          "bypass"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "bulk",
+          "CISO",
+          "export",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "postgres"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2012,
+    "output_tokens": 1591
+  },
+  "raw_response": "Certainly! Here is a readiness assessment of compliance with **CC6.3** for Q4 2025, based on your provided policy, database configuration, and data access request tickets:\n\n---\n\n### **Finding 1: Absence of CISO Approval for Write Access**\n\n**Related Section:**  \n- Data Access Authorization Policy, Section 3.1 Database Access\n\n**Description of Gap:**  \nThe policy requires \"Write access to any customer database requires CISO approval.\" Review of Q4 2025 access tickets (DAR-403, DAR-405, DAR-407) shows that users (charlie.wong, diana.jones, evan.smith) were granted **read-write access** to the production customer database with only Manager (and in one case VP Engineering) approval. There is no evidence of CISO approval for these cases.\n\n**Severity:**  \n**Critical** \u2013 Write access to production customer data without required CISO approval introduces significant risk of unauthorized changes or data compromise.\n\n---\n\n### **Finding 2: Overly Broad Developer Access in Production**\n\n**Related Section:**  \n- Data Access Authorization Policy, Section 3.1 Database Access  \n- PostgreSQL Grant Configuration\n\n**Description of Gap:**  \nThe \"developer_debug\" role (assigned to charlie.wong, diana.jones, evan.smith) has full **read/write/insert/update/delete access to ALL TABLES** in production. This is contrary to the policy\u2019s least privilege principle\u2014developers are not limited to specific tables needed for approved tasks, and production data should generally not be accessible for debugging except in tightly controlled, time-limited scenarios.\n\n**Severity:**  \n**High** \u2013 Exposes broad sensitive data and functions to multiple users, increasing risk of accidental or intentional misuse.\n\n---\n\n### **Finding 3: Lack of Role Expiry or Timely Revocation**\n\n**Related Section:**  \n- Data Access Authorization Policy, Section 4 Review and Audit  \n- Data Access Request Log (expiration_date)\n\n**Description of Gap:**  \nSeveral access approvals (e.g., DAR-407 for evan.smith, \u201cNo expiration\u201d) do not have an expiration date, despite policy requiring periodic review and time-limited access (especially for unmasked or write permissions). Long-lived or perpetual access increases risk of privilege creep.\n\n**Severity:**  \n**Medium** \u2013 Increases chance of access remaining long after business need, but can be remediated with stronger review controls.\n\n---\n\n### **Finding 4: Data Science Read Privileges Align with Policy**\n\n**Related Section:**  \n- Policy Section 3.1 and 3.4  \n- PostgreSQL Role Configuration\n\n**Description of Gap:**  \nMembers \u201calice.chen\u201d and \u201cbob.martinez\u201d are provisioned with the \"data_science_team\" role, giving SELECT on specified customer-related tables, aligning with policy requirements for role-based, least-privilege analytics access. No gap.\n\n**Severity:**  \nN/A (No issue. Included for completeness.)\n\n---\n\n### **Finding 5: Absence of Data Export Controls in Practice**\n\n**Related Section:**  \n- Data Access Authorization Policy, Section 3.2 Data Export Controls\n\n**Description of Gap:**  \nThe access request log and database configuration provide no evidence of enforcement of the data export controls outlined in policy (e.g., requiring Data Owner + CISO approval for bulk exports, logging exports with classification tags). There is no evidence exports are distinguished from regular SELECT usage in logging or access grants.\n\n**Severity:**  \n**Medium** \u2013 Policy control may be bypassed if not enforced technically; compliance risk if exports occur unmonitored.\n\n---\n\n### **Finding 6: Segregation of Duties \u2013 Overlapping High-Risk Roles**\n\n**Related Section:**  \n- Policy Section 2, 3.1, 4 (least privilege, SoD)  \n- PostgreSQL Role Configuration\n\n**Description of Gap:**  \nEvan.smith is assigned to both \"developer_debug\" (full access to all production tables) and \"etl_pipeline\" (read/write/truncate). This increases the risk of circumventing operational checks or performing unauthorized activities without adequate segregation of duties (SoD).\n\n**Severity:**  \n**Medium** \u2013 Segregation of duties is weakened, increasing risk of intentional/accidental misuse, though impact is less than policy violations above.\n\n---\n\n### **Finding 7: Approval Workflow for Restricted Data \u2013 Missing CISO and Legal**\n\n**Related Section:**  \n- Policy Section 2, Table: Restricted Data Authorization  \n- Policy Section 3.1 Database Access\n\n**Description of Gap:**  \nDAR-406 shows alice.chen was granted read (unmasked PII) access to Restricted data with Data Owner, Manager, Privacy Officer approval\u2014but no evidence of CISO or Legal approval as required for Restricted data. (Policy: \"Data Owner + CISO + Legal.\u201d)\n\n**Severity:**  \n**High** \u2013 Access to the most sensitive data is approved without all mandated reviews, raising risk of regulatory exposure.\n\n---\n\n### **Finding 8: Unclear Logging of Access/Export Activity**\n\n**Related Section:**  \n- Policy Section 3.1, 3.2, 4 (\"All database queries ... are logged\", \"All exports are logged...\")\n\n**Description of Gap:**  \nWhile policy mentions logging of access and data exports, neither the access tickets nor role configuration demonstrate that logging is active or that logs are reviewed, nor that exports are specifically logged/tagged as required. There\u2019s no technical evidence or sample audit logs.\n\n**Severity:**  \n**Medium** \u2013 Logging is a key detective control; absence of evidence hinders assurance of compliance even if logging is configured.\n\n---\n\n## **Summary Table**\n\n| # | Gap Title                                               | Section                         | Why It's a Gap                                              | Severity       |\n|---|---------------------------------------------------------|----------------------------------|-------------------------------------------------------------|---------------|\n| 1 | Absence of CISO Approval for Write Access               | 3.1 Database Access              | Write access missing required CISO approval                  | Critical      |\n| 2 | Overly Broad Developer Access in Production             | 3.1, Grants                     | Developers have excessive permissions                       | High          |\n| 3 | Lack of Role Expiry or Timely Revocation                | 4 Review/Audit + Expiration      | No expiration on some access grants                         | Medium        |\n| 4 | Data Science Read Privileges Align with Policy          | 3.1, 3.4                        | No gap for read-only data science access                    | N/A           |\n| 5 | Absence of Data Export Controls in Practice             | 3.2 Data Export Controls         | No technical or workflow enforcement of export restrictions  | Medium        |\n| 6 | Segregation of Duties \u2013 Overlapping High-Risk Roles     | 2, 3.1, 4 / Role Membership      | Single user in multiple high-privilege roles                | Medium        |\n| 7 | Approval Workflow for Restricted Data \u2013 Missing CISO/Legal | 2 Table, 3.1                   | Restricted data granted w/o CISO and Legal approval         | High          |\n| 8 | Unclear Logging of Access/Export Activity               | 3.1, 3.2, 4                     | No proof of logging or export tracking                      | Medium        |\n\n---\n\n**Recommendations**:  \n- Enforce CISO and Legal approval for all applicable access per policy.\n- Limit developer and ETL access to least privilege, time-limited, and on-justified basis.\n- Implement technical controls for data export monitoring and approval.\n- Regularly review role memberships for SoD conflicts.\n- Document and provide evidence of access/export logging and review.\n\n---\n\nLet me know if you need suggested remediation or further detail for any finding."
+}

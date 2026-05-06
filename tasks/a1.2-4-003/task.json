@@ -1,0 +1,88 @@
+{
+  "id": "a1.2-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "A1.2",
+  "control_description": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup and recovery infrastructure, and recovery plan procedures to meet its objectives. Backup and recovery processes include procedures for recovery of data, systems, and infrastructure to meet the entity's availability commitments and system requirements.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/backup-policy.md",
+      "type": "policy",
+      "description": "Apex Digital backup and recovery policy defining RPO/RTO, backup schedules, and restore testing requirements"
+    },
+    {
+      "path": "evidence/restore-test-q3.json",
+      "type": "report",
+      "description": "Q3 2025 quarterly restore test report showing test results and timing analysis"
+    },
+    {
+      "path": "evidence/restore-test-q4.json",
+      "type": "report",
+      "description": "Q4 2025 quarterly restore test report showing test results and timing analysis"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/change-management-log.csv",
+      "type": "log",
+      "description": "Q4 2025 change management log for infrastructure changes -- general operations data"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Apex Digital's backup and recovery controls under A1.2 for the Q4 2025 observation period (October 1 - December 31, 2025). Review the backup policy and restore test reports for Q3 and Q4 2025. Assess whether restore testing meets the organization's stated objectives. Not all documents may be relevant. Identify genuine control gaps, considering trends and whether compensating factors adequately address apparent issues.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Q3 restore test had a data integrity warning on 2 of 512 tables — but root cause was test environment configuration",
+      "description": "The Q3 restore test report shows 2 tables (out of 512) had row count mismatches during data integrity verification. This initially appears to be a data integrity failure. However, the report documents the investigation: both tables (audit_log_archive and session_cache) are partitioned tables where partition pruning behavior differs between production and DR environments due to different PostgreSQL minor versions (15.4 in prod vs 15.3 in DR). The actual data was intact — the row count query returned different results because the partition scan plan differed. The Q3 report documents that the infrastructure team confirmed data integrity via manual verification and scheduled a PostgreSQL upgrade in DR to match production. The Q4 report confirms the DR environment was upgraded to 15.4 and all 512 tables passed.",
+      "evidence_sources": ["evidence/restore-test-q3.json", "evidence/restore-test-q4.json"],
+      "expected_reasoning": "Q3 report shows 2 tables failed integrity check → investigation documented → root cause was test environment config mismatch → data actually intact → issue resolved in Q4 → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["2 tables", "row count mismatch", "partition pruning", "test environment", "PostgreSQL version", "resolved in Q4"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["resolved", "not a finding", "test config", "fixed"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Q4 restore test did not include application functionality validation as required by policy",
+      "description": "Policy Section 5.1 requires quarterly restore tests to validate four components: (1) successful backup restoration, (2) data integrity via checksum, (3) restoration within RTO, and (4) application functionality post-restore. The Q4 restore test report documents phases 1-3 but explicitly states in the notes: 'Application functionality validation deferred to January due to engineering team unavailability during holiday period.' The test was conducted December 20, 2025, and the application validation was never completed within the observation period. Without application functionality validation, the restore test is incomplete — a backup that restores data but cannot run the application does not meet recovery objectives.",
+      "evidence_sources": ["evidence/restore-test-q4.json", "evidence/backup-policy.md"],
+      "expected_reasoning": "Policy requires 4 validation components. The Q4 test only completed 3. Application functionality validation was deferred to January 2026, which falls outside the Q4 observation period. The test is incomplete per policy requirements. Compare with Q3 where all 4 phases were completed.",
+      "detection_criteria": {
+        "required_keywords": ["application functionality", "deferred", "January", "Section 5.1", "incomplete", "4 components", "holiday", "not completed"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Q4 restore time increased 22% from Q3 with only 5-minute RTO margin remaining",
+      "description": "Q3 restore completed in 192 minutes (3h 12m) with a 48-minute RTO margin. Q4 restore completed in 235 minutes (3h 55m) with only a 5-minute margin against the 240-minute (4h) RTO. This is a 22.4% increase in restore time driven by 19.1% data growth (156.2 GB to 186.0 GB). The database restore phase specifically increased from 118 minutes to 152 minutes (28.8% increase). At this trajectory, the Q1 2026 restore test will exceed the RTO. Neither restore test report documents a remediation plan for the trending RTO risk.",
+      "evidence_sources": ["evidence/restore-test-q3.json", "evidence/restore-test-q4.json", "evidence/backup-policy.md"],
+      "expected_reasoning": "The auditor should compare Q3 and Q4 restore times and identify the trend. Q3: 192 min with 48-min margin. Q4: 235 min with 5-min margin. Data growth is driving the increase. Without intervention, the next test will breach the RTO. No capacity or performance plan is documented.",
+      "detection_criteria": {
+        "required_keywords": ["192 minutes", "235 minutes", "22%", "RTO", "5-minute margin", "data growth", "trending", "Q1 2026"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["backup", "recovery", "restore_testing", "red_herring", "RTO", "trending", "application_validation"]
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "id": "cc9.1-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC9.1",
+  "control_description": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions or from the use of vendors and business partners.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/vendor-management-policy.md",
+      "type": "policy",
+      "description": "Prism Data vendor risk management policy defining vendor tiers, assessment requirements, and exception processes"
+    },
+    {
+      "path": "evidence/vendor-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Vendor inventory with 14 vendors showing tier, SOC 2 status, assessment dates, and risk notes"
+    },
+    {
+      "path": "evidence/vendor-exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO-approved exceptions for vendor compliance gaps with compensating controls and expiration dates"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/business-continuity-plan-summary.md",
+      "type": "documentation",
+      "description": "Business continuity plan summary covering DR site details and failover procedures"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Prism Data Inc. covering the observation period Q4 2025 (October 1 - December 31, 2025). Review all provided evidence and assess compliance with CC9.1 (Risk Mitigation for Vendors and Business Partners). Cross-reference the vendor management policy against the vendor inventory and exception register. Not all documents may be relevant. Identify genuine control deficiencies — consider whether exceptions or compensating controls adequately address apparent gaps before flagging.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Cohere AI has no SOC 2 report — but has valid CISO exception with compensating controls",
+      "description": "Cohere AI (PD-V-011) is a Critical-tier vendor providing LLM inference services that processes customer text data. The vendor inventory shows no SOC 2 report on file. This appears to be a clear policy violation for a Critical vendor. However, exception VEXC-2025-003 documents that Cohere is a newly onboarded vendor (September 2025) that has committed to delivering its SOC 2 report by Q2 2026. The exception is active, CISO-approved, and includes compensating controls: a 200-question security questionnaire with satisfactory results, data encrypted end-to-end, access restricted via API keys with quarterly rotation, and a right-to-audit clause in the contract.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-exception-register.csv"],
+      "expected_reasoning": "Critical vendor without SOC 2 → check exception register → VEXC-2025-003 active → new vendor onboarded September 2025 → SOC 2 expected Q2 2026 → compensating controls well-documented → exception is reasonable for a recently onboarded vendor → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["Cohere AI", "SOC 2", "exception", "VEXC-2025-003", "compensating", "new vendor", "Q2 2026"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["approved", "per policy", "covered", "mitigated", "acceptable", "not a finding"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Elastic Cloud exception expired October 31 — vendor still operating without SOC 2 and no renewed exception",
+      "description": "Elastic Cloud (PD-V-008) is a High-tier vendor providing log management and SIEM services that processes security event data including authentication logs containing user identifiers. The vendor inventory shows no SOC 2 report on file with a note: 'Exception covers gap — see register.' However, exception VEXC-2025-001 expired on October 31, 2025. The exception was originally approved in May 2025 for a 6-month period. No renewed exception or updated risk assessment has been filed. The vendor has been operating without SOC 2 coverage and without a valid exception for the last 2 months of the observation period (November 1 - December 31, 2025). The original exception noted that Elastic would provide their SOC 2 report by September 2025, but the vendor inventory confirms no report has been received.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-exception-register.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "The auditor sees two vendors without SOC 2 reports — Cohere AI and Elastic Cloud. Both have exception register entries. The key difference: Cohere's exception (VEXC-2025-003) is active with an expiration of March 2026. Elastic's exception (VEXC-2025-001) expired October 31, 2025, meaning for 2 months of the observation period, there was neither a SOC 2 report nor a valid exception. The original exception stated Elastic would provide SOC 2 by September 2025 — that deadline also passed without resolution.",
+      "detection_criteria": {
+        "required_keywords": ["Elastic Cloud", "VEXC-2025-001", "expired", "October 31", "no renewed exception", "2 months", "SOC 2", "September 2025"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No quarterly business review for Cohere AI despite Critical tier classification",
+      "description": "Cohere AI (PD-V-011) is classified as Critical tier and was onboarded September 2025. Policy Section 4.2 requires quarterly business reviews for Critical vendors. The vendor inventory shows no business review has been conducted since onboarding over 3 months ago. While the vendor is new, it has been active for more than one full quarter (September through December), and a Critical vendor providing LLM inference services that processes customer data should have had at least one business review by December 31, 2025.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "Cohere was onboarded September 2025. By December 31, 2025, it has been active for over 3 months. Policy requires quarterly business reviews for Critical vendors. No review is on file. While the exception process covers the SOC 2 gap, it does not exempt the vendor from business review requirements.",
+      "detection_criteria": {
+        "required_keywords": ["Cohere AI", "Critical", "quarterly business review", "no review", "September 2025", "3 months", "onboarded"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["vendor_management", "red_herring", "exception_register", "expired_exception", "compensating_controls"]
+  }
+}

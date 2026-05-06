@@ -1,0 +1,89 @@
+{
+  "task_id": "cc8.1-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:32:15.487360",
+  "score": {
+    "task_id": "cc8.1-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-706",
+          "Thursday",
+          "outside",
+          "Saturday",
+          "violation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "CISO",
+          "NOT OBTAINED",
+          "dual approval",
+          "unreachable",
+          "Section 4",
+          "emergency"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "developer",
+          "segregation",
+          "SRE",
+          "Section 3.4"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CISO",
+          "delegate",
+          "after-hours",
+          "unavailable",
+          "unreachable",
+          "emergency"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4314,
+    "output_tokens": 2116
+  },
+  "raw_response": "# CC8.1 Change Management Audit \u2013 Meridian Analytics Q4 2025\n\n## Audit Summary\n\nI reviewed the change management policy (POL-CHG-017 v3.1), Q4 CAB minutes, and the Q4 change log covering 10 changes. While most changes (8 of 10) followed the documented control framework correctly, I identified **two control failures concentrated in CHG-708** that constitute genuine gaps in the operating effectiveness of CC8.1. The SLA dashboard was reviewed but is largely tangential to CC8.1 (it speaks to availability, not change governance).\n\nFindings below are ordered by severity.\n\n---\n\n## Finding 1: Emergency Change Deployed Without Required Dual Approval (CHG-708)\n\n**Related Policy Section:** Section 4 (Emergency Changes) \u2013 \"Emergency changes require dual verbal approval from VP Engineering AND CISO.\"\n\n**Gap:** CHG-708 (Auth token expiry emergency fix, deployed 2025-12-02 04:15 UTC) was approved by VP Engineering alone. The change log explicitly notes \"CISO approval: NOT OBTAINED\" because Yuki Tanaka was unreachable at 3:00 AM. The policy provides no exception path for unavailable CISO approval, and the policy preamble specifically emphasizes this is a **higher bar than standard** because Meridian handles regulated financial data. The December 9 CAB retrospective acknowledged the bypass and recommended establishing a CISO delegate \u2013 confirming no such delegate existed during Q4. This is a direct breach of a documented control on a Critical-risk change to authentication infrastructure.\n\n**Severity:** **Critical**\n\n---\n\n## Finding 2: Segregation of Duties Violation \u2013 Developer Deployed Own Change (CHG-708)\n\n**Related Policy Section:** Section 3.4 (Segregation of Duties) \u2013 \"Developer must not approve or deploy their own change. Production deployments by SRE team only.\"\n\n**Gap:** CHG-708 was developed by Anika Patel and **deployed by Anika Patel** because the SRE on-call (Raj Mehta) did not respond to page. This violates two distinct SoD requirements simultaneously: (1) the developer-deploys-own-change prohibition, and (2) the SRE-only deployment requirement. The policy contains no documented break-glass exception authorizing a developer to deploy when SRE is unresponsive. Combined with Finding 1, CHG-708 had no independent control gate between code authorship and production deployment. The CAB recommendation to add SRE backup coverage confirms the underlying control deficiency.\n\n**Severity:** **Critical**\n\n---\n\n## Finding 3: Policy Lacks Documented Break-Glass / Delegate Procedures for After-Hours Emergencies\n\n**Related Policy Section:** Section 4 (Emergency Changes) and Section 3.4 (Segregation of Duties)\n\n**Gap:** The CHG-708 incident exposed a structural design weakness: the policy mandates dual approval and SRE-only deployment but does not define (a) a CISO delegate for after-hours unavailability, or (b) a documented escalation/break-glass procedure when SRE on-call is unresponsive. This is a **control design gap** distinct from the operating failures above \u2013 even compliant actors had no defined-compliant path. While the December 9 CAB recommended remediation, no policy update has been issued (next review: February 2026), so the gap remains open at period-end.\n\n**Severity:** **High**\n\n---\n\n## Finding 4: Verify SRE On-Call Process Failure Was Investigated (CHG-708)\n\n**Related Policy Section:** Section 3.4 and Section 3.5 (Post-Implementation)\n\n**Gap:** The retrospective CAB minutes note Raj Mehta did not respond to the 3:00 AM page but document only forward-looking remediation (backup coverage). There is no evidence of a root-cause analysis on the page failure itself (paging system malfunction vs. human factor), nor evidence that SRE on-call response times are monitored as a control. For an entity handling financial data, an unresponsive on-call rotation is a control monitoring weakness.\n\n**Severity:** **Medium**\n\n---\n\n## Items Reviewed and Cleared (Not Findings)\n\nThe following items warrant explicit mention because they could appear to be gaps but, on full context, are compliant:\n\n- **CHG-706 Thursday deployment outside Saturday window:** Section 5 of the policy explicitly permits CAB-approved business justification exceptions. The November 11 CAB minutes document the vote and rationale (Nov 15 customer contract deadline). **Compliant.**\n- **CHG-704 emergency without prior CAB:** Dual approval (Nathan Cole + Yuki Tanaka) was obtained, and retrospective CAB occurred November 4 \u2013 within 5 business days of the October 28 deployment. **Compliant.**\n- **CAB quorum on Oct 7, Oct 21, Nov 11, Dec 9 (3/4 attendance):** Section 3.3 defines quorum as \"VP Engineering + 2 other members.\" All meetings included Nathan Cole plus two other members. **Compliant.**\n- **CHG-707 and CHG-710 (Standard changes) lacking CAB approval:** Section 2 pre-approves Standard changes per catalog. **Compliant.**\n- **CHG-710 deployed during business hours:** Standard changes are permitted business-hours deployment per Section 2. **Compliant.**\n- **SLA dashboard misses (API Gateway, Auth Service):** Relevant to availability controls (CC7.x), not CC8.1. Notably, the Auth Service SLA miss may correlate with CHG-708 \u2013 worth cross-referencing in the CC7 audit, but not a CC8.1 finding.\n\n---\n\n## Overall Assessment\n\nCC8.1 is **operating with control failures**. The framework design is generally sound, but a single emergency change (CHG-708) breached two independent control requirements (dual approval and segregation of duties) on a Critical-risk authentication change. Management has identified remediation actions, but until the policy is updated with delegate/break-glass procedures and evidence of testing exists, I would recommend a **qualified opinion** for this control over the Q4 2025 period."
+}

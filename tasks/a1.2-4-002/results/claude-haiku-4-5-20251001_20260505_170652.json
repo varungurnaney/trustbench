@@ -1,0 +1,74 @@
+{
+  "task_id": "a1.2-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:06:52.264873",
+  "score": {
+    "task_id": "a1.2-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "October 22",
+          "WAL",
+          "CISO",
+          "EXC-2025-051",
+          "compensating"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "December 14",
+          "TLS certificate",
+          "no exception",
+          "2-hour SLA",
+          "Section 6.1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "November 28",
+          "checksum",
+          "skipped",
+          "false",
+          "verification",
+          "data integrity",
+          "Section 3.5",
+          "no exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6659,
+    "output_tokens": 2461
+  },
+  "raw_response": "# COMPLIANCE AUDIT FINDINGS\n## Control A1.2 \u2013 Backup and Recovery Infrastructure\n\n---\n\n## FINDING 1: Missing Checksum Verification on Production Re-run\n\n**Title:** Backup Integrity Verification Bypassed on November 28 Re-run\n\n**Document Reference:** Backup Execution Log (BKP-2025-1128R) and Policy Section 3.5\n\n**Gap Description:**\nThe policy explicitly requires: *\"All backups must have SHA-256 checksum verification completed before being marked as successful.\"* However, the November 28 re-run (BKP-2025-1128R) shows `checksum_verified: false` with the operator note: *\"Checksum verification skipped to meet maintenance window deadline.\"*\n\nThis represents a direct policy violation. The backup was marked as successful despite failing the mandatory control requirement. While the re-run succeeded technically, the integrity verification\u2014a critical data protection safeguard\u2014was deliberately bypassed due to operational convenience rather than documented exception approval.\n\n**Severity:** **High**\n\n**Remediation Expectation:** This incident should have been formally logged as an exception requiring CISO approval with documented compensating controls, similar to EXC-2025-051. Currently, there is no exception register entry authorizing this deviation.\n\n---\n\n## FINDING 2: Certificate Renewal Process Creates Backup Failure Risk\n\n**Title:** Inadequate Access Controls and Runbook Coverage for Certificate Lifecycle Management\n\n**Document Reference:** Backup Execution Log (BKP-2025-1214 and BKP-2025-1214R) and Policy Section 4\n\n**Gap Description:**\nOn December 14, a backup failed due to an expired TLS certificate on the backup target. The on-call engineer did not have access to the certificate renewal process, causing a **7.5-hour delay** in recovery (failure at 02:47 UTC, re-run not completed until 12:05 UTC). \n\nThe policy defines an RTO of 4 hours and states: *\"On-call engineer investigates and initiates re-run within 2 hours.\"* This incident violated both requirements due to a preventable access/knowledge gap.\n\nThe underlying issue is that backup target certificate management is not fully integrated into the backup failure response procedures. This is a process design gap in Section 6 (Failure Handling), not merely a one-time execution error.\n\n**Severity:** **High**\n\n**Remediation Expectation:** \n- Update Section 6.1 (Response Procedures) to include certificate status pre-flight checks\n- Ensure on-call engineer runbooks include certificate renewal procedures or provide cross-team escalation paths with defined SLAs\n- Implement automated TLS certificate renewal on backup targets (e.g., via Let's Encrypt or AWS-managed certificates) to prevent future lapses\n- Consider implementing monitoring/alerting for certificate expiration (suggest 30-day advance notice)\n\n---\n\n## FINDING 3: Exception Register Lacks Documented Compensating Control Validation\n\n**Title:** WAL Archiving Compensating Control Effectiveness Not Independently Verified\n\n**Document Reference:** Exception Register (EXC-2025-051) and Policy Section 3.3\n\n**Gap Description:**\nException EXC-2025-051 claims that WAL archiving provides compensating controls with *\"effective RPO of approximately 12 minutes\"* during the October 22 backup failure window. However:\n\n1. **No independent verification data provided:** The exception cites WAL archiving as operational but provides no execution logs, timestamps, or audit evidence demonstrating actual WAL segment archive success during October 22.\n\n2. **Policy defines different RPO:** Section 3.4 establishes an RPO target of **4 hours**, yet the exception retrospectively claims a 12-minute RPO via compensating controls. This discrepancy between policy-defined and compensating RPO is not reconciled in the exception documentation.\n\n3. **No validation of restore capability:** The policy requires quarterly restore testing (Section 7), but there is no evidence that WAL-based point-in-time recovery was actually tested as a compensating control for the full backup failure scenario.\n\nThe exception was approved, but the supporting evidence trail for the compensating control is incomplete, making independent verification of control effectiveness impossible.\n\n**Severity:** **Medium**\n\n**Remediation Expectation:**\n- Obtain WAL archiving logs for October 22, 2025 (02:00\u201304:00 UTC window) demonstrating continuous archival\n- Document actual RPO achieved via WAL archiving with timestamp evidence\n- Include WAL-based recovery scenarios in the next quarterly restore test (Section 7) and document results\n- Clarify in policy whether compensating controls (WAL archiving) change the effective RPO/RTO targets, or if 4-hour targets remain the primary SLA\n\n---\n\n## FINDING 4: Incomplete Backup Scope Coverage\n\n**Title:** Incremental and WAL Backup Execution Not Included in Audit Evidence\n\n**Document Reference:** Policy Section 3.2 & 3.3 vs. Backup Execution Log\n\n**Gap Description:**\nThe policy requires:\n- **Incremental backups** every 4 hours (Section 3.2)\n- **WAL archiving** with maximum 15-minute lag (Section 3.3)\n\nHowever, the Q4 2025 backup execution log provided **only contains full backup records** (`type: full`). There is no evidence of:\n- Incremental backup execution at 06:00, 10:00, 14:00, 18:00, 22:00 UTC\n- WAL segment archive logs or verification\n- Incremental backup failures or successes\n\nThis represents a significant audit gap. The provided evidence does not demonstrate that all backup requirements defined in the policy are actually being executed and monitored.\n\n**Severity:** **Medium**\n\n**Remediation Expectation:**\n- Provide Q4 2025 execution logs for incremental backups and WAL archiving (separate from full backup logs if maintained in different systems)\n- Demonstrate that backup monitoring includes all three backup types as defined in policy\n- If incremental and WAL logs are maintained separately, provide evidence of integrated monitoring/alerting that ensures all backup types are tracked\n\n---\n\n## FINDING 5: Backup Failure Response Procedure Not Consistently Executed\n\n**Title:** Policy-Defined 2-Hour Re-run SLA Not Met on December 14 Incident\n\n**Document Reference:** Policy Section 6.1 and Backup Execution Log (BKP-2025-1214/1214R)\n\n**Gap Description:**\nThe policy states (Section 6.1): *\"On-call engineer investigates and initiates re-run within 2 hours.\"*\n\nOn December 14:\n- **Failure detected:** 02:47 UTC\n- **Re-run initiated:** 10:18 UTC\n- **Elapsed time:** 7 hours 31 minutes\n\nThe failure response procedure was not followed. While the exception register entry (EXC-2025-051) explains the root cause (certificate renewal access), the policy itself does not document what constitutes a valid exception to the 2-hour SLA or what escalation procedures should be followed when the SLA cannot be met.\n\nThis is a control execution gap\u2014the policy exists but does not have sufficient detail on exception handling within the failure response procedure itself.\n\n**Severity:** **Medium**\n\n**Remediation Expectation:**\n- Clarify Section 6.1 with specific escalation triggers: if on-call engineer cannot initiate re-run within 2 hours, automatic escalation to Infrastructure Lead must occur with defined timeline\n- Define specific criteria for when a failure warrants formal exception documentation vs. standard re-run\n- Consider implementing automated escalation logic in backup management system if manual escalation is not triggered within the SLA window\n\n---\n\n## FINDING 6: Quarterly Restore Testing \u2013 No Evidence Provided\n\n**Title:** Policy Requirement for Quarterly Restore Testing Not Substantiated\n\n**Document Reference:** Policy Section 7 and Overall Evidence Package\n\n**Gap Description:**\nSection 7 requires: *\"Quarterly full restore test in DR environment validating restoration success, data integrity, and RTO compliance.\"*\n\nNo evidence of Q4 2025 restore testing was provided in the audit package. For a control centered on recovery assurance, the absence of restore test results is a critical documentation gap. This testing would validate:\n- Whether the stated 4-hour RTO is actually achievable\n- Data integrity after restoration\n- DR environment functionality\n- Whether backup/recovery procedures documented in the policy actually work in practice\n\nWithout restore test evidence, the organization cannot independently verify backup control effectiveness.\n\n**Severity:** **High**\n\n**Remediation Expectation:**\n- Provide Q4 2025 quarterly restore test results, including:\n  - Test execution date(s)\n  - Systems/databases tested\n  - Restoration timeline (actual vs. 4-hour RTO target)\n  - Data integrity validation results\n  - Any issues encountered and remediation\n- Ensure restore testing is scheduled and tracked in advance (suggest a compliance calendar)\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Severity | Status | Root Cause Category |\n|---------|----------|--------|-------------------|\n| 1. Checksum Verification Bypass (Nov 28) | High | Unaddressed | Policy Violation / Access Control |\n| 2. Certificate Renewal Access Gap (Dec 14) | High | Partially Addressed | Process Design / Runbook Deficiency |\n| 3. Compensating Control Validation (Oct 22) | Medium | Partially Addressed | Documentation / Verification Gap |\n| 4. Missing Incremental/WAL Audit Evidence | Medium | Unaddressed | Audit Documentation Gap |\n| 5. Failure Response SLA Exceeded (Dec 14) | Medium | Partially Addressed | Policy Enforcement Gap |\n| 6. Restore Testing Evidence Missing | High | Unaddressed | Testing / Documentation Gap |\n\n---\n\n## OVERALL ASSESSMENT\n\n**Control Maturity: Developing (Design adequate, execution inconsistent)**\n\nOrion Cloud has defined a reasonable backup and recovery policy with appropriate RPO/RTO targets and technical controls. However, **execution and compliance monitoring show significant gaps**:\n\n- Two high-severity incidents violated core control requirements (checksum verification, RTO SLA)\n- Compensating control evidence is incomplete\n- Critical testing requirements lack documentation\n- Failure response procedures require refinement to handle edge cases\n- Evidence of complete backup scope coverage (incremental + WAL) not provided\n\n**Recommendation:** Do not issue unqualified control effectiveness statement until Findings 1, 2, 6 are remediated and evidence packages are complete (Finding 4)."
+}

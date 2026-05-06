@@ -1,0 +1,71 @@
+{
+  "id": "cc8.1-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC8.1",
+  "control_description": "The entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures to meet its objectives.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/change-management-policy.md",
+      "type": "policy",
+      "description": "NovaCrest Technologies change management policy defining change categories, approval workflows, testing requirements, and standard change catalog"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the change management policy for NovaCrest Technologies and assess whether it adequately addresses SOC 2 CC8.1 requirements. Identify any gaps or missing elements that could result in audit findings.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Staging testing is 'recommended' rather than required",
+      "description": "Section 4.3 states 'Testing in staging is recommended to confirm that the change functions as expected.' CC8.1 requires that changes are tested before implementation. Using the word 'recommended' instead of 'required' means there is no enforceable testing gate — engineers can skip staging validation entirely for Normal changes without violating policy. This creates a gap where untested code could reach production through the standard change process.",
+      "evidence_sources": ["evidence/change-management-policy.md"],
+      "expected_reasoning": "Section 4.3 uses permissive language ('recommended') rather than mandatory language ('required', 'must', 'shall'). Compare this to Section 4.2 which correctly uses 'require' for peer review, and Section 4.5 which states deployments go from staging to production. The testing step is advisory, not enforced. An auditor should flag this as a control design gap.",
+      "detection_criteria": {
+        "required_keywords": ["recommended", "not required", "staging", "testing", "optional", "should", "mandatory", "gap", "permissive"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Standard Change Catalog is overly broad — SC-009 allows firewall rule updates without review",
+      "description": "SC-009 in the Standard Change Catalog pre-approves 'Firewall rule updates for known services' with conditions limited to 'Pre-approved IP ranges and port configurations.' Firewall rule changes can have significant security implications — opening ports or allowing new IP ranges could introduce vulnerabilities. The catalog does not define what constitutes 'known services' or 'pre-approved IP ranges,' making the scope ambiguous and potentially unbounded. A security-impacting change like firewall modifications should require Security team review, not be treated as a pre-approved standard change.",
+      "evidence_sources": ["evidence/change-management-policy.md"],
+      "expected_reasoning": "Standard changes bypass CAB approval entirely. SC-009 allows firewall rule modifications with vague conditions ('known services', 'pre-approved IP ranges') that are not defined in the policy. Firewall changes are inherently security-sensitive. Compare to SC-001 through SC-004 which have tightly scoped conditions (non-kernel patches, automated cert renewal, minor versions only). SC-009 lacks the same rigor.",
+      "detection_criteria": {
+        "required_keywords": ["SC-009", "firewall", "standard change", "pre-approved", "security", "review", "ambiguous", "known services"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No testing evidence or QA sign-off required for standard changes",
+      "description": "Section 5 lists nine standard change types that are pre-approved without CAB review. While SC-004 (dependency updates) requires 'Passes all CI tests,' the remaining standard changes have no testing evidence requirement. SC-007 (database index optimization) and SC-009 (firewall rule updates) could impact production performance or security but have no documented testing gate. The policy does not require any validation artifacts for standard changes beyond the conditions listed.",
+      "evidence_sources": ["evidence/change-management-policy.md"],
+      "expected_reasoning": "Standard changes skip CAB approval. Most catalog entries have conditions but no testing requirements. Only SC-004 explicitly requires passing CI tests. Other entries like SC-007 (database index changes) and SC-005 (feature flag toggles) could cause production issues but have no testing gate. CC8.1 requires changes to be tested — the standard change catalog does not satisfy this for most entries.",
+      "detection_criteria": {
+        "required_keywords": ["standard change", "testing", "evidence", "SC-007", "SC-005", "pre-approved", "no testing", "validation"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "10 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["change_management", "single_document", "policy_review", "permissive_language", "standard_change_catalog"]
+  }
+}

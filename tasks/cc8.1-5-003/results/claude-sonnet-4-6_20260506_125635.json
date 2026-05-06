@@ -1,0 +1,75 @@
+{
+  "task_id": "cc8.1-5-003",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T12:56:35.954061",
+  "score": {
+    "task_id": "cc8.1-5-003",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-905",
+          "CHG-910",
+          "SC-003",
+          "major version",
+          "Express.js",
+          "PostgreSQL",
+          "standard change"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-910",
+          "PostgreSQL",
+          "PHI",
+          "data integrity",
+          "security review",
+          "HIPAA",
+          "major version"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "SC-003",
+          "classification",
+          "major",
+          "catalog",
+          "definition"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3476,
+    "output_tokens": 2591
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC8.1 Change Management\n**Entity:** Prism Health Technologies\n**Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Auditor:** Compliance Readiness Assessment\n**Date:** January 2026\n\n---\n\n## Executive Summary\n\nThe Q4 2025 change management evidence demonstrates a generally functioning change control process: CAB meetings were held regularly with quorum, high-risk changes involving PHI underwent appropriate security and clinical review, segregation of duties was maintained, and post-implementation verification was completed for all changes. However, two significant findings were identified that represent gaps in the authorization and classification controls required under CC8.1. One additional procedural observation was noted. The HIPAA compliance summary was reviewed and found to be corroborating but not directly relevant to the change management control assessment.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Major Version Upgrades Deployed Without Required CAB Authorization\n\n**Severity: High**\n\n**Relevant Evidence:**\n- Change log: CHG-905, CHG-910 (both categorized as Standard, referencing SC-003)\n- POL-CHG-024, Section 4 \u2014 Standard Change Catalog, SC-003; Section 4.1 \u2014 Standard Change Catalog Governance\n- CAB Meeting Minutes, December 11, 2025 \u2014 Karen Liu's documented concern\n\n**Description of Gap:**\n\nSC-003 explicitly restricts the standard change pathway to *\"patch version only (x.y.Z)\"* and *\"Third-party library patch updates only.\"* Two changes deployed in Q4 2025 materially exceed this scope:\n\n| Ticket | Change | Version Delta | Classification Used |\n|--------|--------|--------------|---------------------|\n| CHG-905 | Express.js upgrade | 4.x \u2192 5.0 (major version) | Standard / SC-003 |\n| CHG-910 | PostgreSQL upgrade | 14.9 \u2192 15.4 (major version) | Standard / SC-003 |\n\nBoth changes involve **major version increments**, which by definition may introduce breaking API changes, deprecated functionality, altered default behaviors, and new security surface areas. SC-003's explicit \"patch version only\" language exists precisely to exclude changes of this type from pre-approved status. The policy is unambiguous: *\"Any change that does not clearly fall within the scope and conditions of a catalog entry must be submitted as a Normal change\"* (Section 4.1).\n\nThe developer (alex.rivera) self-classified both changes as Standard, and neither received CAB review, formal risk classification beyond \"Low,\" a full submission template with impact assessment, or a documented rollback plan \u2014 all of which are required for Normal changes under Section 3.1.\n\nWhile CI tests passed for both (99.1% and 98.4% respectively) and post-implementation verification was completed with no observed issues, operational success does not retroactively constitute proper authorization. The control requires that changes be *authorized* before deployment, not validated after the fact. This is directly confirmed by the CAB's own December 11 discussion, where Karen Liu formally raised the concern and the CAB acknowledged the misclassification \u2014 yet no compensating retrospective CAB approval or retroactive reclassification is documented in the evidence.\n\nPostgreSQL represents a particular area of elevated concern given that it is the database layer underlying PHI storage. A major version upgrade (14 \u2192 15) in a PHI-bearing system without formal risk assessment, PHI data flow impact review, or clinical data manager sign-off is inconsistent with the heightened controls applied to other PHI-touching changes in the same quarter (CHG-902, CHG-907, CHG-911).\n\n**What Is Missing:**\n- CAB approval for CHG-905 and CHG-910 prior to deployment\n- Formal risk classification review (both were labeled \"Low\" without supporting analysis)\n- Full change request submission including impact assessment and rollback plan\n- PHI data flow impact assessment for CHG-910 (database engine upgrade)\n- Retroactive CAB ratification or documented compensating review in the audit record\n\n**Auditor Note:** The CAB identified this concern itself on December 11, which reflects a functioning compliance culture. However, the absence of any documented remediation action \u2014 such as a retrospective CAB review or a formal exception \u2014 within the audit period means the finding stands as an unresolved gap for Q4 2025.\n\n---\n\n### Finding 2: Remediation Action Item Not Completed Within Audit Period\n\n**Severity: Medium**\n\n**Relevant Evidence:**\n- CAB Meeting Minutes, December 11, 2025 \u2014 Action item assigned to Hana Otsuki\n- POL-CHG-024, Section 4.1 \u2014 Standard Change Catalog Governance\n- No subsequent evidence provided\n\n**Description of Gap:**\n\nThe December 11 CAB meeting produced a formal action item: *\"Hana to circulate updated SC-003 language clarifying version scope.\"* This action was assigned to address the root cause of the misclassifications identified in Finding 1 \u2014 namely, that SC-003's scope boundaries were either unclear to developers or were being applied inconsistently.\n\nNo evidence was provided that this action item was completed before the close of the Q4 2025 audit period (December 31, 2025). The Standard Change Catalog governs an ongoing stream of production changes; without updated guidance, the same misclassification risk persists for any dependency upgrades deployed after December 11 and before the catalog is formally updated.\n\nSection 4.1 specifies that changes to the catalog require CAB approval, which means the remediation itself requires a formal CAB action \u2014 not merely an email circulation. The evidence does not demonstrate that either the interim guidance or the formal catalog update was completed.\n\n**What Is Missing:**\n- Evidence that updated SC-003 language was drafted and circulated\n- CAB approval of revised catalog language (required per Section 4.1)\n- Confirmation that the action item was tracked to closure within the audit period or formally deferred with a documented target date\n\n---\n\n### Finding 3: CHG-907 Approved Without Full Quorum per Policy Definition\n\n**Severity: Low**\n\n**Relevant Evidence:**\n- CAB Meeting Minutes, November 19, 2025 \u2014 CHG-907 approved with 3/4 members\n- POL-CHG-024, Section 3.3 \u2014 CAB quorum definition: *\"VP Engineering + 2 other members\"*\n- Change log: CHG-907, High risk, PHI-impacting\n\n**Description of Gap:**\n\nThe November 19 meeting was attended by three members (Hana Otsuki, Raj Mehta, Karen Liu), and the minutes record quorum as \"Met (3/4).\" Per Section 3.3, quorum requires *\"VP Engineering + 2 other members,\"* which is technically satisfied by the three attendees present. The finding is therefore **not a quorum failure** under the strict policy definition.\n\nHowever, CHG-907 is a High risk change implementing PHI access audit trail functionality \u2014 a change with direct HIPAA compliance implications (45 CFR 164.312(b)). Dr. James Park, the Clinical Data Manager, was absent. For all other High-risk changes touching PHI in Q4 (CHG-902, CHG-911), Dr. Park's clinical validation is documented as a specific approval element. His absence from the CHG-907 meeting creates a consistency gap: while the policy's quorum threshold was technically met, the entity's own practice for PHI-impacting High-risk changes includes clinical review, and that review is not documented for CHG-907.\n\nKaren Liu's sign-off on HIPAA alignment is noted and meaningful. The severity is assessed as Low because the technical quorum requirement was satisfied and no adverse outcome is evident. Nevertheless, a pattern where clinical review is present for some PHI changes but not others \u2014 without documented rationale for the exception \u2014 may be questioned in a Type II review covering the full period.\n\n**What Is Missing:**\n- Documentation of why clinical data review was not required or was otherwise addressed for CHG-907\n- Or confirmation from Dr. Park (after the fact) of clinical data accuracy for the audit trail implementation\n- Consistent application of the clinical review practice across all High-risk PHI changes\n\n---\n\n## Summary Table\n\n| # | Finding Title | Severity | Evidence Source | CC8.1 Element Affected |\n|---|--------------|----------|----------------|------------------------|\n| 1 | Major version upgrades deployed without CAB authorization | **High** | Change log (CHG-905, CHG-910); POL-CHG-024 SC-003; CAB minutes Dec 11 | Authorization; Approval |\n| 2 | SC-003 remediation action item not completed within audit period | **Medium** | CAB minutes Dec 11; POL-CHG-024 \u00a74.1 | Documentation; Approval |\n| 3 | High-risk PHI change approved without clinical review (CHG-907) | **Low** | CAB minutes Nov 19; change log CHG-907 | Authorization; Approval |\n\n---\n\n## Observations (No Finding)\n\n- **Segregation of duties:** Consistently maintained across all Q4 changes. No developer approved or deployed their own change. The SRE team executed all production deployments.\n- **Testing standards:** All Normal changes met or exceeded the 96% automated test pass rate threshold. Testing evidence was attached to Jira tickets as required.\n- **Standard changes within scope (SC-001, SC-002, SC-004, SC-005):** CHG-903, CHG-904, CHG-906, CHG-909, CHG-912 were all validly classified within their respective catalog entries and appropriately documented.\n- **PHI change controls:** CHG-902, CHG-907, and CHG-911 all received security review and data integrity validation. The HIPAA compliance summary corroborates that all PHI-impacting changes were identified and reviewed.\n- **CAB cadence:** All four Normal changes were reviewed at a scheduled Wednesday CAB meeting. No changes to the meeting schedule or unilateral approvals outside the CAB process were observed.\n\n---\n\n## Recommended Management Responses\n\n1. **For Finding 1:** Conduct and document a retrospective CAB review of CHG-905 and CHG-910 acknowledging the misclassification, confirming the risk assessment (including PHI impact for CHG-910), and recording formal ratification or exception approval. Establish a control to prevent developer self-classification of changes that approach catalog scope boundaries.\n\n2. **For Finding 2:** Complete the SC-003 language revision and obtain formal CAB approval per Section 4.1 before the next standard change of this type is processed. Consider implementing a mandatory classification review step for any dependency update involving a non-patch version increment.\n\n3. **For Finding 3:** Clarify in the CAB charter or meeting procedures whether clinical review is a required element (separate from quorum) for High-risk PHI changes, and apply that requirement consistently. If Dr. Park's review is not required when quorum is otherwise met, document that policy explicitly.\n\n---\n\n*This assessment is based solely on the evidence provided and reflects conditions as of Q4 2025. Additional evidence may affect findings.*"
+}

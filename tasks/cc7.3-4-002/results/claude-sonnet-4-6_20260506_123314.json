@@ -1,0 +1,100 @@
+{
+  "task_id": "cc7.3-4-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T12:33:14.038823",
+  "score": {
+    "task_id": "cc7.3-4-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.8,
+    "f1": 0.888888888888889,
+    "score": 0.888888888888889,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-504",
+          "false positive",
+          "SEC-EXC-2025-091",
+          "Section 5.1"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-503",
+          "Not Started",
+          "former contractor",
+          "cross-account trust"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-505",
+          "3 of 7 action items",
+          "ransomware",
+          "SFTP gateway",
+          "patient data",
+          "PHI",
+          "SEV-1"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-507",
+          "HTTP request smuggling",
+          "WAF bypass",
+          "2 of 5 action items",
+          "HTTP/2 desync",
+          "incomplete remediation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SEC-EXC-2025-088",
+          "January 2026",
+          "SOC 2 audit preparation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4763,
+    "output_tokens": 3355
+  },
+  "raw_response": "# CC7.3 Compliance Assessment \u2014 Beacon Health Technologies\n## Q4 2025 Observation Period (October 1 \u2013 December 31, 2025)\n\n---\n\n## Executive Summary\n\nBeacon Health Technologies demonstrates a generally mature incident response capability during Q4 2025. The incident register reflects consistent SLA performance, functioning detection tooling, and appropriate escalation for critical events. However, the assessment identified **five genuine control gaps** of varying severity that warrant remediation before or during the next audit cycle. Several apparent issues were investigated and resolved as non-findings based on corroborating evidence.\n\n---\n\n## Genuine Findings\n\n---\n\n### Finding 1: INC-2025-503 Post-Mortem Not Initiated Despite Mandatory Requirement\n\n**Severity: High**\n\n**Document Reference:** Incident Register (INC-2025-503); IRP Section 5.1 (Post-Mortem Requirements)\n\n**Detail:**\nINC-2025-503 is a SEV-2 incident involving anomalous API calls from an IAM role assumed by an unknown external account, traced to a former contractor whose cross-account trust relationship was never revoked. The incident resolved on November 6, 2025. Under IRP Section 5.1, SEV-2 incidents require a mandatory post-mortem within 5 business days of resolution, placing the deadline at approximately November 13, 2025.\n\nAs of the register snapshot, the post-mortem status is recorded as **\"Not Started\"** with a due date of November 13 that has passed. Zero action items have been created. This is a confirmed access control failure \u2014 a former contractor retained active IAM trust \u2014 that carries meaningful risk of recurrence. The absence of a root cause analysis and corrective action items means the underlying vulnerability (inadequate offboarding of third-party IAM relationships) has not been formally addressed through the post-mortem process.\n\n**Why This Is a Gap:**\nThe policy requirement is unambiguous and the deadline has passed. No exception, false positive determination, or severity downgrade is documented that would excuse the omission. The nature of the incident \u2014 unauthorized external access via a stale trust relationship \u2014 is precisely the type of event for which post-mortem analysis and action items are intended to prevent recurrence. This is a direct, unmitigated deviation from a documented control.\n\n---\n\n### Finding 2: INC-2025-505 Post-Mortem Action Items Materially Incomplete\n\n**Severity: High**\n\n**Document Reference:** Incident Register (INC-2025-505); IRP Sections 5.1 and 5.3\n\n**Detail:**\nINC-2025-505 is a SEV-1 ransomware execution on the SFTP gateway server, with confirmed PHI involvement (patient data files in transit were encrypted). The post-mortem status is recorded as \"Complete\" with a due date of November 27, 2025 \u2014 within the 3-business-day SLA for SEV-1 events. However, only **3 of 7 action items are completed**, representing a 57% completion rate. IRP Section 5.3 requires that action items be entered in Jira within 2 business days and reviewed weekly, with overdue items (>14 days past creation) escalated to the CISO.\n\nGiven that the incident resolved on November 22 and the assessment covers through December 31, the 4 open action items have been outstanding for approximately 5\u20136 weeks \u2014 well beyond the 14-day escalation threshold. No evidence of CISO escalation for these overdue items is present in the register or exception log.\n\n**Why This Is a Gap:**\nA SEV-1 ransomware incident with PHI involvement represents the highest-risk category of event. Completing the post-mortem document while leaving 4 of 7 remediation actions unresolved \u2014 and with no documented escalation \u2014 indicates a breakdown in the action item tracking and accountability mechanism described in Section 5.3. The post-mortem being marked \"Complete\" while substantive remediation remains open may also misrepresent the control's effectiveness to reviewers.\n\n---\n\n### Finding 3: INC-2025-507 Post-Mortem Action Items Materially Incomplete\n\n**Severity: High**\n\n**Document Reference:** Incident Register (INC-2025-507); IRP Sections 5.1 and 5.3\n\n**Detail:**\nINC-2025-507 is a SEV-2 WAF bypass via HTTP request smuggling (HTTP/2 desync technique), resolved December 9, 2025. The 5-business-day post-mortem deadline is approximately December 16, and the register confirms the post-mortem is \"Complete\" \u2014 consistent with the policy SLA. However, only **2 of 5 action items are completed**, with 3 remaining open. As of December 31, these items have been open for approximately 3 weeks.\n\nWhile the 14-day escalation threshold is borderline given the December 9 resolution date, the open action items specifically relate to a novel attack technique (HTTP/2 desync) that successfully bypassed WAF controls. The incomplete remediation leaves known defensive gaps unaddressed. No escalation or extension documentation is present.\n\n**Why This Is a Gap:**\nLike Finding 2, this represents a pattern of post-mortems being marked complete while remediation actions remain open without documented escalation or extension approval. For a novel attack technique that reached the application layer, the open action items carry direct residual risk. The pattern across INC-2025-505 and INC-2025-507 \u2014 both assigned to Dr. James Okonkwo as Incident Commander \u2014 suggests a systemic gap in action item follow-through rather than an isolated occurrence.\n\n---\n\n### Finding 4: INC-2025-506 Triage SLA Exceeded for SEV-4 Incident with PHI Involvement\n\n**Severity: Medium**\n\n**Document Reference:** Incident Register (INC-2025-506); IRP Section 4.1 (Triage SLA)\n\n**Detail:**\nINC-2025-506 is a SEV-4 incident involving an employee accessing a patient dashboard without valid business justification, confirmed to involve a single patient's PHI. The incident was detected at 10:00 on December 1, 2025, and triaged at 14:30 the same day \u2014 a triage elapsed time of **270 minutes (4.5 hours)**. The IRP Section 4.1 specifies a next-business-day triage SLA for SEV-4 incidents during business hours, which this incident technically satisfies on a calendar basis. However, the 4.5-hour gap warrants examination.\n\nMore importantly, the containment field is recorded as **\"N/A\"** with no containment timestamp, despite confirmed PHI access by an unauthorized party. While the resolution involved HR action (employee termination) rather than a technical containment measure, the policy does not explicitly carve out HR-handled incidents from containment documentation. The absence of any containment action \u2014 even an access revocation timestamp \u2014 creates a documentation gap for a PHI-involved event.\n\n**Why This Is a Gap:**\nFor incidents with confirmed PHI involvement, the IRP Section 6.2 requires covered entity customer notification within 48 hours of breach confirmation, and HIPAA regulatory notification obligations may apply. The absence of a containment record (e.g., when the employee's system access was revoked or account disabled) leaves an incomplete audit trail for a PHI event. The incident register and exception log contain no documentation addressing why containment was recorded as N/A rather than documenting the access revocation action taken as part of the HR process.\n\n---\n\n### Finding 5: Q4 2025 Tabletop Exercise Not Completed Within the Quarter\n\n**Severity: Medium**\n\n**Document Reference:** Exception Register (SEC-EXC-2025-088); IRP Section 8 (Plan Testing)\n\n**Detail:**\nIRP Section 8 requires quarterly tabletop exercises as a HIPAA requirement. The Q4 2025 tabletop exercise was postponed via SEC-EXC-2025-088, approved October 2, 2025, and rescheduled to January 2026 \u2014 outside the Q4 observation period entirely. The exception was approved by the CEO and is supported by documented compensating controls: the Q3 2025 tabletop was completed on schedule, and an annual simulated exercise was completed in September 2025.\n\nThe postponement itself is formally approved and documented with appropriate authority, and the compensating rationale (SOC 2 audit preparation, recent prior exercises) has merit. However, for the Q4 2025 SOC 2 observation period, there is no tabletop exercise completion to point to. The exception is still open (\"Pending Completion\") as of the end of the observation window. The review note in the exception register itself flags the risk of compounding delays if the Q1 2026 exercise also slips.\n\n**Why This Is a Gap:**\nWhile the exception is properly documented and approved \u2014 which mitigates the severity \u2014 the control as stated in the IRP and implicitly required by CC7.3 (testing of the incident response program) was not executed within the observation period. A SOC 2 auditor examining Q4 2025 will find no tabletop completion for this quarter. Compensating controls from Q3 reduce but do not eliminate this gap; the elapsed time between the September 2025 simulated exercise and a January 2026 tabletop represents approximately four months without tabletop validation, during which three SEV-1/SEV-2 incidents occurred.\n\n---\n\n## Non-Findings (Investigated and Resolved)\n\nThe following items may appear problematic on initial review but are supported by sufficient evidence and do not constitute control gaps.\n\n---\n\n**INC-2025-504 \u2014 False Positive Closure Without Post-Mortem**\nThe 323-minute triage time and absence of a post-mortem for this SEV-3 incident are fully explained. The triage delay occurred because the incident was detected at 03:22 and investigated during business hours, consistent with SEV-3 coverage hours (M-F 8AM\u20135PM CT per IRP Section 4.1). The false positive determination is documented in SEC-EXC-2025-091, approved by the CISO, with CloudTrail verification and content validation. IRP Section 5.1 explicitly exempts confirmed false positives from post-mortem requirements. The engineering team's failure to notify security of the new S3 bucket is a process improvement concern but not an IR control gap.\n\n**INC-2025-508 \u2014 Brute Force Attack, No Post-Mortem**\nThis SEV-3 incident (brute force on VPN gateway, all attempts blocked by MFA) carries a \"Not Required\" post-mortem status consistent with IRP Section 5.1 \u2014 SEV-3 incidents do not require post-mortems unless downgraded from a higher severity. The incident was handled correctly: blocked at authentication, source IPs blocklisted, and properly documented.\n\n**INC-2025-501 \u2014 SEV-1 PHI Breach, 7-Minute Triage**\nThe 7-minute triage time for this critical incident (12,400 patient records, compromised service account) is well within the 10-minute SEV-1 SLA. Post-mortem is complete, all 6 action items are closed, and the emergency change (CHG-2025-E041) for credential rotation is documented in the change management log with same-day filing.\n\n**INC-2025-502 \u2014 SEV-2 Lateral Movement, Triage and Post-Mortem**\nTriage at 15 minutes is within the 20-minute SEV-2 SLA. Post-mortem is complete, all 4 action items are closed. Emergency change for RDP remediation is not apparent from the change log (no CHG directly referencing INC-2025-502), though the unpatched RDP vulnerability on a staging server \u2014 not production \u2014 may have been addressed through a standard change. This warrants inquiry but is not a clear gap based on available evidence.\n\n**HIPAA Training and Change Management Records**\nThe training completion report and change management log are not directly evaluated under CC7.3. The training data is relevant to broader security posture but not to incident response process execution. The change management log does corroborate emergency change handling for INC-2025-501, -505, and -507, providing supporting evidence for those incident responses.\n\n---\n\n## Summary Table\n\n| # | Finding Title | Severity | IRP Reference |\n|---|---------------|----------|---------------|\n| 1 | INC-2025-503 Post-Mortem Not Initiated | **High** | Section 5.1 |\n| 2 | INC-2025-505 Action Items 43% Complete, No Escalation | **High** | Sections 5.1, 5.3 |\n| 3 | INC-2025-507 Action Items 40% Complete, No Escalation | **High** | Sections 5.1, 5.3 |\n| 4 | INC-2025-506 PHI Incident Missing Containment Record | **Medium** | Sections 4.2, 6.2 |\n| 5 | Q4 2025 Tabletop Exercise Not Completed in Period | **Medium** | Section 8 |\n\n---\n\n## Recommended Management Responses\n\nFor **Findings 1\u20133**, management should demonstrate: (a) initiation and completion of the INC-2025-503 post-mortem with root cause analysis of the stale contractor IAM trust; (b) completion or formal time-bounded extension of all open action items for INC-2025-505 and INC-2025-507; and (c) implementation of a systematic action item aging report reviewed in the weekly Security Operations standup per Section 5.3.\n\nFor **Finding 4**, management should clarify and document the containment actions taken for HR-handled PHI incidents (e.g., access revocation timestamps), and consider updating the IRP to explicitly address containment documentation requirements for policy-violation incidents involving PHI.\n\nFor **Finding 5**, management should ensure the January 2026 tabletop is completed as committed in SEC-EXC-2025-088, and implement a scheduling mechanism that prevents the Q1 2026 tabletop from also slipping, which the exception reviewer specifically flagged as a risk."
+}

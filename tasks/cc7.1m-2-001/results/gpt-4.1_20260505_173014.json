@@ -1,0 +1,57 @@
+{
+  "task_id": "cc7.1m-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:30:14.057189",
+  "score": {
+    "task_id": "cc7.1m-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PATCH-4023",
+          "jump-srv-01",
+          "10:45",
+          "outside maintenance window",
+          "business hours",
+          "Section 6"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "PATCH-4013",
+          "monitoring-srv-01",
+          "14:22",
+          "business hours",
+          "High"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3610,
+    "output_tokens": 1163
+  },
+  "raw_response": "Certainly! Here is a review against SOC 2 CC7.1 and the evidence provided:\n\n---\n\n### 1. **Patches Applied Outside Approved Maintenance Windows**\n\n- **Section:** Patching Records & System Maintenance Policy [Sections 3.1, 3.2, 4.1, 6]\n- **Why it's a gap:**  \n  The maintenance policy requires all planned maintenance be performed within designated maintenance windows, with any emergency maintenance outside of these windows requiring approval from the IT Director (Section 6).  \n  Several patches were applied outside of the defined windows, and the majority lack clear evidence of required emergency approval/documentation, in particular:\n  - **PATCH-4013 (2025-10-15 14:22, monitoring-srv-01, High severity):**  \n    Applied during business hours, maintenance window = \"N/A\", but no note of emergency change control/approval.\n  - **PATCH-4023 (2025-11-12 10:45, jump-srv-01, Critical severity):**  \n    Applied during business hours with \"N/A\" window. Deployer notes say, \"CRITICAL patch \u2014 applied outside maintenance window during business hours. Emergency change not approved.\" This directly contravenes policy section 6, which stipulates such action requires emergency approval.\n- **Severity:** **High**\n    - **Rationale:** Lack of emergency approval for patches (especially critical ones) applied outside maintenance windows creates risk of uncontrolled changes and audit failures.\n\n---\n\n### 2. **Lack of Emergency Change Control Evidence**\n\n- **Section:** System Maintenance Policy Section 6; Patching Records\n- **Why it's a gap:**  \n  The policy mandates that all emergency maintenance requires documented justification and approval by the IT Director or designee. In the records:\n  - **PATCH-4023** explicitly states, \"Emergency change not approved\" despite being critical and performed outside maintenance window.\n  - **PATCH-4013** (High severity patch) provides no evidence that change control was followed.\n  There are no attachments or log entries showing ticket numbers or SIEM evidence of approval nor comments confirming required emergency process was followed.\n- **Severity:** **High**\n    - **Rationale:** Lack of follow-through on required emergency change process weakens compliance and oversight for urgent patching.\n\n---\n\n### 3. **No Explicit Recording of Patch Testing in Staging**\n\n- **Section:** System Maintenance Policy Section 4.2; Patching Records\n- **Why it's a gap:**  \n  The maintenance policy (4.2) requires, \"All patches must be tested in staging before production deployment.\" Patch records do not indicate or reference patch testing or include links/notes confirming that testing steps occurred prior to deployment.\n- **Severity:** **Medium**\n    - **Rationale:** Absence of evidence makes it difficult to demonstrate adherence to due diligence processes and increases risk of deploying unverified changes.\n\n---\n\n### 4. **Stakeholder Notification Evidence Not Provided**\n\n- **Section:** System Maintenance Policy Section 3.2\n- **Why it's a gap:**  \n  The policy requires stakeholders be notified at least 48 hours before planned maintenance, but patch records do not include or reference notification logs, tickets, or emails indicating stakeholders were informed prior to work.\n- **Severity:** **Low**\n    - **Rationale:** While the lack of evidence is a documentation gap rather than a process gap (assuming notification was given), best practice is to retain artifacts confirming notices.\n\n---\n\n### 5. **Consistent and Timely Patching Meet Policy and SOC 2 Requirements**\n\n- **Section:** Maintenance Policy Section 4.1; Patching Records\n- **Why it's sufficient:**  \n  Apart from the exceptions noted above, the organization consistently patches systems in accordance with policy-defined SLAs for critical, high, medium, and low severity patches, maintains records of which patches were applied, and documents results.\n- **Severity:** *N/A (Positive control effectiveness)*\n\n---\n\n## **Summary Table**\n\n| Title                                            | Section                    | Gap / Issue Description                                                | Severity  |\n|--------------------------------------------------|----------------------------|------------------------------------------------------------------------|-----------|\n| Patches Applied Outside Approved Maintenance Windows | 3.1, 3.2, 4.1, 6           | Patches deployed outside maintenance windows without required approval | High      |\n| Lack of Emergency Change Control Evidence           | 6, patching records        | No documentation for emergency approval for urgent/critical patches    | High      |\n| No Explicit Recording of Patch Testing in Staging   | 4.2, patching records      | Patch records lack reference to required staging/testing steps         | Medium    |\n| Stakeholder Notification Evidence Not Provided      | 3.2, patching records      | No artifacts of 48hr notification to stakeholders for planned maintenance | Low       |\n| Consistent and Timely Patching Meet Policy/SOC 2   | 4.1, patching records      | Organization generally demonstrates compliance with patching policy    | N/A       |\n\n---\n\n## **Remediation Recommendations**\n\n- Adhere strictly to emergency change approval workflow for out-of-window critical patches; document justification and approvals in the change ticket.\n- Update patching records template to include reference to staging/testing confirmation for each patch.\n- Maintain and provide evidence of stakeholder notifications for planned maintenance (e.g., ticket references, emails, or notification logs).\n- Review change management process with patch deployers to ensure compliance for critical and emergency patches.\n\n---\n\n**Conclusion:**  \nRidgeline Systems demonstrates strong routine maintenance and patching cadence, but recurring issues around emergency approvals and documentation could result in SOC 2 CC7.1 findings unless resolved."
+}

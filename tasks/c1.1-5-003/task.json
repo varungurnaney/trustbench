@@ -1,0 +1,117 @@
+{
+  "id": "c1.1-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "C1.1",
+  "control_description": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/encryption-key-policy.md",
+      "type": "policy",
+      "description": "Arbor Data Platforms encryption key lifecycle policy defining rotation schedules, tolerance windows, and escalation procedures"
+    },
+    {
+      "path": "evidence/key-rotation-tracker.csv",
+      "type": "log",
+      "description": "Key rotation tracker showing all rotation events including three database keys at exactly 14-day tolerance boundary and one at 16 days"
+    },
+    {
+      "path": "evidence/ciso-exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO exception register including temporary exception for DB-ADP-004 tolerance overage"
+    },
+    {
+      "path": "evidence/quarterly-encryption-review-q4.md",
+      "type": "report",
+      "description": "CISO quarterly encryption review identifying the pattern of rotations consistently hitting tolerance boundaries"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Arbor Data Platforms' encryption key management controls under C1.1 and CC6.7. Review all evidence to assess whether key lifecycle controls are operating effectively. This assessment requires nuanced professional judgment on several interconnected issues: (1) Whether DB-ADP-004's 2-day tolerance overage is a material deficiency or a properly handled variance given the immediate CISO notification, exception filing, and corrective actions. (2) Whether the pattern of database key rotations consistently hitting the exact 14-day tolerance boundary indicates the control is 'operating' or 'barely operating.' (3) Whether the organization's own CISO quarterly review identifying these patterns represents strong governance or an admission of control weakness. Weigh the difference between technical compliance (within tolerance) and operational health.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "DB-ADP-004 key rotation exceeded 14-day tolerance by 2 days — properly escalated but still a control exception",
+      "description": "DB-ADP-004 (adp-prod-analytics-pii-key) protecting Restricted PII data was rotated 16 days after the scheduled date, exceeding the 14-day tolerance by 2 days. The auditor must exercise careful judgment here. On one hand, the organization responded correctly: CISO was notified on November 16 (within 24 hours of exceeding tolerance per policy Section 4.2), a temporary exception (EXC-2025-041) was filed the same day, root cause was documented (disk space exhaustion + table deadlock), corrective actions were implemented and verified, and a post-incident review was held. On the other hand, this IS a tolerance overage on a Restricted-data key. The question is whether proper incident handling converts a deficiency into a managed event. For SOC 2, the control (rotation within tolerance) did not operate for this key. However, the detective and corrective controls (notification, exception, root cause analysis) did operate. A reasonable auditor should note this as a minor deficiency with appropriate management response, not a critical finding.",
+      "evidence_sources": ["evidence/key-rotation-tracker.csv", "evidence/ciso-exception-register.csv", "evidence/encryption-key-policy.md"],
+      "expected_reasoning": "The auditor must weigh: (1) 2 days beyond tolerance is minor in absolute terms, (2) the key WAS rotated — it was not missed, (3) incident response was textbook-correct, (4) corrective actions address root cause, (5) but it IS technically a control failure for Restricted data. The proper assessment is a low-medium severity observation noting the control exception while crediting the organization's response. Marking this as critical would be over-penalizing an organization that responded well. Ignoring it would miss a real control exception.",
+      "detection_criteria": {
+        "required_keywords": ["DB-ADP-004", "16 days", "2 days beyond", "tolerance", "CISO notified", "EXC-2025-041", "corrective actions", "disk space", "Restricted"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Systemic pattern of database key rotations at tolerance boundary indicates the re-encryption process cannot reliably complete within the rotation schedule",
+      "description": "All four database field-encryption key rotations in the review period hit the boundary: DB-ADP-001 at 14 days, DB-ADP-002 at 14 days, DB-ADP-003 at 14 days (all at exact tolerance), and DB-ADP-004 at 16 days (beyond tolerance). This is a 100% boundary-hit rate. The CISO's own quarterly review (Observation 1) identifies this pattern, noting 'the re-encryption process requires the full tolerance window every time, leaving no buffer for unexpected issues.' The auditor must assess whether 'within tolerance' truly means 'operating effectively.' A control that can only succeed when given the maximum possible runway, and fails the moment any complication arises, is not robust. The tolerance window has become the expected timeline rather than the exception buffer it was designed to be. This represents a control design issue — the rotation schedule and re-encryption process are mismatched.",
+      "evidence_sources": ["evidence/key-rotation-tracker.csv", "evidence/quarterly-encryption-review-q4.md", "evidence/encryption-key-policy.md"],
+      "expected_reasoning": "The auditor should look beyond individual compliance to assess the control's operational health. Key judgment factors: (1) 4/4 database rotations at or beyond the boundary = 100%, not random variance, (2) the CISO herself flagged this as concerning, (3) tolerance is meant to accommodate exceptions, not be the standard operating procedure, (4) one complication (DB-ADP-004) immediately caused a tolerance breach, proving the buffer is illusory, (5) this pattern is likely to produce more breaches as data volumes grow. This is a control that is technically compliant but operationally fragile — a key distinction for SOC 2 auditors. A reasonable auditor would rate this as a significant observation requiring management action.",
+      "detection_criteria": {
+        "required_keywords": ["pattern", "all four", "100%", "14 days", "tolerance boundary", "buffer", "re-encryption", "process", "fragile", "design issue", "Observation 1"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Application key rotation trending toward tolerance boundary — APP-ADP-003 at exactly 7 days",
+      "description": "The quarterly review (Observation 2) notes that application key APP-ADP-003 completed rotation at exactly 7 days — the maximum tolerance for application keys. While this is one instance (not yet a pattern for application keys specifically), it mirrors the database key pattern. The auditor must decide whether this is an isolated occurrence or an early indicator that the same process strain affecting database keys is spreading to application keys. Combined with the database key pattern, it suggests the manual rotation process as a whole may be under-resourced or under-automated.",
+      "evidence_sources": ["evidence/key-rotation-tracker.csv", "evidence/quarterly-encryption-review-q4.md"],
+      "expected_reasoning": "A single application key at the tolerance boundary is not conclusive on its own. However, in context: (1) the same pattern is well-established for database keys, (2) the same person (Robert Chen) performs both types of rotations, (3) the quarterly review identifies this as a trend. A reasonable auditor would flag this as a leading indicator supporting the broader finding about manual rotation process strain, not as a standalone critical finding.",
+      "detection_criteria": {
+        "required_keywords": ["APP-ADP-003", "7 days", "tolerance", "application key", "trend", "pattern", "manual", "Robert Chen", "Observation 2"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Single point of failure in key rotation execution — all manual rotations performed by Robert Chen",
+      "description": "The key rotation tracker shows every manual rotation (all APP and DB keys) was performed by Robert Chen. If Robert Chen is unavailable (vacation, illness, departure), no one else appears to be trained or available to perform key rotations. The policy (Section 4.3) documents the rotation procedure but does not require cross-training or backup personnel. The CISO quarterly review does not identify this single-point-of-failure risk. For a control protecting Restricted PII data with defined tolerance windows, dependency on a single individual is a resilience concern.",
+      "evidence_sources": ["evidence/key-rotation-tracker.csv", "evidence/encryption-key-policy.md"],
+      "expected_reasoning": "Every manual rotation lists Robert Chen as the performer. The auditor should identify this bus-factor risk: (1) no backup personnel evident, (2) key rotations have strict timelines with tight tolerances, (3) if Robert Chen is unavailable during a rotation window, the rotation would likely exceed tolerance, (4) the policy does not require cross-training. This is a control sustainability concern, not an immediate compliance failure.",
+      "detection_criteria": {
+        "required_keywords": ["Robert Chen", "single", "all manual", "performed by", "backup", "cross-training", "unavailable", "bus factor", "resilience"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "low",
+      "title": "CISO quarterly review demonstrates strong governance but recommendations lack enforcement timelines",
+      "description": "The CISO quarterly encryption review identifies the pattern of boundary-hitting rotations and makes four specific recommendations including automation evaluation and pre-flight checks. However, the review does not assign owners, deadlines, or priority levels to these recommendations. The auditor must assess whether the review itself is sufficient governance or whether the lack of actionable follow-up makes the review a documentation exercise. The same pattern was not identified in Q3 (when all rotations were on-time), so this is the first quarter where the issue manifested. A reasonable auditor would credit the detection while noting the need for formalized remediation tracking.",
+      "evidence_sources": ["evidence/quarterly-encryption-review-q4.md"],
+      "expected_reasoning": "The CISO review is evidence of strong governance: the organization self-identified the pattern, analyzed root causes, and made recommendations. However, recommendations without owners and deadlines risk becoming observations that are never acted upon. The auditor should credit the governance maturity while recommending that the Q1 2026 review include a status check on these recommendations.",
+      "detection_criteria": {
+        "required_keywords": ["quarterly review", "recommendations", "no deadlines", "no owners", "enforcement", "governance", "follow-up", "Patricia Hawkins"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "55 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["key_rotation", "tolerance_window", "pattern_detection", "judgment", "materiality", "variance_vs_deficiency", "re-encryption", "process_maturity", "single_point_of_failure", "governance"]
+  }
+}

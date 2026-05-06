@@ -1,0 +1,100 @@
+{
+  "id": "cc6.3-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.3",
+  "control_description": "The entity authorizes, modifies, or removes access to data, software functions, and other protected information assets based on roles and responsibilities, segregation of duties, and least privilege principles.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/data-access-policy.md",
+      "type": "policy",
+      "description": "Orion Health Systems data access authorization policy with least-privilege and data classification requirements"
+    },
+    {
+      "path": "evidence/database-permissions.json",
+      "type": "config",
+      "description": "PostgreSQL production database role and grant export as of December 20, 2025"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO-approved exception register with compensating controls for policy deviations"
+    },
+    {
+      "path": "evidence/access-request-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 data access request tickets with approval chains and justifications"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are auditing Orion Health Systems' SOC 2 Type II compliance for control CC6.3 (Data Access Authorization). Orion is a healthcare technology company handling PHI. Review all evidence to assess whether data access is authorized based on roles, least privilege, and segregation of duties. Cross-reference the database permissions against the policy, exception register, and access request log. Some apparent issues may have valid exceptions — evaluate each carefully.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "bi-reporting role has broad read access across 12 production tables but is covered by valid exception EXC-2025-070",
+      "description": "The database permissions show the bi-reporting role has SELECT access to 12 production tables including patient_records, billing, and prescriptions. This initially appears to violate least-privilege (Section 3.1). However, exception EXC-2025-070 in the exception register documents CISO approval specifically for the BI reporting team's broad read access, with compensating controls including PHI field-level masking via PostgreSQL row-level security policies, query audit logging with 18-month retention, read-only access through a dedicated read replica, and automated alerts for queries returning more than 5,000 rows. The exception was renewed on October 15, 2025, with compensating controls verified.",
+      "evidence_sources": ["evidence/database-permissions.json", "evidence/exception-register.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "bi-reporting role with broad read access → initially looks like least-privilege violation → check exception register → EXC-2025-070 is active and approved → PHI masking and read replica isolation provide adequate compensating controls → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["bi-reporting", "EXC-2025-070", "exception", "compensating", "PHI masking", "read replica", "not a finding"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["bi-reporting violation", "bi-reporting gap"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "User t.brooks (clinical-ops-write role) has INSERT and UPDATE on patient_records with no access request ticket",
+      "description": "The database permissions show user t.brooks (Tyler Brooks, Clinical Operations) assigned the clinical-ops-write role, which grants INSERT and UPDATE on patient_records, appointments, and treatment_plans. The access request log for Q4 2025 contains no entry for t.brooks — there is no DAR ticket, no approval chain, and no justification documented. Policy Section 3.2 requires all data access to be authorized through a formal request with Data Owner approval for PHI tables. Additionally, the clinical-ops-write role does not appear in the approved RBAC matrix (Section 3.1) — it appears to be a custom role created outside the governed process. The exception register has no entry for this user or role.",
+      "evidence_sources": ["evidence/database-permissions.json", "evidence/access-request-log-q4.csv", "evidence/data-access-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "t.brooks has write access to patient_records → no access request ticket exists → clinical-ops-write is not in the approved RBAC matrix → no exception → ungoverned write access to PHI → critical for healthcare company.",
+      "detection_criteria": {
+        "required_keywords": ["t.brooks", "clinical-ops-write", "patient_records", "no access request", "no ticket", "RBAC matrix", "ungoverned", "PHI"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Access request DAR-Q4-2025-017 approved by Manager only — missing Data Owner and Privacy Officer approval for PHI access",
+      "description": "Access request DAR-Q4-2025-017 granted user k.shah (Karen Shah, Data Science) SELECT access to patient_records and prescriptions. The access request log shows this was approved by Manager only (Dr. Michael Torres). Policy Section 3.2 requires Data Owner + Privacy Officer + CISO approval for any access to PHI tables. The approval chain was incomplete — Manager approval alone is insufficient for Restricted/PHI data access. The database permissions confirm k.shah has the access, meaning it was provisioned despite the incomplete approval chain.",
+      "evidence_sources": ["evidence/access-request-log-q4.csv", "evidence/database-permissions.json", "evidence/data-access-policy.md"],
+      "expected_reasoning": "DAR-Q4-2025-017 for k.shah → patient_records and prescriptions are PHI → policy requires Data Owner + Privacy Officer + CISO approval → only Manager approved → provisioned anyway → broken approval workflow.",
+      "detection_criteria": {
+        "required_keywords": ["DAR-Q4-2025-017", "k.shah", "Manager only", "Privacy Officer", "CISO", "approval", "patient_records", "incomplete"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Exception EXC-2025-065 for svc-legacy-sync expired October 31 but write access remains active",
+      "description": "The exception register shows EXC-2025-065 (temporary write access for legacy system data synchronization) expired on October 31, 2025 with status 'Expired.' The database permissions show svc-legacy-sync still has INSERT and UPDATE on patient_records and billing as of December 20, 2025 — nearly 2 months after the exception expired. The exception's review_outcome states 'Expired — migration to FHIR API completed. Access should be reverted to read-only.' The access was never reverted.",
+      "evidence_sources": ["evidence/database-permissions.json", "evidence/exception-register.csv"],
+      "expected_reasoning": "EXC-2025-065 expired Oct 31 → database shows svc-legacy-sync still has write access Dec 20 → exception explicitly states access should be reverted → write access persists 50 days past expiration → failed exception lifecycle management.",
+      "detection_criteria": {
+        "required_keywords": ["EXC-2025-065", "svc-legacy-sync", "expired", "October 31", "still active", "write access", "reverted", "FHIR"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["data_access", "PHI", "healthcare", "red_herring", "exception_register", "approval_chain", "custom_role", "least_privilege"]
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "id": "cc3.1-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC3.1",
+  "control_description": "The entity specifies objectives with sufficient clarity to enable the identification of risks to the achievement of its objectives. The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/risk-management-policy.md",
+      "type": "policy",
+      "description": "Cirrus Data Platforms risk management policy with detailed formal emerging risk identification process requirements (Section 6)"
+    },
+    {
+      "path": "evidence/risk-register-q4.csv",
+      "type": "spreadsheet",
+      "description": "Q4 2025 risk register with 12 risks, all with current review dates"
+    },
+    {
+      "path": "evidence/sgc-meeting-minutes-q4.md",
+      "type": "report",
+      "description": "SGC Q4 2025 meeting minutes documenting emerging risk discussions via Slack channels and independent advisor concerns about process formality"
+    },
+    {
+      "path": "evidence/compliance-calendar-2025.md",
+      "type": "report",
+      "description": "2025 compliance activity calendar showing completion status for all scheduled risk management activities"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Cirrus Data Platforms' risk identification and assessment process for the Q4 2025 observation period (October 1 - December 31, 2025). Review the risk management policy, risk register, SGC meeting minutes, and compliance calendar. The organization has identified emerging risks through informal Slack channel discussions rather than the formal process defined in their policy. Assess whether CC3.1 requirements for risk identification and assessment are met. Consider the substance of the risk identification activities versus the documentation requirements. Some situations may require nuanced judgment.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Emerging risk identification conducted entirely through informal Slack discussions -- no formal documented process in 2025",
+      "description": "Policy Section 6 defines a structured emerging risk identification process requiring four formal components: (1) quarterly threat intelligence briefings in documented report format, (2) semi-annual technology horizon scanning reports, (3) monthly regulatory change register updates, and (4) annual FS-ISAC industry risk survey participation. The compliance calendar confirms none of these formal deliverables were produced in 2025. Instead, emerging risk identification occurred through informal discussions in #security-intel and #compliance-updates Slack channels. The SGC meeting minutes show substantive emerging risk discussions occurred -- AI social engineering, quantum computing, EU AI Act -- but through informal rather than formal channels. The independent risk advisor (Dr. Kowalski) explicitly flagged this gap at the Q4 SGC meeting. The judgment call: the substance of the risk identification activity exists (Slack discussions surface real emerging risks, the SGC discusses them at quarterly meetings, and team members share relevant threat intelligence), but the policy's documentation requirements (formal reports, structured assessments, regulatory change register) are not met. The question is whether informal-but-substantive activity satisfies CC3.1, or whether the policy's documented process requirements create a control that must be followed as written.",
+      "evidence_sources": ["evidence/sgc-meeting-minutes-q4.md", "evidence/compliance-calendar-2025.md", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "The auditor must weigh substance versus form. Supporting the Slack approach: real emerging risks are being identified, discussed at SGC meetings, and monitored by qualified personnel. The Slack discussions are timestamped and searchable, providing some audit trail. Against: the policy defines specific deliverables (documented briefings, reports, register updates) that do not exist. An auditor cannot verify the completeness of the emerging risk identification process without structured documentation. Dr. Kowalski's internal criticism validates the concern. A thorough auditor should flag this as a gap between policy and practice, while acknowledging the substantive risk identification activity.",
+      "detection_criteria": {
+        "required_keywords": ["Slack", "informal", "emerging risk", "Section 6", "documented", "formal process", "threat intelligence briefing", "not completed", "Dr. Kowalski"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Three emerging risks identified but no formal risk assessments initiated within 30-day policy requirement",
+      "description": "Policy Section 6.2 requires that when an emerging risk is identified, 'a formal risk assessment must be completed within 30 days' and if rated High or Critical, 'it must be added to the risk register within 10 business days.' The Q4 SGC meeting identified three substantive emerging risks: (1) AI-powered social engineering (deepfake voice phishing), (2) quantum computing threat to cryptography, and (3) EU AI Act compliance implications. For all three, the committee decided 'no formal emerging risk assessment at this time' and none were added to the risk register. The judgment call: the committee may reasonably determine these risks are not yet material enough to warrant formal assessment (quantum computing is 5-10 years out, AI social engineering is partially covered by existing controls, EU AI Act is still being evaluated). However, the policy does not provide discretion to skip the formal assessment -- it states 'must be completed within 30 days.' The committee's decision to monitor informally rather than formally assess contradicts the policy's mandatory language.",
+      "evidence_sources": ["evidence/sgc-meeting-minutes-q4.md", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "The auditor should trace the policy requirement: emerging risk identified → formal assessment within 30 days → if High/Critical, add to register within 10 business days. All three identified risks were deferred without formal assessment. The policy uses 'must' language. The committee may argue these are potential future risks rather than current emerging risks, but the policy's emerging risk definition does not make this distinction. The auditor must judge whether the committee's informal triage is a reasonable exercise of professional judgment or a deviation from a mandatory policy control.",
+      "detection_criteria": {
+        "required_keywords": ["three emerging risks", "formal risk assessment", "30 days", "Section 6.2", "not initiated", "AI social engineering", "quantum computing", "EU AI Act", "no formal assessment"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "FS-ISAC industry risk survey not completed in 2025 -- annual participation required by policy",
+      "description": "Policy Section 6.1 item 4 requires 'Annual participation in FS-ISAC industry risk survey and benchmarking exercise.' The compliance calendar confirms this was 'Not Completed' for all four quarters of 2025, with the note 'due to staffing constraints.' The CRO (David Chen) acknowledged this gap at the Q4 SGC meeting. Industry peer benchmarking is a key input to emerging risk identification -- without it, the organization lacks external context for calibrating its risk ratings and identifying risks that peers have identified but Cirrus Data may have missed.",
+      "evidence_sources": ["evidence/compliance-calendar-2025.md", "evidence/sgc-meeting-minutes-q4.md", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "The compliance calendar shows FS-ISAC survey 'Not Completed' for all of 2025. Policy Section 6.1 requires annual participation. The CRO confirmed the gap was due to staffing constraints. This is a straightforward policy-versus-practice gap with no mitigating factors.",
+      "detection_criteria": {
+        "required_keywords": ["FS-ISAC", "industry risk survey", "not completed", "annual", "2025", "staffing constraints", "Section 6.1", "peer benchmarking"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Regulatory change register not maintained at required monthly cadence",
+      "description": "Policy Section 6.1 item 3 requires 'Monthly scan of regulatory developments by the Legal/Compliance team' documented in the Regulatory Change Register. The compliance calendar shows 'Partial' completion for all four quarters with the note 'Updated sporadically. No consistent monthly cadence maintained.' While some regulatory monitoring occurs (the SGC minutes reference EU AI Act awareness), the formal register is not being maintained per the monthly cadence requirement. For a company subject to GDPR and SOX ITGC requirements, systematic regulatory change monitoring is important to ensure new or amended regulations are captured in the risk register.",
+      "evidence_sources": ["evidence/compliance-calendar-2025.md", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "Compliance calendar shows 'Partial' for regulatory change register updates. Policy requires monthly cadence. The sporadic approach means regulatory changes could be missed between informal reviews. The auditor should note this is part of the broader pattern of informal-over-formal emerging risk practices.",
+      "detection_criteria": {
+        "required_keywords": ["regulatory change register", "monthly", "partial", "sporadic", "Section 6.1", "not maintained", "cadence"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["risk_assessment", "judgment_call", "emerging_risk", "Slack_discussions", "informal_process", "documentation_gap", "FS-ISAC", "regulatory_monitoring", "quantum_computing", "AI_Act"]
+  }
+}

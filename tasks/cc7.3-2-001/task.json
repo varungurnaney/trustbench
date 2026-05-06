@@ -1,0 +1,71 @@
+{
+  "id": "cc7.3-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.3",
+  "control_description": "The entity responds to identified security incidents by executing a defined incident response program to understand, contain, remediate, and communicate security incidents, as appropriate.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/incident-response-plan.md",
+      "type": "policy",
+      "description": "Crestfield Data Solutions incident response plan defining severity levels, roles, response procedures, communication protocols, and post-incident activities"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the incident response plan for Crestfield Data Solutions and assess whether it adequately addresses SOC 2 CC7.3 requirements for incident response, containment, remediation, and communication. Identify any gaps, paying close attention to the operational details of alert routing and severity definitions.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "P2 alerts have no after-hours coverage despite P2 including unauthorized production access and suspected data exposure",
+      "description": "Section 5.2 states P2 alerts are routed to PagerDuty only during business hours (Monday-Friday, 8:00 AM - 6:00 PM ET) and after-hours P2 alerts are 'queued and reviewed at the start of the next business day.' However, Section 3 defines P2 incidents to include 'unauthorized access to production systems' and 'suspected data exposure' — these are serious security events that could involve active attacker access or ongoing data exfiltration. A compromised SSH key used to access production at 7:00 PM Friday would not be triaged until Monday morning — potentially 62 hours of unresponded unauthorized access. Only P1 has 24/7 coverage, creating a dangerous gap for P2 security events.",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "The auditor should cross-reference Section 5.2 (P2 alert routing: business hours only, after-hours queued to next business day) with Section 3 (P2 definition: unauthorized access to production, suspected data exposure, compromised engineer SSH key). The mismatch is critical — P2 events like a compromised SSH key are time-sensitive security events where delayed response allows an attacker to maintain access, escalate privileges, or exfiltrate data. The gap is that P2 alerting treats these as deferrable, but the severity definition includes events that demand immediate response.",
+      "detection_criteria": {
+        "required_keywords": ["P2", "after-hours", "business hours only", "next business day", "unauthorized access", "compromised SSH key", "queued", "coverage gap", "weekend"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No process for handling incidents that span severity boundaries during off-hours",
+      "description": "The alert routing in Section 5.2 creates a scenario where a P2 event occurring after hours could escalate to P1 severity while no one is monitoring it. If unauthorized production access (P2) leads to data exfiltration (P1), the P1 detection would depend on separate P1 alert rules firing. There is no process described for automatic severity escalation of queued P2 alerts, nor a mechanism to correlate queued P2 alerts with later P1 indicators. A P2 alert queued Friday evening could be the early indicator of a P1 data breach discovered Monday morning.",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "P2 events (unauthorized access) are precursors to P1 events (data breach). If the P2 alert is queued after-hours and the attacker escalates to data exfiltration, the P1 would only be caught if separate P1 detection rules fire. There is no described mechanism for correlating queued P2 alerts with subsequent activity or for automatic re-evaluation of queued alerts.",
+      "detection_criteria": {
+        "required_keywords": ["P2 escalates to P1", "severity escalation", "after-hours", "precursor", "queued alert", "correlation", "automatic re-evaluation"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Security on-call rotation has only 2 engineers with no tertiary backup",
+      "description": "Section 5.2 shows the security on-call rotation consists of only 2 engineers (Tomoko Ishida and Marcus Webb) alternating bi-weekly. If the on-call engineer is unreachable (illness, travel, connectivity issues), the only backup is the other engineer who may also be unavailable. The SRE on-call has 4 engineers, but the security on-call — responsible for P1 security incident response — relies on just 2 people. There is no tertiary escalation path for security-specific response if both are unavailable.",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "Only 2 security engineers in the on-call rotation creates a single point of failure. If one is on vacation and the other is ill, there is no security-qualified responder for P1 incidents. The SRE on-call (4 engineers) provides infrastructure response but may lack security expertise for containment decisions during a data breach or ransomware event.",
+      "detection_criteria": {
+        "required_keywords": ["2 security engineers", "Tomoko Ishida", "Marcus Webb", "bi-weekly rotation", "single point of failure", "no tertiary backup", "on-call depth"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "10 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["incident_response", "after_hours_coverage", "severity_mismatch", "on_call_depth", "single_document"]
+  }
+}

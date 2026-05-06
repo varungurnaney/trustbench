@@ -1,0 +1,68 @@
+{
+  "task_id": "cc7.2-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T22:24:39.879135",
+  "score": {
+    "task_id": "cc7.2-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.6666666666666666,
+    "precision": 0.4,
+    "f1": 0.5,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "customer-identity-resolution",
+          "CAS-SVC-013",
+          "October 20",
+          "7 business days",
+          "SEC-5892",
+          "1.2M events",
+          "Fluent Bit"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "zero alert rules",
+          "CAS-SVC-013",
+          "authentication failures",
+          "CloudWatch only"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "reconciliation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3559,
+    "output_tokens": 2725
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 CC7.2 Monitoring Controls\n## Cascade Systems \u2014 Q4 2025 Observation Period\n\n---\n\n## Findings\n\n### Finding 1: Production Service Operating Outside SIEM for 70+ Days in Violation of 7-Business-Day SLA\n\n**Related Documents/Sections:**\n- Security Monitoring Policy \u00a73.1 (Coverage Requirement)\n- SIEM Coverage Tracker (CAS-SVC-013, customer-identity-resolution)\n- Q4 2025 Deployment Log (DEP-Q4-003)\n\n**Gap Description:**\nThe `customer-identity-resolution` service (CAS-SVC-013) was deployed to production on **October 20, 2025**, per the Q4 deployment log. Per policy \u00a73.1, SIEM integration must be complete within **7 business days** of production deployment, meaning integration should have been completed no later than approximately **October 29, 2025**. As of the last ingestion check date (December 31, 2025), the service remains in \"Pending\" status with **0 alert rules configured**, no log ingestion to Splunk, and is logging only to CloudWatch.\n\nThis represents an SLA breach of approximately **63 calendar days** beyond the required integration window \u2014 covering the majority of the Q4 observation period. The service processes ~1.2M events/day involving cross-device customer identity matching, behavioral data, and device fingerprints \u2014 high-sensitivity data that materially expands the monitoring blind spot.\n\nThe CC7.2 control objective (detection of anomalies indicative of malicious acts) cannot be met for this service during Q4 2025.\n\n**Severity: High**\n\nRationale: While management has identified the gap (ticket SEC-5892 created October 21) and assigned remediation, the service handles sensitive customer identity data, has been live for over two months without centralized monitoring, and there is no compensating control documented (e.g., interim CloudWatch-based alerting). This is a direct, sustained violation of a documented policy SLA covering a data-handling service.\n\n---\n\n### Finding 2: Absence of Compensating Controls During Extended SIEM Integration Gap\n\n**Related Documents/Sections:**\n- Security Monitoring Policy \u00a74.1 (Required Alert Categories)\n- SIEM Coverage Tracker (CAS-SVC-013 notes field)\n\n**Gap Description:**\nFor the `customer-identity-resolution` service, the tracker notes indicate the service \"Currently logs to CloudWatch only\" but does not document any compensating controls during the extended remediation period \u2014 specifically:\n- No interim CloudWatch alarms configured for the four required alert categories (error rate anomalies, authentication failures, data access anomalies, availability/health check failures)\n- No documented manual log review cadence\n- No documented risk acceptance approved by the CISO or control owner\n- No estimated remediation date for the Fluent Bit parser development (described only as a \"backlog item\")\n\nPolicy \u00a74.1 requires that \"every production service must have alerts configured\" for the listed categories. The service has zero alert rules and no alternative monitoring documented.\n\n**Severity: Medium**\n\nRationale: Even where SIEM integration is delayed, prudent practice and the spirit of CC7.2 require interim detective controls. The absence of a documented compensating-control plan and risk acceptance is a process maturity gap independent of the integration delay itself.\n\n---\n\n### Finding 3: Quarterly Monitoring Coverage Audit Not Evidenced for Q4 2025\n\n**Related Documents/Sections:**\n- Security Monitoring Policy \u00a75 (Monitoring Coverage Audits)\n\n**Gap Description:**\nPolicy \u00a75 requires a quarterly monitoring coverage audit reconciling the SIEM service inventory against the ServiceNow CMDB deployment registry to identify gaps. No evidence of a Q4 2025 reconciliation was provided. Had the audit occurred per policy, the customer-identity-resolution gap would likely have been formally surfaced through the audit process (rather than only through the integration ticket SEC-5892).\n\nThe auditor cannot conclude this control activity operated during the observation period without supporting evidence (audit report, reconciliation worksheet, or sign-off).\n\n**Severity: Medium**\n\nRationale: This is an evidence/operating-effectiveness gap. The audit may have occurred but was not provided; alternatively, it did not occur. Either way, this needs remediation prior to the Type 2 examination period close.\n\n---\n\n### Finding 4: Rolled-Back Deployment Lacks Evidence of Anomaly Detection Linkage\n\n**Related Documents/Sections:**\n- Security Monitoring Policy \u00a74.1 (Required Alert Categories \u2014 error rate anomalies)\n- Q4 2025 Deployment Log (DEP-Q4-007, notification-engine)\n\n**Gap Description:**\nDEP-Q4-007 records a production rollback of `notification-engine` on November 18, 2025 due to a \"Push notification regression \u2014 rolled back within 15 minutes.\" The 15-minute response time is consistent with effective monitoring, but no evidence was provided demonstrating the rollback was triggered by a SIEM alert (e.g., error rate anomaly alert firing, ticket linkage, alert ID). \n\nFor CC7.2 operating-effectiveness testing, the auditor would expect to trace the incident detection path: alert fired \u2192 on-call notified \u2192 response within SLA \u2192 rollback executed. Without the alert-to-response trace, the auditor cannot confirm the detective control operated as designed for this event.\n\n**Severity: Low**\n\nRationale: This is a documentation/traceability concern rather than a control failure. The rapid response suggests monitoring functioned, but evidence linkage should be improved. Recommend providing the alert record and incident ticket as walkthrough evidence.\n\n---\n\n### Finding 5: Notification-Engine Missing Audit Log Ingestion\n\n**Related Documents/Sections:**\n- Security Monitoring Policy \u00a73.2 (Integration Validation)\n- SIEM Coverage Tracker (CAS-SVC-005)\n\n**Gap Description:**\nPolicy \u00a73.2 states integration is complete when \"Application logs, access logs, and audit logs are ingested.\" The `notification-engine` service (CAS-SVC-005) shows ingested log types of only `delivery_logs, error_logs` \u2014 no access logs and no audit logs. The tracker marks the service \"Healthy \u2014 all log types active,\" which contradicts the policy requirement.\n\nSimilarly, `search-service` (CAS-SVC-006) shows `query_logs, access_logs` with no audit logs, and `ml-recommendation` (CAS-SVC-010) shows `inference_logs, access_logs` with no audit logs. The tracker's \"healthy\" status appears to validate against service-specific log types rather than the policy-mandated baseline.\n\n**Severity: Medium**\n\nRationale: Multiple services do not meet the documented integration validation criteria, yet are reported as compliant. This indicates either (a) the policy baseline is not being enforced, or (b) the policy needs an exception/tailoring mechanism for services that legitimately do not generate certain log types. Either way, the discrepancy between policy text and tracker validation is a control design gap.\n\n---\n\n## Summary\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | customer-identity-resolution outside SIEM for 60+ days (SLA breach) | High |\n| 2 | No compensating controls / risk acceptance for integration gap | Medium |\n| 3 | Q4 quarterly coverage audit not evidenced | Medium |\n| 5 | Multiple services missing audit log ingestion vs. policy baseline | Medium |\n| 4 | Rollback event lacks alert-to-response traceability | Low |\n\n**Overall Assessment:** CC7.2 has **partial design adequacy** but **operating-effectiveness deficiencies** during Q4 2025. The most material issue is Finding 1 \u2014 a sensitive data-handling service operating without centralized monitoring for the majority of the observation period. Recommend remediation and a follow-up review prior to Type 2 attestation."
+}

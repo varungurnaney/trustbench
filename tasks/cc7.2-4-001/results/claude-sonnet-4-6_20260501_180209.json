@@ -1,0 +1,102 @@
+{
+  "task_id": "cc7.2-4-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T18:02:09.809768",
+  "score": {
+    "task_id": "cc7.2-4-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.8,
+    "f1": 0.888888888888889,
+    "score": 0.888888888888889,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-batch-reconciler",
+          "decommissioned",
+          "SEC-EXC-2025-041",
+          "October 30"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "real-time-collab-service",
+          "AC-SVC-019",
+          "November 15",
+          "SEC-4521",
+          "customer document content"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "ALT-Q4-044",
+          "ALT-Q4-045",
+          "SLA breach",
+          "19 minutes",
+          "25 minutes",
+          "15-minute SLA",
+          "concurrent incident",
+          "on-call capacity"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "monthly alert tuning",
+          "Section 4.3",
+          "Alert Rule Change Log",
+          "no evidence",
+          "false positive"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "daily log review",
+          "Section 5",
+          "no documentation",
+          "sign-off"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 13673,
+    "output_tokens": 3334
+  },
+  "raw_response": "# CC7.2 Compliance Assessment \u2014 Atlas Cloud Q4 2025\n\n## Executive Summary\n\nAtlas Cloud demonstrates a generally mature security monitoring program with a well-defined policy, broad SIEM coverage, and an active alert response capability. The 45-alert response log shows consistent engagement across a range of threat categories, and the exception register reflects appropriate governance around deviations. However, several control gaps were identified that require remediation. Two findings warrant particular attention: a production service operating outside SIEM coverage for the entirety of Q4, and recurring SLA breaches that reveal a structural capacity problem rather than isolated incidents.\n\nThe assessment also notes several apparent issues that, upon examination of the full evidence set, are **not** findings:\n\n- **legacy-batch-reconciler**: Not integrated with SIEM, but a properly approved, CISO-signed exception (SEC-EXC-2025-041) exists, and the service was decommissioned October 30, consistent with the policy exemption for services undergoing active decommission.\n- **ALT-Q4-042 and ALT-Q4-043 negative response times**: These reflect a correlated incident (INC-2025-Q4-041) where the team was already engaged before downstream alerts fired. This is operationally sound, not a control failure.\n- **Alert tuning activity**: Multiple alerts were tuned during Q4 based on investigation outcomes, which reflects the policy-required tuning process operating as designed.\n- **Emergency changes linked to security events**: Changes such as CHG-E-2025-094 (WAF rule update), CHG-E-2025-101 (API key revocation), and CHG-E-2025-108 (Tor IP blocklist) are consistent with the monitoring program driving appropriate operational response.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Production Service (real-time-collab-service) Operating Without SIEM Integration for the Full Quarter\n\n**Related Policy Section:** AC-SEC-POL-012, Section 3.1 \u2014 SIEM Coverage; Section 3.1 Integration SLA (5 business days)\n\n**What the evidence shows:**\nThe SIEM coverage report (AC-SVC-019) documents that real-time-collab-service was deployed to production on November 15, 2025. An integration ticket (SEC-4521) was created the following day, November 16. As of December 31, 2025 \u2014 46 calendar days and approximately 33 business days after deployment \u2014 the integration work had not started. The SIEM report explicitly states the ticket remains in backlog because the Security Engineering team prioritized incident response during November and December.\n\nThe service processes customer document content and collaboration metadata via WebSocket connections, generating approximately 850,000 events per day. The only monitoring in place consists of basic CloudWatch alarms for error rates and latency. The SIEM report itself notes that no security-specific monitoring or alerting exists for this service, and that no risk assessment has been performed.\n\nThe policy is explicit: new production services must be integrated within 5 business days. No exception was sought for this service, and none appears in the exception register.\n\n**Why this is a gap:**\nThe control as designed requires timely integration of all production services so that anomalies \u2014 malicious acts, errors, or other events \u2014 can be detected. A service handling sensitive customer content and processing nearly 1 million events per day operated for the final six weeks of the audit period with no security monitoring beyond basic availability metrics. Any malicious activity, unauthorized access, or data exfiltration through this service during this period would not have been detected by the SIEM or generated a security alert. The deviation is not marginal \u2014 it is 33 business days versus a 5-business-day requirement, with no compensating controls that approach the detection capability of SIEM integration, and no formal risk acceptance from the CISO.\n\nThis also represents a process failure: the policy requires an exception to be documented in the Security Exception Register with CISO approval and an expiration date when SIEM integration requirements cannot be met. That process was not followed.\n\n**Severity: High**\n\n---\n\n### Finding 2: Two SLA Breaches on Critical Alerts With Structural Root Cause\n\n**Related Policy Section:** AC-SEC-POL-012, Section 4.1 \u2014 Alert Response SLAs (15-minute Critical alert SLA)\n\n**What the evidence shows:**\n\nTwo Critical alerts breached the 15-minute SLA:\n\n- **ALT-Q4-044** (December 17): Outbound connection to a Tor exit node. Response time was 19 minutes \u2014 4 minutes over the 15-minute SLA. The alert response log notes the team was occupied with the post-mortem meeting for INC-2025-Q4-041.\n- **ALT-Q4-045** (December 22): Privileged database access outside a maintenance window. Response time was 25 minutes \u2014 10 minutes over the SLA. The on-call engineer was simultaneously handling a page for the eu-west-1 latency issue.\n\nBoth alerts are documented honestly, with SLA breach acknowledgment in the notes field.\n\n**Why this is a gap:**\nIndividually, either breach might be explainable as an operational anomaly. Taken together, both breaches share the same root cause: a single on-call engineer was unavailable to respond within SLA because they were already engaged with another security task. This is not bad luck \u2014 it is a structural capacity constraint. The on-call model, as evidenced by the Q4 data, does not provide sufficient coverage to handle concurrent Critical alerts. A Critical alert by definition represents potential active intrusion, data exfiltration, or production database unauthorized access. A 4- to 10-minute delay in response, while not catastrophic in these specific instances (one was a developer testing Tor access; one was a DBA performing emergency work), means the control cannot reliably meet its design objective when simultaneous demands occur.\n\nThe policy does not provide for SLA suspension during post-mortem meetings or concurrent incidents. The control gap is that the staffing model underlying the alert response SLA is insufficient to meet the stated requirement under realistic operational conditions that Q4 demonstrated do occur.\n\n**Severity: Medium**\n\n*Note on scope:* The overall SLA compliance rate across Q4 is strong \u2014 43 of 45 alerts (95.6%) were acknowledged within SLA. The severity rating reflects the specific control design gap (insufficient concurrent coverage) rather than a systemic monitoring failure.\n\n---\n\n### Finding 3: No Evidence of Monthly Alert Tuning Process or Documentation\n\n**Related Policy Section:** AC-SEC-POL-012, Section 4.3 \u2014 Alert Tuning (monthly review requirement)\n\n**What the evidence shows:**\nThe policy requires monthly review of alert rules including: false positive rate review, threshold adjustment, new rule additions based on threat intelligence, documentation in the Alert Rule Change Log, and approval by the Security Operations Lead. The SIEM report documents aggregate Q4 alert rule activity (7 rules added, 12 modified, 3 deprecated), but no evidence was provided of a formal monthly tuning process, an Alert Rule Change Log, or Security Operations Lead approvals for rule changes.\n\nThe alert response log does show ad hoc tuning activity throughout Q4 \u2014 for example, allowlisting the Qualys scanner (ALT-Q4-006), adjusting thresholds for the reporting service account (ALT-Q4-003), and tuning the lateral movement rule (ALT-Q4-013). These are reactive adjustments made at the time of alert investigation, not the product of a structured monthly review.\n\n**Why this is a gap:**\nThe policy establishes a proactive, documented, approved tuning cadence. What the evidence shows is reactive tuning embedded in incident response, with no documentation of a monthly process, no Alert Rule Change Log produced for auditor review, and no evidence of Security Operations Lead approval for rule changes. These are meaningfully different activities. Reactive tuning responds to alerts that have already fired; proactive monthly tuning is designed to catch degraded rules, add coverage for emerging threats, and systematically reduce false positive rates before they affect analyst workload. The absence of evidence for this control is a gap regardless of whether the underlying tuning work occurred informally, because the control requires documentation and approval as part of its design.\n\n**Severity: Medium**\n\n---\n\n### Finding 4: No Evidence of Daily Log Review Documentation\n\n**Related Policy Section:** AC-SEC-POL-012, Section 5 \u2014 Daily Log Review (documentation requirement)\n\n**What the evidence shows:**\nThe policy requires the Security Operations team to conduct a daily log review covering multiple dashboards, and to document each review with the reviewer's name, timestamp, summary of findings, escalation actions, and analyst sign-off. No daily log review records were included in the evidence provided for Q4 2025. The evidence set includes the alert response log, SIEM coverage report, exception register, uptime report, CAB schedule, and the policy itself \u2014 but no daily log review artifacts.\n\n**Why this is a gap:**\nThe daily log review is a detective control independent of the automated alerting system. Its purpose is to catch anomalies that may not have triggered an automated rule \u2014 low-and-slow attack patterns, unusual access patterns below alerting thresholds, or log source health issues. Without documentation, there is no way to confirm the control operated during Q4. The policy is explicit that documentation is required, including sign-off. The absence of this evidence means the control cannot be confirmed as operating for the 92-day audit period.\n\nThis finding is subject to an important caveat: the daily log review records may exist and simply were not included in the evidence package provided for this assessment. The recommendation is to request this documentation before concluding the control was absent. However, as presented, the evidence is insufficient to confirm the control operated.\n\n**Severity: Medium**\n\n---\n\n### Finding 5: SIEM Coverage Metric Overstated Due to Decommissioned Service in CMDB\n\n**Related Policy Section:** AC-SEC-POL-012, Section 6.2 \u2014 Service Inventory Reconciliation; Section 7 \u2014 Metrics and Reporting\n\n**What the evidence shows:**\nThe SIEM coverage report calculates coverage as 18 of 20 production services (90%). However, one of the two non-integrated services \u2014 legacy-batch-reconciler (AC-SVC-020) \u2014 was decommissioned on October 30, 2025, and is acknowledged in both the SIEM report and the exception register as no longer operational. The service remains in the CMDB pending a cleanup scheduled for January 2026. If the denominator is adjusted to reflect only active production services, coverage is 18 of 19 services, or 94.7%.\n\nMore directly relevant: the policy requires quarterly reconciliation of the SIEM service inventory against the CMDB to identify decommissioned services that should be removed. The legacy-batch-reconciler was decommissioned October 30, but as of December 31 \u2014 two months later and within the same quarter \u2014 it had not been removed from either the CMDB or the SIEM inventory. The SIEM report itself flags this as a known issue.\n\n**Why this is a gap:**\nThe accuracy of coverage reporting matters because SIEM coverage percentage is a key metric reported monthly to the CISO. Reporting 90% coverage when the effective coverage of active services is 94.7% (or framed differently, when the only genuine gap is real-time-collab-service) understates actual coverage and may obscure the true risk picture. More importantly, the failure to remove a decommissioned service from the CMDB within the same quarter it was decommissioned represents a breakdown in the inventory reconciliation process the policy requires. Inaccurate inventory data \u2014 whether overstating or understating the service population \u2014 undermines the quarterly coverage audit's ability to identify real gaps.\n\n**Severity: Low**\n\n---\n\n## Summary Table\n\n| # | Finding | Policy Section | Severity |\n|---|---------|---------------|----------|\n| 1 | Production service (real-time-collab-service) unmonitored for 46 days with no exception | \u00a73.1 SIEM Coverage / Integration SLA | **High** |\n| 2 | Two Critical alert SLA breaches sharing a structural root cause (insufficient concurrent on-call capacity) | \u00a74.1 Alert Response SLAs | **Medium** |\n| 3 | No evidence of formal monthly alert tuning process, Alert Rule Change Log, or Security Operations Lead approvals | \u00a74.3 Alert Tuning | **Medium** |\n| 4 | No evidence of daily log review documentation for Q4 2025 | \u00a75 Daily Log Review | **Medium** |\n| 5 | Decommissioned service retained in CMDB and SIEM inventory for full quarter, distorting coverage metrics | \u00a76.2 Inventory Reconciliation / \u00a77 Metrics | **Low** |\n\n---\n\n## Recommended Management Responses\n\n**Finding 1:** Immediately complete SIEM integration for real-time-collab-service (SEC-4521). Conduct a retrospective log review for the November 15 \u2013 December 31 period using available CloudWatch data to assess whether any anomalies were missed. Formalize a tracking mechanism to enforce the 5-business-day integration SLA for new services, and require that any breach of this SLA triggers an exception request within the first week.\n\n**Finding 2:** Evaluate on-call staffing to ensure at least two engineers are reachable for Critical alerts during periods when post-incident activities (post-mortems, active incident response) are ongoing. Consider a policy provision that explicitly suspends post-mortem meetings when a new Critical alert fires, or implement a tiered escalation where a secondary on-call absorbs new pages during active investigations.\n\n**Finding 3:** Implement a formal monthly alert tuning meeting with a documented agenda, produce an Alert Rule Change Log as a maintained artifact, and require Security Operations Lead sign-off on all rule changes. Provide Q4 Alert Rule Change Log records to auditors if they exist in an undocumented form.\n\n**Finding 4:** Produce daily log review records for auditor review if they exist. If the control was not operating as documented, implement a ticketing or workflow tool to enforce daily review completion and generate audit-ready evidence automatically.\n\n**Finding 5:** Complete CMDB cleanup for legacy-batch-reconciler ahead of the January 2026 scheduled date. Adjust the Q4 coverage metric in monthly CISO reporting to reflect active services only, and establish a maximum 30-day SLA for removing decommissioned services from the CMDB following confirmed shutdown."
+}

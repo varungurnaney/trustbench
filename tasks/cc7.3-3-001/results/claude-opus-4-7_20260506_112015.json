@@ -1,0 +1,98 @@
+{
+  "task_id": "cc7.3-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:20:15.898134",
+  "score": {
+    "task_id": "cc7.3-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.3125,
+    "f1": 0.47619047619047616,
+    "score": 0.625,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 16,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-307",
+          "591 minutes",
+          "overnight",
+          "IAM role assumption",
+          "24/7 coverage"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-304",
+          "73 minutes",
+          "4.8 hours"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-301",
+          "PM-301-AI-05",
+          "PM-301-AI-06",
+          "Not Started",
+          "data breach"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-305",
+          "Not Started",
+          "action items"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-302",
+          "INC-2025-304",
+          "INC-2025-307",
+          "SEV-2 post-mortem",
+          "not provided",
+          "evidence gap"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7533,
+    "output_tokens": 5577
+  },
+  "raw_response": "# SOC 2 CC7.3 Readiness Assessment \u2014 Meridian Analytics\n## Observation Period: Q4 2025 (October 1 \u2013 December 31, 2025)\n\n## Executive Summary\n\nMeridian Analytics has a well-documented incident response program with clear severity definitions, SLAs, and post-mortem requirements. Detection, triage, and containment performance for SEV-1 incidents was strong, and post-mortems for SEV-1/SEV-2 incidents were completed. However, cross-referencing the policy against the incident register and post-mortems reveals **several SLA breaches, action item tracking gaps, and policy/practice discrepancies** that should be remediated before a Type II audit period begins. Below are the findings.\n\n---\n\n## Findings\n\n### Finding 1: SEV-2 Triage SLA Breach on INC-2025-307\n- **Related Section:** Policy \u00a73.1 (Initial Triage SLAs); Incident Register row INC-2025-307\n- **Gap:** Policy requires SEV-2 triage within **30 minutes, 24/7/365**. INC-2025-307 (unauthorized IAM role assumption from unknown IP) was detected at 2025-12-09 22:14 UTC and not triaged until 2025-12-10 08:05 UTC \u2014 **591 minutes (~9.85 hours)**, a ~20\u00d7 SLA breach. This is particularly concerning because the incident type (unauthorized IAM role assumption) suggests possible active intrusion. There is no documented exception, root-cause analysis of the on-call miss, or compensating control reflected in the register.\n- **Severity:** **High**\n\n---\n\n### Finding 2: SEV-2 Triage SLA Breach on INC-2025-304\n- **Related Section:** Policy \u00a73.1; Incident Register row INC-2025-304\n- **Gap:** SEV-2 triage SLA is 30 minutes. INC-2025-304 was triaged in **73 minutes**, exceeding SLA by ~143%. Although this incident was operational (storage corruption / latency) rather than adversarial, the policy makes no severity-level carve-out for operational vs. security SEV-2s.\n- **Severity:** **Medium**\n\n---\n\n### Finding 3: SEV-3 Triage SLA Breach on INC-2025-308\n- **Related Section:** Policy \u00a73.1; Incident Register row INC-2025-308\n- **Gap:** SEV-3 triage SLA is **4 hours during business hours (M\u2013F 8AM\u20136PM PT)**. INC-2025-308 was detected on 2025-12-15 at 06:10 UTC (Monday, ~10:10 PM PT Sunday) and triaged at 10:30 UTC (~2:30 AM PT Monday). Since detection occurred outside business hours, the triage clock should start at 8:00 AM PT Monday (16:00 UTC), making the actual triage time ~5.5 hours **before** the SLA clock would even start \u2014 so technically not a breach. However, the policy is **ambiguous on how out-of-hours detection is handled for SEV-3/4**, and the register does not document whether the SLA clock was started at detection or at next business hours. This is a policy clarity gap.\n- **Severity:** **Low**\n\n---\n\n### Finding 4: SEV-4 Triage SLA Likely Breached on INC-2025-306\n- **Related Section:** Policy \u00a73.1; Incident Register row INC-2025-306\n- **Gap:** INC-2025-306 (phishing report) was detected at 2025-12-02 11:30 UTC (3:30 AM PT) and triaged at 14:00 UTC (6:00 AM PT) \u2014 same calendar day, which appears to comply with \"next business day.\" However, since 3:30 AM PT is technically pre-business-hours of the same business day, interpretation is ambiguous. **This is a documentation gap, not a breach** \u2014 the register should record SLA-clock-start explicitly.\n- **Severity:** **Low**\n\n---\n\n### Finding 5: SEV-1 Resolution SLA Breach on INC-2025-301 and INC-2025-305\n- **Related Section:** Policy \u00a73.3 (Resolution Targets); Incident Register\n- **Gap:** Policy targets SEV-1 resolution within **24 hours**. \n  - INC-2025-301 resolved in **36.2 hours** (51% over target)\n  - INC-2025-305 resolved in **42.3 hours** (76% over target)\n  \n  Although these are described as \"targets\" rather than hard SLAs, two of two SEV-1s in the period missed the target with no documented justification, exception approval, or trend analysis. Auditors will expect either (a) the targets to be met, (b) the targets re-baselined, or (c) explicit exception documentation in each post-mortem.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: SEV-2 Resolution SLA Breach on INC-2025-304\n- **Related Section:** Policy \u00a73.3; Incident Register\n- **Gap:** SEV-2 resolution target is 72 hours; INC-2025-304 resolved in 39.3 hours (compliant). INC-2025-302 (19.7h) and INC-2025-307 (41.8h) also compliant. **No SEV-2 resolution breaches.** Strike this item \u2014 included for completeness of cross-reference. *(Self-correcting note: SEV-2 resolution performance was acceptable.)*\n- **Severity:** **N/A (no finding)**\n\n---\n\n### Finding 7: Post-Mortem Action Item Completion Lagging \u2014 Aging Items at Risk of CISO Escalation\n- **Related Section:** Policy \u00a74.3 (Action Item Tracking); Post-mortem reports\n- **Gap:** Policy requires escalation to CISO when items are overdue by more than 14 calendar days. Cross-referencing:\n  - **INC-2025-301:** 6 action items, only 4 complete as of period end. PM-301-AI-03 (target 2025-12-15) is **In Progress** as of 12/31 \u2014 at least 16 days overdue, **should have been escalated to CISO**. PM-301-AI-04 (target 2025-12-31) status not refreshed.\n  - **INC-2025-305:** 8 action items, only 5 complete. PM-305-AI-01 (target 2025-12-20) is **In Progress** \u2014 11 days overdue at period end (approaching escalation threshold). PM-305-AI-08 marked Complete on time. Other items have 2026 targets.\n  - **INC-2025-307:** 3 action items, only 1 complete (post-mortem due 2025-12-18, register shows 1/3 complete by 12/31).\n  \n  No evidence of CISO escalation logs or weekly Tuesday standup minutes documenting overdue-item review. **The control exists in policy but operating effectiveness is not evidenced.**\n- **Severity:** **High**\n\n---\n\n### Finding 8: Action Item Jira Ticket Linkage Inconsistent\n- **Related Section:** Policy \u00a74.3 (\"All action items from post-mortems must be created as Jira tickets in the SEC-PM project within 2 business days\")\n- **Gap:** Post-mortem PM-2025-301 lists Jira tickets only for \"Complete\" items (SEC-PM-1847, 1848, 1849, 1850). Items PM-301-AI-05 and PM-301-AI-06 (\"Not Started\") show **no Jira ticket reference**, suggesting tickets may not have been created within the 2-business-day window \u2014 a direct policy violation. Same pattern in PM-2025-305: only PM-305-AI-01 (SEC-PM-1892) and PM-305-AI-08 (SEC-PM-1893) reference tickets; six other items have no ticket ID. **All action items must have a corresponding ticket per policy, regardless of status.**\n- **Severity:** **High**\n\n---\n\n### Finding 9: Customer / Regulatory Notification Records Not Evidenced for INC-2025-301\n- **Related Section:** Policy \u00a75.1 and \u00a75.2 (Notification Requirements and Records)\n- **Gap:** INC-2025-301 was a confirmed data breach affecting 2,341 accounts / 187 organizations including EU (GDPR) and California (CCPA) residents. Policy requires affected customer notification within 72 hours and that all notifications be logged in the incident ticket with method, recipients, timestamp, and content summary. The post-mortem timeline references \"Legal team briefed\" and \"Customer notification process initiated\" at 2025-10-14 10:00 / 14:00 UTC, but **provides no evidence that the 72-hour notification was completed, no recipient logs, and no GDPR Article 33 supervisory authority notification record (which has a 72-hour clock from awareness)**. For SOC 2 CC7.3 (and related privacy criteria), this is a material evidence gap.\n- **Severity:** **Critical**\n\n---\n\n### Finding 10: Post-Mortem Timeline SLA Met But Documentation Variance for INC-2025-307\n- **Related Section:** Policy \u00a74.1 (Post-Mortem Timelines)\n- **Gap:** INC-2025-307 resolved 2025-12-11; SEV-2 post-mortem due within 5 business days = 2025-12-18. Register shows post-mortem complete with link \"PM-2025-307\" but **the post-mortem document itself was not provided for review**. Auditors will require sample evidence for each completed post-mortem \u2014 particularly given only 1 of 3 action items was complete at period end.\n- **Severity:** **Medium**\n\n---\n\n### Finding 11: Status Page SLA on INC-2025-304 Not Evidenced\n- **Related Section:** Policy \u00a75.1 (SEV-2 service impact: status page updated within 1 hour of declaration)\n- **Gap:** INC-2025-304 caused 47-minute read latency for 35% of customers (clearly a customer-facing SEV-2). The incident register and (unprovided) post-mortem do not evidence status page update timing. With containment at 4.8 hours and resolution at 39.3 hours, customers were impacted for a significant window. **No status page log, screenshot, or timestamp record was provided.**\n- **Severity:** **Medium**\n\n---\n\n### Finding 12: SEV-3 Post-Mortem at IC Discretion \u2014 No Documented Decision\n- **Related Section:** Policy \u00a74.1 (\"SEV-3: Post-mortem at Incident Commander discretion\")\n- **Gap:** INC-2025-303 (suspicious DNS to known C2 domain \u2014 a potentially serious indicator of compromise on staging) shows post_mortem_status = \"Not Required\" with no documented IC decision rationale. INC-2025-308 (SQL injection campaign with 4,200 requests) similarly has no rationale recorded. Discretionary decisions need to be **documented decisions** for audit defensibility \u2014 otherwise the policy permits unbounded discretion that auditors will challenge.\n- **Severity:** **Medium**\n\n---\n\n### Finding 13: On-Call Coverage Effectiveness Concern (24/7/365)\n- **Related Section:** Policy \u00a73.1 (\"SEV-1/SEV-2: 24/7/365\"); INC-2025-307 timeline\n- **Gap:** INC-2025-307 (SEV-2 IAM role assumption alert) detected at 22:14 UTC (2:14 PM PT) was not acknowledged until 08:05 UTC the next day (~12:05 AM PT). This suggests **on-call paging or acknowledgment failure during overnight hours** \u2014 a systemic issue with 24/7 coverage that must be root-caused. There is no companion incident or operational review documenting why the 591-minute gap occurred.\n- **Severity:** **High**\n\n---\n\n### Finding 14: No Evidence of Annual IR Plan Testing / Tabletop Exercises\n- **Related Section:** Policy \u00a71 (Purpose) \u2014 implicit CC7.3 requirement\n- **Gap:** CC7.3 best practice (and most SOC 2 auditor expectations) require **periodic testing of the incident response plan** (tabletop exercises, simulations). The provided policy does not specify a testing cadence, and no evidence of Q4 2025 tabletop exercises, simulated incidents, or IR plan walkthroughs was provided. Real incidents do not substitute for documented IR readiness testing.\n- **Severity:** **High**\n\n---\n\n### Finding 15: Policy Lacks Threshold for Mandatory Law Enforcement / Regulator Notification\n- **Related Section:** Policy \u00a75.1 (Notification Requirements)\n- **Gap:** The policy refers generically to \"Regulatory notifications handled per applicable requirements (GDPR, CCPA, contractual)\" but does not define **decision criteria, owners, timing, or escalation paths**. INC-2025-301 involved law enforcement notification (per post-mortem timeline) but the policy contains no procedure for this. Auditors will look for a documented decision matrix.\n- **Severity:** **Medium**\n\n---\n\n### Finding 16: Severity Assignment Consistency \u2014 INC-2025-303 Possibly Mis-Severitized\n- **Related Section:** Policy \u00a72 (Severity Definitions); INC-2025-303\n- **Gap:** INC-2025-303 was outbound DNS to a known **C2 domain** from a staging server. Per policy \u00a72, SEV-2 includes \"Unauthorized system access\" \u2014 a confirmed C2 callback may indicate compromise. Classifying as SEV-3 (\"Suspicious activity\") may have been correct *if* no compromise was confirmed, but with 53-minute triage and 3.75-hour containment, the lack of post-mortem means **no root cause was documented** to validate the severity assignment. Auditors will likely challenge this.\n- **Severity:** **Medium**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | SEV-2 triage SLA breach (INC-2025-307, 591 min vs. 30 min) | High |\n| 2 | SEV-2 triage SLA breach (INC-2025-304) | Medium |\n| 3 | SEV-3 SLA-clock-start ambiguity (INC-2025-308) | Low |\n| 4 | SEV-4 SLA-clock documentation (INC-2025-306) | Low |\n| 5 | SEV-1 resolution targets missed on both SEV-1s | Medium |\n| 7 | Action items overdue without CISO escalation evidence | High |\n| 8 | Action items missing Jira ticket references | High |\n| 9 | Data breach notification records incomplete (INC-2025-301) | **Critical** |\n| 10 | INC-2025-307 post-mortem document not provided | Medium |\n| 11 | Status page update SLA not evidenced (INC-2025-304) | Medium |\n| 12 | SEV-3 post-mortem-skip decisions not documented | Medium |\n| 13 | On-call coverage failure root cause not documented | High |\n| 14 | No evidence of IR plan testing / tabletop exercises | High |\n| 15 | Regulatory notification procedure underspecified | Medium |\n| 16 | Severity assignment for C2 callback may be mis-rated | Medium |\n\n---\n\n## Overall CC7.3 Readiness Conclusion\n\n**Conclusion: NOT YET READY for Type II audit without remediation.**\n\nThe incident response **program design is sound**, but **operating effectiveness has material gaps**:\n\n- **Critical blocker:** The data breach notification evidence for INC-2025-301 (Finding 9) is the single most significant gap. Without complete GDPR/CCPA notification records, this incident alone could result in a CC7.3 control deficiency or qualified opinion.\n- **High-priority remediations:** Action item tracking (Findings 7 & 8), the on-call gap (Findings 1 & 13), and IR plan testing (Finding 14) all require evidence collection before the audit observation period closes.\n- **Recommended actions before Type II:**\n  1. Reconstruct and document all customer/regulatory notifications for INC-2025-301\n  2. Conduct a root-cause review of the 591-minute on-call gap on INC-2025-307\n  3. Backfill Jira tickets for all open post-mortem action items\n  4. Document weekly Tuesday standup minutes showing action-item review and CISO escalations\n  5. Schedule and document at least one tabletop exercise per quarter going forward\n  6. Add explicit SLA-clock-start logging to the Incident Register schema"
+}

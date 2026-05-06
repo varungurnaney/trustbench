@@ -1,0 +1,87 @@
+{
+  "task_id": "c1.1-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:09:45.529147",
+  "score": {
+    "task_id": "c1.1-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "Meridian Financial",
+          "PGP-002",
+          "EXC-2025-022",
+          "approved",
+          "compensating",
+          "partner"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "APP-006",
+          "notification",
+          "OVERDUE",
+          "October 2024",
+          "EXC-2025-021",
+          "expired",
+          "PII"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-021",
+          "expired",
+          "without renewal",
+          "process",
+          "lifecycle"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "APP-006",
+          "OVERDUE",
+          "escalation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3700,
+    "output_tokens": 1557
+  },
+  "raw_response": "Certainly! Here is an evidence-based readiness assessment for **C1.1** (identification and maintenance of confidential information) **and key management controls (also implicating CC6.7)** based on the Q4 2025 documentation. Each finding is precise, referenced, and severity-rated.\n\n---\n\n### **Finding 1: Overdue Key Rotation for Notification Service (APP-006) \u2014 Unremediated**\n\n**Section(s):**  \n- Key rotation log (`key_id: APP-006`)\n- Exception register (EXC-2025-021)\n- SOP-KM-001 Section 4.1 (rotation frequency)\n  \n**Why it's a gap:**  \nThe **Notification Service's application encryption key** (APP-006) is **overdue for rotation since October 2024** (over one year outstanding by the end of Q4 2025). The exception initially approved (EXC-2025-021) expired without renewal, and remediation (refactoring) was not completed as of July 2025. As of the end of Q4 2025, no active exception exists, and the key continues to protect customer contact data (potentially PII).\n\nPer SOP-KM-001 Section 4.1, application keys must be rotated every 12 months. The absence of a current exception, despite both overdue status and the nature of information protected, represents an ongoing breakdown in key lifecycle management, with increased risk that the key (in prolonged usage) could be subject to compromise.\n\n**Severity:**  \n**High**  \n*Reasoning*: This is a material lapse: the overdue key encrypts customer contact PII, the exception is expired and not renewed, and remediation has not occurred. Represents a clear instance of control failure for confidential data, directly relevant to C1.1 and CC6.7.\n\n---\n\n### **Finding 2: AES-128 Exception for Event Streaming \u2014 Appropriately Managed (No Gap)**\n\n**Section(s):**  \n- Exception register (EXC-2025-020)\n- SOP-KM-001 Section 3.1 (approved exception for AES-128)\n\n**Why it's *not* a gap:**  \nThe expired AES-128 exception for event streaming (EXC-2025-020) covered only Internal-classified metrics; it did *not* involve PII or confidential data. Compensating controls (VPC-internal, mTLS, monthly audit to verify no PII) were in place, and the pipeline was migrated to AES-256 by the time the exception expired (Q3 2025). No confidential data was at risk, and the deviation was properly documented and closed.\n\n**Severity:**  \n**N/A (No deficiency)**\n\n---\n\n### **Finding 3: Partner PGP Key Rotation Exception \u2014 Appropriately Managed (No Gap)**\n\n**Section(s):**  \n- Exception register (EXC-2025-022)\n- Key rotation log (PGP-002)\n- SOP-KM-001 Section 4.1\n\n**Why it's *not* a gap:**  \nThe **Meridian Financial PGP key's rotation period** is extended to 24 months per partner requirements, with thorough compensating controls (integrity checks, monthly validation, partner SFTP access restrictions, quarterly security review). The exception is still active and managed as of Q4 2025; preparations for key refresh are underway. No evidence of lapses, no overdue status.\n\n**Severity:**  \n**N/A (No deficiency)**\n\n---\n\n### **Finding 4: Comprehensive Rotation of Other Keys \u2014 No Gaps Noted**\n\n**Section(s):**\n- Key rotation log (all other entries)\n- SOP-KM-001 Section 4.1\n- Change management log (evidence of key renewal and security upgrades)\n\n**Why it's *not* a gap:**  \nAll KMS, other application, PGP (except those with approved exceptions), and SSH keys have clear, auditable evidence of rotation per policy within the Q4 2025 window. There is no indication that customer or confidential data outside the above-noted Notification Service key is at risk due to key management deficiencies.\n\n**Severity:**  \n**N/A (No deficiency)**\n\n---\n\n### **Finding 5: Lack of Documented Follow-up on Overdue Key (APP-006) in Key Rotation Log**\n\n**Section(s):**\n- Key rotation log (status/notes field for APP-006)\n- Exception register (EXC-2025-021 closure)\n- SOP-KM-001 Section 4.4 (tracking/sign-off requirements)\n\n**Why it's a gap:**  \nThe key rotation log correctly flags **APP-006 as overdue and \u201ctagged for Q1 2026 remediation,\u201d** but there is no documented sign-off, risk acceptance, or formal extension from the Security lead or CISO for the remainder of 2025. Per SOP-KM-001 Section 4.4, overdue rotations should either have an active exception or explicit management acknowledgment/review. The lack of this documentation or interim compensating approval reflects a **process failure in tracking and escalation.**\n\n**Severity:**  \n**Medium**  \n*Reasoning*: This is less severe than the overdue rotation itself, but signals a breakdown in exception and risk acceptance documentation, which could enable similar issues to be missed in the future.\n\n---\n\n## **Summary Table**\n\n| # | Title                                                            | Section(s)                     | Description                                                                                            | Severity  |\n|---|------------------------------------------------------------------|-------------------------------|--------------------------------------------------------------------------------------------------------|-----------|\n| 1 | Overdue Key Rotation for Notification Service (APP-006)          | Key rotation log, Exception   | PII key overdue >12 months, no current exception or remediation, controls not operating for C1.1/CC6.7 | High      |\n| 2 | AES-128 Exception for Event Streaming \u2014 Appropriately Managed    | Exception, SOP                | Expired exception, only Internal data, properly closed. No confidential risk.                          | N/A       |\n| 3 | Partner PGP Key Rotation Exception \u2014 Appropriately Managed       | Exception, Rotation log, SOP  | Active exception, compensating controls in place, preparation for renewal ongoing.                     | N/A       |\n| 4 | Comprehensive Rotation of Other Keys \u2014 No Gaps Noted             | Rotation log, Change log, SOP | All other keys rotated per policy, no evidence of C1.1/CC6.7 deviations.                               | N/A       |\n| 5 | Lack of Documented Follow-up on Overdue Key (APP-006)            | Rotation log, Exception, SOP  | No interim risk acceptance or sign-off for overdue key; tracking/escalation process gap.               | Medium    |\n\n---\n\n**Conclusion:**  \n- **Major Deficiency:** The Notification Service key (APP-006) is in critical noncompliance for C1.1 due to a lack of rotation far past policy, loss of exception coverage, and absence of formal compensating controls or risk acceptance in Q4 2025.\n- **Process Deficiency:** Lack of follow-up tracking/sign-off for the overdue key signals a broader issue in exception and open risk management.\n- **Other exceptions and controls are properly managed and not deficient as relates to SOC 2 C1.1 for this period.**\n\n**Remediation Recommendations:**  \n- Immediate rotation (or decommission) of the overdue notification service key and documentation of completed remediation.\n- Require formal risk acceptance, CISO review, or active exception for any future or current overdue keys, with clear evidence in the rotation log/audit trail."
+}

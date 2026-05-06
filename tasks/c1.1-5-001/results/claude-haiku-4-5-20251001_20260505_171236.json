@@ -1,0 +1,116 @@
+{
+  "task_id": "c1.1-5-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:12:36.601161",
+  "score": {
+    "task_id": "c1.1-5-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4166666666666667,
+    "f1": 0.5882352941176471,
+    "score": 0.5882352941176471,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "webhook-payload-key",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "policy requires",
+          "cryptographically",
+          "materiality",
+          "exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vpc-prod",
+          "vpc-data",
+          "HTTP",
+          "unencrypted",
+          "Confidential",
+          "VPC peering",
+          "analytics",
+          "private network",
+          "cross-VPC",
+          "port 8080"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "APP-PROD-006",
+          "notification",
+          "15 days",
+          "14-day grace",
+          "1 day",
+          "CISO notified",
+          "batch job failure"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "systemic",
+          "rotation",
+          "late",
+          "process",
+          "APP-PROD-003",
+          "APP-PROD-006",
+          "automation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "vrs-prod-ml-models",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "SSE-KMS",
+          "ML model",
+          "trained weights",
+          "derived"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4667,
+    "output_tokens": 3583
+  },
+  "raw_response": "# COMPLIANCE AUDIT ASSESSMENT\n**Control C1.1: Identification and Maintenance of Confidential Information**\n\n---\n\n## FINDINGS SUMMARY\n\n| # | Finding | Severity | Status |\n|---|---------|----------|--------|\n| 1 | Unencrypted Cross-VPC Analytics Pipeline | High | Non-Compliant |\n| 2 | ML Model Bucket Encryption Downgrade | Medium | Non-Compliant |\n| 3 | Webhook Payload Key Encryption Downgrade | High | Non-Compliant |\n| 4 | Key Rotation Grace Period Breach | High | Non-Compliant |\n| 5 | Compensating Control Insufficient for Internal VPC Traffic | Medium | Compliance Risk |\n\n---\n\n## DETAILED FINDINGS\n\n### FINDING 1: Unencrypted Cross-VPC Analytics Pipeline\n\n**Related Document(s):** Network Architecture Summary, Section 3.3; Encryption Standards Policy, Section 4.2-4.3\n\n**Issue:** \nConfidential customer analytics events (user_id, event_type, session_data) are transmitted between vpc-prod and vpc-data over HTTP (unencrypted) at the application layer. The architecture document explicitly states: \"The analytics ingestion service in the Kubernetes cluster sends data to the analytics pipeline in vpc-data via a REST API over HTTP (port 8080). The application does not implement TLS for this internal connection.\"\n\n**Policy Requirement Gap:**\n- **Encryption Standards Policy, Section 4.2:** \"Service-to-service communication handling Restricted or Confidential data must use TLS 1.2 or higher\"\n- **Data Classification:** Analytics events are classified as \"Confidential\"\n- **Control Deficiency:** No encryption exists at network layer (VPC peering unencrypted by default) AND application layer lacks TLS\n\n**Why This Matters:**\nThe compensating control argument (\"traffic stays within AWS backbone\") does not align with:\n- Policy language requiring TLS 1.2+ for Confidential data in transit\n- SOC 2 CC6.1 requirement for encryption of sensitive data in transit\n- Industry best practice (as noted in the architecture document itself: \"industry best practices increasingly recommend it\")\n- The policy makes no exception for internal-only traffic handling Confidential data\n\nThe document's own risk assessment acknowledges NIST and SOC 2 do not *explicitly* require private network encryption, but this represents a **policy compliance gap**, not a risk mitigation.\n\n**Severity: HIGH**\n\n**Recommendation:**\n- Implement TLS 1.2+ for the analytics ingestion REST API (port 8080) immediately\n- Alternative: Implement VPC-level encryption (AWS VPN, PrivateLink, or encryption proxy)\n- Estimated effort: Low (REST API TLS implementation is standard practice)\n- Update policy to clarify whether internal Confidential data transit requires encryption, or document formal exception\n\n---\n\n### FINDING 2: ML Model Bucket Encryption Downgrade\n\n**Related Document(s):** Q4 2025 Encryption Posture Audit, row: vrs-prod-ml-models; Encryption Standards Policy, Section 3.1 and 5.2\n\n**Issue:**\nS3 bucket `vrs-prod-ml-models` is configured with SSE-KMS but uses **AES-128** instead of the required **AES-256** for Confidential-classified data. The audit explicitly flags this as \"Review Needed.\"\n\n**Policy Requirement Gap:**\n- **Encryption Standards Policy, Section 3.1:** \"Confidential data: AES-256 minimum\"\n- **Encryption Standards Policy, Section 5.2:** \"S3: SSE-KMS with customer-managed keys for Confidential/Restricted data\"\n- **Actual Implementation:** AES-128-GCM (128-bit key size)\n\n**Why This Matters:**\n- Models contain \"trained weights derived from Confidential customer data\" per audit notes\n- Models themselves are classified as Confidential\n- While the audit notes \"No PII in model files,\" this does not change the data classification or policy requirement\n- AES-128 is below the stated minimum for this data classification tier\n\n**Severity: MEDIUM**\n\n**Rationale for Medium (not High):**\n- Encryption is present (not unencrypted)\n- AES-128 is still cryptographically strong for most threat scenarios\n- No PII directly stored; derived/aggregated data lowers immediate risk\n- This appears to be a configuration error rather than a deliberate gap\n- Remediation is a simple key rotation/re-encryption operation\n\n**Recommendation:**\n- Upgrade S3 bucket to use AES-256 keys within 30 days\n- Verify root cause (misconfiguration vs. deliberate downgrade)\n- Re-encrypt existing objects with AES-256\n\n---\n\n### FINDING 3: Webhook Payload Encryption Key Uses Wrong Algorithm\n\n**Related Document(s):** Q4 2025 Encryption Posture Audit, row: webhook-payload-key; Key Rotation Status Log, APP-PROD-003; Encryption Standards Policy, Section 3.1\n\n**Issue:**\nApplication key `webhook-payload-key` is configured with **AES-128** but is used to encrypt **Confidential** customer data (account activity notifications). The audit explicitly flags as \"Review Needed.\"\n\n**Policy Requirement Gap:**\n- **Encryption Standards Policy, Section 3.1:** \"Confidential data: AES-256 minimum standard\"\n- **Actual Implementation:** AES-128-GCM (128-bit)\n- **Data Handled:** Webhook payloads containing Confidential customer event data\n\n**Why This Matters:**\n- Direct policy violation: Confidential data classification requires AES-256\n- Unlike the ML models finding, these are direct customer event notifications (higher sensitivity)\n- Audit notes explicitly state policy requires AES-256 for this data type\n- This is not a legacy system or edge case\u2014it's a current production encryption key\n\n**Severity: HIGH**\n\n**Rationale for High (vs. Medium):**\n- Clear policy violation with no documented exception\n- Confidential customer data involved\n- No compensating controls mentioned\n- The key is actively used for encryption, not at-rest archival\n- Suggests either a configuration error during key creation or a deliberate downgrade without exception documentation\n\n**Additional Concern:**\nKey rotation history shows this key was rotated **14 days late** (APP-PROD-003 in rotation log), at the boundary of the grace period. The combination of:\n- Encryption algorithm downgrade, plus\n- Key rotation delay at grace period boundary\n  \n...suggests possible process gaps in key management.\n\n**Recommendation:**\n- Create new application key using AES-256 for Confidential webhook payloads immediately\n- Re-encrypt all existing webhook payloads with new key\n- Retire AES-128 webhook key or document formal exception with CISO approval\n- Review change log: why was algorithm downgraded at some point?\n\n---\n\n### FINDING 4: Key Rotation Grace Period Breach\n\n**Related Document(s):** Key Rotation Status Log, APP-PROD-006; Encryption Standards Policy, Section 6.1\n\n**Issue:**\nApplication key `notification-encryption-key` (Confidential classification) was rotated **15 days late**, exceeding the 14-day grace period by 1 day.\n\n**Policy Requirement Gap:**\n- **Encryption Standards Policy, Section 6.1:** \"Rotation must be completed within 14 calendar days of the scheduled rotation date. Rotation delays beyond 14 days require CISO notification and documented justification.\"\n- **Actual Rotation:** Due October 1, 2025 \u2192 Completed October 16, 2025 (15 days late)\n- **Grace Period Status:** Exceeds grace period by 1 day\n\n**Evidence of Control Execution:**\n- Audit log notes: \"CISO notified October 10 per policy. Re-encryption completed October 20.\"\n- Delay cause documented: \"re-encryption batch job failure requiring restart\"\n- CISO notification occurred, meeting escalation requirement\n\n**Why This Matters:**\n- Policy violation: 15 days exceeds 14-day maximum\n- However, CISO was notified and cause was documented per policy requirements\n- This represents a **control execution gap** (1 day overage) but not a **control design gap**\n- The control operated as designed: notification occurred, issue was resolved, re-encryption completed\n\n**Severity: HIGH** (for audit purposes)\n\n**However, with context:**\n- This is a **single incident with documented justification**\n- CISO was notified within the grace period (October 10 notification for an October 1 due date)\n- Root cause was operational (batch job failure), not negligence\n- Re-encryption was completed\n- No indication this is a recurring issue\n\n**Auditor's Assessment:**\n- Record as **non-compliant finding** (policy violation occurred)\n- Evaluate as **lower materiality** given documented exception process followed\n- Does not indicate systemic control failure\n- Recommend: Review batch job failure root cause and implement retry logic to prevent recurrence\n\n**Recommendation:**\n- Document this incident in control testing working papers as \"isolated exception with compensating notification control\"\n- Implement automated retry logic for key rotation re-encryption jobs\n- Establish target of 0 grace period breaches going forward\n- No immediate remediation required for this specific incident\n\n---\n\n### FINDING 5: Insufficient Compensating Control for Internal VPC Traffic\n\n**Related Document(s):** Network Architecture Summary, Section 4.3; Encryption Standards Policy, Section 4.2\n\n**Issue:**\nPolicy Section 4.3 states: \"Traffic between services in the internal management VPC handling only Internal-classified data is encrypted via VPC-level IPSec (AWS site-to-site VPN between VPCs).\"\n\nHowever, the Network Architecture Summary does not document implementation of VPC-level encryption (IPSec/VPN) between vpc-prod \u2194 vpc-mgmt. The architecture mentions:\n- \"TLS 1.2 for all monitoring agents (Datadog, CloudWatch)\" \u2014 this is application-layer encryption\n- No mention of VPC Peering encryption or IPSec/VPN configuration\n\n**Why This Matters:**\n- Policy references a specific compensating control (VPC-level IPSec/VPN)\n- Architecture evidence does not confirm this control is implemented\n- Monitoring traffic carries system logs and metrics; some may contain sensitive information despite being labeled \"Internal\"\n- This creates ambiguity: Is the policy assumption correct that this VPC peering is encrypted at network layer?\n\n**Severity: MEDIUM**\n\n**Rationale:**\n- **Lower risk:** The data transiting this path is labeled \"Internal\" (lower classification than Confidential)\n- **Application-layer encryption exists:** TLS 1.2 for monitoring agents provides encryption\n- **Compliance uncertainty:** Policy language assumes VPC-level encryption but evidence doesn't confirm\n- **Not a critical gap:** Even if VPC-level encryption isn't present, monitoring data via TLS 1.2 meets minimum requirements for Internal data\n\n**Recommendation:**\n- Clarify in architecture documentation whether VPC peering between vpc-prod \u2194 vpc-mgmt uses IPSec/VPN\n- If NOT implemented, revise policy Section 4.3 to remove reference to VPC-level IPSec\n- Confirm TLS 1.2 is the actual compensating control for this traffic\n- Document in control narrative that monitoring traffic is encrypted at application layer (TLS 1.2), meeting requirements for Internal-classified data\n\n---\n\n## SUMMARY TABLE: CONTROL OPERATING EFFECTIVENESS\n\n| Finding | Control Design | Control Operation | Overall Assessment |\n|---------|-----------------|-------------------|-------------------|\n| Unencrypted Analytics Pipeline | **DEFICIENT** \u2014 Policy requires TLS for Confidential transit data; architecture violates this | Not Operating | **NOT EFFECTIVE** |\n| ML Model Encryption Downgrade | **COMPLIANT** \u2014 Design requires AES-256 | **NOT OPERATING** \u2014 AES-128 in use | **NOT EFFECTIVE** |\n| Webhook Key Encryption Downgrade | **COMPLIANT** \u2014 Design requires AES-256 for Confidential | **NOT OPERATING** \u2014 AES-128 in use | **NOT EFFECTIVE** |\n| Key Rotation Grace Period | **COMPLIANT** \u2014 Design includes 14-day grace + notification | **MINOR DEVIATION** \u2014 1 day overage, escalated per policy | **OPERATING with isolated exception** |\n| VPC Traffic Encryption | **AMBIGUOUS** \u2014 Policy assumes implementation not documented | **UNCERTAIN** \u2014 Application-layer encryption confirmed; network-layer unclear | **OPERATING (application layer)** |\n\n---\n\n## OVERALL CONTROL ASSESSMENT: **NOT EFFECTIVE**\n\n### Control Maturity: **3 out of 5** (Managed)\n\n**Summary:**\nVanguard Risk Solutions has established encryption standards and related policies (C1.1 design is adequate), but **operating effectiveness is compromised** by three significant implementation gaps:\n\n1. **Unencrypted Confidential data in transit** (analytics pipeline) \u2014 Direct policy violation with business risk\n2. **Two active encryption keys using substandard algorithms** for Confidential data \u2014 Configuration errors or undocumented decisions\n3. **Key rotation process deviation** \u2014 Isolated incident but documented; control escalation worked as intended\n\n**Strengths:**\n- Kubernetes environment (Istio mTLS) is well-secured\n- Most infrastructure encryption (RDS, EBS, EFS) is compliant\n- Key management processes include rotation tracking and CISO escalation\n- Database encryption and external-facing TLS are properly implemented\n\n**Weaknesses:**\n- East-West traffic encryption has significant gaps (analytics pipeline unencrypted)\n- Application key algorithm selections don't match policy requirements\n- Architecture documentation doesn't align with policy design intentions\n- Limited evidence of compensating controls for identified gaps\n\n---\n\n## AUDITOR RECOMMENDATIONS\n\n### Immediate (0-30 days):\n1. **Encrypt analytics pipeline:** Implement TLS 1.2+ for HTTP analytics API (Port 8080)\n2. **Upgrade ML model encryption:** Re-encrypt S3 bucket with AES-256 keys\n3. **Upgrade webhook key encryption:** Create new AES-256 key and re-encrypt payloads\n4. **Root cause analysis:** Why were these keys configured with AES-128 for Confidential data?\n\n### Near-term (30-90 days):\n5. **Policy alignment:** Clarify policy Section 4.3 regarding VPC-level encryption implementation\n6. **Architecture documentation:** Update Network Architecture Summary to confirm all compensating controls match policy assumptions\n7. **Key rotation automation:** Implement retry logic to prevent future grace period breaches\n\n### Ongoing:\n8. **Quarterly review:** Encrypt posture audit should specifically flag algorithm/classification mismatches going forward\n9. **Design review:** Establish technical review gate before deploying new encryption keys (verify algorithm matches data classification)\n\n---\n\n## CONCLUSION\n\n**Control C1.1 is not operating effectively** due to active policy violations in data-in-transit encryption and application key configuration. While the control framework is well-designed, implementation gaps present **material risk** to confidential data protection. Recommend **repeat testing** after remediation of findings 1-3 above."
+}

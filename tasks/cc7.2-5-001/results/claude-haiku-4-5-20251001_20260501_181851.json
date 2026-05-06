@@ -1,0 +1,110 @@
+{
+  "task_id": "cc7.2-5-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-01T18:18:51.980759",
+  "score": {
+    "task_id": "cc7.2-5-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4166666666666667,
+    "f1": 0.5882352941176471,
+    "score": 0.5882352941176471,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "helix-ml-inference",
+          "helix-data-lake",
+          "5 business days",
+          "monitoring",
+          "deployed",
+          "SLA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "S3 bulk access",
+          "false positive",
+          "30%",
+          "tuning",
+          "TUNE-202",
+          "alert fatigue",
+          "97%"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "brute force",
+          "SLA",
+          "acknowledged",
+          "99%",
+          "missed",
+          "December",
+          "capacity"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQL injection",
+          "disabled",
+          "TUNE-203",
+          "compensating",
+          "WAF",
+          "CISO"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "impossible travel",
+          "5",
+          "unresolved",
+          "investigation",
+          "December",
+          "capacity",
+          "SLA",
+          "triage"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2993,
+    "output_tokens": 4078
+  },
+  "raw_response": "# CC7.2 Compliance Assessment \u2013 Helix Data Systems\n## SOC 2 Type II Readiness Review (Q4 2025)\n\n---\n\n## FINDINGS SUMMARY\n\n| # | Finding | Severity | Status |\n|---|---------|----------|--------|\n| 1 | Unmonitored Production Services | Critical | Open |\n| 2 | Monitoring Coverage SLA Violations | High | Open |\n| 3 | High False Positive Rates Impacting Detection Effectiveness | High | Open |\n| 4 | Disabled Alert Rule Without Adequate Compensating Control | High | Mitigated |\n| 5 | Inadequate Investigation of Impossible Travel Alerts | Medium | Open |\n| 6 | Alert Response SLA Achievement Gaps | Medium | Open |\n\n---\n\n## DETAILED FINDINGS\n\n### **1. Unmonitored Production Services**\n\n**Document Section:** Quarterly Monitoring Coverage Review (coverage_gaps)\n\n**Gap Description:**\nTwo production services deployed in Q4 2025 lack adequate security monitoring:\n\n- **helix-ml-inference** (deployed Nov 20): Partial monitoring only \u2014 Datadog APM configured but NO SIEM integration, NO custom alert rules for security events\n- **helix-data-lake-ingestion** (deployed Oct 5): CloudWatch basic metrics only \u2014 NO Datadog, NO SIEM, NO security alerting\n\nPer POL-MON-003 \u00a72, **all production systems must be monitored for security-relevant events**. The policy specifies required monitoring sources (CloudTrail SIEM, WAF logs, application logs in SIEM context). These services have zero SIEM integration.\n\n**CC7.2 Relevance:** The control requires monitoring \"system components and the operation of those components for anomalies.\" Services without SIEM integration cannot generate security anomaly alerts and are therefore unmeasurable for malicious acts or errors.\n\n**Severity:** **CRITICAL**\n- Direct policy violation (POL-MON-003 \u00a72)\n- Affects 2 of 24 production services (8.3% of inventory)\n- Both services unmonitored since deployment (helix-data-lake-ingestion for 11 weeks; helix-ml-inference for 4 weeks)\n- No detective controls for data exfiltration, unauthorized access, or malicious activity on these services\n- Remediation target date (2026-01-15) is 6-7 weeks out from review date\n\n**Evidence of Impact:** Quarterly review explicitly notes \"ML team deployed without notifying Security\" \u2014 suggests process control failure upstream of this monitoring gap.\n\n---\n\n### **2. Monitoring Coverage SLA Violations**\n\n**Document Section:** Quarterly Monitoring Coverage Review (new_services_deployed_q4)\n\n**Gap Description:**\nPolicy POL-MON-003 \u00a75 states: **\"Any new production service must have monitoring configured within 5 business days of deployment.\"**\n\nTwo services failed this SLA:\n- **helix-ml-inference**: Deployed Nov 20 \u2192 monitoring NOT configured as of Dec 15 review (target Jan 15) = **56 days overdue**\n- **helix-data-lake-ingestion**: Deployed Oct 5 \u2192 monitoring NOT configured as of Dec 15 review (target Jan 15) = **71 days overdue**\n\nOne service complied:\n- helix-notification-v2: Deployed Oct 15 \u2192 monitoring configured Oct 17 \u2713\n\n**CC7.2 Relevance:** CC7.2 requires the entity to \"monitor system components.\" A formal SLA establishing a 5-day window demonstrates the organization's intent to detect anomalies promptly. Persistent violation indicates a control design or operating effectiveness issue.\n\n**Severity:** **HIGH**\n- Systemic SLA miss (2 of 3 new services)\n- Violations are now 6-10 weeks old (not acute, but chronic)\n- Indicates either: (a) deployment process doesn't enforce security gate, or (b) security team lacks capacity to onboard services\n- One service (helix-notification-v2) shows SLA compliance is achievable, suggesting compliance is not a resource or technical constraint\n\n**Root Cause Indicators:** \n- helix-ml-inference: \"ML team deployed without notifying Security\" (process failure)\n- helix-data-lake-ingestion: \"Data team uses separate AWS account\" (organizational silo)\n\n---\n\n### **3. High False Positive Rates Impacting Detection Effectiveness**\n\n**Document Section:** Monthly Alert Summary (alert triage statistics)\n\n**Gap Description:**\nMultiple alert rules exhibit false positive rates that significantly exceed the policy threshold:\n\n| Rule | October | November | December | Policy Threshold |\n|------|---------|----------|----------|------------------|\n| Failed login brute force | 98.1% | 96.5% | 93.3% | \u226430% |\n| Impossible travel | 78.3% | 78.9% | 71.0% | \u226430% |\n| S3 bulk access | 97.4% | 96.6% | 95.1% | \u226430% |\n\n**Policy Requirement:** POL-MON-003 \u00a73.3 states \u2014 *\"False positive rates above 30% for any rule require tuning within 2 weeks.\"*\n\n**Status:** \n- **Failed login brute force** (High severity): Tuning ticket TUNE-201 created Oct 15 \u2192 tuning applied Oct 28 (63% volume reduction by Nov). Partial success but still 96.5% FP rate in Nov; improved to 93.3% in Dec. **Ongoing excess.**\n- **S3 bulk access** (High severity): Tuning ticket TUNE-202 created Oct 20 \u2192 partially applied. FP rate remains 96.6% in Nov, 95.1% in Dec. **Tuning regressed Dec** (\"after CHG-411\"). **Unresolved.**\n- **Impossible travel** (High severity): No tuning ticket created despite 78% FP rate. **No action taken.**\n\n**Alert Backlog Consequences:**\n- October: 847 + 156 + 23 = 1,026 high-severity alerts; 996 false positives (97% noise)\n- December: 298 + 142 + 31 = 471 high-severity alerts; 435 false positives (92% noise)\n\n**CC7.2 Relevance:** CC7.2 requires that \"anomalies are analyzed to determine whether they represent security events.\" High false positive rates degrade analyst efficacy\u2014the signal is buried in noise. Alert fatigue reduces the probability of true positive detection and increases response time for genuine security events.\n\nThe December incident **INC-310** (unauthorized outbound transfer detected) was identified *despite* high false positive noise, indicating the current alert tuning is working against timely detection.\n\n**Severity:** **HIGH**\n- Directly impacts CC7.2's requirement to \"analyze anomalies to determine whether they represent security events\"\n- Three alert rules in violation of tuning SLA\n- Impossible travel has never been tuned despite 11+ weeks at 70%+ FP rate\n- S3 tuning regressed, indicating alert configuration instability\n- Trend is mixed: brute force improving, but S3 and impossible travel static or worsening\n\n---\n\n### **4. Disabled Alert Rule Without Adequate Compensating Control**\n\n**Document Section:** Quarterly Monitoring Coverage Review (disabled_alerts) + Monthly Alert Summary (SQL injection pattern)\n\n**Gap Description:**\nThe **SQL injection pattern** alert (Medium severity, WAF-based) was disabled Nov 1, 2025, with CISO approval (TUNE-203) due to **100% false positive rate** (1,203 FPs in October, 0 true positives). The rule remains disabled through December.\n\n**Stated Compensating Control:** \"WAF blocks all SQL injection attempts; CloudTrail monitors for any requests that bypass WAF.\"\n\n**Analysis of Compensating Control:**\n- \u2713 **WAF blocking is effective**: Penetration test (Oct 2025) found zero SQL injection vulnerabilities. Web application layer is defended.\n- \u2713 **CloudTrail monitoring exists**: AWS API logging is configured per POL-MON-003 and integrated into SIEM.\n- **\u2717 BUT: The compensating control detects *bypasses*, not the injection attempt itself.** If an attacker finds a zero-day bypass, CloudTrail will log the request, but there's no dedicated alerting rule for SQL injection patterns in application logs, request headers, or WAF bypass scenarios.\n\n**CC7.2 Relevance:** CC7.2 requires monitoring for \"malicious acts.\" SQL injection is a common attack vector. While the WAF provides prevention, the organization has removed the detective layer (pattern matching on SQL syntax). The compensating control assumes WAF integrity but doesn't proactively alert on suspicious patterns that *might* indicate:\n- Attacks against non-WAF-protected endpoints (direct database access, RPC, etc.)\n- Attacks that trip WAF but are logged for later analysis\n- Evasion attempts (encoding, obfuscation, second-order injection)\n\n**Severity:** **HIGH** (mitigated by strong primary controls, but material gap in defense-in-depth)\n- Alert is disabled with documented CISO approval (governance satisfied)\n- Penetration test results support the decision (no SQL injection vulnerabilities found)\n- WAF + CloudTrail + SIEM provide compensating detective controls\n- **However:** No alert specifically monitors for SQL injection patterns in application or request logs. Relies entirely on WAF prevention + incident response after the fact.\n\n**Recommendation:** This is acceptable for SOC 2 **provided** the organization documents the compensating control in the control narrative and maintains evidence that:\n  1. WAF logs are monitored for blocked injection attempts (alerting on block *volume* or *patterns*)\n  2. CloudTrail is configured to alert on SQL-related API activity anomalies\n  3. Annual penetration testing validates the defense-in-depth strategy\n\n---\n\n### **5. Inadequate Investigation of Impossible Travel Alerts**\n\n**Document Section:** Monthly Alert Summary (Impossible travel rows)\n\n**Gap Description:**\nThe **Impossible travel** alert (High severity, response SLA 30 minutes) shows:\n\n| Month | Total | True Positives | Requires Investigation | Acknowledged Within SLA | Notes |\n|-------|-------|-----------------|----------------------|----------------------|-------|\n| Oct | 23 | 3 | 2 | 23 | \u2014\u2014 |\n| Nov | 19 | 2 | 2 | 19 | \u2014\u2014 |\n| Dec | 31 | 4 | 5 | 28 | **Increase in unresolved investigations** |\n\n**Findings:**\n- October & November: 2 out of 23-19 alerts marked \"Requires Investigation\" \u2014 appropriate triage discipline\n- **December spike:** 31 alerts (63% increase from Nov), 5 require investigation, but only 28 acknowledged within SLA (**90.3% achievement** vs. policy expectation of 100% for High severity, 24/7)\n- **No triage notes provided** for the December investigation backlog\n- **No false positive rate documented** \u2014 could not assess whether the Dec spike represents genuine anomalies or noisy rule behavior\n\n**CC7.2 Relevance:** CC7.2 requires that \"anomalies are analyzed to determine whether they represent security events.\" The December spike shows either:\n1. A genuine increase in impossible travel events (potential account compromise wave), OR\n2. Environmental change that increased false positives (degraded geolocation data, VPN expansion, etc.)\n\nThe organization has not documented which scenario applies, nor the outcome of the 5 investigations marked \"Requires Investigation.\"\n\n**Severity:** **MEDIUM**\n- December SLA miss (90.3% vs. 100% target) is minor but indicates resource pressure during the incident spike\n- Lack of documentation on investigation outcomes prevents auditors from verifying that anomalies were properly analyzed\n- However: The rule remains active and alerts are being triaged (not ignored)\n- True positive count (4 in Dec) suggests the rule is generating actionable signals\n\n---\n\n### **6. Alert Response SLA Achievement Gaps**\n\n**Document Section:** Monthly Alert Summary (acknowledged_within_sla column)\n\n**Gap Description:**\nMultiple alert rules show SLA achievement below 100%, indicating delayed acknowledgment:\n\n| Rule | Month | SLA Req. | Achieved | Shortfall |\n|------|-------|----------|----------|-----------|\n| Failed login brute force | Oct | 100% (30 min, H) | 99.1% | 7 alerts |\n| S3 bulk access | Oct | 100% (30 min, H) | 94.9% | 8 alerts |\n| Security group change | Oct | 100% (4 hrs, M) | 88.2% | 4 alerts |\n| S3 bulk access | Nov | 100% (30 min, H) | 91.0% | 8 alerts |\n| Security group change | Nov | 100% (4 hrs, M) | 85.7% | 4 alerts |\n| S3 bulk access | Dec | 100% (30 min, H) | 91.5% | 12 alerts |\n| Security group change | Dec | 100% (4 hrs, M) | 85.4% | 6 alerts |\n\n**Systemic Pattern:**\n- High-severity alerts: 91-99% achievement (max 7 alerts missed per rule-month)\n- Medium-severity alerts: 85-88% achievement (max 6 alerts missed per rule-month)\n- **No month achieves 100% compliance across all rules**\n\n**Root Cause:** Likely operational capacity constraints during peak alert periods (e.g., December brute force spike, S3 access patterns).\n\n**CC7.2 Relevance:** CC7.2 requires that \"anomalies are analyzed.\" If alerts are not acknowledged within SLA, analysis is delayed. While these are not *failures* (91-99% is reasonable operational performance), they represent a control operating below design specification.\n\n**Severity:** **MEDIUM**\n- Persistent minor SLA misses across multiple rules and months\n- Pattern suggests systemic capacity issue rather than random incidents\n- Absolute alert volumes handled are substantial (thousands per month)\n- However: Misses are 1-6% per rule \u2014 not a wholesale failure to monitor\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Title | Severity | Status | Audit Implication |\n|---------|-------|----------|--------|-------------------|\n| 1 | Unmonitored Production Services | **CRITICAL** | Open | **MATERIAL WEAKNESS** \u2014 Direct policy violation; remediation delayed to Jan 2026 |\n| 2 | Monitoring Coverage SLA Violations | **HIGH** | Open | **SIGNIFICANT DEFICIENCY** \u2014 Systemic SLA miss on 2/3 new services; 6-10 weeks overdue |\n| 3 | High False Positive Rates | **HIGH** | Partially Mitigated | **SIGNIFICANT DEFICIENCY** \u2014 Tuning backlog impairs detection; multiple rules exceed policy threshold |\n| 4 | Disabled Alert Rule | **HIGH** | Mitigated | **ACCEPTABLE WITH COMPENSATING CONTROLS** \u2014 CISO-approved; WAF + CloudTrail provide defense-in-depth |\n| 5 | Inadequate Investigation of Impossible Travel | **MEDIUM** | Open | **CONTROL DEFICIENCY** \u2014 Dec spike unresolved; documentation gap prevents audit verification |\n| 6 | Alert Response SLA Gaps | **MEDIUM** | Ongoing | **MINOR CONTROL DEFICIENCY** \u2014 Persistent 1-6% SLA misses suggest capacity constraint; not a failure |\n\n---\n\n## OVERALL ASSESSMENT\n\n**Conclusion:** Helix Data Systems demonstrates a **strong monitoring and alerting framework** with clear policies, documented procedures, and proactive tuning efforts. However, **three material issues** prevent a \"Ready\" determination for SOC 2 Type II CC7.2:\n\n1. **Critical:** Two production services lack SIEM integration (11-71 days overdue)\n2. **High:** Multiple alert rules exceed false positive thresholds and lack timely tuning\n3. **High:** Alert response SLAs not uniformly achieved\n\n**Positive Indicators:**\n- \u2713 Comprehensive alert portfolio covering authentication, privilege escalation, data exfiltration, infrastructure changes, and application security\n- \u2713 Documented alert tuning program with monthly review and CISO oversight\n- \u2713 Quick identification and remediation of true positives (e.g., brute force Dec 14-16, unauthorized transfer INC-310)\n- \u2713 Quarterly monitoring coverage reviews with gap tracking\n- \u2713 Penetration testing validates alert efficacy\n\n**Recommendation:** \n- **Delay SOC 2 Type II certification** until:\n  1. helix-ml-inference and helix-data-lake-ingestion have full SIEM integration and alert rules active (target Jan 15 is acceptable if met)\n  2. Alert false positive rates drop below 30% or documented waivers are approved by CISO for specific rules\n  3. Documentation of December impossible travel investigation outcomes is provided"
+}

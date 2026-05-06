@@ -1,0 +1,65 @@
+{
+  "task_id": "cc7.1m-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T09:06:11.330278",
+  "score": {
+    "task_id": "cc7.1m-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.14285714285714285,
+    "f1": 0.25,
+    "score": 0.25,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "MW-2025-Q4-011",
+          "EXC-2025-M-040",
+          "CHG-2025-4035",
+          "retroactive",
+          "4-hour",
+          "PIR-2025-0078",
+          "Section 5.2"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "NetOps Solutions",
+          "Approved Vendor List",
+          "not on",
+          "VML-407",
+          "VML-410",
+          "lb-prod-01",
+          "lb-prod-02",
+          "no vendor agreement",
+          "Section 6.1",
+          "Section 6.3",
+          "F5",
+          "unauthorized"
+        ],
+        "total_keywords": 13,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3560,
+    "output_tokens": 3117
+  },
+  "raw_response": "## SOC 2 CC7.1 Readiness Assessment Findings \u2014 Q4 2025\n\n### Summary Assessment\n\nIronclad Services has defined maintenance windows, patching SLAs, change ticket requirements, emergency maintenance procedures, and vendor access requirements. Most documented Q4 maintenance activities appear to have been performed within approved windows and supported by change tickets.\n\nHowever, there are notable gaps related to **vendor authorization**, **approved vendor list accuracy**, and **completeness of maintenance/vendor access records**. The November 13 emergency core switch replacement appears to have followed the documented emergency process and should not be treated as a control failure. The more significant issues relate to vendors performing maintenance without being on the Approved Vendor List or without adequate supporting documentation.\n\n---\n\n## Finding 1: Unauthorized Vendor Performed Production Load Balancer Maintenance\n\n**Related document section:**  \n- System Maintenance Policy, Section 6.1 \u2014 Approved Vendor List  \n- System Maintenance Policy, Section 6.2 \u2014 Vendor Access  \n- System Maintenance Policy, Section 6.3 \u2014 Unauthorized Vendor Access  \n- Vendor Maintenance Log entries VML-407 and VML-410\n\n**Why it\u2019s a gap:**  \nNetOps Solutions performed two remote maintenance activities on production load balancers:\n\n- **VML-407, 2025-12-03:** F5 BIG-IP firmware upgrade and SSL offload reconfiguration on `lb-prod-01` and `lb-prod-02`\n- **VML-410, 2025-12-17:** F5 BIG-IP health monitor reconfiguration and iRule update on `lb-prod-01` and `lb-prod-02`\n\nThe vendor maintenance log explicitly states that NetOps Solutions:\n\n- Is **not on the Approved Vendor List**\n- Has **no vendor agreement on file**\n- Was hired by the network team after the internal F5 engineer left\n\nAlthough the sessions were performed through CyberArk PAM and were recorded, the policy requires that **only vendors on the Approved Vendor List may perform maintenance**. The existence of session recordings does not compensate for the lack of vendor approval or contractual authorization.\n\nThere is also no evidence that the policy violation was reported to the IT Director within 24 hours as required by Section 6.3.\n\n**Severity:** High\n\n---\n\n## Finding 2: Approved Vendor List Does Not Align With Vendors Performing Maintenance\n\n**Related document section:**  \n- System Maintenance Policy, Section 6.1 \u2014 Approved Vendor List  \n- Vendor Maintenance Log entry VML-403\n\n**Why it\u2019s a gap:**  \nThe Approved Vendor List in the policy includes Dell Technologies, Cisco Systems, Fortinet, VMware/Broadcom, Oracle, and Schneider Electric. It does **not** include Palo Alto Networks.\n\nHowever, the Q4 vendor maintenance log includes:\n\n- **VML-403, 2025-11-05:** Palo Alto Networks performed a PAN-OS 11.1.6 upgrade on `fw-internal-01` and `fw-internal-02`\n\nThe vendor maintenance log notes \u201cApproved vendor,\u201d but the policy\u2019s Approved Vendor List does not support that conclusion. This creates an inconsistency between the authoritative vendor list and actual vendor activity.\n\nIf Palo Alto Networks is an approved vendor, the Approved Vendor List was not updated or maintained accurately. If Palo Alto Networks is not approved, then this was an unauthorized vendor maintenance event on firewall infrastructure.\n\n**Severity:** Medium\n\n---\n\n## Finding 3: Unauthorized Vendor Access Was Repeated Without Evidence of Remediation\n\n**Related document section:**  \n- System Maintenance Policy, Section 6.3 \u2014 Unauthorized Vendor Access  \n- Vendor Maintenance Log entries VML-407 and VML-410\n\n**Why it\u2019s a gap:**  \nNetOps Solutions performed unauthorized maintenance on **two separate occasions**:\n\n1. December 3, 2025 \u2014 F5 BIG-IP firmware upgrade and SSL configuration work  \n2. December 17, 2025 \u2014 F5 health monitor and iRule updates\n\nThe second event occurred two weeks after the first unauthorized vendor maintenance event. This indicates that the initial policy violation was not remediated promptly, or that the network team continued using the vendor despite knowing the vendor was not approved.\n\nThere is no evidence of:\n\n- IT Director notification within 24 hours\n- CISO or IT Director exception approval\n- Procurement review\n- Vendor onboarding\n- Contract execution\n- Risk acceptance\n- Corrective action after the first unauthorized event\n\nThe repeated nature of the exception increases the risk and suggests a control operating deficiency rather than a one-time documentation issue.\n\n**Severity:** High\n\n---\n\n## Finding 4: Maintenance Window Execution Log Does Not Include Certain Vendor Maintenance Activities\n\n**Related document section:**  \n- System Maintenance Policy, Section 3.2 \u2014 Planned Maintenance Windows  \n- System Maintenance Policy, Section 5.1 \u2014 Change Tickets  \n- Maintenance Window Schedule and Execution Log  \n- Vendor Maintenance Log entries VML-407 and VML-410\n\n**Why it\u2019s a gap:**  \nThe maintenance window schedule and execution log does not appear to include the NetOps Solutions maintenance activities:\n\n- **CHG-2025-4058 / VML-407:** December 3 F5 BIG-IP firmware upgrade and SSL offload reconfiguration\n- **CHG-2025-4062 / VML-410:** December 17 F5 BIG-IP health monitor reconfiguration and iRule update\n\nThese changes affected production load balancers, but they are not reflected in the Q4 maintenance window execution log.\n\nThe policy requires that planned maintenance occur within designated windows and be supported by change tickets. While the vendor log references change tickets, the absence from the execution log prevents the auditor from verifying whether these activities occurred during approved maintenance windows and whether they were subject to normal maintenance governance.\n\n**Severity:** Medium\n\n---\n\n## Finding 5: Incomplete Vendor Access Documentation for Oracle DBA Maintenance Extension\n\n**Related document section:**  \n- System Maintenance Policy, Section 6.2 \u2014 Vendor Access  \n- System Maintenance Policy, Section 5.1 \u2014 Change Tickets  \n- Exception Register entry EXC-2025-M-041  \n- Maintenance Window Schedule entry MW-2025-Q4-012\n\n**Why it\u2019s a gap:**  \nThe exception register documents an Oracle DBA remote session extension:\n\n- **EXC-2025-M-041:** Oracle DBA remote session extended 30 minutes past the maintenance window to complete RAC cluster patching\n- CyberArk recording referenced: **REC-2025-VPN-0208**\n- Change ticket: **CHG-2025-4038**\n\nHowever, the vendor maintenance log provided does not include a corresponding Oracle vendor maintenance entry. Additionally, the maintenance window execution log entry tied to CHG-2025-4038 states only:\n\n- \u201cDatabase maintenance and backup verification\u201d\n- Actual end time: 05:30 UTC\n- Notes: \u201cBackups verified. Index optimization completed\u201d\n\nThis does not align with the exception register, which indicates RAC cluster patching and an extension beyond the maintenance window.\n\nThe issue is not that the extension occurred \u2014 it was authorized by the IT Director and appears justified. The gap is that the supporting maintenance and vendor access records are incomplete or inconsistent.\n\n**Severity:** Medium\n\n---\n\n## Finding 6: Exception and Maintenance Records Are Not Fully Reconciled\n\n**Related document section:**  \n- System Maintenance Policy, Section 5.1 \u2014 Change Tickets  \n- System Maintenance Policy, Section 5.2 \u2014 Emergency Changes  \n- Maintenance Window Schedule and Execution Log  \n- Exception Register entry EXC-2025-M-042\n\n**Why it\u2019s a gap:**  \nThe exception register documents a certificate emergency on December 18, 2025:\n\n- SSL certificate for `api.ironclad.io` expired unexpectedly\n- Emergency renewal affected `web-srv-01`, `web-srv-02`, and `lb-prod-01`\n- IT Director verbally authorized the work\n- Change ticket CHG-2025-4063 was created retroactively within the required 4-hour window\n- Review was completed the next day\n\nThe emergency authorization process appears to have been followed. However, this emergency maintenance event is not reflected in the maintenance window schedule and execution log.\n\nBecause the execution log is presented as the Q4 maintenance record, the absence of this emergency event creates an incomplete audit trail. Emergency events should be captured in maintenance execution records or otherwise clearly cross-referenced to the exception register.\n\n**Severity:** Low\n\n---\n\n## No Finding: November 13 Emergency Core Switch Replacement Followed the Emergency Process\n\n**Related document section:**  \n- System Maintenance Policy, Section 5.2 \u2014 Emergency Changes  \n- Maintenance Window Schedule entry MW-2025-Q4-011  \n- Exception Register entry EXC-2025-M-040  \n- Vendor Maintenance Log entry VML-405\n\n**Assessment:**  \nThe November 13 core switch failure appears to have followed the documented emergency maintenance process:\n\n- Emergency event was clearly documented\n- CISO verbally authorized the work at 08:45 UTC\n- Change ticket CHG-2025-4035 was created retroactively at 11:15 UTC, within the 4-hour requirement\n- Post-incident review PIR-2025-0078 was completed within 72 hours\n- Cisco Systems is on the Approved Vendor List\n- On-site work was supervised by an Ironclad employee\n\nThis appears to be a properly handled emergency maintenance event and should not be reported as a control gap.\n\n---\n\n## Overall Conclusion\n\nIronclad Services has a generally defined maintenance control framework and evidence that routine maintenance is being scheduled, approved, and executed. However, CC7.1 readiness is impacted by control exceptions related to vendor authorization and record completeness.\n\nThe most significant gaps are:\n\n1. Use of NetOps Solutions for production load balancer maintenance despite the vendor not being approved  \n2. Repeated unauthorized vendor maintenance without evidence of timely escalation or remediation  \n3. Inconsistencies between the Approved Vendor List and vendors performing maintenance  \n4. Incomplete reconciliation between vendor logs, maintenance execution logs, and exception records\n\nBased on the evidence provided, CC7.1 is **partially met**, with remediation required around vendor approval governance and maintenance record completeness."
+}

@@ -1,0 +1,88 @@
+{
+  "task_id": "c1.1-4-003",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T17:20:43.876066",
+  "score": {
+    "task_id": "c1.1-4-003",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-030",
+          "synthetic",
+          "no PII",
+          "approved"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "pag_prod_support",
+          "requester_email",
+          "requester_name",
+          "plaintext",
+          "Restricted",
+          "no exception",
+          "ticket routing",
+          "field-level encryption"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "description",
+          "May contain PII",
+          "free-text",
+          "Confidential",
+          "ticket",
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Data Asset Inventory",
+          "support",
+          "Section 4.1",
+          "Section 4.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4389,
+    "output_tokens": 2318
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 C1.1 Confidential Information Protection\n**Pinnacle Analytics Group | Q4 2025 (October 1 \u2013 December 31, 2025)**\n\n---\n\n## Evidence Relevance Assessment\n\n| Document | Relevant to C1.1 | Rationale |\n|---|---|---|\n| CISO-approved exceptions (EXC-2025-030, EXC-2025-031) | Yes | Governs whether documented deviations from encryption policy are properly authorized |\n| Data Classification and Handling Policy (POL-DCH-004) | Yes | Defines the control requirements against which compliance is measured |\n| Database encryption status report | Yes | Primary technical evidence of actual encryption implementation |\n| Q4 2025 security awareness training records | No | Training completion is not within the scope of C1.1 identification and maintenance of confidential information |\n\n---\n\n## Exception Disposition\n\nThe following exceptions were reviewed and determined to be **adequately supported** \u2014 findings against these deviations are not raised:\n\n- **EXC-2025-030** (Staging DB field-level encryption waiver): Properly approved by CISO, low risk, compensating controls in place (automated synthetic data scan, VPC isolation, restricted access), actively reviewed December 2025. The encryption report corroborates no PII in staging. \u2705\n- **EXC-2025-031** (Report cache JSONB unencrypted at field level): Properly approved by CISO, data confirmed aggregated with k-anonymity k>50, RDS encryption in place, quarterly content audit completed December 2025. Encryption report classifies `report_data` as Confidential (not Restricted), consistent with the exception rationale. \u2705\n\n---\n\n## Findings\n\n---\n\n### FINDING 1: Unencrypted Restricted PII Fields in Production Support Database \u2014 No Exception on Record\n\n**Severity: Critical**\n\n**Policy Reference:** POL-DCH-004, Section 5.2 (Data at Rest \u2014 Field-Level Encryption for Restricted PII)\n\n**Evidence Reference:** Database encryption status report \u2014 `pag_prod_support`, table `tickets`, columns `requester_email` and `requester_name`\n\n**Gap Description:**\n\nTwo columns in the production support database (`tickets.requester_email` and `tickets.requester_name`) are flagged `pii_flag = Yes` and classified as `Restricted`, yet both show `field_encryption = No` and `encryption_method = None`. The notes explicitly confirm the plaintext storage: *\"PLAINTEXT \u2014 stored unencrypted for ticket routing and search\"* and *\"PLAINTEXT \u2014 stored unencrypted for display in support dashboard.\"*\n\nSection 5.2 of POL-DCH-004 states unambiguously: *\"Field-level encryption is required for all Restricted PII columns.\"* Unlike the staging database (EXC-2025-030) and the report cache (EXC-2025-031), **no CISO-approved exception exists** for these columns. RDS-level encryption (`kms_key = support-cmk`) provides at-rest protection for the database volume, but it does not satisfy the field-level encryption requirement for Restricted PII columns \u2014 the data is accessible in plaintext to any process or user with database query access. This represents a direct, unmitigated violation of the policy's most stringent encryption tier applied to real, identifiable customer data in a production system.\n\n**What Is Missing:**\n- Field-level encryption on `tickets.requester_email` and `tickets.requester_name`\n- OR a CISO-approved exception with documented risk assessment and compensating controls per Section 8\n\n---\n\n### FINDING 2: Potential Misclassification of `tickets.description` \u2014 PII Risk Unaddressed\n\n**Severity: High**\n\n**Policy Reference:** POL-DCH-004, Section 3 (Classification Levels), Section 4.1 (Data Inventory Requirement)\n\n**Evidence Reference:** Database encryption status report \u2014 `pag_prod_support`, table `tickets`, column `description`\n\n**Gap Description:**\n\nThe `tickets.description` column is classified as `Confidential` with `pii_flag = No`, but the notes in the encryption report itself acknowledge: *\"May contain PII submitted by user but not classified as a PII column.\"* This is a self-documented classification inconsistency.\n\nSupport ticket free-text fields routinely contain Restricted-category data (names, email addresses, account numbers, health information, etc.) submitted directly by end users. The Data Classification and Handling Policy requires that data be classified based on the **sensitivity of the content it holds**, not merely its intended schema purpose. A field acknowledged to contain PII cannot be accurately classified as Confidential (non-PII), and doing so undermines the integrity of the data inventory required under Section 4.1.\n\nIf the column were correctly classified as Restricted, it would require field-level encryption under Section 5.2, which it currently does not have. The absence of DLP monitoring or data scanning controls on this column to either prevent PII ingestion or detect and re-classify it compounds the risk.\n\n**What Is Missing:**\n- Formal classification review of `tickets.description` to accurately reflect actual content\n- Either a technical control preventing PII from being submitted in this field, or reclassification to Restricted with corresponding encryption and access controls\n- If reclassified, a CISO exception would be required to cover the current unencrypted state during remediation\n\n---\n\n### FINDING 3: `orders.total_amount` Classified as Confidential Without Field-Level Encryption \u2014 Potential Underclassification of Financial Data\n\n**Severity: Medium**\n\n**Policy Reference:** POL-DCH-004, Section 3 (Classification Levels \u2014 Restricted includes \"financial data\"), Section 5.2\n\n**Evidence Reference:** Database encryption status report \u2014 `pag_prod_core`, table `orders`, column `total_amount`; notes state *\"Financial data \u2014 RDS encryption covers at-rest\"*\n\n**Gap Description:**\n\nThe policy's classification table explicitly lists **financial data** as a `Restricted` data type, which requires field-level encryption under Section 5.2. The `orders.total_amount` column is classified as `Confidential` in the inventory, and the note relies solely on RDS encryption to satisfy at-rest requirements \u2014 without field-level encryption.\n\nIf `total_amount` constitutes financial data as contemplated by the policy, it is underclassified at `Confidential` and the encryption posture is insufficient. The evidence does not include a formal determination or documented rationale from the Data Governance Office that `total_amount` falls outside the `Restricted` financial data definition. The quarterly Data Asset Inventory review process (Section 4.2) should be producing this determination formally, and no such documentation is present in the evidence provided.\n\n**What Is Missing:**\n- A documented classification determination by the Data Owner or Data Governance Office establishing why `total_amount` is Confidential rather than Restricted\n- If Restricted: field-level encryption or a CISO-approved exception\n- Evidence that the quarterly inventory review has evaluated this classification decision\n\n---\n\n### FINDING 4: Data Asset Inventory Review Evidence Not Provided for Q4 2025\n\n**Severity: Medium**\n\n**Policy Reference:** POL-DCH-004, Section 4.2 (Data Asset Inventory Review \u2014 quarterly cadence)\n\n**Evidence Reference:** Policy requirement; absence of inventory review documentation in evidence package\n\n**Gap Description:**\n\nSection 4.2 requires the Data Governance Office to review the Data Asset Inventory quarterly for completeness and accuracy. For a SOC 2 Type II assessment covering Q4 2025 (October 1 \u2013 December 31, 2025), at least one quarterly inventory review should have been performed during the audit period, with documented results.\n\nThe evidence package contains the database encryption status report (which reflects a point-in-time technical scan as of 2025-12-18) but does not include any Data Governance Office review record, meeting minutes, sign-off documentation, or reconciliation output confirming that the inventory was formally reviewed and deemed complete and accurate during Q4 2025. The encryption report alone does not satisfy this control \u2014 it is a technical artifact, not a governance review. The self-described gaps within the report (e.g., Finding 2 above) further suggest the review may not be functioning with appropriate rigor.\n\n**What Is Missing:**\n- Q4 2025 Data Asset Inventory review record produced by the Data Governance Office\n- Evidence of completeness and accuracy sign-off for the inventory during the audit period\n\n---\n\n## Summary Table\n\n| # | Finding Title | Policy Section | Severity |\n|---|---|---|---|\n| 1 | Unencrypted Restricted PII fields in production support database \u2014 no exception | \u00a75.2 | **Critical** |\n| 2 | `tickets.description` self-acknowledged to contain PII but classified as Confidential | \u00a73, \u00a74.1 | **High** |\n| 3 | `orders.total_amount` financial data potentially underclassified; field-level encryption absent | \u00a73, \u00a75.2 | **Medium** |\n| 4 | No evidence of Q4 2025 quarterly Data Asset Inventory review by Data Governance Office | \u00a74.2 | **Medium** |\n\n---\n\n## Assessor Notes\n\n- The two active CISO exceptions (EXC-2025-030, EXC-2025-031) are well-structured, actively reviewed, and consistent with the technical evidence. They do not constitute findings.\n- Finding 1 is the most significant gap: it involves real customer PII in a production system, no compensating exception, and an explicitly acknowledged plaintext storage posture. This would likely constitute a **control deficiency** in a Type II opinion if not remediated or formally excepted before the audit period closes.\n- The security awareness training records provided are not germane to C1.1 and were appropriately set aside for this assessment."
+}

@@ -1,0 +1,81 @@
+{
+  "task_id": "c1.1-4-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:09:22.942718",
+  "score": {
+    "task_id": "c1.1-4-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.3333333333333333,
+    "precision": 0.5,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 2,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "no PII",
+          "approved",
+          "compensating"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": false,
+        "matched_keywords": [
+          "Restricted",
+          "PII"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "bft-prod-ml-training",
+          "SSE-S3",
+          "SSE-KMS",
+          "EXC-2025-013",
+          "PII",
+          "remediation",
+          "pending",
+          "SageMaker",
+          "derived"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "Restricted"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4726,
+    "output_tokens": 1036
+  },
+  "raw_response": "Below is a structured assessment of compliance with C1.1 (Confidentiality \u2014 Identification & Maintenance of Confidential Information) and CC6.7 (Data Protection / Encryption) for Bridgeport Financial Technologies, based on the evidence provided. Each genuine deficiency or nonconformance is documented as a finding, following your requested format. Exception-registered issues are reviewed and not flagged as findings unless compensating controls are inadequate. Expired exceptions and remediated issues are not flagged if evidence of closure is present.\n\n---\n\n## Finding 1: **ML Training Bucket Not Using Required SSE-KMS Encryption \u2014 Exception Still Pending Remediation**\n\n**Section:**  \n- S3 Bucket Encryption Audit  \n- Data Protection and Encryption Policy (Section 4.2, 7)  \n- Security Exception Register (EXC-2025-013)\n\n**Why It's a Gap:**  \n- The `bft-prod-ml-training` S3 bucket is classified as \u201cConfidential\u201d in some records, but its \"notes\" and data characteristics indicate it contains derived PII features and is flagged as \"contains_pii = Yes\". Per the **Data Protection and Encryption Policy**, Confidential or Restricted data **must** use SSE-KMS with customer-managed keys for at-rest encryption (Section 4.2, 7).\n- Currently, this bucket uses SSE-S3, which relies on AWS-managed keys, not customer-managed (KMS) keys. This does **not** meet the stated policy for buckets with (derived) PII.\n- There is an **active exception (EXC-2025-013)**, with compensating controls (accessions restricted, public access blocked, audits in place, and migration to SSE-KMS planned after a pending SageMaker update in Q1 2026).\n- **Gap Reason**: Compensating controls reduce risk but do not fully eliminate it, as derived PII features often still have privacy/legal implications. Exception is documented and being actively remediated; however, as of Q4 end, the bucket is still out of strict policy alignment for data containing PII.\n\n**Severity:**  \n**Medium**  \n*Why Medium, not High?*  \n- Compensating controls are robust and risk is actively tracked, but control is not fully enforced at technical level. If not remediated as planned in Q1 2026, risk could escalate.\n\n---\n\n## No Findings for Other Observed Gaps\n\n### Review of Other Potential Gaps:\n\n- **S3 Buckets \u2013 Other Exceptions/Issues**:  \n    - All other S3 buckets containing Confidential or Restricted data (including PII) are using SSE-KMS **or** are covered by expired exceptions that have already been remediated (e.g., dev sandbox).\n- **Data Classification & Tracking**:  \n    - All buckets/applications are tagged with a data classification and PII status. This demonstrates identification and tracking of confidential information, meeting C1.1.\n- **Encryption in Transit**:\n    - All external and sensitive internal endpoints use TLS 1.2+ or have an approved, low-risk exception (metrics endpoint: internal-only, no PII, compensating controls). No evidence of PII/confidential data accessible over unencrypted transport without exception approval.\n- **Exception Management**:  \n    - Exception register is up to date, all exceptions undergo CISO review, contain compensating controls, and have defined expiration/review dates. Exceptions are actively monitored.\n- **Policy Framework**:  \n    - Encryption policy is comprehensive, clearly linked to data classification, covers both at rest and in transit requirements, and mandates regular compliance reviews.\n\n---\n\n## Summary Table\n\n| # | Title                                                                            | Section(s) Covered                                   | Why It's a Gap                                                                                                                                                    | Severity |\n|---|----------------------------------------------------------------------------------|------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|\n| 1 | ML Training Bucket Not Using Required SSE-KMS Encryption\u2014Exception Still Pending  | S3 Encryption Audit, Policy Section 4.2/7, Exception | Derived PII (Confidential/Restricted) in ML bucket only using SSE-S3, not SSE-KMS. Exception active with strong controls and remediation planned, but not resolved. | Medium   |\n\n---\n\n## No Additional Findings\n\n- **All other observed deviations** are addressed by expired or active exceptions with effective compensating controls, or have already been remediated.\n- **No evidence** of untracked confidential information storage, undisclosed cloud storage/processing, or unencrypted sensitive data outside of exception-managed buckets/endpoints.\n- **Quarterly compliance process** and data classification appear robust.\n\n---\n\n### Recommendation\n\n- **Monitor** the remediation of the ML training data exception (migration to SSE-KMS scheduled for Q1 2026).\n- **No other control deficiencies** with respect to C1.1 and CC6.7 as of Q4 2025.\n- **Continue quarterly reviews** of exceptions, controls, and encryption posture.\n\n---\n\nIf you need narrative or detailed risk analysis for the C1.1 assertion, or want to assess process/documentation quality, please request additional detail."
+}

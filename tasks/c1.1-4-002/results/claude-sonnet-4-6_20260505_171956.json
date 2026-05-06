@@ -1,0 +1,96 @@
+{
+  "task_id": "c1.1-4-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T17:19:56.045948",
+  "score": {
+    "task_id": "c1.1-4-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "Meridian Financial",
+          "PGP-002",
+          "EXC-2025-022",
+          "24-month",
+          "approved",
+          "compensating",
+          "partner"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "APP-006",
+          "notification",
+          "OVERDUE",
+          "October 2024",
+          "EXC-2025-021",
+          "expired",
+          "email",
+          "phone",
+          "PII"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-021",
+          "expired",
+          "without renewal",
+          "remediation not completed",
+          "no follow-up",
+          "process",
+          "lifecycle"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "monthly review",
+          "key inventory",
+          "APP-006",
+          "OVERDUE",
+          "14 months",
+          "escalation",
+          "monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4246,
+    "output_tokens": 2958
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 C1.1 / CC6.7\n**Halcyon Cloud Services | Q4 2025 (October 1 \u2013 December 31, 2025)**\n\n---\n\n## Assessment Summary\n\nFive findings were identified across the evidence reviewed. Two represent genuine unmitigated control failures active during the audit period. One represents a procedural gap with risk implications. Two represent lower-severity observations requiring attention before a Type II audit period. Appropriately managed exceptions (EXC-2025-022 for Meridian Financial PGP-002; the now-closed EXC-2025-020 for AES-128 streaming) were reviewed and are **not** cited as deficiencies \u2014 they reflect a functioning exception management process with documented compensating controls and CISO approval.\n\n---\n\n## Finding 1 \u2014 Overdue Application Key Rotation Without Valid Exception Coverage (APP-006)\n\n**Severity: High**\n\n**Document References:** Key Rotation Log (APP-006); Exception Register (EXC-2025-021); SOP-KM-001 \u00a74.1\n\n**What the evidence shows:**\nAPP-006 (`hcs-prod-notification-key`) encrypts customer contact preferences (email addresses, phone numbers) \u2014 confidential/PII-adjacent data. The key's rotation due date was **October 2024**, over 14 months before the end of the Q4 2025 audit window. The rotation log status is `OVERDUE` with no current rotation date recorded. A deferral exception (EXC-2025-021) was filed in January 2025 and approved with a July 10, 2025 expiration. That exception expired without renewal, without remediation, and without a follow-up exception being filed \u2014 all three facts are documented explicitly in the exception register's own `review_outcome` field.\n\n**Why this is a deficiency:**\nDuring the entire Q4 2025 audit period (October 1 \u2013 December 31, 2025), this key was operating in violation of SOP-KM-001 \u00a74.1's 12-month rotation requirement with **no active approved exception and no compensating controls formally in place**. The compensating controls documented under EXC-2025-021 (enhanced monitoring, monthly access review) were tied to that exception's validity period. Upon expiration, those controls ceased to be formally governed. The rotation log notes \"Tagged for Q1 2026 remediation\" \u2014 meaning the control failure will persist beyond the audit period. For a SOC 2 Type II engagement, auditors will test whether controls operated consistently throughout the period; a 15-month overdue key rotation on a production system handling customer PII with no active exception coverage is a direct, evidence-supported failure of C1.1 (identification and maintenance of confidential information protections) and CC6.7 (restriction of transmission and protection of confidential information).\n\n**What is missing:**\n- A current, approved, active exception with renewed compensating controls\n- A documented remediation timeline with accountable owner and milestone tracking\n- Any evidence that the lapsed exception was escalated to the CISO per the quarterly audit cadence required by SOP-KM-001 \u00a77\n\n---\n\n## Finding 2 \u2014 Expired Exception Without Renewal or Escalation Governance (EXC-2025-021)\n\n**Severity: Medium**\n\n**Document References:** Exception Register (EXC-2025-021); SOP-KM-001 \u00a77\n\n**What the evidence shows:**\nThis finding is related to but distinct from Finding 1. EXC-2025-021 expired on July 10, 2025. The `review_outcome` states: *\"Expired without renewal. Remediation not completed. No follow-up exception filed.\"* This is the exception register itself documenting a governance breakdown. There is no evidence in any of the four provided documents that this expiration triggered an escalation, a CISO notification, or a formal risk acceptance.\n\n**Why this is a deficiency:**\nSOP-KM-001 \u00a77 establishes a quarterly key management audit by the CISO. If that control were operating effectively, an expired medium-risk exception with no remediation would have been surfaced at the Q3 2025 quarterly review (July\u2013September) and again at the Q4 2025 review. There is no evidence that either review caught or acted on this. This indicates either: (a) the quarterly CISO audit did not occur, (b) it occurred but did not cover exception status, or (c) it occurred, identified the issue, and no action was taken \u2014 all three of which represent control failures. For a Type II audit, the absence of evidence of the quarterly review itself is an independent gap.\n\n**What is missing:**\n- Evidence that the Q3 and Q4 2025 CISO quarterly key management audits occurred (meeting minutes, audit reports, or equivalent)\n- A defined process within the exception lifecycle for escalation upon expiration without remediation\n- Evidence of formal risk acceptance by the CISO for the continued non-compliant state of APP-006 post-expiration\n\n---\n\n## Finding 3 \u2014 Postponed TLS Cipher Suite Deprecation on Partner Endpoints (CHG-2025-355)\n\n**Severity: Medium**\n\n**Document References:** Change Management Log (CHG-2025-355); SOP-KM-001 \u00a73.1\n\n**What the evidence shows:**\nCHG-2025-355 documents a planned update to the TLS cipher suite on partner-facing sync endpoints. The change was approved by CAB on November 15, 2025, but the `status` is `Postponed` with implementation deferred to Q1 2026. The notes confirm the current cipher in use: `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256`. This cipher suite uses AES-128 (not AES-256 as required by SOP-KM-001 \u00a73.1) and, critically, uses **CBC mode**, which is vulnerable to BEAST-class attacks and does not provide the authenticated encryption guarantees of GCM mode.\n\n**Why this is a deficiency:**\nUnlike EXC-2025-020 \u2014 which was an approved, time-bounded exception for AES-128 on an internal-only, ephemeral, non-PII event stream \u2014 this cipher suite is in use on **external partner-facing endpoints** handling confidential data in transit, with no exception documented in the exception register. SOP-KM-001 \u00a73.1 requires AES-256 for all symmetric encryption absent an approved exception. The change management record does not reference an exception, and no exception appears in the register for this system or this policy section. The postponement itself may be operationally justified, but the **absence of a formal exception to cover the continued use of a non-compliant cipher suite during Q4 2025 and into Q1 2026** is a gap. An auditor will note that the organization identified a non-compliant configuration, approved a fix, deferred the fix, and did not open an exception to formally govern the interim risk.\n\n**What is missing:**\n- A filed and approved exception covering the continued use of `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256` during the postponement period\n- Compensating controls documented for the interim period (e.g., WAF rules, network-layer controls, partner traffic restrictions)\n- A firm, committed implementation date for Q1 2026 with CAB re-engagement\n\n---\n\n## Finding 4 \u2014 Key Rotation Log Missing Verification Details for Overdue Entry\n\n**Severity: Low**\n\n**Document References:** Key Rotation Log (APP-006); SOP-KM-001 \u00a74.4\n\n**What the evidence shows:**\nSOP-KM-001 \u00a74.4 specifies that each rotation log entry must include: key identifier, previous rotation date, current rotation date, performed by, verification method, and sign-off by the Security Engineering lead. For APP-006, the fields `current_rotation`, `performed_by`, and `verified_by` are all recorded as `N/A` because rotation has not occurred. While this accurately reflects reality, it means the log contains a production key entry that has been in a non-compliant state for over a year with no documented escalation path, owner notification record, or formal acknowledgment of the overdue state beyond a one-line note.\n\n**Why this is a deficiency:**\nThe rotation log serves as the primary evidence artifact for key lifecycle compliance. Its current form does not capture: when the overdue state was first formally identified, who was notified, what tracking mechanism exists for remediation, or what the escalation history is. For a Type II auditor sampling the key inventory, this entry provides insufficient evidence that the overdue state is being actively managed. The log format itself (as defined by \u00a74.4) does not include fields for overdue escalation status, which suggests the procedure has a design gap for handling non-completed rotations.\n\n**What is missing:**\n- Procedure language in SOP-KM-001 \u00a74.4 addressing how overdue entries are tracked, escalated, and documented\n- An escalation timestamp and owner acknowledgment recorded against APP-006\n- Linkage in the log between APP-006 and the associated exception record (EXC-2025-021) for auditability\n\n---\n\n## Finding 5 \u2014 No Evidence of Monthly Key Inventory Review During Q4 2025\n\n**Severity: Low**\n\n**Document References:** SOP-KM-001 \u00a77; All evidence provided\n\n**What the evidence shows:**\nSOP-KM-001 \u00a77 requires a **monthly review of key inventory and rotation status** by Security Engineering, in addition to the quarterly CISO audit. The evidence package includes a point-in-time key rotation log and exception register, but no monthly review artifacts (reports, tickets, sign-off records, or Confluence page history) for October, November, or December 2025 were provided.\n\n**Why this is a deficiency:**\nFor a SOC 2 Type II engagement covering Q4 2025, the monthly review is a **control activity** \u2014 not merely a procedural aspiration. Auditors will request evidence that this review occurred three times during the period. The absence of such evidence in the provided package is notable given that a functioning monthly review should have flagged APP-006's overdue status and the lapsed EXC-2025-021 each month during Q4. Either the reviews did not occur, or they did occur but produced no documented output. Both scenarios represent a control gap. This finding would likely be raised by auditors as a **population completeness** issue \u2014 they cannot confirm the control operated throughout the period without period-specific evidence.\n\n**What is missing:**\n- Monthly review artifacts for October, November, and December 2025 (even a Confluence page revision history, a recurring ticket, or a signed checklist would suffice)\n- Evidence that APP-006 and EXC-2025-021 were specifically addressed in each monthly review\n- If reviews occurred and identified the APP-006 issue, evidence of the resulting escalation action\n\n---\n\n## Items Reviewed and Not Cited as Deficiencies\n\n| Item | Rationale |\n|---|---|\n| **EXC-2025-022 / PGP-002 (Meridian Financial)** | Active, CISO-approved exception with documented compensating controls, appropriate for a partner-driven constraint. Upcoming rotation coordination is already in progress per the log. Not a deficiency. |\n| **EXC-2025-020 / AES-128 Event Streaming** | Properly closed. Migrated to AES-256 before expiration. Demonstrates functioning exception lifecycle. Not a deficiency. |\n| **APP-007 (Staging key)** | Staging environment with no real data. Low risk and appropriately noted in the log. Not in scope for C1.1. |\n| **CHG-2025-355 cipher note** | The *identification* of the cipher issue and the change management response are evidence of a functioning detection process. The deficiency (Finding 3) is the absence of exception governance during the deferral, not the deferral decision itself. |\n| **KMS-001 through KMS-005** | All five AWS KMS CMKs show completed annual automatic rotation verified by AWS Config. No gaps identified. |\n| **SSH-001, SSH-002** | Six-month automated rotation via Teleport completed within the audit period per CHG-2025-362. Consistent with SOP-KM-001 \u00a74.1. No gaps identified. |\n| **PGP-001 / Acme Bank** | Rotation completed and evidenced in both the rotation log (PGP-001) and change management log (CHG-2025-401). Consistent with 24-month schedule. No gaps identified. |"
+}

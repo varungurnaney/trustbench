@@ -1,0 +1,110 @@
+{
+  "task_id": "c1.1-5-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:11:11.965232",
+  "score": {
+    "task_id": "c1.1-5-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.7142857142857143,
+    "f1": 0.8333333333333333,
+    "score": 0.8333333333333333,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "webhook-payload-key",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "policy requires",
+          "materiality",
+          "exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vpc-prod",
+          "vpc-data",
+          "HTTP",
+          "unencrypted",
+          "Confidential",
+          "VPC peering",
+          "analytics",
+          "cross-VPC"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "APP-PROD-006",
+          "notification",
+          "15 days",
+          "14-day grace",
+          "1 day",
+          "CISO notified",
+          "variance"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "systemic",
+          "rotation",
+          "late",
+          "process",
+          "APP-PROD-006"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "vrs-prod-ml-models",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "SSE-KMS",
+          "ML model",
+          "derived"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3924,
+    "output_tokens": 1598
+  },
+  "raw_response": "Certainly! Here is an organized summary of findings, judgments, and severity ratings based on the provided evidence. Each entry includes section mapping, rationale for the gap, and materiality.  \n\n---\n\n### 1. **Unencrypted East-West Traffic between Production and Analytics VPCs**\n\n- **Section:**  \n  - *Network Architecture Summary \u2013 Section 3.3 (Cross-VPC Traffic: vpc-prod \u2194 vpc-data)*\n- **Gap:**  \n  - Confidential customer analytics data is transmitted unencrypted over HTTP via peered VPCs. While AWS\u2019s private backbone is logically isolated from the public Internet, there is no encryption at either the network or application layer.\n- **Why This is a Gap:**  \n  - The encryption standards policy requires encryption \u201cfor all service-to-service communication handling Restricted or Confidential data\u201d (Section 4.2); best practices recommend encryption in all east-west communication, regardless of perceived internal boundaries. The SOC 2 criteria (C1.1, CC6.7) expect robust protection against unauthorized disclosure, and an adversary with internal AWS access (compromised creds, insider) could sniff traffic.\n- **Severity:**  \n  - **High**\n  - *Rationale:* This is a clear policy violation involving Confidential data, with only limited compensating controls (logical AWS isolation). The risk is somewhat mitigated as traffic does not traverse the public Internet, but the lack of encryption exposes data to lateral movement risk and is inconsistent with industry best practices.*\n\n---\n\n### 2. **ML Model Artifacts Stored with AES-128 Instead of AES-256**\n\n- **Section:**  \n  - *Q4 2025 Encryption Posture Audit (entry: S3 Bucket vrs-prod-ml-models)*\n- **Gap:**  \n  - Confidential data (ML model artifacts derived from customer data) are stored in S3 using SSE-KMS, but with AES-128, not the AES-256 minimum required by policy.\n- **Why This is a Gap:**  \n  - The encryption standards policy (Section 5.2) mandates AES-256 for Confidential and Restricted S3 buckets. Although SSE-KMS is in use, the algorithm falls short of the mandated key size. These artifacts reportedly do not contain PII, but still represent customer data by inference.\n- **Severity:**  \n  - **Medium**\n  - *Rationale:* Policy violation with Confidential data, but actual risk is relatively low (AES-128 is not considered broken), and the files do not contain PII. Issue should still be remediated to align with control expectations.*\n\n---\n\n### 3. **Application Key Using AES-128 Instead of AES-256 for Confidential Data**\n\n- **Section:**  \n  - *Q4 2025 Encryption Posture Audit (entry: Application Key webhook-payload-key)*\n- **Gap:**  \n  - The key protecting webhook payloads containing Confidential data uses AES-128-GCM instead of required AES-256-GCM (policy Section 3.1, 5).\n- **Why This is a Gap:**  \n  - The encryption standards policy requires AES-256 for Confidential data. AES-128 remains secure, but failing to meet documented standards increases audit and compliance risk.\n- **Severity:**  \n  - **Medium**\n  - *Rationale:* Controls not met, but AES-128 is still strong encryption. No direct evidence of breach risk, but policy deviation for Confidential data must be tracked and remediated.*\n\n---\n\n### 4. **Key Rotation Delay Exceeding 14-Day Grace Period (Notification Key)**\n\n- **Section:**  \n  - *Key Rotation Status Log (APP-PROD-006, notification-encryption-key)*\n- **Gap:**  \n  - The rotation of the \u201cnotification-encryption-key\u201d (Confidential) was completed 15 days after the due date, exceeding the policy's 14-day grace period by one day. However, the CISO was notified as required.\n- **Why This is a Gap:**  \n  - Policy (Section 6.1) is clear: delays beyond 14 days require CISO notification and documentation. This process was followed in this instance.\n- **Severity:**  \n  - **Low**\n  - *Rationale:* The lapse was very minor, involved documented notification and corrective action, and had negligible actual risk. Expected as an occasional operational blip.*\n\n---\n\n### 5. **S3 Buckets/Keys Using Stronger-Than-Minimum Encryption (e.g., Public Assets)**\n\n- **Section:**  \n  - *Q4 2025 Encryption Posture Audit (S3 Bucket: vrs-prod-static-assets, Session Key)*\n- **Gap:**  \n  - None\u2014using more robust encryption than required.\n- **Why This is Not a Gap:**  \n  - Exceeding minimum standards is not a deficiency; it is positive evidence.\n- **Severity:**  \n  - **N/A (No issue)**\n\n---\n\n### 6. **All Other Resources (Compliant per Audit Log)**\n\n- **Section:**  \n  - *Q4 2025 Encryption Posture Audit, Key Rotation Status Log, Network Architecture*\n- **Gap:**  \n  - None. All other RDS, S3, EBS, EFS, and encryption keys meet or exceed policy requirements.\n- **Why This is Not a Gap:**  \n  - Evidence shows controls are generally operating as designed for Restricted and Confidential information.\n- **Severity:**  \n  - **N/A (No issue)**\n\n---\n\n### 7. **Compensating Controls Claim for VPC Peering**\n\n- **Section:**  \n  - *Network Architecture Summary \u2014 3.3*\n- **Gap:**  \n  - Organization asserts that AWS VPC peering\u2019s logical isolation is compensating, but acknowledges industry trend toward encryption everywhere.\n- **Why This is a Gap:**  \n  - While offering some mitigation, it does not meet Vanguard\u2019s written encryption policy, nor does it satisfy the evolving industry norm reflected in SOC 2.\n- **Severity:**  \n  - See Finding 1 above \u2014 *No separate rating; it's context for the first finding.*\n\n---\n\n## **Summary Table**\n\n| Title                                                      | Section                        | Why it\u2019s a gap                                                      | Severity         |\n|------------------------------------------------------------|-------------------------------|---------------------------------------------------------------------|------------------|\n| Unencrypted East-West Traffic (Prod \u2194 Analytics)           | Network Architecture 3.3      | Confidential data sent unencrypted over VPC peering; policy breach  | High             |\n| ML Model Artifacts: AES-128 for Confidential S3            | Q4 2025 Audit / Policy 5.2    | S3 bucket with Confidential data uses AES-128, not AES-256          | Medium           |\n| Webhook Key: AES-128 for Confidential Payloads             | Q4 2025 Audit / Policy 3.1, 5 | Application key uses weaker algo for Confidential data               | Medium           |\n| Key Rotation One Day Late                                  | Key Rotation Log / Policy 6.1 | Key rotation delay 1 day past 14-day grace; CISO notified           | Low              |\n| Using Stronger Than Required Encryption                    | Q4 2025 Audit                 | Not a gap                                                           | N/A              |\n| All Other Resources Compliant                              | Various                       | No evidence of gaps                                                 | N/A              |\n\n---\n\n## **Additional Notes**\n\n- None of the variances suggest a systemic control failure or an immediate risk of breach of confidential information.\n- The unencrypted VPC peering traffic is the most material and should be prioritized for remediation, but overall, Vanguard demonstrates strong alignment with encryption policies, and exceptions are rare and tracked.\n\n---\n\n**If you need recommendations or required management responses for these gaps, let me know!**"
+}

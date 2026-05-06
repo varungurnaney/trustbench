@@ -1,0 +1,86 @@
+{
+  "task_id": "cc6.1-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:37:08.665085",
+  "score": {
+    "task_id": "cc6.1-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "root",
+          "BG-2025-041",
+          "INC-2025-1847",
+          "authorized",
+          "break-glass",
+          "dual approval",
+          "post-review"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "kevin.tran",
+          "14",
+          "routine-maintenance",
+          "ticket",
+          "ServiceNow",
+          "11"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "BG-2025-044",
+          "Pending",
+          "5 business days",
+          "post-review"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "sarah.okonkwo",
+          "2-hour",
+          "session duration"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7119,
+    "output_tokens": 3052
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC6.1 Logical Access Security\n## Helios Data Systems \u2014 Q4 2025 (October 1 \u2013 December 31, 2025)\n\nAfter cross-referencing the access control policy, CyberArk session logs, exception register, and break-glass log, I identified the following findings. I also note observations that initially appeared concerning but have valid justification.\n\n---\n\n## FINDINGS\n\n### Finding 1: \"Dual Approval\" Control is Effectively Single-Person via Auto-Approval Exception\n**Related to:** Policy Section 5.1 (Privileged Access); Exception EXC-2025-050; CyberArk Q4 log (all 31 entries show \"auto-approved\" as approver_2)\n\n**Gap:** Policy 5.1 requires \"Dual approval (Manager + CISO) required for privileged checkouts.\" The exception register shows EXC-2025-050 grants auto-approval for the second approver slot. In practice, every standard privileged checkout in Q4 2025 (29 of 29 standard sessions) was approved by Anil Kapoor alone with the second slot auto-approved. The compensating control described (Board Audit Committee quarterly review of CISO sessions) only addresses checkouts performed *by* the CISO \u2014 but the auto-approval pattern is being applied to checkouts by Marcus Webb, Kevin Tran, and Sarah Okonkwo, not just CISO checkouts. The exception scope (\"Auto-approval for CISO privileged checkouts\") does not match the actual implementation, which has eliminated dual approval for all users. This is a significant control failure for segregation of duties.\n\n**Severity:** **High**\n\n---\n\n### Finding 2: Privileged Checkouts Lack Valid Ticket References (\"routine-maintenance\")\n**Related to:** Policy Section 5.1 (CyberArk Privileged Access); CyberArk Q4 log\n\n**Gap:** Policy 5.1 requires \"Each checkout must reference an approved ServiceNow ticket (RITM or CHG number).\" However, 13 of 31 checkouts in Q4 (all by kevin.tran, prod-rds-admin) reference \"routine-maintenance\" rather than a valid RITM/CHG number. This is approximately 42% of all privileged sessions and 72% of Kevin Tran's sessions. Without ticket references, there is no auditable business justification, no approval chain, and no way to validate the work performed during the session against an authorized request. This pattern also suggests the monthly privileged access review (Section 5.2 \u2014 \"Validation of ticket references for each checkout\") is either not occurring or not effective.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Session Duration Exceeds Policy Maximum\n**Related to:** Policy Section 5.1; CyberArk session PAM-Q4-021\n\n**Gap:** Policy 5.1 states JIT access has \"a maximum session duration of 2 hours\" and that \"CyberArk enforces automatic session termination at the maximum duration.\" However, session PAM-Q4-021 (sarah.okonkwo, prod-k8s-admin, 2025-11-22) ran for 210 minutes (3.5 hours), exceeding the 2-hour cap by 90 minutes. This indicates either: (a) the technical enforcement control in CyberArk is not actually configured/working, or (b) an undocumented exception was applied. Either way, this contradicts the stated automated control and represents a control design or operating effectiveness failure.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Monthly Privileged Access Reviews Not Evidenced\n**Related to:** Policy Section 5.2 (Privileged Access Reviews)\n\n**Gap:** Policy 5.2 requires monthly CISO review of privileged access sessions, including ticket validation, 10% session recording spot-checks, and anomalous usage identification. No evidence of completed monthly reviews for October, November, or December 2025 was provided. Given Findings 2 and 3 went undetected/unremediated, there is reasonable doubt that these reviews are operating. For SOC 2 Type II, evidence of *operating effectiveness* across the audit period is required.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: Break-Glass Post-Incident Review Overdue\n**Related to:** Policy Section 7.2 step 5; Break-glass log BG-2025-044; Exception EXC-2025-051\n\n**Gap:** Break-glass event BG-2025-044 occurred on 2025-12-12 with status \"Pending\" review. Policy 7.2 requires post-incident review within 5 business days. As of the most recent exception review date (2025-12-15), the 5-business-day window had passed (deadline ~2025-12-19, but no review date is recorded). Exception EXC-2025-051 extends the review window to 10 business days *only for incidents during Dec 20 \u2013 Jan 5 holiday period*; BG-2025-044 occurred on Dec 12, before the exception window begins, so the standard 5-business-day requirement applies. Additionally, the log shows blank fields for post_review_date, post_review_reviewer, and credential_rotated status (though rotation timestamp is populated, the rotation flag is empty).\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: Self-Approval Concern in Break-Glass Authorization\n**Related to:** Policy Section 7.2 step 1; Break-glass log entries BG-2025-040, 041, 043\n\n**Gap:** Policy 7.2 requires \"dual verbal authorization\" from CISO and VP Engineering. In multiple instances, Marcus Webb (VP Engineering) is both the requestor *and* listed as verbal_approver_2 (BG-2025-040, 041, 043). A requestor cannot meaningfully self-approve. While the CISO provides a second independent approval, the policy's intent of dual *independent* authorization is not met. The policy should either explicitly designate an alternate approver when the VP Engineering is the requestor, or the practice should be corrected.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Pre-Existing Break-Glass Event Lacked Dual Authorization\n**Related to:** Policy 7.2; BG-2025-038\n\n**Gap:** BG-2025-038 (2025-08-14) shows verbal_approver_2 = \"N/A (pre-policy-update).\" While outside the Q4 audit window, it appears in the evidence set and indicates the dual-authorization control was not in place earlier in 2025. Auditor should confirm policy version history and that all Q4 events are post-effective-date (they are \u2014 policy v5.0 effective 2025-01-01, so this notation is suspicious and warrants explanation).\n\n**Severity:** **Low** (informational; outside audit period but warrants clarification)\n\n---\n\n### Finding 8: Exception Register Compensating Control Misalignment\n**Related to:** Exception EXC-2025-050\n\n**Gap:** The exception's compensating control specifies \"All CISO sessions recorded and reviewed by Board Audit Committee quarterly\" \u2014 but this only addresses the case where the CISO is the user performing privileged work. As implemented (per Finding 1), auto-approval applies to ALL users' checkouts, not just the CISO's own. The compensating controls do not address the broader implementation. The exception scope and compensating controls should be rewritten, or implementation narrowed to match.\n\n**Severity:** **Medium**\n\n---\n\n## ITEMS REVIEWED \u2014 NOT FINDINGS\n\n- **Root account usage (PAM-Q4-014 / BG-2025-041):** Initially appears alarming, but is properly invoked under Section 7.3, references INC-2025-1847, has dual approval, post-review completed within 5 business days, and credentials rotated within minutes. **Compliant.**\n- **Late-night break-glass sessions (BG-2025-042, BG-2025-044):** Appropriate for SEV-1/SEV-2 emergencies; consistent with policy.\n- **Network architecture document:** Correctly flagged as not directly relevant to CC6.1 privileged access; no findings raised against it.\n- **Exception EXC-2025-051 (holiday extension):** Properly documented, board-appropriate scope, time-bound \u2014 though the review outcome notes none had been triggered yet. Acceptable.\n\n---\n\n## SUMMARY\n\n| Severity | Count |\n|----------|-------|\n| Critical | 0 |\n| High | 3 |\n| Medium | 4 |\n| Low | 1 |\n\n**Overall Readiness Assessment:** **Not ready** for SOC 2 Type II attestation as currently evidenced. The most material concerns are: (1) dual approval control has been functionally eliminated via an overly broad exception, (2) ~42% of privileged checkouts lack valid ticket references, and (3) the 2-hour session cap \u2014 described as automatically enforced \u2014 was breached. These three findings together suggest the operating effectiveness of CC6.1 privileged access controls is insufficient for the audit period. Recommend remediation and a 60\u201390 day re-test period before formal Type II audit window begins."
+}

@@ -1,0 +1,92 @@
+{
+  "task_id": "a1.2-5-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T18:25:16.283215",
+  "score": {
+    "task_id": "a1.2-5-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.8,
+    "f1": 0.888888888888889,
+    "score": 0.888888888888889,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "November 16",
+          "no re-run",
+          "failed",
+          "gap",
+          "RPO",
+          "WAL",
+          "compensating"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Q4",
+          "no restore test",
+          "quarterly",
+          "observation period",
+          "control"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "trending",
+          "RTO",
+          "exceed",
+          "growth",
+          "2h 45m",
+          "3h 30m",
+          "4 hours",
+          "data volume"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "not provided",
+          "WAL",
+          "evidence",
+          "RPO",
+          "4 hour"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5754,
+    "output_tokens": 3545
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 Control A1.2\n## NexGen Platform | Q4 2025 Observation Period\n\n---\n\n## Executive Summary\n\nThe evidence reviewed demonstrates a generally mature backup and recovery program with consistent daily execution, automated checksum verification, and documented restore testing. However, the assessment identified **five findings** across the three evidence artifacts, ranging from Low to High severity. No findings rise to the Critical level, meaning no finding, in isolation, represents a complete control failure. That said, two findings in combination \u2014 the absence of a Q4 restore test and two unresolved backup failures without documented corrective action \u2014 create a meaningful gap in the operating effectiveness narrative that an external auditor would likely flag.\n\n**Artifacts Reviewed:**\n- Daily backup execution logs, Q4 2025 (Oct 1 \u2013 Dec 31, 92 days)\n- Quarterly restore test results, Q2 and Q3 2025\n- System Availability and Recovery Policy (POL-AV-002 v2.1, effective April 1, 2025)\n\n---\n\n## Findings\n\n---\n\n### Finding 1: No Restore Test Conducted During the Q4 2025 Audit Period\n\n| Attribute | Detail |\n|---|---|\n| **Severity** | High |\n| **Policy Reference** | POL-AV-002, Section 3.3 \u2014 Backup Verification |\n| **Evidence Gap** | Restore test results provided cover Q2 (June 15) and Q3 (Sept 20) only; no Q4 restore test record was provided |\n| **Audit Exception Risk** | **Yes \u2014 likely exception** |\n\n**Analysis:**\n\nPOL-AV-002 Section 3.3 explicitly requires a \"full restore test performed quarterly to a staging environment\" with results \"documented and retained for audit.\" The observation period is Q4 2025 (October 1 \u2013 December 31). No restore test record for this period was provided.\n\nThis is the most significant finding in this assessment. SOC 2 Type II opinions are based on whether controls operated effectively *throughout* the audit period. A quarterly control that has no evidence of execution during the period under review is a direct operating effectiveness gap \u2014 not a design gap. An external auditor cannot issue a clean opinion on this control as written without evidence that the test occurred.\n\nThe absence is not mitigated by the Q3 result dated September 20, 2025, because that result falls outside the Q4 window. The Q3 result is also a borderline concern in its own right: it occurred only 11 days before the Q4 period began, meaning if the organization intended the Q3 test to \"cover\" Q4, the quarterly cadence is not being maintained as designed.\n\n**Recommended Remediation:**\n- Immediately conduct and document a Q4 2025 restore test before the audit period closes, if still within window, or obtain a compensating explanation from management.\n- Establish a formal calendar with assigned owners for quarterly restore tests (e.g., mid-quarter execution \u2014 mid-October, mid-January) to prevent recurrence.\n- If the test was conducted but documentation was not provided to the auditor, obtain and submit that evidence immediately.\n\n---\n\n### Finding 2: Two Backup Failures Lack Documented Corrective Action and Root Cause Closure\n\n| Attribute | Detail |\n|---|---|\n| **Severity** | Medium |\n| **Policy Reference** | POL-AV-002, Sections 3.1 and 3.3; implicitly Section 5 (Incident Response) |\n| **Evidence Gap** | Nov 3 and Nov 16 failures are logged, but no formal RCA, corrective action, or incident ticket reference is documented |\n| **Audit Exception Risk** | **Possible \u2014 auditor inquiry likely; exception if no supporting documentation exists** |\n\n**Analysis:**\n\nThe backup logs record two failed backup executions during Q4 2025:\n\n- **November 3, 2025:** Failed at scheduled start due to a full disk on the backup staging volume. A manual re-run was executed at 04:30 and succeeded at 05:18. The log notes \"auto-cleanup triggered,\" suggesting some automation exists, but the root cause \u2014 staging volume capacity \u2014 is not addressed in any provided evidence.\n- **November 16, 2025:** Failed due to a \"network timeout to GCS \u2014 intermittent connectivity issue.\" No re-run entry exists for November 16. This means there is **no successful backup record for November 16, 2025**, leaving a one-day gap in the backup chain for that date.\n\nThese two failures behave differently and require separate treatment:\n\n**November 3** is operationally acceptable at first glance \u2014 the failure was detected, a manual re-run succeeded, and a backup was ultimately captured for that day. However, the staging volume reaching capacity is a capacity management control failure. If the auto-cleanup is the intended control, it should be documented as such. If it is not, this represents a recurring risk: the same condition could recur and might not resolve before the next scheduled backup run begins.\n\n**November 16** is more concerning. There is no successful re-run logged for this date. An auditor reviewing this log will note a gap: the November 15 backup succeeded, and November 17 succeeded, but November 16 has only a failed record. Given a 4-hour RPO, a missed daily backup is partially mitigated by continuous WAL archiving (per Section 3.1), which would theoretically allow point-in-time recovery for November 16 data. However, no WAL archive evidence was provided, and the absence of a re-run or documented exception means this gap is unexplained in the audit evidence.\n\nNeither failure has a corresponding incident ticket reference, root cause analysis, or formal corrective action plan documented in the provided evidence. POL-AV-002 Section 5 addresses incident response for availability events, and backup failures are directly relevant to that process.\n\n**Recommended Remediation:**\n- Provide incident ticket references or post-incident documentation for both November 3 and November 16 failures.\n- For November 16 specifically, provide WAL archive confirmation that data continuity was maintained, or acknowledge the gap formally with management sign-off.\n- Implement automated retry logic for backup failures with alerts to on-call personnel if the retry also fails.\n- Implement proactive staging volume capacity monitoring with alerting thresholds before the volume reaches critical capacity.\n\n---\n\n### Finding 3: Incremental Backups and WAL Archiving Not Evidenced\n\n| Attribute | Detail |\n|---|---|\n| **Severity** | Medium |\n| **Policy Reference** | POL-AV-002, Section 3.1 \u2014 Database Backups |\n| **Evidence Gap** | Policy requires 4-hour incremental backups and continuous WAL archiving; only daily full backup logs were provided |\n| **Audit Exception Risk** | **Possible \u2014 auditor will request this evidence; exception if it cannot be produced** |\n\n**Analysis:**\n\nSection 3.1 of POL-AV-002 defines three tiers of database backup:\n1. Full backup daily at 02:00 UTC \u2705 *Evidenced by the provided logs*\n2. Incremental backup every 4 hours \u274c *No evidence provided*\n3. WAL archiving continuous \u274c *No evidence provided*\n\nThe 4-hour RPO defined in Section 4 is explicitly stated to be \"aligned with incremental backup frequency.\" This means the RPO commitment to customers or stakeholders is only achievable if incremental backups and WAL archiving are functioning. The daily full backups alone would yield a potential 24-hour RPO, not 4 hours.\n\nThis is a significant evidence gap. The design of the backup architecture in the policy is sound and layered. However, for a SOC 2 Type II opinion, the auditor must test that each component of that design is actually operating. Providing only the daily backup logs covers one-third of the required backup program.\n\nThis is not necessarily a control failure \u2014 these processes may be operating correctly. But the absence of evidence is itself an audit problem. If WAL archiving is operating via GCP native tooling (e.g., Cloud SQL automated backups or a managed PostgreSQL service), documentation of that configuration and monitoring would satisfy this requirement. If it is a custom implementation, corresponding execution logs should be available.\n\n**Recommended Remediation:**\n- Provide incremental backup execution logs or system configuration evidence for the 4-hour incremental backup process.\n- Provide WAL archive confirmation, such as GCS bucket contents, Cloud SQL export logs, or pgBackRest/Barman configuration and status output.\n- If these processes are managed by GCP natively, provide screenshots or API output confirming the configuration is active and monitoring is in place.\n\n---\n\n### Finding 4: RTO Trend Risk Identified in Q3 Restore Test \u2014 No Documented Remediation Plan\n\n| Attribute | Detail |\n|---|---|\n| **Severity** | Low |\n| **Policy Reference** | POL-AV-002, Section 3.3 (Restore Testing) and Section 4 (Disaster Recovery \u2014 4-hour RTO) |\n| **Evidence Gap** | Q3 restore test notes a projected RTO breach by Q2 2026; no remediation plan or management response was provided |\n| **Audit Exception Risk** | **Unlikely for current period \u2014 but a forward-looking risk requiring documented management acknowledgment** |\n\n**Analysis:**\n\nThe Q3 2025 restore test notes contain a specific, forward-looking risk statement: *\"Growth in data volume increasing restore time \u2014 may exceed RTO by Q2 2026 if trend continues.\"*\n\nThe data supports this concern. The Q2 restore completed in 165 minutes (2h 45m) against a 4-hour (240-minute) RTO, providing 75 minutes of headroom. The Q3 restore completed in 210 minutes (3h 30m), consuming an additional 45 minutes of that headroom \u2014 a 27% increase in restore time over one quarter. If the trend is roughly linear, a Q4 test would be projected at approximately 255 minutes, which would represent an RTO breach.\n\nThis finding does not constitute an exception for Q4 2025 because both completed tests met RTO and the projected breach is in a future period. However, for a readiness assessment, the absence of a documented management response to this identified risk is notable. A reviewer identified the risk, documented it, and the record shows no follow-up action. This creates an audit narrative problem: the control owner recognized a control degradation trajectory and took no documented action.\n\nFor SOC 2 purposes, auditors value organizations that identify risks and respond to them. The lack of a Q4 restore test (Finding 1) also means there is no current data to confirm or refute this trajectory.\n\n**Recommended Remediation:**\n- Document a formal management response to the Q3 restore test finding, including options under evaluation (e.g., parallel restore infrastructure, backup compression, incremental restore strategy, increased RTO renegotiation).\n- Use the Q4 restore test (which must be conducted per Finding 1) to measure current restore time and update the risk trajectory assessment.\n- If RTO will not be met, proactively notify relevant stakeholders and update the policy.\n\n---\n\n### Finding 5: Single-Day Anomalous Backup Duration Not Investigated\n\n| Attribute | Detail |\n|---|---|\n| **Severity** | Low |\n| **Policy Reference** | POL-AV-002, Section 3.3 \u2014 Backup Verification |\n| **Evidence Gap** | October 16 backup ran for 3h 32m (vs. ~50-minute average) with a noted GCS throttling cause; no follow-up documented |\n| **Audit Exception Risk** | **Unlikely \u2014 isolated incident, but indicative of a monitoring gap** |\n\n**Analysis:**\n\nOn October 16, 2025, the backup completed successfully but ran from 02:00 to 05:32 \u2014 a duration of 3 hours 32 minutes, compared to the Q4 average of approximately 50 minutes. The log notes \"Slow due to GCS throttling.\" The backup ultimately succeeded and checksum verification passed, so no data loss occurred.\n\nHowever, several questions remain unanswered in the provided evidence:\n- Was this GCS throttling event investigated?\n- Is GCS throttling a one-time event or a recurring risk at higher data volumes?\n- Does a 3.5-hour backup window at this size create a risk of backup jobs overlapping if the issue recurs as data grows?\n\nAt a 4-hour incremental backup cadence, a 3.5-hour full backup run nearly consumes the entire incremental window, which could create scheduling conflicts or data gaps if both processes compete for resources.\n\nThis is a Low finding because the backup succeeded, no data was lost, and the event was isolated. However, the lack of any documented investigation or ticket is a process maturity gap \u2014 events with anomalous behavior should be investigated and closed, not just noted in a log field.\n\n**Recommended Remediation:**\n- Establish a formal process for investigating any backup duration that exceeds a defined threshold (e.g., 2x the rolling average duration).\n- Review GCS quota configurations to ensure throughput limits are appropriate for the current and projected data volume.\n- Monitor for GCS throttling recurrence as database size continues to grow (currently trending from 142 GB in October to 183 GB by December \u2014 approximately 28% growth in the quarter).\n\n---\n\n## Summary Table\n\n| # | Finding Title | Policy Section | Severity | Audit Exception Risk |\n|---|---|---|---|---|\n| 1 | No Q4 Restore Test Conducted | \u00a73.3 | **High** | Yes \u2014 likely |\n| 2 | Backup Failures Lack RCA and Nov 16 Has No Re-run | \u00a73.1, \u00a73.3, \u00a75 | **Medium** | Possible |\n| 3 | Incremental Backups and WAL Archiving Not Evidenced | \u00a73.1 | **Medium** | Possible |\n| 4 | RTO Degradation Trend \u2014 No Management Response | \u00a73.3, \u00a74 | **Low** | Unlikely (current period) |\n| 5 | Anomalous Oct 16 Backup Duration Not Investigated | \u00a73.3 | **Low** | Unlikely |\n\n---\n\n## Overall Readiness Assessment\n\nThe backup program as designed is well-structured. The daily backup logs demonstrate consistent execution, checksum verification is applied universally, and the two completed restore tests both passed with positive results. These are meaningful indicators of a functioning control.\n\nHowever, as this assessment stands today, **the program is not ready for a clean SOC 2 Type II opinion on A1.2** for Q4 2025 without remediation. The two Medium and one High finding collectively create gaps that an experienced auditor would not pass over. The path to readiness requires:\n\n1. Conducting and documenting a Q4 restore test immediately.\n2. Producing evidence of incremental backup and WAL archive operations.\n3. Providing incident documentation for the two November backup failures.\n\nThe Low findings should be addressed as process improvements but are unlikely to drive exceptions on their own. Management's response to Finding 4 should be documented before audit fieldwork begins given the risk was formally noted by the control operator."
+}

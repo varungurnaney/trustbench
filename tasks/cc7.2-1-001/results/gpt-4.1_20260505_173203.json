@@ -1,0 +1,74 @@
+{
+  "task_id": "cc7.2-1-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:32:03.354345",
+  "score": {
+    "task_id": "cc7.2-1-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 0.25,
+    "precision": 0.14285714285714285,
+    "f1": 0.18181818181818182,
+    "score": 0.25,
+    "gaps_detected": 1,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "periodically",
+          "should",
+          "log review",
+          "frequency"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "PHI",
+          "audit"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 731,
+    "output_tokens": 926
+  },
+  "raw_response": "Certainly! Below are the audit findings based on your review scope:\n\n---\n\n### 1. **Lack of Defined Anomaly Analysis and Security Event Determination Process**\n- **Section:** Not explicitly covered (relevant to Sections 4.3 Alert Response and 5. Log Review)\n- **Why it\u2019s a gap:**  \n  SOC 2 CC7.2 explicitly requires that detected anomalies be analyzed to determine whether they represent security events. The policy describes alerting and triage/acknowledgement procedures, but does not define a process or criteria for analyzing anomalies (e.g., log events, alerts) to determine if they represent security events. There is no description of who performs this analysis, what criteria or tools are used, or how/if events are escalated or classified after initial triage.\n- **Severity:** High\n\n---\n\n### 2. **No Description of Monitoring for Natural Disasters**\n- **Section:** 3.2 Infrastructure Monitoring, policy overview\n- **Why it\u2019s a gap:**  \n  CC7.2 requires monitoring for anomalies indicative of **malicious acts**, **natural disasters**, and **errors**. The policy describes error and security monitoring, but there is no mention of controls or monitoring for natural disaster indications (e.g., AWS service health, datacenter outages, environmental sensors where relevant). Even if much is handled by AWS, the policy should capture how these risks are monitored and surfaced.\n- **Severity:** Medium\n\n---\n\n### 3. **Incomplete Coverage of Security-Relevant Logs**\n- **Section:** 3.1 Log Collection\n- **Why it\u2019s a gap:**  \n  The policy lists several log sources, but notably omits certain security-relevant sources (e.g., IDS/IPS logs, endpoint protection logs, firewall logs beyond VPC Flow Logs, AWS GuardDuty findings, vulnerability scanner logs). While not all may be in-scope, the documentation should explicitly state comprehensive coverage or justify exclusions, or else it appears that relevant monitoring sources may be missing.\n- **Severity:** Medium\n\n---\n\n### 4. **Lack of Defined Frequency and Responsibility for Log Review**\n- **Section:** 5. Log Review\n- **Why it\u2019s a gap:**  \n  The section states logs should be reviewed \"periodically\" but does not define a specific frequency (e.g., daily, weekly), who is responsible for the reviews, what types of logs are included, or how findings are documented, followed-up, and escalated. This ambiguity may hamper consistent execution and auditability.\n- **Severity:** Medium\n\n---\n\n### 5. **No Reference to Correlation of Events Across Systems**\n- **Section:** 4. Alerting; 5. Log Review\n- **Why it\u2019s a gap:**  \n  One intent of CC7.2 is that the organization correlates information from various sources to detect sophisticated attacks or issues. The policy does not reference correlating log events across application, infrastructure, and identity sources to detect complex or concurrent events; alerting appears to be on a per-system or per-metric basis only.\n- **Severity:** Low\n\n---\n\n### 6. **No Detail on Handling or Documenting Security Events/Incidents**\n- **Section:** 4.3 Alert Response\n- **Why it\u2019s a gap:**  \n  Once a security event is identified, CC7.2 expects it to be documented and handled appropriately. The policy refers only to triage and acknowledgment of alerts by SREs, with no description of how events are logged, tracked, or escalated as incidents, or who verifies resolution. Roles, responsibilities, and documentation practices for security events are not described.\n- **Severity:** Medium\n\n---\n\n### 7. **Missing Reference to Continuous Improvement/Feedback Loop**\n- **Section:** 6. Metrics and Reporting\n- **Why it\u2019s a gap:**  \n  While reporting is performed, the policy does not state if/how detection and monitoring procedures are improved based on the findings (e.g., lessons learned, tuning alerts, updating procedures after real events). SOC 2 reviewers may expect evidence of review, feedback, and tuning for ongoing effectiveness.\n- **Severity:** Low\n\n---\n\n**Summary:**  \nBeacon Health\u2019s Security Monitoring and Alerting Policy addresses several core elements of SOC 2 CC7.2 but lacks detail and completeness in processes for anomaly analysis, monitoring for natural disasters, comprehensive log coverage, defined review procedures, event correlation, incident handling, and continuous improvement. Addressing these gaps would strengthen both security operations and SOC 2 readiness."
+}

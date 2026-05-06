@@ -1,0 +1,72 @@
+{
+  "task_id": "cc6.3-5-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:22:15.874030",
+  "score": {
+    "task_id": "cc6.3-5-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DS-STG-007",
+          "customer_profiles_qa",
+          "test data",
+          "masking",
+          "not required",
+          "PII"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "masking rules",
+          "not included",
+          "PII",
+          "email",
+          "unmasked"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "d.okonkwo",
+          "expiration",
+          "contractor",
+          "staging",
+          "unmasked"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3362,
+    "output_tokens": 1445
+  },
+  "raw_response": "Certainly! Below are audit findings based on your instructions.\n\n---\n\n### **1. Unmasked Production PII in Staging under \u201cTest Data\u201d Exception**\n\n- **Section:** Inventory of datasets / Data masking pipeline configuration / Data access and data masking policy (Sections 4.1, 4.2, 7)\n- **Why it's a gap:** DS-STG-007 (`customer_profiles_qa`) is a direct clone of production data and contains unmasked PII fields (full name, SSN, phone, email, address, etc.). The dataset is marked as \"Not Required \u2014 Test Data,\" based solely on QA lead designation. According to the data masking policy (Sections 4.1, 4.2), masking is required for all PII in non-production unless covered by a formalized, CISO-approved exception (Section 7). No such approval or compensating control is documented for DS-STG-007. Designating high-risk, unmasked datasets as \u201ctest data\u201d does not meet policy or industry expectations, especially without substantiating an exception, and exposes production PII to broader access in the staging environment.\n- **Severity:** **Critical**\n\n---\n\n### **2. Insufficient Enforcement of Data Masking Policy Exceptions**\n\n- **Section:** Data access and data masking policy (Section 7), Inventory of datasets\n- **Why it's a gap:** Policy requires CISO approval for any exception to masking in non-production and limits exceptions to 6 months with compensating controls. In DS-STG-007's case, there is *no* documented CISO approval, expiry, or compensating controls, only QA lead designation. This creates a precedent for unapproved, undefined exceptions and undermines the authority of the masking requirement.\n- **Severity:** **High**\n\n---\n\n### **3. Developers Have Broad Access to Datasets, Including Those with PII**\n\n- **Section:** Staging environment database access grants / Data access and data masking policy (Sections 3.1, 3.2, 3.3, 6.1)\n- **Why it's a gap:** Multiple developers (e.g., r.patel, e.vasquez, m.davis, etc.) have read-write access to datasets with PII, although those datasets are masked per configuration. However, DS-STG-007 (unmasked) is accessible to QA roles but not to developers, reducing the risk. Still, policy intends for RBAC enforcement and least privilege per job role. Access levels (e.g., \u201cALL\u201d) are potentially broader than necessary, and justification for wide access, especially for sensitive data, is not always apparent or documented.\n- **Severity:** **Medium**\n\n---\n\n### **4. Contractor Account Without Expiration Date**\n\n- **Section:** Staging environment database access grants / Data access and data masking policy (Section 6.2)\n- **Why it's a gap:** The contractor account (`d.okonkwo`) is classified as \u201cContractor\u201d and active through a Statement of Work but does not have an explicit expiration date in the access grant log, as required by policy (Section 6.2: \u201cmust have a defined expiration date not exceeding the contract end date\u201d). Lack of expiration increases risk of persistent, lingering contractor access regardless of employment status.\n- **Severity:** **Medium**\n\n---\n\n### **5. Masking Pipeline Does Not Cover All PII Fields**\n\n- **Section:** Data masking pipeline configuration / Data access and data masking policy (Section 4.4)\n- **Why it's a gap:** While masking rules are in place for SSN, credit card, phone, DOB, names, and physical address, other PII fields cited in policy (Section 4.4), such as \u201cemail addresses\u201d and \u201cIP addresses,\u201d are not included in the masking rules. Inventory notes that email addresses are unmasked in some datasets (e.g., DS-STG-002). This violates the stated masking requirements.\n- **Severity:** **High**\n\n---\n\n### **6. Inconsistent Validation Scope for Masked Datasets**\n\n- **Section:** Data masking pipeline validation / Data masking policy (Section 4.5)\n- **Why it's a gap:** The masking pipeline documents quarterly, automated validation of masked datasets (DS-STG-001 through DS-STG-005), but skips validation of DS-STG-007 (unmasked, no exception) and DS-STG-006 (synthetic). Validation of DS-STG-007, which contains production PII and is live in non-production, should occur\u2014even if labeled as \u201ctest data\u201d\u2014unless a formal exception exists.\n- **Severity:** **Medium**\n\n---\n\n### **7. No Regular Review of \"Test Data\" Dataset Justification**\n\n- **Section:** Data masking policy (Sections 6.2, 7) / Inventory of datasets\n- **Why it's a gap:** Policy mandates monthly review of contractor accounts and formal, time-limited documentation for access/lifecycle exceptions. For DS-STG-007, no ongoing review, renewal, or expiration of the QA lead\u2019s approval is documented. QA-lead-only designation of sensitive datasets creates risk of permanent \u201cshadow\u201d exceptions.\n- **Severity:** **Medium**\n\n---\n\n### **8. Masking Not Applied to Synthetic Dataset (No Issue)**\n\n- **Section:** Masking pipeline configuration / Inventory of datasets / Data masking policy (Section 5)\n- **Why it's *not* a gap:** DS-STG-006 is fully synthetic, as required by policy (Section 5), and not included in the masking or validation pipeline, which is appropriate.\n- **Severity:** **Low/Informational (No Issue)**\n\n---\n\n### **9. Data Owner and Approver Information Partially Documented**\n\n- **Section:** Inventory of datasets / Data masking policy (Sections 3.3, 6.1)\n- **Why it's a gap:** Some datasets specify the owner/approver in the documentation, but there is inconsistency (e.g., \u201cQA team\u201d for DS-STG-006, \u201cJamie Morrison (QA Lead)\u201d for DS-STG-007). The approval chain in the masking policy (Section 3.3) requires multi-party sign-off for sensitive data access, which is not clearly recorded for all datasets.\n- **Severity:** **Low**\n\n---\n\n**Summary of Severities:**\n- **Critical:** 1 (Unmasked PII in Staging via \"test data\" exception)\n- **High:** 2 (Policy exception process not enforced; masking pipeline does not cover all required PII)\n- **Medium:** 4 (Developer access; contractor account expiration; validation scope; test data approval lifecycle)\n- **Low:** 1 (Data ownership documentation)\n- **Informational:** 1 (Synthetic dataset appropriately excluded)\n\n---\n\n**Recommendation:** Immediate remediation should focus on closing the \u201ctest data\u201d masking loophole (DS-STG-007), enforcing exception approval workflows, and extending masking to all PII fields as mandated by policy. Access reviews, validation practices, and documentation standards should also be tightened across the data lifecycle."
+}

@@ -1,0 +1,88 @@
+{
+  "task_id": "c1.1-1-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:12:04.978239",
+  "score": {
+    "task_id": "c1.1-1-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 20,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "encryption at rest",
+          "database",
+          "storage",
+          "missing",
+          "omission",
+          "not addressed"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "key rotation",
+          "lifecycle",
+          "missing",
+          "frequency"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "where feasible",
+          "should",
+          "internal",
+          "service-to-service",
+          "mandatory",
+          "weak language"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "certificate",
+          "expiration",
+          "renewal",
+          "monitoring",
+          "automated",
+          "alerting"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1041,
+    "output_tokens": 2824
+  },
+  "raw_response": "## Overall Assessment\n\nThe policy **partially addresses** SOC 2 Confidentiality criterion **C1.1** and Common Criteria **CC6.7**, but it is **not sufficient on its own** to demonstrate readiness. The policy establishes basic classification levels, encryption expectations for transmission, endpoint encryption, email encryption, and key management. However, an auditor would likely flag several gaps around identifying and maintaining confidential information, encryption at rest, data inventory, data movement controls, retention/disposal, and third-party handling.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | No Confidential Data Inventory or Data Register | Section 3.2 \u2013 Classification Responsibility | C1.1 requires the entity to identify and maintain confidential information. The policy states that data owners classify data at creation, but it does not require a maintained inventory of confidential or restricted data, including system location, data owner, business purpose, retention period, or applicable regulatory/contractual obligations. Without a data inventory, the organization cannot demonstrate that it knows where confidential information resides. | High |\n| 2 | Encryption at Rest Requirements Are Missing | Section 4 \u2013 Encryption Standards | The policy addresses data in transit, endpoint encryption, and email encryption, but it does not explicitly require encryption at rest for databases, file shares, object storage, block storage, application storage, logs, backups, snapshots, or archives. For SOC 2 CC6.7 and Confidentiality, encryption at rest for Confidential and Restricted data should be clearly required. | High |\n| 3 | Backups, Snapshots, and Archives Not Addressed | Section 4 \u2013 Encryption Standards; Section 5 \u2013 Key Management | The policy does not specify encryption, access control, retention, or disposal requirements for backups, database snapshots, replicated data, archives, or disaster recovery environments. Confidential information often persists in backups even after production data changes, so lack of backup-specific controls is a significant confidentiality gap. | High |\n| 4 | No Formal Data Handling Requirements by Classification | Section 3 \u2013 Data Classification | The policy defines classification levels but does not define detailed handling requirements for each level. For example, it does not specify storage locations, approved collaboration tools, labeling requirements, access restrictions, transmission methods, printing restrictions, screen-sharing restrictions, or disposal requirements for Confidential or Restricted data. | Medium |\n| 5 | No Data Labeling or Marking Requirement | Section 3 \u2013 Data Classification | The policy does not require data to be labeled or tagged according to its classification. Without labeling, users and systems may not know whether data is Public, Internal, Confidential, or Restricted, making it difficult to consistently apply confidentiality protections. | Medium |\n| 6 | Weak Language for Internal Service-to-Service Encryption | Section 4.1 \u2013 Data in Transit | The policy says internal production service-to-service communications \u201cshould use mutual TLS where feasible.\u201d This is discretionary language and may not be sufficient for Confidential or Restricted data. For SOC 2 readiness, required controls should use mandatory language such as \u201cmust,\u201d with documented exceptions. | Medium |\n| 7 | No Authorization Controls for Data Movement or Export | Section 4.1 \u2013 Data in Transit; Section 4.3 \u2013 Email Encryption | CC6.7 expects controls over the transmission, movement, and removal of information. The policy requires encryption for certain transfers but does not define approval requirements, authorized transfer channels, recipient validation, data export controls, bulk download restrictions, or logging of confidential data movement. Encryption alone does not ensure that data is only transmitted to authorized parties. | High |\n| 8 | Secure Disposal and Data Destruction Not Covered | No specific section | The policy does not address secure disposal of Confidential or Restricted information, including deletion, media sanitization, destruction of storage devices, destruction certificates, or cloud data disposal procedures. CC6.7 includes controls over removal and disposal of information, so this is a notable omission. | High |\n| 9 | Retention Requirements Are Missing | No specific section | The policy does not define retention requirements for confidential information or require alignment with legal, regulatory, contractual, or business retention obligations. Without retention rules, confidential data may be kept longer than necessary, increasing confidentiality risk. | Medium |\n| 10 | Third-Party and Vendor Handling Requirements Are Insufficient | Section 2 \u2013 Scope | The policy says it applies to third-party vendors who handle Confidential or Restricted data, but it does not define vendor-specific encryption, data transfer, storage, access, breach notification, return/destruction, or audit requirements. SOC 2 auditors would expect confidentiality obligations to extend to vendors through contractual and control requirements. | Medium |\n| 11 | Key Management Lifecycle Is Incomplete | Section 5 \u2013 Key Management | The policy includes key generation, storage, and access requirements but omits important lifecycle controls such as key rotation, revocation, expiration, destruction, separation of duties, emergency key access, periodic key access reviews, and handling of compromised keys. These are important to support effective encryption controls. | Medium |\n| 12 | No Periodic Access Review for Encryption Keys | Section 5.3 \u2013 Key Access | The policy states that key access is restricted to authorized personnel and logged, but it does not require periodic review of who has access to encryption keys. Without periodic access review, excessive or stale access to keys may persist. | Medium |\n| 13 | Monitoring Is Too General | Section 8 \u2013 Compliance and Monitoring | The policy says Security Operations monitors encryption compliance using automated scanning tools, but it does not specify the scope, frequency, tools, control owners, alerting, escalation, or remediation timeframes. It also does not address monitoring for unencrypted storage, public exposure, unauthorized data transfer, or misconfigured cloud resources. | Medium |\n| 14 | DLP Coverage Is Limited to Email | Section 4.3 \u2013 Email Encryption | The policy mentions Microsoft 365 DLP scanning outbound emails, but it does not address DLP or data discovery for endpoints, cloud storage, SaaS platforms, source code repositories, databases, file shares, or collaboration tools. Confidential data could be exposed outside email channels. | Medium |\n| 15 | No Requirements for Non-Production Data | No specific section | The policy does not address use of Confidential or Restricted data in development, testing, analytics, training, or staging environments. It should define whether production confidential data is allowed in non-production and require masking, tokenization, anonymization, or equivalent protections where appropriate. | Medium |\n| 16 | No Confidentiality Objective Mapping | Section 1 \u2013 Purpose; Section 3 \u2013 Data Classification | C1.1 is tied to meeting the entity\u2019s confidentiality objectives. The policy references regulatory and contractual obligations generally but does not identify or map specific confidentiality commitments, customer requirements, regulatory obligations, or data categories to control requirements. | Medium |\n| 17 | Classification Review May Be Too Limited | Section 3.2 \u2013 Classification Responsibility | The Data Governance team reviews classifications annually, but the policy does not require review upon major system changes, new products, new data flows, onboarding of new customers, regulatory changes, or changes in data use. Annual review alone may not be sufficient to maintain accurate classification. | Low |\n| 18 | BYOD and Contractor Device Requirements Are Not Clear | Section 2 \u2013 Scope; Section 4.2 \u2013 Endpoint Encryption | The policy covers company-issued laptops and mobile devices accessing corporate email, but it does not clearly address contractor-owned devices, BYOD laptops, unmanaged endpoints, virtual desktop requirements, or restrictions on local storage of Confidential or Restricted data. | Medium |\n| 19 | Removable Media Controls Are Incomplete | Section 4.2 \u2013 Endpoint Encryption | The policy prohibits USB storage devices for Confidential or Restricted data, which is positive, but it does not define monitoring, technical enforcement, exception handling, inventory of approved removable media, or encryption requirements if exceptions are granted. | Low |\n| 20 | No Explicit Requirement for Strong TLS Configuration | Section 4.1 \u2013 Data in Transit; Section 6 \u2013 Certificate Management | The policy requires TLS 1.2 or higher and prohibits certain deprecated algorithms, but it does not define approved cipher suites, certificate renewal monitoring, HSTS requirements for public applications, or controls to prevent downgrade/misconfiguration. This is a lower-severity gap but may be noted during technical control review. | Low |\n\n---\n\n## Summary of Auditor Concern\n\nThe policy is a good starting point for encryption governance, but for SOC 2 readiness it should be expanded or supported by additional standards/procedures covering:\n\n- Confidential data inventory and ownership.\n- Encryption at rest across all storage types.\n- Backups, logs, archives, and snapshots.\n- Data retention and secure disposal.\n- Data movement, transfer approval, and egress monitoring.\n- Vendor and third-party confidentiality obligations.\n- Key lifecycle management.\n- DLP and data discovery beyond email.\n- Data handling standards by classification.\n- Non-production data masking or sanitization.\n\nAs written, the policy would likely be assessed as **partially designed but not fully sufficient** to meet C1.1 and CC6.7 expectations."
+}

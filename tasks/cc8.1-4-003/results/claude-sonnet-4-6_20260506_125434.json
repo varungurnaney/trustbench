@@ -1,0 +1,90 @@
+{
+  "task_id": "cc8.1-4-003",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T12:54:34.371979",
+  "score": {
+    "task_id": "cc8.1-4-003",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-706",
+          "maintenance window",
+          "Thursday",
+          "outside",
+          "violation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "CISO",
+          "NOT OBTAINED",
+          "dual approval",
+          "unreachable",
+          "Section 4",
+          "emergency"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "anika.patel",
+          "developer",
+          "deployer",
+          "segregation",
+          "SRE",
+          "Section 3.4"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CISO",
+          "delegate",
+          "after-hours",
+          "unreachable",
+          "emergency"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3027,
+    "output_tokens": 2597
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC8.1 Change Management\n**Entity:** Meridian Analytics | **Period:** Q4 2025 (Oct 1 \u2013 Dec 31, 2025)\n**Control:** CC8.1 \u2014 Authorization, design, development, testing, approval, and implementation of changes\n\n---\n\n## Executive Summary\n\nThe change management program is substantively well-designed. Nine of ten changes in Q4 2025 demonstrate consistent adherence to policy: CAB approvals are documented in meeting minutes, maintenance windows are observed (or formally excepted), segregation of duties is maintained, high-risk changes receive security reviews, and post-implementation verification is completed across the board. One emergency change (CHG-708) represents a material control failure with two distinct deviations from policy. One minor documentation gap exists for certain lower-risk changes. No other deficiencies were identified.\n\n---\n\n## Findings\n\n---\n\n### Finding 1 \u2014 CHG-708: CISO Approval Not Obtained for Emergency Change\n\n**Severity: Critical**\n\n**Policy Reference:** POL-CHG-017 \u00a74 (Emergency Changes); \u00a73.4 (Segregation of Duties)\n\n**What the evidence shows:**\nCHG-708 (Auth token expiry miscalculation, December 2, 2025) was classified as an Emergency / Critical change. The change log records \"CISO approval: NOT OBTAINED\" with the note that \"CISO was unreachable at 3am. VP Eng approved alone.\" The December 9 CAB retrospective confirms this: Yuki Tanaka (Security Lead / CISO) acknowledged the bypass, and the CAB formally noted that \"the dual approval requirement exists specifically for high-severity situations and should not be bypassed.\"\n\n**Why this is a gap:**\nSection 4 of the policy explicitly requires dual verbal approval from both the VP Engineering *and* the CISO before an emergency change may proceed. This is described as \"a higher bar than standard emergency processes because Meridian Analytics handles financial data subject to regulatory requirements.\" Single-point authorization on a Critical-risk change to the Authentication Service eliminates the independent oversight that the dual-approval control is designed to provide. The fact that the policy's rationale is grounded in financial data regulatory obligations elevates the significance of this deviation beyond an internal process miss \u2014 it is a control failure that a SOC 2 auditor will scrutinize closely as evidence that the control does not operate effectively for the full period.\n\n**Compounding factor \u2014 Segregation of Duties failure (see also Finding 2):** This change also carried a simultaneous SoD violation, making CHG-708 the only change in the period with multiple concurrent control failures.\n\n**Relevant compensating consideration:** The retrospective CAB review occurred within the required 5 business days (December 9), corrective actions were formally documented, and the CAB proposed two remediation items (secondary CISO delegate; SRE on-call backup). However, compensating detective controls do not substitute for the preventive authorization requirement having been bypassed at the time of deployment.\n\n**Auditor conclusion:** This finding, standing alone, is sufficient to constitute a control exception under CC8.1 for the Q4 2025 period. Whether it rises to a \"deviation\" in the final SOC 2 report will depend on the overall population of changes and the auditor's assessment of pervasiveness, but for a 10-change population, one critical authorization failure is material.\n\n---\n\n### Finding 2 \u2014 CHG-708: Developer Self-Deployed Emergency Change (Segregation of Duties Violation)\n\n**Severity: High**\n\n**Policy Reference:** POL-CHG-017 \u00a73.4 (Segregation of Duties)\n\n**What the evidence shows:**\nSection 3.4 states unambiguously: \"Developer must not approve or deploy their own change\" and \"Production deployments by SRE team only.\" For CHG-708, the developer field is `anika.patel` and the deployer field is also `anika.patel`. The change log note confirms: \"Developer deployed \u2014 SRE on-call did not respond.\" The December 9 CAB minutes corroborate this and identify a root cause: the SRE on-call engineer did not respond to a page.\n\n**Why this is a gap:**\nSegregation of duties between the developer and the production deployer is a foundational change management control. It prevents unreviewed or unauthorized code from reaching production and is a direct requirement of the entity's own policy. The SRE team's non-response does not create an exception \u2014 no documented exception process for SoD exists in the policy. Under CC8.1, auditors will look for evidence that production changes are implemented only by authorized, independent parties. The deployer record for CHG-708 directly contradicts this requirement.\n\n**Distinction from Finding 1:** While both findings arise from the same change ticket, they represent independent control failures \u2014 authorization (Finding 1) and implementation integrity (Finding 2) \u2014 either of which would constitute a gap in its own right.\n\n**Mitigating factor:** The change was post-implementation verified (marked \"Yes\"), and no service degradation is recorded in the SLA dashboard attributable to this change. However, post-implementation verification by the same developer who made and deployed the change provides limited independent assurance.\n\n---\n\n### Finding 3 \u2014 Missing Security Review Documentation for Lower-Risk Normal Changes\n\n**Severity: Low**\n\n**Policy Reference:** POL-CHG-017 \u00a73.2 (Testing); \u00a73.5 (Post-Implementation)\n\n**What the evidence shows:**\nSection 3.2 requires a security review for changes classified as High or Critical risk. It does not require a security review for Low or Medium risk changes. Three Normal changes \u2014 CHG-701 (Low), CHG-703 (Medium), and implicitly CHG-706 (though CHG-706 has a completed security review) \u2014 have blank `security_review` fields. Reviewing only the clearly applicable cases: CHG-701 (Low risk) and CHG-703 (Medium risk) have no security review recorded, which is consistent with policy since the requirement applies only to High/Critical changes.\n\n**Refined finding \u2014 the actual gap:** What *is* absent for CHG-701 and CHG-703 is any indication of whether a security review was considered and affirmatively waived, or simply not applicable. For CHG-703 specifically (Medium risk, data aggregation rounding), the blank field is technically policy-compliant, but an auditor reviewing the change log without the policy in hand would note the inconsistency in documentation completeness across the population. More concretely, the policy does not define a clear threshold document for affirmatively recording \"not required\" vs. \"completed\" vs. \"not obtained\" \u2014 leaving a documentation ambiguity that could be misread as a control gap.\n\n**Why this matters for audit purposes:**\nDuring a SOC 2 Type II examination, auditors test whether controls operate consistently across the population. Blank fields in a structured change log are commonly interpreted as absent evidence unless the auditor has clear policy context. Standardizing the field values (e.g., \"N/A \u2014 Low risk,\" \"N/A \u2014 Medium risk,\" \"Completed,\" \"Not obtained\") would eliminate ambiguity and reduce audit friction.\n\n**Note:** This is a documentation quality issue, not a substantive control failure, given that policy does not mandate reviews for these risk levels. It is rated Low accordingly.\n\n---\n\n## Non-Findings (Items Reviewed and Cleared)\n\nThe following items were examined and determined to be compliant or sufficiently explained:\n\n| Item | Disposition |\n|------|-------------|\n| **CHG-706 \u2014 Outside maintenance window** | Compliant. Section 5 explicitly permits business justification exceptions approved by the CAB. The November 11 CAB minutes document a formal vote approving the Thursday deployment due to a November 15 customer contract deadline. The process was followed correctly. |\n| **CHG-704 \u2014 Emergency change (SQL injection)** | Compliant. Dual approval (Nathan Cole + Yuki Tanaka) documented. SRE team deployed. Retrospective CAB held November 4 \u2014 exactly 5 business days after the October 28 event. Security review by CISO confirmed in change log. All policy requirements met. |\n| **CHG-707 and CHG-710 \u2014 Standard changes, no CAB approval** | Compliant. Section 2 categorizes Standard changes as pre-approved per catalog, requiring no CAB approval. Both are deployed by SRE team, have testing evidence, and are post-implementation verified. |\n| **CAB quorum across all meetings** | Compliant. All four CAB meetings in Q4 2025 met the required quorum of VP Engineering + 2 other members (Section 3.3). |\n| **Security reviews for High-risk Normal changes** | Compliant. CHG-702, CHG-705, CHG-706, and CHG-709 \u2014 all classified High risk \u2014 have documented security reviews in both the change log and CAB minutes. |\n| **SRE-only deployment for all compliant changes** | Compliant for all changes except CHG-708 (addressed in Finding 2). |\n| **SLA performance** | Out of scope for CC8.1 directly; noted for context. The Authentication Service SLA miss (99.96% vs. 99.99% target) and the single Sev 1 incident (45-minute MTTR vs. 30-minute target) are relevant to availability controls but do not independently indicate a CC8.1 deficiency. |\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Policy Section | Change(s) Affected |\n|---|---------|----------|---------------|-------------------|\n| 1 | CISO approval not obtained for emergency change | **Critical** | \u00a74 | CHG-708 |\n| 2 | Developer self-deployed production change (SoD violation) | **High** | \u00a73.4 | CHG-708 |\n| 3 | Incomplete documentation notation for non-required security reviews | **Low** | \u00a73.2 | CHG-701, CHG-703 |\n\n---\n\n## Recommended Management Responses\n\n**For Findings 1 & 2 (CHG-708):** The CAB has already identified two corrective actions \u2014 establish a secondary CISO delegate for after-hours approvals, and implement backup coverage for the SRE on-call rotation. Management should formalize these as tracked remediation items with owners and target completion dates. Evidence of implementation (e.g., updated runbook, on-call rotation policy, delegate designation letter) should be retained for the next audit period. Management should also consider whether a policy amendment is needed to codify what happens when dual approval cannot be obtained (e.g., mandatory escalation path, change deferral requirement, or explicit prohibition on proceeding).\n\n**For Finding 3:** Update the change log template to replace blank security review fields with standardized values (\"Completed,\" \"N/A \u2014 [risk level per policy],\" or \"Not obtained \u2014 [reason]\"). This is a low-effort change that materially improves audit readiness.\n\n---\n\n*Assessment prepared by Compliance Audit. This is a readiness assessment only and does not constitute a final SOC 2 opinion.*"
+}

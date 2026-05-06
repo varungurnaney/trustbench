@@ -1,0 +1,74 @@
+{
+  "id": "cc1.4-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.4",
+  "control_description": "The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/hr-security-policy.md",
+      "type": "policy",
+      "description": "Cascade Financial Technologies HR security policy defining background check requirements, training frequency, and access provisioning procedures"
+    },
+    {
+      "path": "evidence/training-completion-log-2025.csv",
+      "type": "log",
+      "description": "KnowBe4 annual security awareness training completion log for 2025 showing 31 employees with completion status and dates"
+    },
+    {
+      "path": "evidence/background-check-records-2025.csv",
+      "type": "spreadsheet",
+      "description": "Background check completion records for 12 employees hired in 2025 with dates of hire, access provisioning, and background check completion"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the HR security policy, training completion log, and background check records for Cascade Financial Technologies. Assess whether the organization is meeting its SOC 2 CC1.4 obligations for personnel security. Cross-reference the training log against the policy's requirements and examine background check timelines against the access provisioning policy.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "13% of employees did not complete annual security awareness training by December 31 deadline",
+      "description": "The training completion log shows that 6 of 31 employees (EMP-1005, EMP-1010, EMP-1014, EMP-1019, EMP-1025, EMP-1030) did not complete annual security awareness training by the December 31, 2025 deadline. This represents an 80.6% completion rate. Policy Section 4.2 requires all employees to complete annual refresher training by December 31. Section 4.4 specifies that non-completers will have system access suspended on January 15. The non-completing employees span multiple departments — Engineering, Finance, Sales, Operations, Product, and Customer Support — indicating this is not isolated to a single team but a systemic compliance issue. At 19.4% non-completion, the organization cannot demonstrate that it is meeting its commitment to develop competent individuals.",
+      "evidence_sources": [
+        "evidence/training-completion-log-2025.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should count the 'Not Completed' entries in the training log and calculate the completion rate. 25 of 31 employees completed = 80.6%. The policy requires 100% completion by December 31. The 6 non-completing employees are EMP-1005 (Rachel Thompson), EMP-1010 (Robert Gallagher), EMP-1014 (Brian Matthews), EMP-1019 (Olivia Grant), EMP-1025 (Catherine Yates), and EMP-1030 (Andrew Callahan). The spread across departments indicates a systemic rather than isolated issue.",
+      "detection_criteria": {
+        "required_keywords": ["EMP-1005", "EMP-1010", "EMP-1014", "EMP-1019", "EMP-1025", "EMP-1030", "December 31", "Not Completed", "80.6%", "Section 4.2", "annual training"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "EMP-1041 Eric Sandoval granted system access 3 weeks before background check completed",
+      "description": "Background check records show that EMP-1041 (Eric Sandoval, Senior Software Engineer) was hired on November 11, 2025, and granted system access on the same date. However, his background check was not initiated until November 11 and was not completed until December 2 — 21 days after access was granted. Policy Section 3.1 explicitly states that 'Background check results must be received and reviewed by HR before system access is provisioned.' The notes indicate this was due to a 'recruiter oversight.' As a Senior Software Engineer, EMP-1041 would have had access to source code repositories and potentially production systems for 3 weeks without a completed background check. This is a direct violation of the access provisioning policy.",
+      "evidence_sources": [
+        "evidence/background-check-records-2025.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should compare the access_provisioned_date and background_check_completed columns for each employee. Most employees show background checks completed before the hire date. EMP-1041 shows access_provisioned_date of November 11 and background_check_completed of December 2 — a 21-day gap where access existed without a completed background check. The policy Section 3.1 requires background check results before access provisioning. This requires comparing the dates in two columns buried among otherwise compliant records.",
+      "detection_criteria": {
+        "required_keywords": ["EMP-1041", "Eric Sandoval", "November 11", "December 2", "21 days", "recruiter oversight", "Section 3.1", "access provisioned", "background check", "Senior Software Engineer"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "12 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["hr_security", "training_completion", "background_check", "access_provisioning", "date_comparison"]
+  }
+}

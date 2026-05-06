@@ -1,0 +1,125 @@
+{
+  "task_id": "cc9.1-4-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-01T18:18:36.712612",
+  "score": {
+    "task_id": "cc9.1-4-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "DataRobot",
+          "SOC 2",
+          "exception",
+          "VEXC-2025-001",
+          "compensating"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "HubSpot",
+          "SOC 2",
+          "not provided",
+          "exception",
+          "VEXC-2025-002",
+          "ISO 27001",
+          "alternative"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Stripe",
+          "carve-out",
+          "GCP",
+          "subservice",
+          "independent",
+          "assessment",
+          "policy"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Snowflake",
+          "pending",
+          "review",
+          "90 days",
+          "Critical",
+          "PII",
+          "not completed",
+          "SOC 2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "High",
+          "business review",
+          "N/A",
+          "SendGrid",
+          "HubSpot",
+          "Zendesk"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "carve-out",
+          "subservice",
+          "GCP",
+          "independent",
+          "assessment",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2520,
+    "output_tokens": 2754
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment: CC9.1 Control Review\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n\n---\n\n## FINDINGS\n\n### Finding 1: Snowflake SOC 2 Report Review Not Completed Within Policy Timeline\n**Policy Section:** 4.1 SOC 2 Report Review  \n**Issue:** Snowflake is a Critical-tier vendor processing customer PII. The SOC 2 Type II report was received December 15, 2025, but the vendor inventory shows \"Pending\" review status with no completion date documented. The policy requires annual SOC 2 review within **90 days of report issuance**. As of the assessment date, this review has not been completed, creating a control gap.\n\n**Why It's a Gap:**  \nThe policy explicitly mandates that Critical vendors' SOC 2 reports be reviewed annually within 90 days. Failure to complete this review means:\n- No documented assessment of scope adequacy, subservice organization controls (AWS/Azure inclusive method), or any potential findings\n- Risk posture for a Critical vendor is unvalidated\n- Compensating controls have not been documented\n- This is a preventive control failure (review should occur before continued reliance)\n\n**Severity:** **High**  \n*(Snowflake processes customer PII + analytics in a data warehouse role; delayed review of a Critical vendor creates significant residual risk)*\n\n---\n\n### Finding 2: HubSpot Lacks Current SOC 2 Report; Exception Compensating Controls Incomplete\n**Policy Section:** 3. Onboarding Requirements; 4.1 SOC 2 Report Review  \n**Issue:** HubSpot is a High-tier vendor processing customer contact information. The vendor has not provided a SOC 2 Type II report despite repeated requests (last request October 2025). Exception VEXC-2025-002 was approved November 1, 2025, with expiration February 1, 2026.\n\n**Why It's a Gap:**  \n1. The policy explicitly requires High-tier vendors to have an annual SOC 2 Type II (or equivalent) review. HubSpot's onboarding (February 2025) and continued use do not meet this requirement.\n2. The exception's compensating controls are partially adequate but incomplete:\n   - A 200-question security questionnaire and ISO 27001 certification review are reasonable alternatives\n   - However, **no documented review of HubSpot's subservice organizations (AWS and GCP, carve-out method) has been performed**\n   - Policy section 4.2 requires independent assessment of carve-out subservice orgs; this is missing\n   - No documented timeline for obtaining the actual SOC 2 report or escalation beyond the account executive\n3. The 3-month exception window (Nov 2025 \u2013 Feb 2026) does not align with the vendor's stated Q1 2026 delivery timeline; expiration date creates compliance risk.\n\n**Why It's Not a Complete Bypass:**  \nThe security questionnaire and ISO 27001 verification provide partial mitigation, but the gap remains because the policy-required control (SOC 2 Type II review) and its compensating control (subservice org assessment) are incomplete.\n\n**Severity:** **High**  \n*(High-tier vendor with customer contact data; missing required SOC 2 and incomplete subservice org assessment)*\n\n---\n\n### Finding 3: DataRobot Onboarded as Critical Vendor Without SOC 2 Report\n**Policy Section:** 3. Onboarding Requirements  \n**Issue:** DataRobot was onboarded September 15, 2025, as a Critical-tier vendor (processes customer PII + behavioral data, provides production ML model training). No SOC 2 Type II report was obtained at onboarding. Exception VEXC-2025-001 was approved September 20, 2025 (5 days after onboarding).\n\n**Why It's a Gap:**  \nThe policy states that **before granting access**, a SOC 2 Type II report must be reviewed for Critical vendors. DataRobot received system access before this control was in place:\n- Onboarding occurred September 15; exception approval September 20\n- This is a control *preventive* control failure (the review should precede access grant)\n- The compensating controls documented in the exception (security questionnaire, encryption, SSO, access limits, right-to-audit) are reasonable but do not address the missing SOC 2 audit scope review\n- No documented assessment of DataRobot's subservice org (AWS, carve-out) has occurred\n\n**Why It's Not Completely Unmitigated:**  \nThe compensating controls in VEXC-2025-001 are substantive and address data protection adequately. However, the policy violation (onboarding before SOC 2 review) is clear, and the exception was reactive rather than proactive.\n\n**Severity:** **High**  \n*(Critical vendor; policy onboarding requirement bypassed; 5-day window between access grant and exception approval)*\n\n---\n\n### Finding 4: SendGrid SOC 2 Report Expired; No Renewal or Remediation Documented\n**Policy Section:** 4.1 SOC 2 Report Review  \n**Issue:** SendGrid is a High-tier vendor. Its SOC 2 Type II report covers January 1 \u2013 December 31, 2024, and was reviewed April 1, 2025. The report is now **12+ months old** (beyond the policy's annual review requirement). No renewal request, updated report, or risk assessment for the lapsed status is documented in the inventory.\n\n**Why It's a Gap:**  \n- Policy requires annual SOC 2 review for High-tier vendors\n- SendGrid's most recent report is dated 2024; no 2025 report is noted\n- No documented action (request sent, vendor response, compensating controls, or exception) is recorded\n- This is a **monitoring control failure** (ongoing compliance tracking did not catch the lapse)\n\n**Why It's Not a Complete Control Failure:**  \n- SendGrid has a DPA and was last reviewed April 2025\n- The \"N/A\" for last_business_review suggests this vendor may not be actively reviewed per the High-tier quarterly schedule (which applies to Critical vendors), creating a secondary gap\n- However, a current SOC 2 report should still be in place\n\n**Severity:** **Medium**  \n*(High-tier vendor; report lapsed; but processing non-Restricted data\u2014customer email addresses only; no documented incident or breach)*\n\n---\n\n### Finding 5: Inadequate Documented Monitoring of Critical Vendors' Quarterly Business Reviews\n**Policy Section:** 4.3 Business Reviews  \n**Issue:** The vendor inventory shows \"last_business_review\" dates for Critical vendors (AWS, Datadog, Stripe, Okta all show 2025-12-01; Snowflake shows 2025-12-01). However:\n1. No frequency tracking or schedule is visible (quarterly is required; all dates show the same date\u2014December 1)\n2. For Okta, Stripe, and Datadog, the \"last_business_review\" column shows a single date in Q4 2025, but no documentation of prior quarters (Q1, Q2, Q3) is provided\n3. This creates ambiguity: were quarterly reviews actually held, or is this a data entry artifact?\n\n**Why It's a Gap:**  \nPolicy 4.3 explicitly requires **quarterly business reviews** for Critical vendors covering SLA performance, incident history, and security posture. The inventory does not provide evidence of:\n- Q1, Q2, Q3 2025 reviews for these vendors\n- Meeting minutes or review documentation\n- Tracking of SLA performance or incident history between reviews\n\n**Why It's Not a Complete Failure:**  \n- A December 2025 review date is present, suggesting recent engagement\n- Vendor inventory may not be the system of record for detailed review scheduling (Vanta is mentioned as the documentation platform, but meeting notes are not provided)\n- This is more of a **documentation/evidence gap** than a missed control execution\n\n**Severity:** **Medium**  \n*(Critical vendors; monitoring frequency unclear; compensating factor: December 2025 reviews were performed, suggesting ongoing engagement)*\n\n---\n\n### Finding 6: Zendesk SOC 2 Finding Not Fully Remediated or Monitored\n**Policy Section:** 4.1 SOC 2 Report Review  \n**Issue:** Zendesk's SOC 2 Type II report (April 1, 2025 \u2013 March 31, 2026, reviewed August 10, 2025) documents **one finding: inadequate access review frequency**. The inventory notes \"vendor remediation confirmed,\" but:\n1. No detail on the remediation is provided (e.g., frequency target, deadline, verification method)\n2. No follow-up review date or monitoring cadence is documented\n3. The finding relates to access controls for a vendor processing customer PII\n\n**Why It's a Gap:**  \n- Policy 4.1 requires documentation of \"exceptions or findings\" in SOC 2 reviews\n- A qualified opinion (finding) was identified and allegedly remediated, but no remediation tracking or re-audit is documented\n- For a High-tier vendor processing customer PII, this control weakness deserves documented follow-up\n\n**Why It's Partial:**  \n- \"Remediation confirmed\" suggests the CISO or security team did engage\n- No incident or data breach is noted\n- However, lack of documented verification method or follow-up timeline is a gap\n\n**Severity:** **Medium**  \n*(High-tier vendor; finding identified; remediation claimed but not documented; monitoring plan missing)*\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Vendor(s) | Control Area | Severity | Status |\n|---------|-----------|--------------|----------|--------|\n| 1 | Snowflake | SOC 2 Review (Critical) | **High** | Report received but review incomplete |\n| 2 | HubSpot | SOC 2 + Subservice Org Review (High) | **High** | No SOC 2; incomplete compensating controls |\n| 3 | DataRobot | Onboarding (Critical) | **High** | Access granted before SOC 2 review |\n| 4 | SendGrid | SOC 2 Renewal (High) | **Medium** | Report lapsed; no renewal action documented |\n| 5 | AWS, Datadog, Stripe, Okta | Quarterly Business Review Monitoring | **Medium** | Frequency/documentation unclear |\n| 6 | Zendesk | SOC 2 Finding Follow-Up (High) | **Medium** | Remediation claimed; verification not documented |\n\n---\n\n## CONTROL ASSESSMENT: CC9.1\n\n**Overall Compliance Rating: NEEDS IMPROVEMENT**\n\nQuantum SaaS has established a robust vendor risk management framework (policy, classification scheme, exception handling). However, **execution gaps in ongoing monitoring and timely completion of required reviews indicate that the preventive and detective controls for CC9.1 (identifying and developing risk mitigation for vendor risks) are not fully operating.**\n\n**Critical Issues Requiring Immediate Remediation:**\n1. Complete Snowflake SOC 2 review (Finding 1)\n2. Obtain and review HubSpot SOC 2 or document escalation plan with firm timeline (Finding 2)\n3. Conduct DataRobot subservice organization assessment (Finding 3)\n4. Request SendGrid's 2025 SOC 2 report or document compensating controls (Finding 4)\n\n**Secondary Issues:**\n5. Document quarterly business review schedule and meeting records for Critical vendors in Vanta (Finding 5)\n6. Document Zendesk remediation details and follow-up verification plan (Finding 6)"
+}

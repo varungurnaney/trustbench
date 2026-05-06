@@ -1,0 +1,84 @@
+{
+  "task_id": "cc8.1-4-003",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-05T17:19:42.106564",
+  "score": {
+    "task_id": "cc8.1-4-003",
+    "model": "gpt-4o",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-706",
+          "maintenance window",
+          "Thursday",
+          "outside",
+          "Saturday"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "CISO",
+          "NOT OBTAINED",
+          "dual approval",
+          "unreachable",
+          "emergency"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "developer",
+          "segregation",
+          "SRE"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CISO",
+          "unreachable",
+          "emergency"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2617,
+    "output_tokens": 463
+  },
+  "raw_response": "### Finding 1: Missing CISO Approval for Emergency Change\n- **Related Document Section:** Change log for Q4 2025, Policy 4 - Emergency Changes\n- **Gap Description:** For CHG-708 (Auth token expiry emergency fix), CISO approval was not obtained. According to the Change Management Policy, emergency changes require dual approval from the VP Engineering and the CISO. This critical step was bypassed as the CISO was unreachable.\n- **Severity:** Critical\n\n### Finding 2: Developer Deployed Own Change During Emergency\n- **Related Document Section:** Change log for Q4 2025, Policy 3.4 - Segregation of Duties\n- **Gap Description:** The Change Management Policy violates the segregation of duties, as it states that the developer must not deploy their own change. However, for CHG-708, the developer Anika Patel deployed the change due to the unavailability of the SRE on-call engineer.\n- **Severity:** High\n\n### Finding 3: Unauthorized Deployment Outside Scheduled Maintenance Window\n- **Related Document Section:** Change log for Q4 2025, Policy 5 - Maintenance Windows\n- **Gap Description:** CHG-706 was deployed on a Thursday outside the Saturday maintenance window. While the CAB approved this due to a business justification exception, the deviation from policy was significant given the high-risk classification of the change.\n- **Severity:** Medium\n\n### Finding 4: Missed Target MTTR for Sev 1 Incident\n- **Related Document Section:** SLA Performance Dashboard\n- **Gap Description:** The Mean Time to Repair (MTTR) target for a Sev 1 incident is 30 minutes, but the actual MTTR was 45 minutes. This indicates a gap in incident response processes, impacting the ability to quickly resolve high-severity issues.\n- **Severity:** Medium\n\n### Finding 5: Lack of Security Review Documentation\n- **Related Document Section:** Change log for Q4 2025, Policy 3.3 - CAB\n- **Gap Description:** Several Normal and High-risk changes lack explicit documentation of security reviews in the change log provided, which should be attached as evidence. For example, CHG-701 and CHG-703 lack documented security reviews.\n- **Severity:** Low"
+}

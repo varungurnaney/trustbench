@@ -1,0 +1,93 @@
+{
+  "task_id": "p1.1-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T12:53:10.512800",
+  "score": {
+    "task_id": "p1.1-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.26666666666666666,
+    "f1": 0.4210526315789474,
+    "score": 0.4210526315789474,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 15,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "Plaid",
+          "Experian",
+          "Braze",
+          "undisclosed",
+          "DSA-2025-005",
+          "DSA-2025-006",
+          "DSA-2025-007",
+          "Section 5",
+          "bank credentials",
+          "SSN"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SSN",
+          "Social Security",
+          "Experian",
+          "DSA-2025-006",
+          "PIA-2025-003",
+          "undisclosed",
+          "credit"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PIA-2025-002",
+          "Plaid",
+          "bank credential"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Braze",
+          "DSA-2025-007",
+          "financial goal",
+          "savings target",
+          "investment risk",
+          "minimum",
+          "marketing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4691,
+    "output_tokens": 3482
+  },
+  "raw_response": "## Overall P1.1 Readiness Assessment\n\n**Status: Not Ready**\n\nVerdant Fintech has a published privacy policy that covers several expected notice elements, including categories of data collected, purposes of processing, legal bases, service providers, retention, security, data subject rights, contact information, and change notification. However, when cross-referenced against the third-party data sharing register and PIA summary, the notice is materially incomplete and contains contradictions about actual data collection, sharing, and marketing practices.\n\nThe most significant gaps relate to undisclosed or under-disclosed processing involving **Plaid**, **Experian**, and **Braze**, including bank transaction aggregation, SSN collection, credit monitoring, and sharing of financial behavioral data for marketing automation.\n\n---\n\n## Findings\n\n| # | Short Title | Related Section / Evidence | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Experian credit score processing and SSN collection are not disclosed** | Privacy Policy Sections 2, 3, 5; DSA-2025-006; PIA-2025-003 | The privacy policy does not disclose that Verdant collects **Social Security Numbers**, transmits them to **Experian**, stores SSNs in HSM-encrypted systems, and uses them for credit score retrieval and ongoing credit monitoring. The policy lists account data, financial profile data, bank account information, investment data, usage data, and device data, but omits SSN entirely. Given that approximately 34% of US users are enrolled in credit score tracking and SSN is identified internally as Verdant\u2019s highest-sensitivity PII element, this is a material notice deficiency. | **Critical** |\n| 2 | **Plaid bank aggregation practices are under-disclosed** | Privacy Policy Sections 2, 3, 5; DSA-2025-005; PIA-2025-002 | The privacy policy references \u201caccount linking and data aggregation\u201d and \u201csecure third-party services,\u201d but it does not name **Plaid** or clearly disclose the full scope of data shared and processed, including bank credentials handled through Plaid Link, account numbers, routing numbers, transaction history for 12 months, account balances, account holder name, and persistent OAuth tokens used for recurring refreshes. Since approximately 78% of active users have linked at least one bank account through Plaid, this is a core processing activity that should be clearly described in the privacy notice. | **High** |\n| 3 | **Service provider list omits major processors handling sensitive financial data** | Privacy Policy Section 5; DSA Register | The privacy policy lists AWS, Stripe, Twilio, and Zendesk as current service providers but omits **Plaid**, **Experian**, and **Braze**. These omitted providers process some of Verdant\u2019s most sensitive data, including bank account data, transaction history, SSNs, credit score information, financial goal categories, investment risk profiles, behavioral segments, and marketing engagement data. The omission makes the notice incomplete and potentially misleading. | **High** |\n| 4 | **Privacy policy contradicts actual third-party sharing practices** | Privacy Policy Section 5; DSA-2025-005, DSA-2025-006, DSA-2025-007 | The policy states: \u201cWe share only the minimum information necessary with each provider \u2014 typically limited to your email address and name for communications purposes.\u201d This is contradicted by the third-party sharing register, which shows substantial sharing of sensitive data with Plaid, Experian, and Braze. Examples include bank account credentials, transaction history, account balances, SSN, date of birth, mailing address, savings target amount, investment risk profile, and financial behavioral segments. The current language materially understates Verdant\u2019s actual sharing practices. | **High** |\n| 5 | **Marketing use of financial behavioral data is not adequately disclosed** | Privacy Policy Sections 3, 4, 5, 8; DSA-2025-007; PIA-2025-004 | The policy states that consent applies to marketing communications and optional financial insights, but it does not clearly disclose that Verdant shares financial profile and behavioral data with **Braze** for personalized marketing campaigns and user engagement targeting. The DSA shows sharing of financial goal category, savings target amount, investment risk profile, behavioral engagement segments, push notification tokens, app open frequency, and feature adoption scores. The PIA also identifies a risk that this may surprise users. Users are not given clear notice that financial behavior may be used for marketing segmentation. | **High** |\n| 6 | **Braze data sharing details are inconsistent across evidence** | Privacy Policy Section 5; DSA-2025-007; PIA-2025-004 | The PIA states that financial amounts are not shared with Braze and that only goal categories are shared. However, the third-party data sharing register states that **savings target amount** is shared with Braze. The privacy policy does not disclose either practice. This inconsistency indicates that Verdant may not have an accurate, controlled inventory of marketing-related data sharing, which undermines the reliability of the privacy notice. | **Medium** |\n| 7 | **Credit monitoring purpose is missing from \u201cHow We Use Your Information\u201d** | Privacy Policy Section 3; DSA-2025-006; PIA-2025-003 | The policy describes budgeting, savings, investment analysis, spending insights, account linking, service notifications, product improvement, compliance, fraud prevention, and AML activities. It does not describe credit score retrieval, credit monitoring, credit score history visualization, or ongoing transmission of data to a credit bureau. Because credit monitoring involves SSN collection and credit bureau interaction, it should be specifically disclosed as a separate purpose. | **High** |\n| 8 | **Legal basis disclosures are too general for sensitive optional features** | Privacy Policy Section 4; DSA-2025-005, DSA-2025-006, DSA-2025-007 | The privacy policy provides broad legal basis categories but does not map them clearly to high-risk processing activities. The DSA register indicates that Plaid account linking and Experian credit checks rely on consent, while Braze relies on legitimate interest plus consent for marketing emails. The notice does not clearly explain which processing is optional, which relies on consent, what happens if consent is withdrawn, or whether users can continue using the service without Plaid, Experian, or marketing profiling. | **Medium** |\n| 9 | **User choice and withdrawal mechanisms are incomplete for optional financial integrations** | Privacy Policy Section 8; DSA-2025-005, DSA-2025-006 | The rights section allows users to access, correct, delete, export, opt out of marketing, and opt out of sale for California residents. However, the notice does not clearly explain how users can disconnect linked bank accounts, stop recurring Plaid data refreshes, withdraw consent for credit score monitoring, or request deletion of SSN-related credit monitoring data. For optional, consent-based financial features, the notice should provide clearer withdrawal and control mechanisms. | **Medium** |\n| 10 | **Retention disclosures are incomplete or potentially inconsistent** | Privacy Policy Section 6; DSA-2025-005, DSA-2025-006, DSA-2025-007; PIA-2025-002, PIA-2025-003, PIA-2025-004 | The policy states that personal and financial information is retained for the active account period plus 24 months, while financial transaction data is retained for 7 years. The Plaid PIA states that only a 12-month transaction window is retained. The policy also does not specifically address retention of SSNs, credit monitoring data, OAuth tokens, marketing profiles, or Braze behavioral segments. Retention language should be reconciled with actual system and third-party practices. | **Medium** |\n| 11 | **International transfer disclosures are missing** | Privacy Policy Section 5; DSA Register | The third-party register identifies international transfers involving AWS, Stripe, Twilio, Zendesk, Plaid, and Braze, with Standard Contractual Clauses used as safeguards for EU users. The privacy policy mentions AWS regions but does not provide meaningful notice that personal data may be transferred internationally or identify applicable safeguards. For users in jurisdictions with cross-border transfer notice expectations, this is incomplete. | **Medium** |\n| 12 | **Notice does not describe derived financial profiling used for segmentation** | Privacy Policy Sections 2, 3, 5; DSA-2025-007; PIA-2025-004 | The privacy policy describes financial goals and risk tolerance preferences but does not disclose that Verdant creates or shares derived behavioral segments such as \u201chigh-saver,\u201d \u201cinvestment-curious,\u201d \u201cbudget-conscious,\u201d and \u201cretirement-planner.\u201d These profiles are derived from sensitive financial behavior and used for marketing targeting. Users should be informed that such profiles are created and used. | **Medium** |\n| 13 | **Privacy policy may be outdated relative to implemented Q4 changes** | Privacy Policy Effective Date September 1, 2025; Change Log CHG-2025-Q4-002 and CHG-2025-Q4-008 | The policy was effective September 1, 2025. The Q4 change log shows subsequent deployment of the Braze SDK integration and a credit score history visualization feature. The policy does not reflect these processing activities. If these features materially changed data collection, use, or sharing, Verdant should have updated the notice and provided required user notification before or at the time of deployment. | **Medium** |\n| 14 | **Privacy notice overstates provider limitation and minimization** | Privacy Policy Section 5; DSA Register; PIA-2025-004 | The policy says Verdant works with a \u201climited number\u201d of providers and shares \u201conly the minimum information necessary.\u201d While minimization may be an objective, actual sharing includes broad categories of sensitive financial data with several providers. The wording could be viewed as misleading unless the policy explains that some providers receive extensive financial or identity data when users enable certain features. | **Medium** |\n| 15 | **Privacy notice does not disclose support access to sensitive financial data shared in tickets** | Privacy Policy Section 5; DSA-2025-004 | The policy lists Zendesk as a customer support ticketing provider but does not explain that support agents may view financial data if customers include it in tickets or attachments. The DSA notes that support ticket content, attachments, chat transcripts, and potentially financial data are processed in Zendesk. While users may voluntarily submit this information, the notice should more clearly describe support-channel data handling. | **Low** |\n\n---\n\n## Summary of Key Remediation Actions\n\nTo align with P1.1, Verdant should update the privacy notice to:\n\n1. Clearly disclose Plaid, Experian, and Braze or at least describe them by provider category and data use with sufficient specificity.\n2. Add SSN and credit monitoring data to the categories of personal information collected.\n3. Disclose credit score retrieval, credit monitoring, and credit score history features.\n4. Accurately describe bank aggregation practices, including transaction history, balances, OAuth tokens, and recurring data refreshes.\n5. Disclose use of financial behavioral data for marketing segmentation and Braze campaigns.\n6. Correct the misleading statement that third-party sharing is typically limited to name and email.\n7. Reconcile Braze data sharing discrepancies, especially whether savings target amounts are shared.\n8. Add clearer consent and withdrawal explanations for Plaid, Experian, and marketing profiling.\n9. Update retention disclosures for SSNs, OAuth tokens, transaction data, credit monitoring records, and marketing profiles.\n10. Add international transfer language and applicable safeguards.\n11. Confirm that the privacy policy is updated before or at the time material new processing activities are launched."
+}

@@ -1,0 +1,86 @@
+{
+  "id": "cc6.6-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.6",
+  "control_description": "The entity implements logical access security measures to protect against threats from sources outside its system boundaries.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/network-segmentation-policy.md",
+      "type": "policy",
+      "description": "Crestline AI network segmentation and boundary security policy requiring dedicated VPCs per environment"
+    },
+    {
+      "path": "evidence/vpc-architecture.json",
+      "type": "config",
+      "description": "VPC architecture export showing a shared VPC hosting both staging workloads and production ML training overflow"
+    },
+    {
+      "path": "evidence/cost-optimization-review.md",
+      "type": "report",
+      "description": "Q3 2025 infrastructure cost optimization review documenting the shared VPC decision and $367K annual savings"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Security exception register including SEC-EXC-2025-012 for the shared VPC architecture"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Crestline AI's environment segmentation controls for the Q4 2025 observation period. The organization operates an ML platform and has made architectural decisions to optimize GPU compute costs. Review the segmentation policy, VPC architecture, cost optimization review, and exception register. Assess whether CC6.6 requirements for system boundary protection and environment isolation are met. Apply professional judgment regarding whether cost optimization justifies reduced security boundaries and whether compensating controls are adequate.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Production ML workloads and staging share a VPC, violating environment isolation policy",
+      "description": "Policy Section 3.2 requires 'each environment must operate in its own dedicated VPC' and Section 3.3 states 'no VPC peering between production and non-production environments' and 'no shared subnets between environments.' The crestline-shared-compute VPC (vpc-0xshared001) hosts both staging workloads (sub-shared-staging subnets) and production ML training overflow (sub-shared-prod-ml-overflow subnets) in the same VPC. While they use separate subnets and security groups, they share the same VPC network boundary, route tables, NACLs, and VPC-level resources. Exception SEC-EXC-2025-012 documents this with compensating controls (subnet isolation, security groups, namespace isolation, VPC Flow Logs). The judgment call centers on whether subnet-level isolation within a shared VPC provides equivalent security to separate VPCs. Arguments for adequacy: security groups restrict cross-subnet traffic, Kubernetes namespace isolation, no cross-subnet anomalies detected, staging uses synthetic data only, ML training data has no customer PII. Arguments against adequacy: a VPC is the network trust boundary in AWS — shared VPCs share DNS resolution, VPC endpoints, DHCP options, and default security group; a security group misconfiguration or VPC-level vulnerability could bridge the isolation; the $367K cost savings, while significant, is driving a security architecture decision; policy explicitly prohibits shared subnets and cross-environment access. The production ML overflow subnets also peer to the main production VPC's data subnets (10.0.20.0/23), creating a network path from the shared VPC to production customer data stores.",
+      "evidence_sources": ["evidence/vpc-architecture.json", "evidence/network-segmentation-policy.md", "evidence/cost-optimization-review.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "The auditor should identify the shared VPC as a direct violation of Sections 3.2 and 3.3. The exception (SEC-EXC-2025-012) is active and has documented compensating controls. The auditor must weigh: (1) the exception process was followed correctly, (2) compensating controls are documented and verified, (3) but the policy explicitly prohibits this architecture, (4) the cost optimization review shows the decision was financially motivated, (5) the shared VPC peers to production data subnets, creating a transitive path from staging-adjacent subnets to production data. The key judgment: are subnet-level controls equivalent to VPC-level isolation?",
+      "detection_criteria": {
+        "required_keywords": ["shared VPC", "crestline-shared-compute", "staging", "production ML", "Section 3.2", "Section 3.3", "SEC-EXC-2025-012", "cost optimization", "VPC boundary", "subnet isolation"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Transitive network path from shared VPC to production data subnets",
+      "description": "The VPC peering configuration shows pcx-0xsharedprod01 connecting the shared compute VPC to the production VPC with routes to 10.0.20.0/23 (production data subnets). The shared VPC contains staging workloads in sub-shared-staging subnets (10.50.1.0/24, 10.50.2.0/24) and production ML overflow in sub-shared-prod-ml-overflow subnets (10.50.10.0/24, 10.50.11.0/24). While security groups on the ML overflow subnets restrict access to production data subnets (port 443 from 10.0.20.0/23), the route table entry for shared-to-production routes traffic destined for 10.0.20.0/23 through the peering connection. If a staging workload were compromised and the attacker could pivot to the ML overflow subnet (e.g., via a security group misconfiguration or Kubernetes pod escape), the route table would provide a network path to production data subnets. This creates a transitive risk: staging (shared VPC) -> ML overflow (shared VPC) -> production data (production VPC).",
+      "evidence_sources": ["evidence/vpc-architecture.json", "evidence/network-segmentation-policy.md"],
+      "expected_reasoning": "The auditor should trace the network path: staging subnets and ML overflow subnets are in the same VPC; the VPC peers to production with routes to data subnets. Security groups on the ML overflow subnets allow access to production data subnets. A compromise in a staging workload that achieves lateral movement within the shared VPC could potentially reach production data. The judgment: security groups and namespace isolation should prevent this, but the route table provides the L3 path.",
+      "detection_criteria": {
+        "required_keywords": ["pcx-0xsharedprod01", "10.0.20.0/23", "transitive", "staging", "ML overflow", "production data", "route table", "lateral movement", "pivot"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Management VPC has overly broad route to entire production VPC CIDR",
+      "description": "The management-to-production peering (pcx-0xmgmtprod01) has a route table entry allowing traffic to the entire production VPC CIDR (10.0.0.0/16) with the description 'Monitoring and CI/CD access to production.' Policy Section 3.4 states shared services should have 'controlled, audited access to production.' The route to the full /16 CIDR is broader than necessary for monitoring and CI/CD — it includes production data subnets (10.0.20.0/24, 10.0.21.0/24) and all other production subnets. A narrower route to specific monitoring-related subnets would follow the principle of least privilege.",
+      "evidence_sources": ["evidence/vpc-architecture.json", "evidence/network-segmentation-policy.md"],
+      "expected_reasoning": "The auditor should note the management VPC route targets 10.0.0.0/16 (all production subnets) rather than specific monitoring or CI/CD subnets. While security groups may restrict actual access, the route table provides L3 reachability to all production subnets including data stores. This is a least-privilege concern.",
+      "detection_criteria": {
+        "required_keywords": ["pcx-0xmgmtprod01", "10.0.0.0/16", "management", "monitoring", "CI/CD", "least privilege", "broad", "data subnets"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["shared_VPC", "environment_isolation", "cost_optimization", "judgment", "GPU_compute", "ML_training", "transitive_access", "segmentation"]
+  }
+}

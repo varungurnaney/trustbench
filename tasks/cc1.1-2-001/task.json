@@ -1,0 +1,81 @@
+{
+  "id": "cc1.1-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.1",
+  "control_description": "The entity demonstrates a commitment to integrity and ethical values.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/security-committee-charter.md",
+      "type": "policy",
+      "description": "Information Security Steering Committee charter defining membership, meeting cadence, and responsibilities"
+    },
+    {
+      "path": "evidence/committee-meeting-minutes.csv",
+      "type": "log",
+      "description": "ISSC meeting minutes log for 2025 showing meeting dates, attendees, decisions, and action items"
+    },
+    {
+      "path": "evidence/org-chart-security.md",
+      "type": "report",
+      "description": "Security organization structure showing reporting lines and security function staffing"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Pinnacle Financial Group covering the audit period January 1 - December 31, 2025. Review the security committee charter, meeting minutes, and organizational chart to assess whether the organization has adequate governance oversight for CC1.1 (Commitment to Integrity and Ethical Values). Evaluate the committee's operating effectiveness, meeting cadence compliance, and the independence of the security function.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Security committee met only 2 of 4 required quarterly meetings in 2025",
+      "description": "The committee charter (Section 4.1) requires quarterly meetings in January, April, July, and October. The meeting minutes log shows only Q1 (January 22, 2025) and Q3 (July 17, 2025) meetings were held. Q2 and Q4 meetings are listed as 'Not Held' with no dates, attendees, or agenda. This means the committee met only 50% of its required cadence. Missing two consecutive quarters (Q2 April and Q4 October) means critical governance activities — quarterly risk register review, policy oversight, and security posture reporting — were not performed for half the year. This directly impacts the operating effectiveness of the governance control.",
+      "evidence_sources": ["evidence/committee-meeting-minutes.csv", "evidence/security-committee-charter.md"],
+      "expected_reasoning": "Charter requires quarterly meetings in Jan, Apr, Jul, Oct. Meeting log shows Q2 and Q4 as 'Not Held'. Only 2 of 4 meetings occurred. 50% cadence failure is a material governance gap.",
+      "detection_criteria": {
+        "required_keywords": ["2 of 4", "Q2", "Q4", "Not Held", "quarterly", "50%", "cadence", "governance"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CISO reports to CTO rather than CEO or Board — potential independence concern",
+      "description": "The organizational chart shows the CISO (Jennifer Park) reports directly to the CTO (Marcus Williams), who also oversees VP of Engineering and VP of IT Operations. This reporting structure places the security function under the same executive who oversees the technology teams that security is responsible for overseeing and auditing. While the CISO has a dotted-line quarterly briefing to the Board Audit Committee, the direct reporting to the CTO creates a potential conflict of interest where security priorities could be subordinated to technology delivery timelines. The CTO also chairs the ISSC (per the committee charter Section 3.1), meaning the person the CISO reports to also controls the governance committee agenda.",
+      "evidence_sources": ["evidence/org-chart-security.md", "evidence/security-committee-charter.md"],
+      "expected_reasoning": "Org chart shows CISO reports to CTO. CTO oversees both Engineering and IT Operations — the teams security must independently oversee. CTO also chairs the ISSC. This dual role undermines CISO independence. Dotted line to Board Audit Committee is a partial mitigant but not a substitute for direct reporting.",
+      "detection_criteria": {
+        "required_keywords": ["CISO", "CTO", "reports to", "independence", "conflict", "Board", "dotted line", "chairs"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Q3 meeting had only 3 of 5 members — CFO and VP Engineering absent",
+      "description": "The Q3 2025 meeting (July 17) was attended by only Marcus Williams (CTO), Jennifer Park (CISO), and Diana Foster (GC). While this technically meets the quorum requirement of 3 of 5 members per the charter (Section 3.2), the CFO (Robert Alvarez) and VP of Engineering (Thomas Green) were absent. The CFO's absence means budget and resource decisions lacked financial oversight, and the VP of Engineering's absence means security initiatives affecting engineering teams were decided without engineering representation. A pattern of bare-minimum quorum attendance weakens governance effectiveness even when technically compliant.",
+      "evidence_sources": ["evidence/committee-meeting-minutes.csv", "evidence/security-committee-charter.md"],
+      "expected_reasoning": "Q3 meeting had 3 attendees out of 5 required members. CFO and VP Eng absent. While quorum was met (3 of 5), combined with Q2 and Q4 not being held, this shows declining committee engagement. Only Q1 had full attendance.",
+      "detection_criteria": {
+        "required_keywords": ["Q3", "3 of 5", "quorum", "CFO", "VP Engineering", "absent", "bare minimum", "attendance"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "12 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["governance", "security_committee", "meeting_cadence", "CISO_independence", "reporting_line", "org_structure"]
+  }
+}

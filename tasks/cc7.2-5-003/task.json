@@ -1,0 +1,100 @@
+{
+  "id": "cc7.2-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.2",
+  "control_description": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/log-management-policy.md",
+      "type": "policy",
+      "description": "Aether Insurance log management and retention policy defining retention periods per log category, integrity requirements, and review procedures"
+    },
+    {
+      "path": "evidence/retention-compliance-audit.json",
+      "type": "report",
+      "description": "Automated log retention compliance audit showing 22 compliant streams, 1 non-compliant stream, and 1 informational item"
+    },
+    {
+      "path": "evidence/daily-log-review-q4.csv",
+      "type": "log",
+      "description": "Daily SIEM log review records for October-November 2025 showing reviewer, dashboards reviewed, and findings"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/data-classification-guide.md",
+      "type": "reference",
+      "description": "Data classification quick reference showing system classifications. Provides context for data sensitivity but is not a primary monitoring control document."
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Aether Insurance's log management and monitoring controls for the Q4 2025 observation period. Aether Insurance is a regulated insurance company subject to state insurance regulations and SOX requirements. Review the log management policy, retention compliance audit, and daily log review records. Assess whether CC7.2 requirements for monitoring and log management are met. Consider the regulatory implications of any retention gaps and apply professional judgment to assess materiality.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Claims adjudication audit records retained for only 90 days instead of required 7 years",
+      "description": "The retention compliance audit identifies the claims-adjudication-engine-logs stream as non-compliant: the stream contains embedded audit records (adjudication decisions, approval/denial rationale, adjuster override justifications, dispute resolution records) but is configured with a 90-day retention lifecycle — the default for 'Application' logs. Policy Section 3.1 requires 7-year retention for audit logs and transaction logs. The audit data was misclassified as 'Application' during service onboarding (March 2025), resulting in a retention shortfall of approximately 6 years and 9 months. The stream processes approximately 4,200 adjudication decisions per day. No cold storage archive is configured. No exception exists. The regulatory impact is significant: state insurance regulations require 7-year retention of claims adjudication records, and SOX requires 7-year retention of financial decision audit trails. Any adjudication records older than 90 days have already been permanently deleted — this is not a prospective risk but an active data loss affecting records from March through September 2025 (approximately 6 months of records already destroyed). The judgment elements: (1) This is a clear policy violation with regulatory implications. (2) The root cause is a classification error during onboarding, not an intentional decision. (3) The data loss is irreversible for records already past 90 days. (4) Remediation requires both fixing the retention policy and addressing the already-lost records.",
+      "evidence_sources": ["evidence/retention-compliance-audit.json", "evidence/log-management-policy.md"],
+      "expected_reasoning": "The auditor should identify the 90-day vs 7-year gap, recognize the embedded audit data in the application log stream, and assess the regulatory implications. The classification error (treating audit records as application logs) is a process failure in the service onboarding procedure. The auditor should note that records from March-September 2025 are already permanently lost. This is a material finding for a regulated insurance company. The judgment: should this be reported as a material control deficiency? Most auditors would say yes given the regulatory exposure and irreversible data loss.",
+      "detection_criteria": {
+        "required_keywords": ["claims-adjudication-engine", "90 days", "7 years", "misclassified", "Application", "audit records", "regulatory", "state insurance", "SOX", "data loss", "permanently deleted"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Mixed log stream design embeds audit records in application logs without separation",
+      "description": "The claims adjudication engine writes both application diagnostic logs and regulatory audit records to a single combined log stream. This architectural decision means that the audit records cannot be independently managed, retained, or protected. The log management policy (Section 3.1) defines different retention periods for application logs (1 year) and audit logs (7 years), but the mixed stream makes it impossible to apply different retention policies to the two data types. The retention compliance audit notes the infrastructure team classified this as 'Application' during onboarding — but even if they had classified it correctly, the single-stream architecture would mean either retaining all application diagnostic data for 7 years (increasing storage costs by approximately 7x) or separating the log streams (requiring application changes). This is a judgment call about system design: is a mixed log stream that prevents proper retention management an adequate control? The auditor should consider whether the root cause is a one-time classification error or a systemic design issue.",
+      "evidence_sources": ["evidence/retention-compliance-audit.json", "evidence/log-management-policy.md"],
+      "expected_reasoning": "The auditor should look beyond the immediate retention violation to the underlying architecture. A mixed log stream prevents granular retention management. The policy defines different retention periods for different log types, but the system design makes this impossible to implement without application changes. This suggests a gap in the service onboarding process — new services should be validated for log stream separation before deployment.",
+      "detection_criteria": {
+        "required_keywords": ["mixed log stream", "combined", "application", "audit", "separation", "single stream", "classification", "onboarding", "architecture"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "PII present in OCR processing logs without redaction",
+      "description": "The retention compliance audit's informational item identifies that document-ocr-processing-logs contain extracted text snippets including PII from insurance documents (names, policy numbers, SSNs). While the retention period (1 year) is compliant, the presence of unredacted PII in application logs creates a data minimization concern and expands the attack surface for log-based data breaches. CC7.2 focuses on monitoring effectiveness, and PII in logs means a log access compromise could expose sensitive customer data. The audit recommends PII redaction in log output, but this has not been implemented. For a regulated insurance company, SSNs in log files represent a significant data protection risk.",
+      "evidence_sources": ["evidence/retention-compliance-audit.json", "evidence/log-management-policy.md"],
+      "expected_reasoning": "The auditor should evaluate the informational item and determine whether PII in logs constitutes a CC7.2 finding. Arguments for: log data with PII expands the blast radius of a log infrastructure compromise; CC7.2 monitoring data should be protected. Arguments against: the retention is compliant, and PII in logs is common in initial implementations. The judgment: for a regulated insurance company handling SSNs, this is a finding worth noting.",
+      "detection_criteria": {
+        "required_keywords": ["document-ocr-processing", "PII", "SSN", "text snippets", "redaction", "data minimization", "insurance documents"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Daily log review missed on November 11 with retroactive review next day",
+      "description": "The daily log review records show November 11 (Veterans Day) was marked 'Not Reviewed — office closed.' The policy (Section 6.1) requires daily log review with no holiday exceptions. However, the November 12 entry notes 'Reviewed November 11 alerts retroactively. No anomalies during holiday.' The judgment call: the daily review requirement was technically missed, but the retroactive review the next day provides reasonable coverage. The 24-hour gap means any anomaly occurring on November 11 would have been detected one day later rather than same-day. For automated alerts (which continue 24/7 regardless of log review), this gap may be immaterial — the log review catches anomalies not detected by automated rules.",
+      "evidence_sources": ["evidence/daily-log-review-q4.csv", "evidence/log-management-policy.md"],
+      "expected_reasoning": "The auditor should identify the November 11 gap and the retroactive review on November 12. This is a minor process gap with a reasonable mitigation. Automated alerting continued during the holiday. The judgment: a single missed day with next-day retroactive review is an observation, not a material finding. However, the policy has no provision for holiday exceptions, suggesting a gap between policy and operational reality.",
+      "detection_criteria": {
+        "required_keywords": ["November 11", "Veterans Day", "not reviewed", "retroactive", "November 12", "daily log review", "holiday", "Section 6.1"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["log_retention", "regulatory_compliance", "insurance", "SOX", "data_loss", "misclassification", "judgment", "PII_in_logs", "daily_review"]
+  }
+}

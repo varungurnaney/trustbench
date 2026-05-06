@@ -1,0 +1,89 @@
+{
+  "task_id": "cc7.2-1-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:28:29.995287",
+  "score": {
+    "task_id": "cc7.2-1-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 14,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "retention",
+          "log retention",
+          "retention period",
+          "missing",
+          "Section 3.1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "privileged",
+          "administrative",
+          "privilege escalation",
+          "IAM",
+          "configuration change",
+          "admin",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "periodically",
+          "should",
+          "vague",
+          "log review",
+          "frequency",
+          "Section 5"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "slow query",
+          "database",
+          "data access",
+          "PHI",
+          "audit"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 730,
+    "output_tokens": 1982
+  },
+  "raw_response": "## Overall Assessment\n\nBeacon Health\u2019s policy establishes a basic monitoring framework, including centralized log collection, infrastructure monitoring, alert routing, and some alert thresholds. However, the policy does **not fully address SOC 2 CC7.2** because it lacks sufficient detail around anomaly detection, analysis, security event determination, monitoring coverage, log review rigor, and escalation procedures.\n\nAn auditor would likely conclude that the policy is directionally aligned with CC7.2 but incomplete for demonstrating a mature and comprehensive monitoring and anomaly analysis program.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Insufficient Process for Analyzing Anomalies as Security Events | Sections 4.3 and 5 | CC7.2 specifically requires that anomalies be analyzed to determine whether they represent security events. The policy states that the on-call SRE triages alerts and that logs are reviewed periodically, but it does not define how anomalies are investigated, classified, documented, escalated, or closed. There are no criteria for determining whether an alert is a security event versus an operational issue. | High |\n| 2 | Log Review Requirements Are Too Vague | Section 5 | The policy says security-relevant logs \u201cshould be reviewed periodically,\u201d but does not define frequency, responsible party, procedures, evidence retained, scope of review, or required follow-up actions. \u201cPeriodically\u201d is not specific enough for audit readiness. | High |\n| 3 | Incomplete Security Log Source Coverage | Section 3.1 | The listed log sources are useful but incomplete for comprehensive security monitoring. Missing or unclear sources include operating system logs, endpoint/EDR alerts, Kubernetes/container audit logs, AWS GuardDuty/Security Hub findings, WAF logs, DNS logs, IAM role changes, privileged administrative activity, data access logs, database audit logs, and security group/network ACL changes. Database logging is limited to slow query logs only, which is not sufficient for detecting unauthorized data access or suspicious database activity. | High |\n| 4 | Limited Detection Use Cases for Malicious Activity | Section 4.1 | Alert categories include failed logins and unusual geographic access, but do not cover many common indicators of malicious acts, such as privilege escalation, impossible travel, excessive data downloads, suspicious API activity, unauthorized configuration changes, malware/EDR events, anomalous database queries, suspicious outbound traffic, brute force attempts across accounts, or changes to logging/monitoring settings. | High |\n| 5 | No Defined Baselines or Anomaly Detection Methodology | Sections 3 and 4 | The policy lists thresholds for some alerts but does not describe how normal behavior is baselined or how anomalous activity is identified. CC7.2 expects monitoring for anomalies, not only static threshold alerts. There is no mention of behavioral baselines, trend analysis, correlation rules, or periodic tuning of alert thresholds. | Medium |\n| 6 | Alert Routing May Delay Security Event Identification | Section 4.2 | Warning alerts are routed to Slack and addressed during business hours, while informational alerts are only reviewed weekly. The policy does not define which security alerts require 24/7 handling. Some security-relevant events could be misclassified as warning or informational and not reviewed promptly, delaying identification of a security event. | Medium |\n| 7 | No Formal Escalation Path to Security or Incident Response | Sections 4.2 and 4.3 | The policy assigns alert triage to the on-call SRE but does not define when the Information Security Team, CISO, privacy team, or incident response process must be engaged. For SOC 2 purposes, security-relevant anomalies should have a clear escalation path and linkage to incident management. | High |\n| 8 | Monitoring for Natural Disasters and Major Availability Events Is Limited | Sections 3.2 and 4.1 | CC7.2 includes anomalies indicative of natural disasters and events affecting the entity\u2019s objectives. The policy includes infrastructure health metrics but does not address monitoring for broader availability risks such as AWS regional/AZ outages, AWS Health events, backup failures, replication failures, disaster recovery status, or environmental/provider-level disruptions. | Medium |\n| 9 | No Requirements for Log Retention, Integrity, or Availability | Section 3.1 | The policy states logs are forwarded to Elastic Stack but does not define retention periods, access controls, immutability/tamper resistance, time synchronization, or protection against log deletion or modification. Without these controls, monitoring and forensic analysis may be incomplete or unreliable. | Medium |\n| 10 | No Monitoring of the Monitoring System Itself | Sections 3 and 4 | The policy does not require alerts for failures in log ingestion, disabled agents, gaps in telemetry, Elastic/Datadog outages, or changes to alert rules. If monitoring tools fail or are tampered with, Beacon Health may not detect anomalies. | Medium |\n| 11 | Lack of Alert Tuning and Rule Review Procedures | Sections 4 and 6 | The policy does not require periodic review of alert effectiveness, false positives, missed detections, threshold tuning, or validation that alerts continue to function. Monthly reporting includes alert volume and mean time to acknowledge, but not alert quality or detection coverage. | Medium |\n| 12 | Metrics Do Not Demonstrate Security Event Analysis | Section 6 | Monthly metrics include alert volume, MTTA, and uptime, but do not include metrics such as number of investigated anomalies, number of confirmed security events, escalation timeliness, incident linkage, false positive rate, or unresolved alerts. This limits management\u2019s visibility into whether anomalies are being analyzed effectively. | Low |\n| 13 | Scope May Exclude Relevant Supporting Systems | Section 2 | The scope is limited to production systems supporting the EHR platform. It is unclear whether supporting systems such as CI/CD pipelines, identity providers, administrative workstations, security tooling, cloud management accounts, and third-party integrations are monitored. These components can materially affect security objectives and should be included if in scope for SOC 2. | Medium |\n| 14 | No Documentation or Evidence Requirements for Alert Handling | Sections 4.3 and 5 | The policy does not require that alert investigations be documented in tickets, incident records, SIEM cases, or another system of record. Without documentation, Beacon Health may not be able to evidence that anomalies were reviewed and analyzed. | High |\n\n---\n\n## Summary of Key Auditor Concerns\n\nThe most significant gaps are:\n\n1. **No formal process for analyzing anomalies and determining whether they are security events.**\n2. **Security log review requirements are vague and not auditable.**\n3. **Monitoring coverage is incomplete across key infrastructure, application, identity, database, and cloud security sources.**\n4. **Alerting use cases are limited and do not sufficiently address malicious activity.**\n5. **There is no clear escalation path from operational alert triage to security incident response.**\n\nBeacon Health should enhance the policy with defined monitoring coverage, specific log review procedures, documented anomaly analysis workflows, security event classification criteria, escalation requirements, and evidence retention expectations."
+}

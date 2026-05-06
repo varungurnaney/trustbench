@@ -1,0 +1,72 @@
+{
+  "task_id": "cc9.1-5-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T13:02:00.207412",
+  "score": {
+    "task_id": "cc9.1-5-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.3333333333333333,
+    "f1": 0.4444444444444444,
+    "score": 0.4444444444444444,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Databricks",
+          "qualified opinion",
+          "CC6.3",
+          "risk assessment",
+          "30 days",
+          "not completed",
+          "CISO acknowledged"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "Cloudflare"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Databricks",
+          "CUEC",
+          "encryption key",
+          "CMK",
+          "rotation",
+          "not confirmed",
+          "infrastructure team",
+          "pending"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3529,
+    "output_tokens": 3078
+  },
+  "raw_response": "# CC9.1 Readiness Assessment \u2014 Vega Solutions Inc.\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Auditor:** Compliance Readiness Assessment\n**Control:** CC9.1 \u2013 Vendor Risk Mitigation Activities\n\n---\n\n## Executive Summary\n\nThe vendor risk management program at Vega Solutions is structurally sound, with a documented policy (POL-VRM-007), a populated vendor inventory, and consistent SOC 2 review activity across most vendors. However, the assessment identified **six findings**, including one **Critical** gap related to the handling of a qualified SOC 2 opinion for a Critical-tier vendor processing customer PII. Additional gaps exist around overdue SOC 2 reviews, contract lapses, incomplete CUEC validation, and missing contractual protections. These findings collectively represent meaningful exposure under CC9.1.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Formal Risk Assessment Not Completed for Databricks Qualified Opinion\n\n**Severity: Critical**\n\n**Relevant Sources:** SOC 2 Review Tracker (VG-V-005) | Policy \u00a74.3 | Vendor Inventory (VG-V-005)\n\n**Gap Description:**\n\nPolicy \u00a74.3 requires a formal risk assessment to be completed within 30 days of reviewing a SOC 2 report that carries a qualified opinion. The assessment must document: the nature of the qualification, potential impact on Vega Solutions, compensating controls, vendor remediation commitments, and a risk acceptance or remediation decision.\n\nThe Databricks SOC 2 report (period: July 2024\u2013June 2025) was reviewed on August 12, 2025, establishing a compliance deadline of **September 11, 2025** for the formal risk assessment. The review tracker explicitly notes this deadline. As of the Q4 2025 observation period \u2014 more than **110 days past that deadline** \u2014 no formal risk assessment has been documented. The follow-up status reads: *\"No formal risk assessment documented. Awaiting Databricks remediation confirmation.\"*\n\nThis gap is particularly significant because:\n\n- Databricks is classified as a **Critical-tier** vendor processing **customer PII and behavioral data**.\n- The qualification relates to **CC6.3** \u2014 overly permissive IAM policies on 3 of 18 production databases \u2014 directly affecting the confidentiality and integrity of data Vega Solutions entrusts to this vendor.\n- The CISO acknowledged the issue on August 15, 2025 but no documented risk decision (acceptance, mitigation, or escalation) exists in the record.\n- The vendor's promised Q4 2025 remediation has not been confirmed, and no evidence of follow-up beyond the initial CISO acknowledgment is present.\n- Databricks' contract is up for renewal in January 2026; without a completed risk assessment, there is no documented basis for that renewal decision.\n\nThe absence of a formal risk assessment means Vega Solutions cannot demonstrate that it has evaluated, accepted, or mitigated the risk introduced by this vendor's control failure \u2014 a direct and material failure of CC9.1.\n\n---\n\n### Finding 2: Databricks CUEC Validation Overdue and Incomplete\n\n**Severity: High**\n\n**Relevant Sources:** SOC 2 Review Tracker (VG-V-005) | Policy \u00a74.2\n\n**Gap Description:**\n\nPolicy \u00a74.2 requires CUECs identified in a vendor SOC 2 report to be validated by the relevant internal team within 30 days of the SOC 2 review completion date.\n\nThe Databricks SOC 2 review was completed on August 12, 2025, establishing a CUEC validation deadline of **September 11, 2025**. The sole CUEC identified requires Vega Solutions to manage and rotate Customer-Managed Encryption Keys (CMK) for data at rest on an at-minimum annual basis. As of the observation period, the validation status reads: *\"Pending \u2014 infrastructure team has not confirmed CMK rotation configuration.\"*\n\nThis means that as of December 31, 2025 \u2014 over **140 days past the deadline** \u2014 Vega Solutions cannot confirm whether a key control protecting customer PII and behavioral data stored in Databricks is actually operating. This is not merely a documentation gap; unvalidated encryption key rotation for a Critical vendor processing sensitive data represents a substantive control risk and compounds the severity of Finding 1.\n\n---\n\n### Finding 3: Okta and PagerDuty Contracts Have Lapsed or Are at Risk of Lapsing During the Observation Period\n\n**Severity: High**\n\n**Relevant Sources:** Vendor Contract Summary (DOC-VCS-001) | Policy \u00a75 | Vendor Inventory\n\n**Gap Description:**\n\nPolicy \u00a75 requires all vendor contracts to include specific protections: data protection obligations, right to audit, 72-hour incident notification, data return/destruction on termination, and cyber insurance for Critical and High vendors.\n\nTwo contract situations present risk during the Q4 2025 observation period:\n\n- **Okta (Critical):** Contract end date is **December 31, 2025** \u2014 the final day of the observation period. The contract summary notes it is *\"under negotiation\"* and has been extended **month-to-month**. Month-to-month extensions may not carry forward all original contract terms depending on the extension structure, and this arrangement lacks the stability expected for a Critical identity management vendor processing customer PII. There is no evidence that the extended terms have been confirmed in writing to include all \u00a75-required provisions.\n\n- **PagerDuty (High):** The contract summary explicitly notes that PagerDuty does **not** have a right-to-audit clause \u2014 a mandatory requirement under Policy \u00a75 for High-tier vendors. This is a standing contractual deficiency and should have been remediated at the last renewal. The contract is set to expire **December 31, 2025**, presenting an opportunity for remediation that does not appear to be flagged.\n\n- **Zendesk (High):** Contract end date was **August 31, 2025** \u2014 prior to the start of the Q4 observation period. No renewal or extension is noted in the contract summary. If the contract expired without renewal, Vega Solutions may have been operating without contractual data protection provisions for a High-tier vendor processing **customer PII** throughout Q4 2025.\n\n- **Datadog (High):** Contract end date was **September 30, 2025**, again prior to Q4. Same concern as Zendesk applies.\n\nThe absence of current, enforceable contracts with required provisions directly undermines the contractual risk mitigation that CC9.1 and Policy \u00a75 require.\n\n---\n\n### Finding 4: Cloudflare SOC 2 Review Completed Outside the Policy-Required Timeframe\n\n**Severity: Medium**\n\n**Relevant Sources:** SOC 2 Review Tracker (VG-V-010) | Policy \u00a74.1 | Vendor Inventory (VG-V-010)\n\n**Gap Description:**\n\nPolicy \u00a74.1 requires High-tier vendors' SOC 2 reports to be reviewed within **120 days of report issuance**.\n\nCloudflare's SOC 2 report was issued on **August 1, 2025**. The 120-day review deadline was therefore **November 29, 2025**. The review was not completed until **December 18, 2025** \u2014 **19 days late**.\n\nWhile Cloudflare received an unqualified opinion with no CUECs identified, the policy deadline was still missed, and the control cannot be credited as operating effectively if the prescribed timing requirement is not met. This finding also warrants consideration in the context of whether the late review reflects a capacity or workflow issue in the vendor review process more broadly.\n\n---\n\n### Finding 5: MongoDB Atlas CUEC Validation Incomplete at Period End\n\n**Severity: Medium**\n\n**Relevant Sources:** SOC 2 Review Tracker (VG-V-012) | Policy \u00a74.2 | Vendor Inventory (VG-V-012)\n\n**Gap Description:**\n\nPolicy \u00a74.2 requires CUEC validation to be completed within 30 days of the SOC 2 review.\n\nThe MongoDB Atlas SOC 2 review was completed on **December 29, 2025** \u2014 the second-to-last day of the observation period. The review tracker notes the CUEC validation status as *\"Pending \u2014 review just completed,\"* with a follow-up action to *\"Confirm network peering and IP allowlisting.\"*\n\nBecause the review was completed on December 29, the 30-day validation window extends to **January 28, 2026**, which falls outside the observation period. The validation is not yet overdue, and this is the least severe finding in the set. However, it is worth noting as a timing risk: the review was completed very late in the period (the SOC 2 report was issued September 1, 2025, meaning the review itself was completed **119 days** after issuance \u2014 just within the 120-day High-tier window, but leaving no time for CUEC validation within the observation period). Auditors should confirm the validation is completed by January 28, 2026.\n\n---\n\n### Finding 6: No Evidence of a Business Continuity or Disruption Risk Assessment for Critical Vendors\n\n**Severity: Medium**\n\n**Relevant Sources:** Policy \u00a74.4 | Vendor Inventory | CC9.1 Criteria\n\n**Gap Description:**\n\nCC9.1 specifically requires the entity to identify, select, and develop risk mitigation activities for risks arising from **potential business disruptions**, not only from vendor control failures. POL-VRM-007 addresses SOC 2 review, CUEC validation, and qualified opinion handling robustly, but does not describe \u2014 and no evidence was provided of \u2014 any process for assessing business disruption scenarios arising from vendor dependency (e.g., concentration risk, single points of failure, vendor financial instability, or vendor exit/substitution planning).\n\nThe vendor inventory reveals meaningful concentration: AWS is the sole cloud infrastructure provider for a Critical-tier deployment with customer PII, and Okta is the sole identity provider. No evidence was presented of:\n\n- Business impact analysis for loss of a Critical vendor\n- Vendor substitution or fallback plans\n- Concentration risk documentation\n- Periodic review of vendor financial health or operational continuity posture\n\nThe quarterly business reviews referenced in \u00a74.4 address *SLA performance, incident history, and security posture* but do not explicitly include business continuity considerations. While QBR completion is evidenced in the vendor inventory (all Critical vendors show a December 2025 business review date), the scope of those reviews as documented does not satisfy the business disruption risk mitigation component of CC9.1.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Policy / Source Reference |\n|---|---------|----------|--------------------------|\n| 1 | Formal risk assessment not completed for Databricks qualified opinion \u2014 110+ days overdue | **Critical** | \u00a74.3, VG-V-005 |\n| 2 | Databricks CUEC (CMK rotation) validation not confirmed \u2014 140+ days overdue | **High** | \u00a74.2, VG-V-005 |\n| 3 | Okta contract expiring / month-to-month; PagerDuty missing right-to-audit; Zendesk and Datadog contracts potentially lapsed entering Q4 | **High** | \u00a75, DOC-VCS-001 |\n| 4 | Cloudflare SOC 2 review completed 19 days outside 120-day policy window | **Medium** | \u00a74.1, VG-V-010 |\n| 5 | MongoDB Atlas CUEC validation pending at period end; no time remaining in observation window | **Medium** | \u00a74.2, VG-V-012 |\n| 6 | No documented business disruption risk assessment or vendor concentration risk analysis for Critical vendors | **Medium** | \u00a74.4, CC9.1 |\n\n---\n\n## Recommended Remediation Priorities\n\n1. **Immediately complete the Databricks formal risk assessment** (Finding 1). Given the contract renewal in January 2026, this is time-critical. Document compensating controls, evaluate the remediation Databricks committed to, and obtain a formal risk acceptance or require additional assurance before renewal.\n\n2. **Confirm Databricks CMK rotation configuration** with the infrastructure team and document the validation in the tracker (Finding 2).\n\n3. **Audit and remediate contract status** for Okta, PagerDuty, Zendesk, and Datadog (Finding 3). Confirm in writing that all \u00a75-required provisions are in place for each, and escalate the right-to-audit gap with PagerDuty to the legal team for inclusion in the next renewal.\n\n4. **Implement a review scheduling mechanism** to prevent late completions (Findings 4 and 5). A 90-day post-issuance reminder for High-tier vendors would provide sufficient lead time.\n\n5. **Develop and document a vendor business continuity risk framework** addressing concentration risk, substitution feasibility, and disruption scenarios for Critical-tier vendors (Finding 6). This may be incorporated into the existing QBR process with explicit agenda items."
+}

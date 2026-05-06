@@ -1,0 +1,71 @@
+{
+  "id": "cc6.1-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.1",
+  "control_description": "The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events to meet the entity's objectives.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/access-control-policy.md",
+      "type": "policy",
+      "description": "Pinnacle Financial Services access control policy with embedded procedures"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are reviewing the access control policy for Pinnacle Financial Services as part of a SOC 2 Type II readiness assessment covering Q4 2025 (October 1 - December 31, 2025). This is a single-document review. Read the entire policy carefully, including tables, footnotes, and procedure subsections. Identify any gaps, ambiguities, or weaknesses that an auditor would flag under CC6.1 (Logical Access Security).",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Contractor exception in Table 3-1 footnote exempts contractors from MFA on VPN",
+      "description": "Section 4.2 states that MFA is required for all users accessing Pinnacle systems. However, Table 3-1 (Access Provisioning Requirements) contains a footnote (footnote 3) that reads: 'Contractors accessing via client-provided VPN tunnel are exempt from MFA where the contractor's home organization enforces equivalent authentication controls.' This creates an unverified trust delegation — Pinnacle has no mechanism described in the policy to verify that a contractor's home organization actually enforces equivalent MFA. This footnote effectively creates an MFA bypass for an entire user class based on an unverified assumption.",
+      "evidence_sources": ["evidence/access-control-policy.md"],
+      "expected_reasoning": "Section 4.2 mandates universal MFA → Table 3-1 footnote 3 exempts contractors on client VPN → no verification mechanism for 'equivalent controls' → uncontrolled exception that contradicts Section 4.2.",
+      "detection_criteria": {
+        "required_keywords": ["footnote", "contractor", "VPN", "exempt", "MFA", "equivalent", "Table 3-1", "unverified"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Emergency access procedure lacks mandatory post-access review",
+      "description": "Section 7.3 (Emergency Access Procedure) defines a break-glass process that allows any member of the SRE team to invoke emergency access to production systems using a shared emergency credential stored in CyberArk, requiring only a PagerDuty incident reference. However, the procedure states that post-incident review is 'recommended within 5 business days' rather than required. There is no mandatory review of actions taken during emergency access, no defined process for revoking the elevated privileges after the incident, and no requirement to document what data or systems were accessed. For a financial services company, unreviewed emergency access to production systems represents a significant control gap.",
+      "evidence_sources": ["evidence/access-control-policy.md"],
+      "expected_reasoning": "Section 7.3 allows emergency access with only a PagerDuty reference → post-review is 'recommended' not 'required' → no mandatory revocation timeline → no documentation of accessed systems → gap in accountability for privileged emergency access.",
+      "detection_criteria": {
+        "required_keywords": ["emergency", "break-glass", "recommended", "required", "post-review", "PagerDuty", "Section 7.3", "revocation"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No password complexity or rotation requirements for service accounts",
+      "description": "Section 4.1 defines password requirements (16-character minimum, complexity rules, 90-day rotation) for human accounts. Section 8.1 addresses service accounts and requires them to be registered in the CMDB with a designated owner, but does not specify any credential requirements — no rotation schedule, no key length minimums, and no prohibition on static credentials. Given that service accounts often have elevated privileges and operate without MFA, the absence of credential management requirements is a significant gap.",
+      "evidence_sources": ["evidence/access-control-policy.md"],
+      "expected_reasoning": "Section 4.1 covers human password requirements → Section 8.1 covers service account registration → no credential management requirements for service accounts → gap in credential lifecycle for non-human identities.",
+      "detection_criteria": {
+        "required_keywords": ["service account", "Section 8.1", "credential", "rotation", "static", "password", "missing"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "10 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["logical_access", "policy_review", "subtle_gap", "footnote", "emergency_access", "contractor_exception"]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "task_id": "cc7.3-1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T09:08:41.376929",
+  "score": {
+    "task_id": "cc7.3-1-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 0.6666666666666666,
+    "precision": 0.16666666666666666,
+    "f1": 0.26666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "external communication",
+          "customer notification",
+          "regulatory notification",
+          "breach notification",
+          "72-hour",
+          "disclosure"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "annual tabletop",
+          "testing frequency",
+          "simulation",
+          "insufficient testing"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2806,
+    "output_tokens": 2668
+  },
+  "raw_response": "# CC7.3 Readiness Assessment \u2014 NovaBridge Technologies Incident Response Plan\n\n## Overall Assessment\n\nThe IRP is well-structured and addresses many core elements of CC7.3, including defined roles, severity classifications, triage SLAs, containment/eradication/recovery procedures, evidence preservation, and post-incident activities. However, several gaps exist \u2014 particularly around **external communications**, **regulatory/customer notification obligations**, and **testing rigor** \u2014 that would likely be flagged in a SOC 2 audit.\n\n---\n\n## Findings\n\n### Finding 1: No Defined External Communication Plan\n- **Section:** Section 5 (Response Procedures) / Section 7 (Post-Incident Activities)\n- **Gap:** CC7.3 explicitly requires the entity to **communicate** security incidents \"as appropriate.\" The plan defines internal Slack channels and escalation paths but contains **no procedures for external communications** \u2014 including customer notifications, regulator notifications (GDPR, CCPA, state breach laws), law enforcement engagement, or public/PR statements. There is no designated communications lead, no notification templates, and no defined approval workflow for external messaging.\n- **Severity:** **Critical**\n\n---\n\n### Finding 2: Missing Regulatory Notification Timelines and Obligations\n- **Section:** Section 2.1 (Severity Classification) / Section 5 (Response Procedures)\n- **Gap:** No reference to legal/regulatory notification timelines (e.g., GDPR's 72-hour breach notification, state-level breach disclosure laws, contractual customer notification SLAs). For a SaaS provider handling customer data and PII, this is a significant omission. There is no decision tree to determine whether an incident triggers a notifiable breach.\n- **Severity:** **Critical**\n\n---\n\n### Finding 3: No Legal or Privacy Counsel in the Response Team\n- **Section:** Section 3.1 (Team Composition)\n- **Gap:** The IR team includes Security, SRE, Forensics, and Executive Sponsor roles, but **no Legal Counsel, Privacy Officer, Communications/PR lead, or HR representative**. These roles are essential for incidents involving data breaches, insider threats, or customer notification obligations.\n- **Severity:** **High**\n\n---\n\n### Finding 4: Tabletop Exercise Frequency and Scope Insufficient\n- **Section:** Section 8.1 (Testing)\n- **Gap:** Only an annual tabletop exercise is required. There is no requirement for technical simulations, purple-team exercises, or scenario diversity. Additionally, scenarios are developed solely by the Incident Commander, which creates bias risk. No requirement to test with cross-functional participants (Legal, Communications, Executive). Auditors typically expect documented evidence that the plan has been tested across multiple scenarios.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: No Customer/Third-Party Incident Communication SLAs\n- **Section:** Section 4.2 (Triage SLAs) / Section 5 (Response Procedures)\n- **Gap:** Triage and resolution SLAs are defined, but there are no SLAs for **customer notification timelines** following a confirmed breach. Many SaaS customer contracts and frameworks (e.g., DPAs) require notification within specific windows.\n- **Severity:** **High**\n\n---\n\n### Finding 6: Third-Party/Vendor Incident Coordination Not Addressed\n- **Section:** Section 1 (Scope) / Section 5 (Response Procedures)\n- **Gap:** Although the scope mentions \"third-party integrations,\" the plan contains no procedures for coordinating with vendors or sub-processors during an incident, no contact list for critical vendors (AWS, Cloudflare, Splunk, etc.), and no procedures for incidents originating in or affecting third parties.\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: Post-Mortem Optional for P3/P4 Incidents\n- **Section:** Section 7.1 (Post-Mortem Reports)\n- **Gap:** Making post-mortems \"optional, at Incident Commander's discretion\" for P3/P4 incidents creates inconsistency and reduces the ability to identify trends across lower-severity events. CC7.3 emphasizes learning from incidents; minimum lessons-learned documentation should be required for all incidents.\n- **Severity:** **Low**\n\n---\n\n### Finding 8: No Defined Criteria for Incident Declaration\n- **Section:** Section 2 (Definitions) / Section 4 (Detection and Triage)\n- **Gap:** While severity levels are defined with examples, there is no clear, objective criteria or decision matrix for **when an event becomes an incident** and **who has authority to declare it**. This can lead to inconsistent triage and delayed containment.\n- **Severity:** **Medium**\n\n---\n\n### Finding 9: Evidence Preservation Lacks Forensic Tooling Detail\n- **Section:** Section 6 (Evidence Preservation)\n- **Gap:** Requirements specify what to collect (disk images, memory dumps) but not **how** \u2014 there is no reference to approved forensic tools, write-blocker procedures, or qualified personnel certifications. The 4-hour collection window for P1/P2 may be unrealistic without pre-staged tooling and documented procedures.\n- **Severity:** **Medium**\n\n---\n\n### Finding 10: No Metrics or KPIs for IR Program Effectiveness\n- **Section:** Section 7 / Section 8\n- **Gap:** The plan does not define metrics for measuring IR program performance (e.g., MTTD, MTTR, SLA adherence, action item closure rate). Without metrics, management cannot demonstrate continuous improvement to auditors.\n- **Severity:** **Low**\n\n---\n\n### Finding 11: Insurance / Cyber Insurance Coordination Missing\n- **Section:** Section 5 (Response Procedures)\n- **Gap:** No reference to cyber insurance carrier notification requirements, which often have strict (24\u201372 hour) notification timelines and may dictate which forensic firms can be engaged. Failure to notify can void coverage.\n- **Severity:** **Low**\n\n---\n\n### Finding 12: Backup Personnel Single Point of Failure\n- **Section:** Section 3.1 (Team Composition)\n- **Gap:** Derek Huang appears as both **Primary Incident Commander** and **Backup Forensics Lead**. During a major incident requiring sustained response or where Derek is unavailable, this creates concurrency conflicts and a single point of failure.\n- **Severity:** **Low**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | No external communication plan | Critical |\n| 2 | Missing regulatory notification timelines | Critical |\n| 3 | No legal/privacy/comms roles on IR team | High |\n| 4 | Insufficient testing frequency/scope | Medium |\n| 5 | No customer notification SLAs | High |\n| 6 | Third-party incident coordination not addressed | Medium |\n| 7 | Post-mortems optional for P3/P4 | Low |\n| 8 | No incident declaration criteria | Medium |\n| 9 | Forensic tooling/procedures undefined | Medium |\n| 10 | No IR program metrics/KPIs | Low |\n| 11 | Cyber insurance coordination missing | Low |\n| 12 | Personnel assigned to conflicting backup roles | Low |\n\n## Recommendation\n\nThe plan is structurally sound for internal technical response but is **not yet ready** for SOC 2 CC7.3 attestation due primarily to the **communication gaps** (Findings 1, 2, 5). These should be remediated before the audit period begins. Findings 3, 4, 6, 8, and 9 should be addressed within the next plan revision cycle."
+}

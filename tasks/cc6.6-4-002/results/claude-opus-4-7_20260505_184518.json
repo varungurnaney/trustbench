@@ -1,0 +1,72 @@
+{
+  "task_id": "cc6.6-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T18:45:18.262511",
+  "score": {
+    "task_id": "cc6.6-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 0.4444444444444445,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SEC-EXC-2025-010",
+          "TLS 1.2",
+          "compensating controls",
+          "reconciliation"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "pcx-0x334455bb",
+          "SEC-EXC-2025-009",
+          "expired",
+          "still active",
+          "December 20",
+          "staging",
+          "production",
+          "all TCP ports"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "pcx-0x001122aa",
+          "management",
+          "route table",
+          "security group"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5450,
+    "output_tokens": 3131
+  },
+  "raw_response": "# CC6.6 Readiness Assessment \u2014 Stratos Payments\n\n## Summary\n\nThe control framework around system boundary protection is generally well-designed (clear policy, formal exception process, egress allowlist, segmentation model). However, **cross-referencing the VPC peering configuration against the exception register reveals a critical residual configuration**: an expired exception is still active in production infrastructure. Several other gaps relating to exception lifecycle management and policy alignment also warrant attention.\n\n---\n\n## Findings\n\n### Finding 1: Expired exception with active production-to-staging VPC peering still in place\n\n- **Related to:** VPC peering export (`pcx-0x334455bb`); Exception `SEC-EXC-2025-009`; Policy STR-SEC-POL-014 \u00a73.2, \u00a73.3\n- **Gap:** Exception SEC-EXC-2025-009 (cross-VPC peering between staging and production) **expired on 2025-10-17**, with a review note stating \"Peering connection scheduled for deletion.\" However, the VPC peering export dated **2025-12-20** still shows `pcx-0x334455bb` in **active** status with full bidirectional CIDR routes (`10.10.0.0/16` \u2194 `10.20.0.0/16`) and permissive security group rules allowing **all TCP ports (0-65535)** in both directions. This means the policy violation persists more than two months past exception expiration with no compensating controls in effect (the exception's compensating controls were time-bounded to migration windows that ended October 10).\n- **Severity:** **Critical** \u2014 Production VPC is currently fully reachable from a staging environment with no port restrictions, directly violating \u00a73.1 (VPC isolation) and \u00a73.3 (peering rules). This creates a lateral movement path into payment-card systems.\n\n---\n\n### Finding 2: Management-to-Production peering rules exceed policy-allowed ports\n\n- **Related to:** VPC peering export (`pcx-0x001122aa`, rule `sgr-peer-003`); Policy \u00a73.3\n- **Gap:** Policy \u00a73.3 explicitly limits Management\u2194Production peering to **ports 9090, 9200, and 5044**. The peering configuration includes all three of these, but the security group rules and route tables appear consistent. However, this finding is conditional: the route table entry uses `10.40.2.0/24` for log aggregation, not the broader `10.40.0.0/16` Management VPC CIDR, which is appropriately scoped. **No gap on ports** \u2014 but worth noting that the policy does not explicitly authorize the `10.40.2.0/24` log-aggregation subnet routing direction; the policy says \"for monitoring and log aggregation only\" without specifying subnet boundaries. Recommend updating policy to reflect the implemented subnet scoping.\n- **Severity:** **Low** \u2014 Configuration appears tighter than policy; gap is documentation alignment.\n\n---\n\n### Finding 3: Egress allowlist contains entries with no IP range and unverified DNS-based filtering enforcement\n\n- **Related to:** Egress allowlist registry; Policy \u00a76.1\n- **Gap:** All 10 entries show `destination_ip_range: N/A`, relying solely on domain-based filtering via Route 53 Resolver rules. While policy \u00a76.1 permits DNS-based egress filtering, there is no evidence that:\n  - DNS resolution results are pinned/validated (DNS rebinding risk)\n  - SNI inspection or TLS interception confirms destination\n  - The Route 53 Resolver rule configuration was provided as evidence\n- Additionally, `EGR-009 ocsp.vault.internal` on port 8200 is labeled as \"Certificate validation\" but is an internal Vault endpoint, not an external destination \u2014 its inclusion in an *external* egress allowlist is mislabeled and may indicate registry hygiene issues.\n- **Severity:** **Medium** \u2014 Egress filtering effectiveness cannot be confirmed from the evidence; registry contains a misclassified internal entry.\n\n---\n\n### Finding 4: Egress allowlist last-review dates are clustered, suggesting a single review event rather than ongoing oversight\n\n- **Related to:** Egress allowlist registry; Policy \u00a77\n- **Gap:** All 10 entries have `last_review_date: 2025-09-15`, with approval dates spanning 2024-06-01 to 2024-09-01. Policy \u00a77 requires quarterly review of exceptions but does not explicitly mandate periodic review cadence for the egress allowlist itself. Given the allowlist is a primary boundary control, lack of staggered or recent reviews (3+ months stale as of the December 20 export) suggests review is performed in a single batch rather than on an ongoing risk-based cadence. No documented review procedure is provided.\n- **Severity:** **Low** \u2014 Suggests immature review process; not a control failure but a maturity gap.\n\n---\n\n### Finding 5: Active TLS 1.2 exception lacks evidence of compensating control verification\n\n- **Related to:** Exception `SEC-EXC-2025-010`; Policy \u00a75.1\n- **Gap:** SEC-EXC-2025-010 permits TLS 1.2 on a legacy reconciliation endpoint and is currently **Active** (expires 2025-12-03 \u2014 note this date appears to also be expired as of the December 20 evidence date, though the register lists it as \"Active\" with renewal noted in the November 28 review). The compensating controls (internal-only, single service, synthetic data path) are reasonable, but there is **no evidence** of:\n  - Network-level enforcement that the endpoint is actually unreachable from non-`10.10.4.0/24` sources\n  - Verification that only the single internal service connects\n  - Confirmation that the November 28 renewal was formally re-approved and a new expiration date issued (the register still shows `expiration_date: 2025-12-03`)\n- **Severity:** **Medium** \u2014 Exception appears to be in an ambiguous state (expired date but marked Active and \"Renewed\"); compensating controls undocumented at the configuration layer.\n\n---\n\n### Finding 6: Exception register shows pattern of high-risk exceptions approved with minimal turnaround\n\n- **Related to:** Exception register; Policy \u00a73.2\n- **Gap:** SEC-EXC-2025-009 was a **High-risk** exception bypassing core VPC isolation policy and was approved in **2 days** (2025-09-15 request \u2192 2025-09-17 approval). Policy \u00a73.2 requires \"risk assessment documenting threat vectors\" and \"compensating controls documented and verified\" for cross-environment connectivity, but no separate risk assessment artifact is provided in evidence. The 2-day turnaround for a High-risk exception affecting payment systems suggests the verification step may be informal.\n- **Severity:** **Medium** \u2014 Process effectiveness concern; the same control failure (Finding 1) shows that the exception lifecycle is also not closed out properly, indicating systemic weakness in exception governance.\n\n---\n\n### Finding 7: No evidence of WAF, API Gateway, or mTLS configuration\n\n- **Related to:** Policy \u00a74.1, \u00a74.2, \u00a75.2\n- **Gap:** The policy specifies WAF (OWASP CRS, bot detection, rate limiting), Kong API Gateway as required ingress path, and Linkerd mTLS in strict mode. **No evidence has been provided** demonstrating these controls are actually implemented (no WAF rule exports, no API Gateway configuration, no service mesh policy export, no certificate inventory). For a CC6.6 readiness assessment, these are central ingress boundary controls.\n- **Severity:** **High** \u2014 Cannot opine on a substantial portion of the control without configuration evidence; this is an evidence-completeness gap rather than a confirmed control failure.\n\n---\n\n## Recommended Remediation Priority\n\n| Priority | Finding | Action |\n|---|---|---|\n| 1 | Finding 1 | Immediately delete peering connection `pcx-0x334455bb`; conduct VPC Flow Log review for any post-October 10 traffic |\n| 2 | Finding 7 | Provide WAF, API Gateway, and mTLS configuration evidence |\n| 3 | Finding 5 | Reconcile SEC-EXC-2025-010 status, dates, and renewal documentation |\n| 4 | Finding 6 | Strengthen exception governance: require risk assessment artifact, mandatory closeout verification |\n| 5 | Finding 3 | Provide Route 53 Resolver rule evidence; remove/reclassify `EGR-009` |\n| 6 | Finding 4 | Establish documented quarterly review cadence for egress allowlist |\n| 7 | Finding 2 | Update policy to reflect subnet-level scoping in Management\u2194Production peering |\n\n## Overall Readiness Opinion\n\n**Not ready for SOC 2 Type II opinion on CC6.6 as currently evidenced.** The Critical finding (active expired peering) demonstrates that the boundary control framework is not operating effectively \u2014 a documented exception expired and the residual configuration was not removed, despite a review note explicitly identifying the deletion task. This is exactly the type of operating-effectiveness failure that auditors will identify during a Type II testing period. Remediation of Finding 1 plus evidence to address Finding 7 is required before this control can be reasonably attested."
+}

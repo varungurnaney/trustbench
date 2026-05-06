@@ -1,0 +1,89 @@
+{
+  "task_id": "cc7.1-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:27:44.371545",
+  "score": {
+    "task_id": "cc7.1-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.8,
+    "f1": 0.888888888888889,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "eu-west-1",
+          "10.20.6.0",
+          "10.20.7.0",
+          "GDPR",
+          "Critical",
+          "data residency",
+          "production"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "10.10.20.0",
+          "IoT",
+          "Building Management",
+          "firewall rule",
+          "75 days"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "10.10.21.0",
+          "Lab",
+          "Research",
+          "separate AD domain",
+          "credentials",
+          "not provisioned"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "81.8%",
+          "100%",
+          "18 of 22",
+          "coverage gap",
+          "Section 3.3"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3529,
+    "output_tokens": 875
+  },
+  "raw_response": "Certainly! Below are the GAP FINDINGS identified from the provided evidence for SOC 2 CC7.1 (vulnerability detection coverage) for NimbusCore Inc. during Q4 2025.\n\n---\n\n### **Finding 1: Unscanned Critical AWS EU Production Subnets**\n- **Section:** Q4 2025 Qualys VMDR Scan Coverage Report, Asset Inventory\n- **Gap:**  \n  The subnets `10.20.6.0/24` and `10.20.7.0/24` (AWS Production VPC \u2014 eu-west-1a and eu-west-1b) are marked as \"not scanned\" due to Qualys Cloud Agent deployment being blocked by a data residency review. These subnets are classified as \"Critical\" in the asset inventory and host GDPR customer data. No compensating controls or alternative scan methods (e.g., AWS-native Inspector, manual override, or risk acceptance) are documented for this period, and the gap is not resolved within one scan cycle as required by policy.\n- **Severity:** **Critical**\n\n---\n\n### **Finding 2: Unscanned IoT and Building Management Subnet**\n- **Section:** Q4 2025 Qualys VMDR Scan Coverage Report, Asset Inventory\n- **Gap:**  \n  The `10.10.20.0/24` subnet (\"IoT and Building Management\") was not scanned due to a pending firewall rule request (open for over 75 days, spanning most of the Q4 observation period). As per the vulnerability management policy, any scan coverage gap must be remediated within one scan cycle; this was not met. There is no evidence of risk acceptance or compensating controls documented.\n- **Severity:** **High**\n\n---\n\n### **Finding 3: Unscanned Lab and Research Network**\n- **Section:** Q4 2025 Qualys VMDR Scan Coverage Report, Asset Inventory\n- **Gap:**  \n  The `10.10.21.0/24` subnet (\"Lab and Research Network\") was not scanned, with the reason: \"Scan credentials not provisioned \u2014 lab environment uses separate AD domain.\" The gap persisted throughout the quarter. Policy requires all registered subnets are covered per cycle; there is no evidence of timely remediation, risk acceptance, or compensating controls for this environment.\n- **Severity:** **Medium**\n\n---\n\n### **Finding 4: Policy Exception Handling Deficiencies**\n- **Section:** Vulnerability Management Policy Section 3.3 and 6, Q4 Scan Coverage Notes\n- **Gap:**  \n  While the scan coverage report notes that the EU region and IoT subnet issues have been \"escalated\" or are pending reviews, there is no documented evidence that the prescribed risk acceptance process (CISO approval, compensating controls, and annual re-review) has been formally used for any of the unscanned subnets, nor are interim controls described in the evidence for the observation window. Lack of adherence to the risk acceptance process further contravenes CC7.1 expectations for detection and monitoring.\n- **Severity:** **High**\n\n---\n\n### **Finding 5: Overall Scan Coverage Below Policy Minimum**\n- **Section:** Q4 2025 Qualys VMDR Scan Coverage Report, Vulnerability Management Policy 3.3, Asset Inventory\n- **Gap:**  \n  Only 18 of 22 registered subnets (81.8%) were scanned, whereas the policy mandates 100% subnet coverage per scan cycle. Absence of full coverage means vulnerabilities may exist unassessed in material portions of the environment, with several of the unscanned networks classified as \"Critical\" or \"Medium\" in the asset inventory.\n- **Severity:** **Critical**\n\n---\n\n**Summary:**  \nNimbusCore Inc. did not meet its stated policy or SOC 2 CC7.1 requirements for vulnerability detection coverage in Q4 2025. There are several material coverage gaps\u2014including in critical production and EU (GDPR) environments\u2014which were not remediated, risk-accepted, or otherwise justified within the observation period. Additionally, there is insufficient documentation of exception handling and no evidence of compensating controls for these blind spots.\n\n---\n\nLet me know if you need recommendations, sample language for the SOC 2 report, or supporting detail for each finding."
+}

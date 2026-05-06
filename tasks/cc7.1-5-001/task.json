@@ -1,0 +1,119 @@
+{
+  "id": "cc7.1-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "To meet its objectives, the entity uses detection and monitoring procedures to identify changes to configurations that result in the introduction of new vulnerabilities, and susceptibilities to newly discovered vulnerabilities.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/vulnerability-management-policy.md",
+      "type": "policy",
+      "description": "Zenith Cloud Technologies vulnerability management policy with explicit prohibition on scan frequency reduction during code freezes"
+    },
+    {
+      "path": "evidence/scan-execution-log-q4-2025.csv",
+      "type": "log",
+      "description": "Q4 2025 scan execution log showing weekly Qualys VMDR and AWS Inspector scans with timestamps, asset counts, and findings"
+    },
+    {
+      "path": "evidence/remediation-sla-tracking-q4.csv",
+      "type": "spreadsheet",
+      "description": "Remediation SLA tracking spreadsheet with 20 vulnerabilities showing SLA status, remediation dates, and compliance"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Exception register documenting the code freeze and a remediation SLA extension for legacy application"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/pentest-report-summary.md",
+      "type": "report",
+      "description": "Annual penetration test executive summary — offensive security assessment not directly relevant to vulnerability management program controls"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II audit of Zenith Cloud Technologies for the Q4 2025 observation period (October 1 - December 31, 2025). Review all evidence related to their vulnerability management program and assess CC7.1 compliance. Examine scan execution patterns, remediation SLA adherence, risk acceptance practices, and exception management. Pay attention to operational details and cross-reference documents to identify both obvious and subtle control gaps. Not all provided documents may be relevant to this control.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Scan frequency reduced from weekly to biweekly during code freeze without CISO approval",
+      "description": "The scan execution log shows that between November 30 (QSC-2025-048) and December 14 (QSC-2025-049), no Qualys infrastructure scan was executed — a 14-day gap. The next scan (QSC-2025-050) occurred on December 28, another 14-day gap. The scan type field changed from 'Weekly Infrastructure' to 'Biweekly Infrastructure' and the initiated_by field changed from 'Automated' to 'Manual Override.' Policy Section 3.2 explicitly states that weekly scanning is mandatory and 'scan frequency must not be reduced below weekly under any circumstances including code freezes.' The scan notes for QSC-2025-049 state the frequency was 'reduced to biweekly per Platform Engineering request to avoid scan-triggered alerts during freeze' with 'no formal change request or CISO approval documented.' The exception register (EXC-2025-088) documents the code freeze itself but does not approve a scan frequency reduction. This created a 3-week window (December 1-21) where weekly vulnerability detection was degraded. The December 28 scan discovered 2 new Critical vulnerabilities that went undetected during the December 7 scan gap.",
+      "evidence_sources": [
+        "evidence/scan-execution-log-q4-2025.csv",
+        "evidence/vulnerability-management-policy.md",
+        "evidence/exception-register.csv"
+      ],
+      "expected_reasoning": "The auditor should compare scan dates: October and November show consistent weekly cadence (every Sunday). December shows only two scans (Dec 14 and Dec 28) instead of four. The scan type and initiated_by fields change, indicating a deliberate override. Policy Section 3.2 explicitly prohibits frequency reduction during code freezes. The exception register approves the code freeze but NOT a scan frequency change. The scan notes confirm no CISO approval was obtained. The 2 new Critical vulnerabilities discovered on Dec 28 demonstrate the concrete risk of reduced scan frequency.",
+      "detection_criteria": {
+        "required_keywords": ["biweekly", "code freeze", "Manual Override", "Section 3.2", "CISO approval", "Platform Engineering request", "QSC-2025-049", "14-day gap", "2 new Critical", "scan frequency reduction"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Remediation SLA extension expired without renewal — CVE-2024-53677 now past SLA with no coverage",
+      "description": "VULN-8011 (CVE-2024-53677, Apache Struts Path Traversal, Medium, CVSS 5.8) on legacy-crm-02 was first detected September 18, 2025, with a 90-day SLA deadline of December 17. A 30-day SLA extension (EXC-2025-092) was approved by the CISO on September 22, extending the deadline to December 17. The exception expired on December 17 and the review notes state 'No renewal or formal risk acceptance filed.' The vulnerability remains open (103 days, 12 days past the extended SLA). The application retirement timeline is Q2 2026 — approximately 4 months away — but there is no active risk acceptance or SLA extension covering the current period. The vulnerability exists in a gap between the expired exception and the planned retirement, with no formal coverage.",
+      "evidence_sources": [
+        "evidence/remediation-sla-tracking-q4.csv",
+        "evidence/exception-register.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should cross-reference the SLA tracking (VULN-8011 showing 'SLA Breached') with the exception register (EXC-2025-092 showing 'Expired — Not Renewed'). The extension provided coverage until December 17, but nothing covers the period after. The vulnerability is in a policy limbo — past SLA, expired extension, no risk acceptance, and the planned fix (app retirement) is months away. This is a process gap: the team assumed the approved retirement timeline was sufficient but failed to maintain formal coverage.",
+      "detection_criteria": {
+        "required_keywords": ["CVE-2024-53677", "VULN-8011", "legacy-crm-02", "EXC-2025-092", "expired", "not renewed", "SLA Breached", "12 days past", "no risk acceptance", "Q2 2026"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Scan frequency not restored to weekly after code freeze ended — still biweekly on December 28",
+      "description": "The code freeze (EXC-2025-088) ended on December 22, 2025. However, the scan execution log shows the December 28 scan (QSC-2025-050) was still executed as 'Biweekly Infrastructure' with 'Manual Override' rather than returning to the automated weekly schedule. The scan notes state 'Code freeze ended Dec 22. Scan frequency not yet restored to weekly — weekly cadence to resume Jan 5, 2026.' This means the unauthorized biweekly cadence persisted 6 days after the code freeze ended, and the automated weekly schedule was not restored for at least 14 days after the freeze lifted. Combined with the original unauthorized reduction, this indicates the scan configuration was manually overridden and not properly restored.",
+      "evidence_sources": [
+        "evidence/scan-execution-log-q4-2025.csv",
+        "evidence/exception-register.csv"
+      ],
+      "expected_reasoning": "The auditor should note that the code freeze ended December 22 but the December 28 scan is still biweekly and manually initiated. The automated weekly schedule should have resumed immediately after the freeze. The 14-day delay in restoration (Dec 22 to Jan 5) means an additional missed weekly scan. This compounds the original scan frequency finding and suggests the scan automation was broken or intentionally left in manual mode.",
+      "detection_criteria": {
+        "required_keywords": ["December 22", "code freeze ended", "QSC-2025-050", "still biweekly", "not restored", "January 5", "Manual Override", "automated weekly"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "No SLA compliance reporting for High-severity tier despite policy requirement",
+      "description": "Policy Section 4.2 requires monthly SLA compliance reports for 'all severity tiers (Critical, High, Medium, Low).' The remediation SLA tracking spreadsheet shows SLA data for Critical and Medium vulnerabilities but does not include an SLA compliance rate calculation for the High-severity tier specifically. All High-severity vulnerabilities in the tracking sheet show 'Met' status, so this may simply be a reporting completeness issue rather than a substantive gap. However, the policy specifically requires per-tier reporting, and the absence of a formal High-tier compliance metric means the Security Steering Committee may not have visibility into High-severity remediation trends.",
+      "evidence_sources": [
+        "evidence/remediation-sla-tracking-q4.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should verify that SLA compliance reporting covers all severity tiers as required by policy. While all High-severity items met SLA (indicating good performance), the policy requires explicit per-tier reporting. This is a minor documentation/process gap rather than a substantive control failure.",
+      "detection_criteria": {
+        "required_keywords": ["Section 4.2", "all severity tiers", "High-severity", "SLA compliance report", "reporting", "per-tier", "visibility"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["vulnerability_management", "scan_frequency", "code_freeze", "remediation_SLA", "exception_management", "judgment", "policy_violation"]
+  }
+}

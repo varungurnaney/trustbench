@@ -1,0 +1,90 @@
+{
+  "task_id": "cc6.4-5-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:38:52.790469",
+  "score": {
+    "task_id": "cc6.4-5-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "multi-tenant",
+          "lobby",
+          "AP-SUITE-01",
+          "property management",
+          "tailgating"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "annual audit",
+          "colocation",
+          "SecureVault",
+          "overdue",
+          "Section 8.2",
+          "SOC 2",
+          "independent"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "calibration",
+          "October 10",
+          "overdue",
+          "TEMP-01",
+          "HUM-01",
+          "Section 9.3",
+          "6 months"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "tailgating",
+          "AP-SUITE-01",
+          "compensating control",
+          "multi-tenant",
+          "suite entrance"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7647,
+    "output_tokens": 3242
+  },
+  "raw_response": "# CC6.4 Compliance Assessment \u2014 Physical Access Restrictions\n**Meridian Software | Q4 2025 Observation Period**\n\n---\n\n## FINDINGS SUMMARY\n\n| Finding | Severity | Status |\n|---------|----------|--------|\n| Environmental Sensor Calibration Overdue | High | Non-Compliant |\n| Multi-Tenant Building Access Control Gaps | High | Design Limitation |\n| Data Center Audit Currency | Medium | Non-Compliant |\n| Building-Level Access Dependency | Medium | Design Risk |\n\n---\n\n## DETAILED FINDINGS\n\n### Finding 1: Environmental Sensor Calibration Overdue\n\n**Severity:** High\n\n**Policy Reference:** POL-PS-022, Section 9.3 (\"All environmental monitoring sensors shall be calibrated every 6 months by a qualified technician.\")\n\n**Evidence Location:** Environmental Sensor Calibration History document\n\n**Gap Description:**\n\nFive environmental sensors in critical server room locations are **overdue for calibration as of the Q4 2025 observation period**:\n\n- TEMP-01, TEMP-02, HUM-01, HUM-02, TEMP-03\n- Last calibration: August 10, 2025\n- Due date: October 10, 2025\n- Status as of Q4 2025: **Overdue by 2.5+ months** (calibration due October 10; Q4 ends December 31)\n\n**Why This Is a Gap:**\n\nPolicy Section 9.3 explicitly requires 6-month calibration cycles. While the sensors are *currently reading within acceptable ranges* (64-75\u00b0F for temperature; 40-60% for humidity), the calibration certificates are expired. This means:\n\n- **Measurement validity is unverified.** Without current calibration, there is no assurance that sensor readings are accurate to NIST-traceable standards, even if current values appear reasonable.\n- **Compliance evidence is absent.** The control cannot be demonstrated as operating effectively for Q4 2025 because the calibration records do not cover the observation period.\n- **Risk to asset protection.** Environmental excursions could occur undetected if sensors drift out of tolerance, threatening equipment integrity.\n\n**Mitigating Factors (Partial):**\n\n- Sensors at colocation (LEAK-01, SMOKE-01, SMOKE-02, TEMP-04) are current.\n- On-premises readings are within range (though unverified).\n- Environmental monitoring is operational; only the validation is missing.\n\n**Compliance Status:** **Non-Compliant** \u2014 The control is implemented but not effectively operating per policy.\n\n---\n\n### Finding 2: Multi-Tenant Building Access Control \u2014 Inadequate Segregation of Meridian Space\n\n**Severity:** High\n\n**Policy Reference:** POL-PS-022, Sections 2.2, 3.2, 3.3 (building context and access architecture)\n\n**Evidence Location:** Physical Security Policy; Badge Access Log\n\n**Gap Description:**\n\nMeridian occupies Suite 400 in a multi-tenant Class A office building (\"Commerce Tower\") shared with ~15 other tenants. The policy acknowledges that **building-level access controls (lobby, elevators, stairwells, parking garage) are managed by Greystone Property Management**, not by Meridian.\n\n**Critical Control Gap:**\n\n- **Building lobby is open to the public during business hours (6:00 AM \u2013 8:00 PM).** Any person can enter the building lobby without credentials.\n- **Elevator and stairwell access is not restricted by tenant.** Once a visitor passes the building lobby (which is open), they can access any floor, including the 4th floor where Meridian's Suite 400 is located.\n- **Meridian's only perimeter control is the suite entrance (AP-SUITE-01)**, which requires an HID SEOS badge.\n\n**Why This Is a Gap:**\n\nPer CC6.4, the entity must \"restrict physical access to facilities and protected information assets to meet the entity's objectives.\"\n\n- An unauthorized person could enter the building lobby (open access), ride the elevator to the 4th floor, and arrive at the Suite 400 entrance door.\n- While the suite entrance door is locked and requires a badge, the **observation of the building layout, floor number, and door appearance** is not restricted.\n- Meridian has **no control over** building elevator access, stairwell access, or who Greystone allows into the building after 8:00 PM.\n- **Visitor escort procedures** (Section 6) do not mitigate this for unauthorized entry attempts; they only govern escorted visitors.\n\n**Additional Risk:**\n\nThe Badge Access Log shows all 60 Q4 2025 access events resulted in \"Granted\" status. There are **no denied access attempts logged**, which could suggest:\n- Either the system is not recording failed swipes, OR\n- Unauthorized individuals are not attempting to tailgate (possible but unverified), OR\n- The log is incomplete.\n\n**This is not a finding of actual unauthorized access**, but rather a **design limitation of the access control architecture** that makes it difficult for Meridian to enforce CC6.4 independently.\n\n**Mitigating Factors:**\n\n- AP-SUITE-01 badge access control is functional and properly restricted.\n- Badge review is quarterly (Section 4.4).\n- Termination deactivation is prompt (4 hours, Section 4.3).\n- CCTV at suite entrance and hallways provides detection capability.\n\n**Compliance Status:** **Non-Compliant (by design)** \u2014 While Meridian has implemented suite-level controls, they cannot fully meet CC6.4 objectives for the broader facility due to building-level dependency on third-party property management.\n\n**Auditor Note:** This is a *control design limitation*, not a failure of Meridian's access badge system. Meridian should document this risk and consider:\n1. Negotiating improved building-level controls with Greystone.\n2. Implementing additional compensating controls (e.g., visitor pre-registration with building concierge, receptionist staffing during business hours to monitor suite entrance).\n3. Accepting this as a residual risk given the multi-tenant building context.\n\n---\n\n### Finding 3: Data Center Annual Audit Not Current for Q4 2025\n\n**Severity:** Medium\n\n**Policy Reference:** POL-PS-022, Section 8.2 (\"Meridian shall conduct annual physical security audits of the colocation provider... Audits must include... This audit is independent of and in addition to the provider's SOC 2 report.\")\n\n**Evidence Location:** Third-Party Colocation Provider Annual Physical Audit Report\n\n**Gap Description:**\n\nThe annual colocation audit was conducted on **August 15, 2024** by Ian Foster and Kathryn Delgado. The report confirms all controls were satisfactory at that time.\n\nHowever, **the Q4 2025 observation period (October 1 \u2013 December 31, 2025) falls outside the one-year window from the last audit**:\n\n- Last audit: August 15, 2024\n- One-year window expires: August 15, 2025\n- Q4 2025: October 1 \u2013 December 31, 2025\n- **Status: Audit is overdue for 2+ months as of Q4 2025**\n\n**Why This Is a Gap:**\n\nPolicy Section 8.2 requires annual audits. For Q4 2025, there is **no current evidence** that Meridian has conducted the required 2025 annual audit. This means:\n\n- **Control verification gap:** There is no current attestation that SecureVault's controls remain in place and effective.\n- **Policy non-compliance:** The annual requirement is not met for the observation period.\n- **Reliance on stale data:** The August 2024 audit is now 15+ months old and does not cover the Q4 2025 period.\n\n**Note on SOC 2 Reliance:**\n\nThe policy explicitly states the audit is \"**independent of and in addition to the provider's SOC 2 report.**\" This means Meridian cannot substitute reliance on SecureVault's SOC 2 report for their own annual audit.\n\n**Mitigating Factors:**\n\n- SecureVault's SOC 2 Type II (KPMG, August 2023 \u2013 July 2024) was reviewed and showed no exceptions (per audit report Section 6).\n- SecureVault maintains Tier III classification with robust environmental controls.\n- The 2024 audit found no material deficiencies.\n- Cabinet lock codes are rotated semi-annually (compliant per Section 5.4.3).\n- No incidents were noted in the Q4 2025 period.\n\n**Compliance Status:** **Non-Compliant** \u2014 The required annual audit for 2025 is overdue.\n\n**Recommended Remediation:**\n\nSchedule and conduct the 2025 annual audit before Q4 2025 closes (by December 31, 2025) or document a compensating control (e.g., quarterly confirmation calls with SecureVault security leadership, review of current lock audit logs).\n\n---\n\n### Finding 4: Building-Level Access Control Dependency \u2014 After-Hours Risk\n\n**Severity:** Medium\n\n**Policy Reference:** POL-PS-022, Section 7.2 (\"After-Hours: Requires manager-approved After-Hours Access Request\")\n\n**Evidence Location:** Physical Security Policy\n\n**Gap Description:**\n\nThe policy establishes after-hours access requirements (Section 7.2) and states that after 8:00 PM, **building access requires a property management key card issued to each tenant's employees.**\n\nHowever, there is **no evidence in the provided documentation** that:\n\n1. A list of personnel with building-level after-hours key cards is maintained by Meridian.\n2. After-hours key card distribution is tracked or audited.\n3. Key cards are recovered upon employee termination.\n4. Greystone's key card controls are periodically verified.\n\n**Why This Is a Gap:**\n\n- **Visibility gap:** Meridian cannot independently verify who has after-hours building access.\n- **Termination risk:** An employee with a building-level key card from Greystone could retain access to the 4th floor after termination, even if their Meridian badge is deactivated.\n- **CC6.4 demonstration:** The policy intends to restrict access, but the actual enforcement depends entirely on Greystone's key card management, which is outside Meridian's direct control.\n\n**Example Scenario:**\n\nAn employee terminates. Meridian deactivates their HID SEOS badge (4-hour SLA, Section 4.3). However, if they also hold a Greystone building key card for after-hours access, and Meridian has not coordinated with Greystone, they could still access the building elevator and 4th floor stairwell after 8:00 PM.\n\n**Mitigating Factors:**\n\n- This is a *potential* risk, not an observed breach.\n- Badge access logs show no denied entries, suggesting after-hours tailgating is not occurring.\n- CCTV at suite entrance provides detection.\n\n**Compliance Status:** **Non-Compliant (partial)** \u2014 The after-hours access policy is documented, but the execution and monitoring rely on third-party controls with no documented verification by Meridian.\n\n**Recommended Remediation:**\n\n1. Document a process to coordinate Meridian terminations with Greystone for concurrent building key card cancellation.\n2. Conduct a quarterly spot-check with Greystone to verify that Meridian's termination notifications are being acted upon for key card deactivation.\n3. Alternatively, establish a compensating control (e.g., require after-hours visitors to call reception, which records entry).\n\n---\n\n## SUMMARY TABLE: CONTROL EFFECTIVENESS\n\n| Control Element | Status | Evidence | Risk Level |\n|-----------------|--------|----------|-----------|\n| Suite-level badge access (AP-SUITE-01) | Effective | Badge access logs (60 entries, all authorized) | Low |\n| Server room badge + PIN access (AP-SRV-01) | Effective | Badge access logs, policy documented | Low |\n| Badge termination (4-hour SLA) | Effective | Policy Section 4.3 documented | Low |\n| Quarterly badge review | Effective | Policy Section 4.4 documented | Low |\n| CCTV retention (90-day) | Effective | Retention verification log shows compliance | Low |\n| CCTV monitoring | Effective | Policy Section 5.3, cameras at critical locations | Low |\n| **Environmental sensor calibration** | **Non-Effective** | **5 sensors overdue since Oct 10, 2025** | **High** |\n| Building-level access control | Limited | Greystone manages; Meridian has minimal visibility | Medium |\n| Colocation provider oversight | **Out of Date** | **2024 audit; 2025 audit overdue** | **Medium** |\n| After-hours key card tracking | Undocumented | No evidence of key card inventory or termination coordination | Medium |\n\n---\n\n## OVERALL COMPLIANCE CONCLUSION\n\n**CC6.4 Compliance Rating: PARTIALLY NON-COMPLIANT**\n\n**Meridian has implemented strong access controls at the suite and server room level** (badge systems, CCTV, termination procedures). However, compliance is undermined by:\n\n1. **Critical:** Environmental sensor calibration is overdue, preventing demonstrated control effectiveness for environmental monitoring.\n2. **High:** Multi-tenant building design creates gaps in physical access restriction that are outside Meridian's direct control.\n3. **Medium:** Data center oversight audit is not current for the observation period.\n4. **Medium:** After-hours building key card controls are not tracked or verified by Meridian.\n\n**Recommendation:** Address Finding 1 (sensor calibration) immediately. Document risk mitigation for Findings 2, 3, and 4, or implement compensating controls."
+}

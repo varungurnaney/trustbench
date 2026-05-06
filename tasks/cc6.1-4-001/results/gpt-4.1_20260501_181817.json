@@ -1,0 +1,88 @@
+{
+  "task_id": "cc6.1-4-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:18:17.062704",
+  "score": {
+    "task_id": "cc6.1-4-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-etl",
+          "exception",
+          "approved",
+          "compensating",
+          "mitigated"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "terraform",
+          "March",
+          "April",
+          "deleted",
+          "one-time",
+          "still active"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "monitoring",
+          "renewal",
+          "exception",
+          "still",
+          "active"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-etl",
+          "2023",
+          "rotation",
+          "compensating",
+          "Vault",
+          "audit"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2289,
+    "output_tokens": 1129
+  },
+  "raw_response": "Below are the **genuine findings** from the review of the provided evidence for **CC6.1** \u2013 Logical Access Security.\n\n---\n\n### 1. Manual Service Account Keys Present in Production  \n**Section:** GCP service account configuration and key status\n\n**Why it's a gap:**  \nThe \u201clegacy-etl\u201d, \u201cmonitoring-agent\u201d, and \u201cterraform-import\u201d service accounts have manually created service account keys that remain present and (for two of them) active throughout Q4 2025.  \n- The **Access Control Policy** (Section 5) states:  \n    > \"Service account keys must not be created manually; workload identity federation is the standard. Exceptions require CISO approval and are tracked in the exception register.\"\n- Evidence of CISO-approved exceptions exists for these three accounts, satisfying the policy's exception process.\n\nHowever, having three separate exceptions for manual service account keys demonstrates a residual risk. Prolonged reliance on key-based authentication, especially for \u201clegacy-etl\u201d which has existed for nearly two years, increases exposure despite compensating controls. Best practice is to fully eliminate persistent service account keys, particularly in cloud environments where automated alternatives (like Workload Identity Federation) exist.\n\n**Severity:** **Medium** (Risk mitigated by compensating controls/monitoring but persistent keys represent a non-trivial threat surface).\n\n---\n\n### 2. Compensating Controls for Exceptions are Strong, but Legacy Exception Renewal Indicates Slow Remediation  \n**Section:** CISO-approved security exceptions with compensating controls\n\n**Why it's a gap:**  \n- The \u201clegacy-etl\u201d exception has been **renewed** for an additional six months (through Jan 2026), citing legacy system compatibility.\n- The original exception dates to Jan 2025; renewal was approved July 2025 and - as of end of Q4 2025 - still active.\n- While compensating controls (IP allowlists, vault storage, usage audits, migration status checks) are appropriate and reduce risk, extending key-based access for another major review cycle suggests a slow timeline for remediation.\n\nThis may indicate insufficient urgency for high-risk security exceptions. Prolonged exception renewals could result in \u201ctemporary\u201d exceptions becoming de facto permanent, especially for access to sensitive production workloads.\n\n**Severity:** **Low** (Controls are present and approved, but trend warrants management attention).\n\n---\n\n### 3. Terraform Import Key Not Deleted Rapidly After One-Time Use   \n**Section:** GCP service account configuration and key status; CISO-approved security exceptions\n\n**Why it's a gap:**  \n- The one-time \u201cterraform-import\u201d key was last used/needed in early March 2025 (per exception EXC-2025-003).\n- Exception record states \u201ckey deletion scheduled in Jira\u201d with April 8, 2025 as review date.\n- Key is still present (\u201cexpires: 9999-12-31\u201d) in the current config evidence, despite last usage over half a year ago and purpose being strictly temporary.\n\nLeaving unused, privileged keys active beyond documented need, even if access reviewed, increases risk of misuse or compromise. Standard should be deletion immediately after use.\n\n**Severity:** **Low** (Limited impact/likelihood; privileged key was unused during Q4, but represents deviation from stated process and best practice).\n\n---\n\n### 4. Manual Service Account Key Rotations Not Documented for Legacy ETL  \n**Section:** GCP service account configuration and key status; CISO-approved security exceptions\n\n**Why it's a gap:**  \n- Compensating controls for \u201clegacy-etl\u201d do **not** specify rotation frequency or if keys are regularly rotated.\n- \u201cmonitoring-agent\u201d key (EXC-2025-002) required rotation every 6 months.\n- \u201clegacy-etl\u201d key creation date is Jan 2023 and is still in use (no evidence of rotation in config or exception register).\n\nLack of regular key rotation for persistent, privileged credentials increases risk should a key be compromised. Best practice is at minimum annual rotation for long-lived credentials; many organizations require rotation every 90\u2013180 days.\n\n**Severity:** **Low** (Other controls mitigate this gap, but long-lived keys should be rotated or replaced).\n\n---\n\n## **Summary Table**\n\n| # | Title                                         | Section(s)                                          | Gap Description                                                                                    | Severity |\n|---|-----------------------------------------------|-----------------------------------------------------|----------------------------------------------------------------------------------------------------|----------|\n| 1 | Manual Service Account Keys Present in Production | GCP service account config; Access Control Policy    | Persistent manual keys remain for key accounts despite a \u201cno keys\u201d policy; compensating controls present | Medium   |\n| 2 | Slow Remediation of Legacy Key Exception       | Exception Register                                  | Legacy ETL exception renewed instead of eliminated; may indicate exceptions not closed timely       | Low      |\n| 3 | Terraform Import Key Not Deleted After One-Time Use | GCP config; Exception Register                      | Key not deleted after intended one-time use as scheduled; still present in Q4 evidence             | Low      |\n| 4 | Legacy ETL Key Rotation Undocumented          | GCP config; Exception Register                      | No evidence of periodic key rotation for legacy-etl account; best practice not met                 | Low      |\n\n---\n\n**No critical or high-risk findings** observed, due to presence of compensating controls, CISO oversight, and tracked exception documentation. However, Vantage Corp should prioritize fully eradicating manual key use, implementing automated key deletion/rotation, and further tightening exception management timelines to strengthen logical access safeguards per CC6.1."
+}

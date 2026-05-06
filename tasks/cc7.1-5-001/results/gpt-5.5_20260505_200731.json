@@ -1,0 +1,82 @@
+{
+  "task_id": "cc7.1-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T20:07:31.860176",
+  "score": {
+    "task_id": "cc7.1-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.25,
+    "f1": 0.375,
+    "score": 0.375,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "biweekly",
+          "code freeze",
+          "Manual Override",
+          "CISO approval",
+          "QSC-2025-049"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CVE-2024-53677",
+          "VULN-8011",
+          "EXC-2025-092",
+          "expired",
+          "not renewed",
+          "SLA Breached"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "code freeze ended",
+          "QSC-2025-050",
+          "not restored",
+          "Manual Override"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "reporting"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7002,
+    "output_tokens": 4730
+  },
+  "raw_response": "## Overall Assessment \u2014 CC7.1 Readiness\n\nZenith has a documented vulnerability management policy and evidence of recurring vulnerability scans, SLA tracking, and exception handling. However, the Q4 2025 operating evidence shows several control failures and documentation inconsistencies. The most significant issues are the unauthorized reduction of scan frequency during the December code freeze, incomplete scan coverage/authentication, untracked critical vulnerabilities, and expired or unsupported exception/risk acceptance activity.\n\nBased on the evidence reviewed, **CC7.1 is not fully operating effectively for the Q4 2025 observation period**.\n\n---\n\n## Findings\n\n| # | Finding | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Unauthorized reduction of vulnerability scan frequency during code freeze** | Vulnerability Management Policy Sections 3.1, 3.2, 8; Q4 Scan Execution Log QSC-2025-049, QSC-2025-050, AWI-2025-049, AWI-2025-050; Exception Register EXC-2025-088 | The policy explicitly requires weekly scanning and states scan frequency must not be reduced during code freezes, maintenance windows, holidays, or resource constraints. However, Qualys and AWS Inspector scans were reduced to biweekly in December. The Dec. 7 and Dec. 21 weekly scans were skipped, and the scan log states this was done by manual override due to code freeze, with no formal change request or CISO approval. This directly contradicts the policy and the approved code freeze exception, which stated monitoring would remain active. | **High** |\n| 2 | **Scan frequency was not restored after the code freeze ended** | Q4 Scan Execution Log QSC-2025-050, AWI-2025-050; Exception Register EXC-2025-088 | The code freeze ended on Dec. 22, 2025, but the Dec. 28 scans were still run as biweekly/manual override scans rather than returning to the required weekly cadence. The Qualys log notes that weekly cadence would resume Jan. 5, 2026, outside the observation period. This indicates the temporary operational deviation continued after the exception period had expired. | **Medium** |\n| 3 | **Critical vulnerabilities may have gone undetected due to skipped scan cycles** | Q4 Scan Execution Log QSC-2025-050, AWI-2025-049, AWI-2025-050 | The Dec. 28 Qualys scan identified two new Critical vulnerabilities that were \u201cnot detected during the Dec. 7 gap.\u201d AWS Inspector also identified a new Critical vulnerability on Dec. 14. The skipped Dec. 7 and Dec. 21 scan cycles delayed detection and monitoring of newly discovered vulnerabilities, which is directly relevant to CC7.1. | **High** |\n| 4 | **Critical vulnerabilities from December scans are not evidenced in SLA tracking** | Vulnerability Management Policy Sections 4.1, 4.2; Q4 Scan Execution Log AWI-2025-049, AWI-2025-050, QSC-2025-050; Remediation SLA Tracking Spreadsheet | The scan logs show a new Critical vulnerability in AWS Inspector on Dec. 14 and two new Critical vulnerabilities in Qualys on Dec. 28. These items are not visible in the provided Jira/SLA tracking spreadsheet. There is no evidence of Jira ticket creation, ownership, SLA deadline calculation, CISO/VP Engineering escalation, remediation plan, or risk acceptance for these Critical findings. The Dec. 14 AWS Critical was still open on Dec. 28, suggesting a potential Critical SLA breach or at least insufficient evidence that the SLA was met by period end. | **High** |\n| 5 | **Incomplete asset coverage across scan cycles** | Vulnerability Management Policy Section 3.3; Q4 Scan Execution Log | Policy requires 100% subnet coverage and that all CMDB assets be scanned at least once per scan cycle. However, Qualys scans repeatedly scanned fewer assets than expected, e.g., 1482\u20131492 scanned out of 1495 expected. AWS Inspector also scanned fewer than expected assets in December, e.g., 348/352 and 350/352. CrowdStrike Spotlight similarly shows some managed endpoints offline. There is no evidence of follow-up, exception approval, or compensating monitoring for assets missed during scan cycles. | **Medium** |\n| 6 | **Authenticated scanning success is below policy expectation with no documented remediation** | Vulnerability Management Policy Section 3.4; Q4 Scan Execution Log | The policy requires credentialed/authenticated scanning for all infrastructure scans. Qualys scans show authentication success rates between approximately 97.4% and 98.4%, meaning a subset of assets were not successfully scanned with credentials. No evidence was provided showing failed-authentication assets were investigated, rescanned, remediated, or approved as exceptions. This reduces the ability to detect host-level vulnerabilities accurately. | **Medium** |\n| 7 | **No Q4 evidence provided for Snyk continuous application dependency scanning** | Vulnerability Management Policy Section 3.1; Evidence Package | The policy states Snyk is used continuously through CI/CD for application dependencies. However, the provided Q4 scan evidence includes Qualys, AWS Inspector, and CrowdStrike only. No Snyk dashboard, CI/CD logs, dependency scan results, tickets, or exception records were provided. The annual penetration test does not substitute for continuous software composition analysis. This leaves a gap in evidence for detection of newly discovered application dependency vulnerabilities. | **Medium** |\n| 8 | **Expired remediation exception with no renewed risk acceptance for legacy Struts vulnerability** | Vulnerability Management Policy Sections 4, 5, 8; Remediation SLA Tracking Spreadsheet VULN-8011; Exception Register EXC-2025-092 | VULN-8011 for CVE-2024-53677 remains open and is marked as SLA Breached. The related exception, EXC-2025-092, expired Dec. 17 and was not renewed. The exception notes no formal risk acceptance was filed, despite continued exposure and reliance on compensating controls. This does not align with the policy\u2019s requirements for exceptions, risk acceptance, approval, expiration, and revalidation. | **Medium** |\n| 9 | **Compensating controls referenced without required validation evidence** | Vulnerability Management Policy Section 5.2; Exception Register EXC-2025-092; SLA Tracking Spreadsheet VULN-8011, VULN-8021, VULN-8022, VULN-8024, VULN-8025 | The policy requires compensating controls to be validated by Security Operations, with evidence including control description, validation method, test results, validator identity, and timestamp. Several records reference compensating or mitigating controls, such as WAF, network restriction, VPN-only access, isolated VLANs, and disabled functionality. The provided evidence does not include validation results or Security Operations attestation for those controls. | **Medium** |\n| 10 | **SLA tracking data appears inaccurate for at least one open vulnerability** | Vulnerability Management Policy Sections 4.1, 4.2; Remediation SLA Tracking Spreadsheet VULN-8022 | VULN-8022 has a first detected date of Sept. 28 and an SLA deadline of Dec. 27. The spreadsheet appears to be current around Dec. 30, based on other day-count values, but VULN-8022 is still listed as \u201cSLA Approaching\u201d with zero days past SLA. This appears incorrect and may understate SLA breaches in monthly reporting. | **Low** |\n| 11 | **Exception register contains inconsistent emergency patch documentation** | Exception Register EXC-2025-088, EXC-2025-095; Remediation SLA Tracking Spreadsheet VULN-8015, VULN-8019 | The code freeze exception states that two emergency security patches, VULN-8015 and VULN-8019, were deployed during the December code freeze. However, the SLA tracker shows VULN-8015 was remediated Oct. 20 and VULN-8019 was remediated Oct. 28, before the Dec. 1\u2013Dec. 22 code freeze. EXC-2025-095 was requested Nov. 28 for a code-freeze emergency deployment, but its notes say the patch was deployed Oct. 25 and confirmed Oct. 27. These inconsistencies reduce the reliability of the exception and emergency change audit trail. | **Medium** |\n| 12 | **Limited evidence of configuration-change monitoring for security misconfigurations** | CC7.1 Control Objective; Penetration Test Executive Summary Finding PT-H-002; Vulnerability Management Evidence Package | CC7.1 addresses detection and monitoring procedures to identify configuration changes that introduce vulnerabilities. The provided evidence focuses primarily on vulnerability scanning. The annual penetration test identified an AWS Lambda function with an overly permissive IAM execution role, but no ongoing configuration monitoring, CSPM alerting, IAM drift detection, or cloud configuration compliance evidence was provided. Annual penetration testing is not sufficient evidence of continuous or recurring configuration-change detection. | **Medium** |"
+}

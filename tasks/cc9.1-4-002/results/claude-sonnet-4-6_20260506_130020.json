@@ -1,0 +1,71 @@
+{
+  "task_id": "cc9.1-4-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T13:00:20.200351",
+  "score": {
+    "task_id": "cc9.1-4-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "Cohere AI",
+          "SOC 2",
+          "exception",
+          "VEXC-2025-003",
+          "compensating",
+          "Q2 2026"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Elastic Cloud",
+          "VEXC-2025-001",
+          "expired",
+          "October 31",
+          "SOC 2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Cohere AI",
+          "Critical",
+          "quarterly business review",
+          "onboarded"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2635,
+    "output_tokens": 2175
+  },
+  "raw_response": "# CC9.1 Readiness Assessment \u2014 Vendor & Business Partner Risk Mitigation\n**Prism Data Inc. | Observation Period: Q4 2025 (October 1 \u2013 December 31, 2025)**\n\n---\n\n## Assessment Summary\n\nFour genuine control deficiencies were identified after cross-referencing the vendor management policy (POL-VRM-005), vendor inventory, BCP summary, and exception register. Two apparent gaps were reviewed and determined to be **adequately mitigated** and are excluded from findings (noted below). Findings are ranked by severity.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Expired Exception for Elastic Cloud \u2014 No Renewal Filed\n\n**Severity: Critical**\n\n**Document Reference:** POL-VRM-005 \u00a74.3 (Exception Process); Exception Register VEXC-2025-001; Vendor Inventory PD-V-008\n\n**Gap Detail:**\nThe exception covering Elastic Cloud's missing SOC 2 report (VEXC-2025-001) expired on October 31, 2025 \u2014 within the observation period. Per policy \u00a74.3, expired exceptions must be renewed or the vendor must provide the required assessment before continued operation. Neither condition has been met. The vendor inventory confirms no SOC 2 report has been received, the exception register explicitly notes \"no renewal filed,\" and the vendor remains in **Active** status as of Q4 2025.\n\nThis means Elastic Cloud \u2014 a **High-tier** vendor processing security event data including authentication logs with user identifiers \u2014 has been operating without a valid compliance instrument since November 1, 2025. There is no documented CISO approval, no updated risk assessment, and no refreshed compensating controls for the gap period. The prior compensating controls (security questionnaire, encryption, access restriction) are not themselves invalid, but they are no longer operating under an authorized exception framework, meaning the controls lack formal governance authorization and have not been re-evaluated since May 2025.\n\nThis is the most significant finding in scope. An auditor would expect to see either a renewed exception with current approval and a documented risk acceptance, or evidence that the vendor has been offboarded or restricted pending SOC 2 delivery.\n\n---\n\n### Finding 2: Cohere AI Exception Duration Exceeds Policy Maximum\n\n**Severity: High**\n\n**Document Reference:** POL-VRM-005 \u00a74.3 (Exception Process); Exception Register VEXC-2025-003; Vendor Inventory PD-V-011\n\n**Gap Detail:**\nPolicy \u00a74.3 explicitly limits exception duration to a **maximum of 6 months**. Exception VEXC-2025-003 for Cohere AI was approved September 5, 2025 with an expiration date of March 5, 2026 \u2014 a duration of exactly 6 months, which technically meets the outer limit. However, the exception notes that the SOC 2 report is expected in **Q2 2026**, meaning the report will not be received before the exception expires. This creates a structural problem: either a second exception will need to be filed immediately upon expiration (setting a precedent of serial exceptions for the same gap), or the vendor will be in the same unauthorized-operation situation as Elastic Cloud.\n\nMore critically, Cohere AI is classified as **Critical tier** \u2014 the highest risk category \u2014 and processes **customer text data** through LLM inference services. The policy requires Critical vendors to undergo annual SOC 2 review and annual security assessment. The compensating controls documented (security questionnaire, end-to-end encryption with customer-managed keys, API key rotation, right-to-audit, monthly security calls) are substantive and were approved by the CISO. For the current observation period, the exception is valid and the controls are reasonable.\n\nThe finding is flagged because there is no documented remediation plan that addresses what happens when the exception expires before the SOC 2 report arrives. A forward-looking gap in the exception management process represents a High risk given the vendor's tier and data sensitivity.\n\n---\n\n### Finding 3: Quarterly Business Reviews Not Conducted for Critical Vendor Cohere AI\n\n**Severity: Medium**\n\n**Document Reference:** POL-VRM-005 \u00a74.2 (Business Reviews); Vendor Inventory PD-V-011\n\n**Gap Detail:**\nPolicy \u00a74.2 requires **quarterly business reviews** for all Critical-tier vendors, covering SLA performance, incident history, and security posture. Cohere AI (PD-V-011) was onboarded September 1, 2025, and its last (and only) business review field shows **N/A**. While the vendor is new and was onboarded just before Q4, at least one quarterly business review would be expected to have occurred or been scheduled during Q4 2025 given the Critical designation.\n\nThe exception register notes that monthly security review calls are a compensating control for the SOC 2 gap, and these calls partially overlap with what a business review would cover. However, these calls are not documented as formal business reviews in Vanta as required by \u00a74.2, and there is no evidence in the vendor inventory that they satisfy or substitute for the quarterly business review requirement. The policy does not provide an onboarding grace period exemption from quarterly review obligations.\n\nThis is distinguished from a Critical finding because the vendor is genuinely new (one quarter old) and the monthly security calls provide some oversight activity. However, the absence of a documented QBR in the system of record (Vanta) during Q4 2025 represents a documentation and process gap.\n\n---\n\n### Finding 4: Figma Exception Reveals Retroactive Tier Assignment Gap\n\n**Severity: Low**\n\n**Document Reference:** POL-VRM-005 \u00a72 (Vendor Classification); \u00a73 (Onboarding Requirements); Exception Register VEXC-2025-002; Vendor Inventory PD-V-012\n\n**Gap Detail:**\nException VEXC-2025-002 documents that Figma (currently Medium tier) **briefly accessed a staging dataset containing pseudonymized customer data** during a design sprint. The exception notes that data access has since been revoked and the exception is rated Low risk. The exception itself is valid, active, and within its authorized duration.\n\nThe gap is procedural: the event demonstrates that Figma's data access scope changed materially \u2014 even temporarily \u2014 without a corresponding re-evaluation of its vendor tier under \u00a72. Policy \u00a72 classifies vendors that access customer data (even pseudonymized) at minimum as **High tier**, which would trigger a SOC 2 review requirement. There is no evidence in the vendor inventory or exception register that a formal tier re-assessment was performed, that a determination was made that pseudonymized data does not meet the customer data threshold, or that the staging environment's data classification was formally documented as out of scope for tier elevation.\n\nThe risk is currently low because access has been revoked and the exception expires December 15, 2025. However, the absence of a documented tier re-assessment decision creates a process precedent issue \u2014 if a similar scope change recurs, the organization may again rely on an after-the-fact exception rather than prospective tier management. This represents a gap in the vendor classification governance process rather than an active control failure.\n\n---\n\n## Items Reviewed and Determined Adequate (Not Flagged)\n\n| Item | Reason Not Flagged |\n|---|---|\n| **AWS, Snowflake, Stripe, Okta SOC 2 reviews** | All Critical vendors have clean opinion SOC 2 reports reviewed within policy timeframes. AWS inclusive method notation does not indicate a qualified opinion. QBRs documented for all four as of December 15, 2025. |\n| **High-tier vendors (Datadog, Twilio, CrowdStrike, PagerDuty, Zendesk)** | All have SOC 2 reports with clean opinions reviewed within the 120-day policy window. QBRs are not required for High-tier vendors under \u00a74.2. |\n| **Medium/Low tier vendors (Figma, Notion, ContractWorks)** | Treated according to their tier requirements. No SOC 2 required; questionnaires and contractual reviews in place. |\n| **BCP/DR evidence (DOC-BCP-001)** | August 2025 DR test met the 4-hour RTO (completed in 3h 20m). AWS multi-region architecture supports RPO. Relevant to CC9.1 business disruption risk mitigation \u2014 no gaps identified. |\n\n---\n\n## Prioritized Remediation Summary\n\n| Priority | Finding | Recommended Action | Owner |\n|---|---|---|---|\n| 1 | Elastic Cloud expired exception | Immediately file renewal exception with updated risk assessment and CISO approval, or suspend vendor access pending SOC 2 receipt | CISO / Security & Compliance |\n| 2 | Cohere AI exception expiry gap | Document contingency plan before March 5, 2026: either confirm SOC 2 receipt timeline with vendor in writing or prepare a renewal exception with updated compensating controls assessment | CISO / Procurement |\n| 3 | Cohere AI quarterly business review | Conduct and document a QBR in Vanta for Q4 2025 before period close; establish recurring calendar cadence | Vendor Relationship Manager |\n| 4 | Figma tier re-assessment | Document a formal determination that the temporary pseudonymized data access did not trigger tier elevation, or perform a retroactive tier review; update tier change procedures | Security & Compliance |"
+}

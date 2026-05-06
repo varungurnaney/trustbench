@@ -1,0 +1,88 @@
+{
+  "task_id": "cc6.3-5-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:35:14.417365",
+  "score": {
+    "task_id": "cc6.3-5-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.75,
+    "f1": 0.75,
+    "score": 0.75,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "h.nguyen",
+          "9,500",
+          "9,200",
+          "76,000",
+          "OFFSET",
+          "LIMIT",
+          "threshold",
+          "evasion",
+          "November 12",
+          "customer_profiles"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "4 hours",
+          "Section 5.3"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "EXP-Q4-2025-008",
+          "December 8",
+          "before approval",
+          "retroactive",
+          "25,000"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "aggregate",
+          "threshold",
+          "10,000",
+          "cumulative",
+          "Section 5.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6982,
+    "output_tokens": 2412
+  },
+  "raw_response": "# CC6.3 Control Assessment: Data Access Authorization and DLP Controls\n\n## Executive Summary\n\nMeridian Insights has implemented a documented data access policy with defined approval thresholds and DLP alerting controls. However, the audit identified **four significant control gaps** that weaken the effectiveness of bulk export authorization and monitoring. The most critical finding involves execution before approval, while secondary findings relate to threshold calibration, detection evasion, and monitoring inconsistency.\n\n---\n\n## FINDINGS\n\n### Finding 1: Execution Before Approval \u2013 Authorization Bypass\n\n**Section:** 5.1 (Bulk Export Authorization)\n\n**What Happened:**\nTicket EXP-Q4-2025-008 (c.mendez, 25,000 rows of Confidential data) shows the export query was **executed on December 8 at 4:30 PM** before approvals were finalized:\n- Submitted: Dec 8\n- Query executed: Dec 8, 4:30 PM\n- Manager approval: Dec 8\n- Data Owner approval: Dec 10\n- CISO approval: Dec 11\n\nThe DLP alert (DLP-Q4-2025-021) was marked \"Under Review \u2014 Ticket Pending\" at 6:00 PM on Dec 8, acknowledging the approval ticket was **still pending**. The export of 25,000 rows of Confidential client engagement data proceeded without completed authorization.\n\n**Why This Is a Gap:**\nThe policy states: \"Approval must be obtained **prior to export execution**\" (Section 5.1). This requirement was violated. The control relies on a preventive authorization checkpoint that failed to block execution. While the alert was eventually reviewed and the ticket eventually approved, the authorization control operated reactively, not preventively.\n\n**Severity:** **Critical**\n\n**Implication:** Bulk exports of sensitive data are executing without pre-approval authorization, negating the core purpose of the approval chain. An unauthorized or malicious bulk export could proceed with no prevention mechanism if the operator disregards the ticket workflow.\n\n---\n\n### Finding 2: Paginated Query Pattern Circumvents Bulk Export Threshold\n\n**Section:** 5.1 (Bulk Export Authorization), 5.2 (Automated DLP Alerting)\n\n**What Happened:**\nBetween 2:15 PM and 3:42 PM on November 12, user h.nguyen executed eight sequential SELECT queries against `customer_profiles` using LIMIT/OFFSET pagination:\n- Each query returned 9,200\u20139,500 rows (individually under the 10,000-row threshold)\n- Cumulative result: **~76,000 total rows** extracted from a Restricted or Confidential table\n- **No DLP alert was triggered** for any of the eight queries\n- **No export approval ticket** was created\n- Queries are logged as \"Paginated extraction \u2014 batch 1 of 8\" through \"batch 8 of 8\"\n\nThe DLP system's threshold alerting (Section 5.2) triggers on queries returning >10,000 rows. Each individual query stayed below this threshold, so no alerts were generated. The operator successfully extracted 76,000 rows through eight sub-threshold queries without triggering DLP controls or requiring approval.\n\n**Why This Is a Gap:**\nThe bulk export threshold is defined at the **individual query level** (>10,000 rows), not at the **session or logical transaction level**. The DLP system has no visibility into cumulative extraction patterns when pagination is used. An operator can divide a large export into multiple queries, each under the threshold, and bypass both alerting and approval requirements.\n\nThis represents a known evasion technique and indicates the controls are **threshold-circumventable**. The policy provides no guidance on:\n- Detecting pagination or LIMIT/OFFSET patterns\n- Aggregating results across multiple queries in a session\n- Flagging rapid sequential high-volume queries within a short time window\n- Requiring approval for cumulative extractions\n\n**Severity:** **High**\n\n**Implication:** Bulk export authorization and DLP alerting controls can be systematically evaded by dividing exports into sub-threshold queries, allowing unauthorized bulk access to sensitive data without audit trail or approval.\n\n---\n\n### Finding 3: DLP Alert Review SLA Not Met \u2013 No Evidence of Timely Escalation\n\n**Section:** 5.3 (Alert Response)\n\n**What Happened:**\nAlert DLP-Q4-2025-021 (c.mendez's 25,000-row export, Critical severity) shows:\n- Alert timestamp: Dec 8, 4:45 PM\n- Review timestamp: Dec 8, 6:00 PM\n- Review duration: **1 hour 15 minutes**\n\nThe policy (Section 5.3) requires: \"All DLP alerts must be reviewed by a Security Analyst **within 4 hours**.\"\n\nWhile technically met, the alert record shows **disposition as \"Under Review \u2014 Ticket Pending\"**, meaning the analyst reviewed the alert but **found no completed approval ticket**. The alert notes state the export was \"already executed\" with the ticket \"pending approval.\"\n\n**The critical failure:** The policy mandates that if no approval exists, the analyst must \"Escalate to CISO if no justification or approval exists\" (Section 5.3, step 3). The alert log shows the analyst documented the missing approval but **has no escalation evidence**. The ticket was eventually approved 3 days later by the CISO, but there is **no documentation of immediate escalation or blocking action** when the alert was reviewed.\n\n**Why This Is a Gap:**\nThe policy defines an escalation requirement when unapproved bulk exports occur, but alert review records do not capture whether escalation actions were taken. The response procedure is underspecified:\n- Is escalation a separate ticket in ServiceNow?\n- Does escalation require the export to be halted or rolled back?\n- What is the timeline for CISO escalation response?\n- Are there escalation records retained and monitored?\n\nThe alert was resolved by later approval, but the evidence suggests the intended escalation step was not executed or documented.\n\n**Severity:** **High**\n\n**Implication:** DLP alert escalation procedures are not clearly documented or evidenced in the audit trail. Alerts documenting policy violations (exports without prior approval) are resolved by retroactive ticket approval rather than preventive blocking or immediate escalation, weakening the deterrent effect of controls.\n\n---\n\n### Finding 4: Bulk Export Threshold Ambiguity for Confidential vs. Restricted Data\n\n**Section:** 5.1 (Bulk Export Authorization)\n\n**What Happened:**\nThe policy defines a single threshold structure:\n- Exports under 1,000 rows: Manager approval\n- Exports 1,000\u201310,000 rows: Data Owner approval\n- Exports over 10,000 rows: Data Owner + CISO approval\n\nHowever, the ticket sample reveals **inconsistent application to data classification levels**:\n\n| Ticket | Rows | Classification | Approvals | Policy Adherence |\n|--------|------|---|---|---|\n| EXP-Q4-2025-001 | 12,500 | Confidential | Mgr + Owner | **Non-compliant** \u2014 CISO approval missing |\n| EXP-Q4-2025-003 | 11,200 | Confidential | Mgr + Owner + CISO | Compliant |\n| EXP-Q4-2025-006 | 18,000 | **Restricted** | Mgr + Owner + CISO | Compliant |\n\nTicket EXP-Q4-2025-001 notes: \"Under 10k threshold for CISO \u2014 Data Owner approved.\" However, the ticket shows 12,500 rows, which **exceeds the 10,000-row CISO threshold**. The approval chain is incomplete: it lacks CISO sign-off despite exceeding the stated threshold.\n\n**Why This Is a Gap:**\nThe policy does not differentiate approval thresholds by data classification level (Restricted vs. Confidential). A 12,500-row export of Restricted PII data should arguably require the same approval chain as Restricted data, yet the policy only describes one threshold tree. The note on EXP-Q4-2025-001 suggests the operator or approver interpreted \"Data Owner approval sufficient for ~10k\" as an informal exception, but this contradicts the written policy.\n\nAdditionally, Section 4.3 defines a separate approval chain for data access based on classification (Restricted requires Privacy Officer + CISO), but Section 5.1 does not align bulk export thresholds with this classification-based approach. The two approval frameworks are **disconnected**.\n\n**Severity:** **Medium**\n\n**Implication:** Bulk export authorization thresholds are not clearly tiered by data sensitivity level. Confidential and Restricted data are subject to the same row-count thresholds despite differing risk profiles, and at least one export of Confidential data was approved below the stated CISO threshold, suggesting ambiguity or informal override practices.\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Section | Severity | Category |\n|---------|---------|----------|----------|\n| 1. Execution Before Approval | 5.1 | **Critical** | Preventive Control Failure |\n| 2. Pagination Threshold Evasion | 5.1, 5.2 | **High** | Design Gap |\n| 3. Alert Escalation Not Evidenced | 5.3 | **High** | Monitoring/Response Gap |\n| 4. Threshold Ambiguity by Classification | 5.1 | **Medium** | Policy Clarity Gap |\n\n---\n\n## RECOMMENDATIONS (For Management Response)\n\n1. **Implement pre-execution blocking:** DLP system should prevent query execution if no approved export ticket exists, rather than relying on alert review alone.\n\n2. **Add cumulative extraction detection:** Configure DLP to detect and flag pagination patterns and aggregate results across LIMIT/OFFSET queries within a session, triggering alerts when cumulative rows exceed threshold.\n\n3. **Formalize escalation procedures:** Define and document the escalation workflow (ticket creation, CISO notification, export suspension) when unapproved bulk exports occur; retain escalation records in audit trail.\n\n4. **Align thresholds with classification:** Revise Section 5.1 to define differentiated thresholds for Restricted vs. Confidential data, and align with Section 4.3's classification-based access control framework."
+}

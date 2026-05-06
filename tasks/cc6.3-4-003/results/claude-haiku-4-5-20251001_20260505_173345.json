@@ -1,0 +1,88 @@
+{
+  "task_id": "cc6.3-4-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:33:45.437162",
+  "score": {
+    "task_id": "cc6.3-4-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 0.4615384615384615,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-088",
+          "PCI",
+          "masking"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "j.crawford",
+          "ACCOUNTADMIN",
+          "Risk Analytics",
+          "DBA team",
+          "no exception",
+          "November 18",
+          "admin_setup"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "MARKETING_ANALYTICS",
+          "cardholder_data",
+          "masking",
+          "PCI",
+          "h.park",
+          "s.mehta",
+          "b.chen",
+          "no exception"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SVC_DATA_PIPELINE",
+          "SYSADMIN",
+          "minimum",
+          "ETL"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4287,
+    "output_tokens": 2696
+  },
+  "raw_response": "# CC6.3 Compliance Assessment: Data Access Authorization\n## Vertex Financial \u2014 Readiness Review\n\n---\n\n## FINDINGS\n\n### Finding 1: Unauthorized PCI Data Access Without Required Approval or Masking\n**Policy Section:** POL-DAP-2025-011, Section 4.1 (Cardholder Data Access) and Section 4.2 (Data Masking)\n\n**Description:**\nThree Marketing Analytics users (h.park, s.mehta, b.chen) have been granted SELECT access to the `PAYMENTS.cardholder_data` table as of September 22, 2025. According to the Snowflake role export, **no masking policy is applied** to these grants (masking_policy column is empty).\n\nThe Data Access Authorization Policy explicitly requires:\n- Direct PCI data access requires \"Data Owner + CISO + Privacy Officer approval\"\n- \"All non-DBA roles accessing PCI-scoped tables must use dynamic data masking\"\n- Masking must redact \"card numbers, CVV, and expiration dates\"\n\n**Evidence:**\n- Snowflake export, rows for h.park, s.mehta, b.chen (MARKETING_ANALYTICS role to PAYMENTS.cardholder_data): \"masking_policy\" field is blank\n- No corresponding exception record in exception register for these three users\n- Grant date September 22, 2025 shows bulk grant by \"admin_setup\" without documented approval chain\n\n**Gap:**\n- No evidence of PCI-DSS annual certification for these users\n- No documented Data Owner + CISO + Privacy Officer approval\n- Masking controls not enforced despite policy requirement\n- Marketing personnel violate explicit segregation of duties (\"Marketing personnel must not access raw PCI data\")\n\n**Severity:** **CRITICAL**\n\nThis represents direct non-compliance with PCI-DSS requirements (access control and data masking) and SOC 2 CC6.3 principles. Cardholder data is exposed to users without justified need, required approvals, or technical controls.\n\n---\n\n### Finding 2: Excessive Privileges for Service Account \u2014 Policy Violation\n**Policy Section:** POL-DAP-2025-011, Section 5 (Service Accounts)\n\n**Description:**\nService account `SVC_DATA_PIPELINE` has been granted the `SYSADMIN` role with ALL PRIVILEGES across all databases and schemas (grant_date: July 15, 2024).\n\nThe Service Accounts policy explicitly states:\n- \"Service accounts must be scoped to the minimum privileges required for the automated workflow\"\n- \"Broad roles (SYSADMIN, ACCOUNTADMIN) are **prohibited** for service accounts\"\n\n**Evidence:**\n- Snowflake export: SVC_DATA_PIPELINE role assigned \"SYSADMIN\" with \"ALL PRIVILEGES\" across ALL/ALL/ALL\n- Service account owner documented as Derek Huang (Engineering)\n- No exception record in exception register\n\n**Gap:**\n- Direct policy violation \u2014 SYSADMIN explicitly prohibited for service accounts\n- Overly broad privileges violate least-privilege principle (CC6.3 requirement)\n- Service account scope not limited to minimum required for ETL workflow\n- No compensating controls documented\n\n**Severity:** **CRITICAL**\n\nService accounts are high-risk attack vectors. SYSADMIN privileges create significant risk of unauthorized data access, modification, or exfiltration if credentials are compromised. This directly violates stated policy and least-privilege principles.\n\n---\n\n### Finding 3: Inappropriate ACCOUNTADMIN Role Assignment Without Documented Justification\n**Policy Section:** POL-DAP-2025-011, Section 3.1 (RBAC Requirements) and Section 7 (Exceptions)\n\n**Description:**\nUser `j.crawford` (Risk Analytics department) was granted ACCOUNTADMIN privileges on November 18, 2025 (Snowflake export entry). The notes field indicates: \"Granted for report debugging \u2014 no formal request\"\n\nThe RBAC policy specifies:\n- ACCOUNTADMIN role requires \"CISO + CTO + Board\" approval\n- ACCOUNTADMIN is \"Restricted to DBA team only\"\n- Exceptions require \"CISO-approved with compensating controls\"\n\n**Evidence:**\n- Snowflake export: j.crawford assigned ACCOUNTADMIN role (November 18, 2025)\n- Granted by \"admin_setup\" with note \"Granted for report debugging \u2014 no formal request\"\n- No exception record (EXC-XXXX-XXX) in the exception register\n- User department is \"Risk Analytics,\" not Database Administration\n\n**Gap:**\n- No formal access request documented\n- No CISO + CTO + Board approval evidence\n- User is from Risk Analytics, not authorized DBA team\n- No exception record created for policy deviation\n- \"Report debugging\" is operational troubleshooting, not a business justification meeting exception criteria\n- No compensating controls documented\n\n**Severity:** **CRITICAL**\n\nUnauthorized assignment of maximum-privilege system administration role to non-DBA personnel violates explicit access control policy, segregation of duties, and SOC 2 principles. This creates uncontrolled access to all data and system functions.\n\n---\n\n### Finding 4: Missing Compensating Controls for Marketing PCI Access \u2014 Incomplete Exception Documentation\n**Policy Section:** POL-DAP-2025-011, Section 7 (Exceptions) and Section 4.2 (Data Masking)\n\n**Description:**\nAlthough three Marketing users have unmasked access to cardholder data, there is no corresponding exception record in the exception register. Unlike the properly documented exception EXC-2025-088 (audit access), which includes specific compensating controls (masking, time-limited warehouse, immutable audit trail), the Marketing access has no documented exception.\n\n**Evidence:**\n- Marketing cardholder_data access grants dated September 22, 2025 (three users)\n- Exception register shows only two active/renewed exceptions (EXC-2025-088, EXC-2025-082)\n- Marketing access lacks any exception record with compensating controls\n- No documented business justification for \"customer payment analysis\" requiring raw PCI data\n\n**Gap:**\n- Absence of exception approval process for acknowledged policy deviation\n- No compensating controls defined or implemented\n- No expiration date or review schedule for PCI access\n- Cannot audit whether access remains necessary or appropriate\n\n**Severity:** **HIGH**\n\nThe existence of unexcepted policy deviations indicates breakdown in exception governance. Compensating controls are the mitigation for PCI access to non-DBA roles; their absence leaves cardholder data exposed.\n\n---\n\n### Finding 5: Quarterly Access Review Documentation Not Provided\n**Policy Section:** POL-DAP-2025-011, Section 6 (Access Reviews)\n\n**Description:**\nThe policy requires:\n- \"Quarterly reviews within 14 calendar days\"\n- \"PCI-scoped access reviewed monthly\"\n\n**Evidence Provided:**\n- No quarterly access review documentation supplied\n- No monthly PCI access review records\n- No evidence of access recertification or removal of unused access\n- Last documented review date in exception register (EXC-2025-088): December 15, 2025 (for that specific exception only, not systematic access review)\n\n**Gap:**\n- No evidence that systematic quarterly reviews are being conducted\n- No evidence of monthly PCI access reviews\n- Cannot confirm that unnecessary or inappropriate access has been identified and removed\n- Audit trail for access changes incomplete\n\n**Severity:** **HIGH**\n\nAbsence of documented access reviews is a control execution gap. Regular reviews are essential to identify and remediate access creep, policy violations, and separated duties issues. This is a foundational SOC 2 Type II requirement.\n\n---\n\n### Finding 6: Data Retention Policy Not Integrated with Access Controls\n**Policy Section:** POL-DAP-2025-011 (implicit) and POL-DR-2025-004 (Data Retention)\n\n**Description:**\nThe Data Retention and Archival Policy defines retention schedules for audit logs (24 months, S3 Intelligent Tiering) and transaction records (7 years). However, there is no documented integration between data retention/archival and access control reviews.\n\nThe Data Access Authorization Policy does not address:\n- How archived data access is controlled\n- Whether archived data is subject to the same RBAC and masking requirements\n- Whether access to archived data triggers different approval workflows\n\n**Evidence:**\n- POL-DR-2025-004 outlines archival to Glacier Deep Archive and S3 storage\n- POL-DAP-2025-011 does not reference archived data or archival-related access\n- No procedures documented for granting/revoking access to archived datasets\n\n**Gap:**\n- Unclear whether archived PCI data in Glacier/S3 is subject to the same access controls as active data\n- Potential for uncontrolled archive access if not explicitly governed\n- Segregation of duties and least-privilege principles may not extend to archival systems\n\n**Severity:** **MEDIUM**\n\nThis is a control design gap rather than an immediate execution failure. Archived data containing PCI or restricted information should be subject to equivalent access controls. The absence of documented procedures creates ambiguity and potential for non-compliance.\n\n---\n\n### Finding 7: Lack of Documented Approval for DATA_ENGINEER Role Assignments\n**Policy Section:** POL-DAP-2025-011, Section 3.1 (RBAC Requirements)\n\n**Description:**\nTwo DATA_ENGINEER role assignments exist:\n- p.nakamura: granted September 1, 2024 (ETL_STAGING and ETL_TARGET)\n- r.okafor: granted March 15, 2025 (ETL_STAGING only)\n\nThe RBAC policy specifies DATA_ENGINEER requires \"Manager + Data Owner\" approval. However, the Snowflake export shows both grants as \"granted_by: dba_setup\" with no evidence of the required manager or data owner approval documentation.\n\n**Evidence:**\n- Snowflake export entries: p.nakamura and r.okafor DATA_ENGINEER grants\n- \"Granted_by\" field shows \"dba_setup\" (automated provisioning account)\n- No approval chain or manager/data owner sign-off visible\n- Over 1 year elapsed since p.nakamura's grant without documented review\n\n**Gap:**\n- No evidence of manager approval for data engineer assignments\n- No evidence of data owner approval\n- No approval documentation retained with access grant\n- Cannot confirm segregation of duties or business justification\n\n**Severity:** **MEDIUM**\n\nWhile DATA_ENGINEER is a lower-risk role than administrative roles, the absence of documented approval violates the stated approval requirement in the policy. This pattern suggests inconsistent enforcement of the approval control.\n\n---\n\n## SUMMARY\n\n| Severity | Count | Control Impact |\n|----------|-------|-----------------|\n| **Critical** | 3 | Direct violations of PCI-DSS and SOC 2 requirements |\n| **High** | 2 | Control execution gaps affecting oversight |\n| **Medium** | 2 | Control design/documentation gaps |\n\n### Critical Issues Requiring Immediate Remediation:\n1. **Marketing users' unmasked PCI data access** \u2014 Revoke immediately or implement masking; obtain required approvals\n2. **SVC_DATA_PIPELINE SYSADMIN privilege** \u2014 Reduce to minimum required role; review for unauthorized use\n3. **j.crawford ACCOUNTADMIN assignment** \u2014 Revoke immediately; formalize through exception process if needed\n\n### Control Readiness: **NOT READY**\nVertex Financial cannot attest to CC6.3 compliance without remediating critical findings and establishing documented access review procedures."
+}

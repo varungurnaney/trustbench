@@ -1,0 +1,110 @@
+{
+  "task_id": "cc7.2-5-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T16:27:00.366028",
+  "score": {
+    "task_id": "cc7.2-5-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "helix-ml-inference",
+          "helix-data-lake",
+          "5 business days",
+          "monitoring",
+          "coverage gap",
+          "deployed",
+          "no alerting",
+          "SLA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "S3 bulk access",
+          "false positive",
+          "30%",
+          "tuning",
+          "TUNE-202",
+          "alert fatigue",
+          "95%",
+          "97%"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "brute force",
+          "SLA",
+          "acknowledged",
+          "December",
+          "observation"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQL injection",
+          "disabled",
+          "TUNE-203",
+          "compensating",
+          "WAF",
+          "CISO"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "impossible travel",
+          "5",
+          "unresolved",
+          "investigation",
+          "December",
+          "SLA",
+          "triage"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2993,
+    "output_tokens": 3136
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC7.2 Compliance Review\n**Helix Data Systems | Observation Period: Q4 2025**\n**Control: CC7.2 \u2014 Monitoring and Anomaly Detection**\n\n---\n\n## Executive Summary\n\nThe evidence demonstrates a monitoring program with meaningful structural foundations: a documented policy, quarterly coverage reviews, SIEM integration, alert tuning processes, and active triage. However, the Q4 2025 observation period surfaces several issues that a SOC 2 auditor would scrutinize. Two production services operated outside the monitoring framework for material portions of the period, alert acknowledgment SLAs show measurable non-compliance, and one alert category shows a pattern of degrading signal quality without resolution. None of these individually represents a catastrophic failure, but in combination they create a defensibility problem for a Type II opinion covering this period.\n\n---\n\n## Finding 1: Two Production Services Deployed Without Timely Monitoring Coverage\n\n**Section:** Quarterly Monitoring Coverage Review \u2014 `coverage_gaps` and `new_services_deployed_q4`; Policy POL-MON-003 \u00a75\n\n### Why It's a Gap\n\nPOL-MON-003 \u00a75 requires monitoring to be configured within **5 business days** of deployment for any new production service. Both gaps identified in the Q4 review failed this requirement:\n\n| Service | Deployed | Monitoring Configured | Days Unmonitored (as of review) |\n|---|---|---|---|\n| helix-ml-inference | Nov 20, 2025 | Not yet configured | ~25 days |\n| helix-data-lake-ingestion | Oct 5, 2025 | Not yet configured | ~71 days |\n\n`helix-data-lake-ingestion` is particularly concerning. It deployed on October 5 \u2014 the first day of the observation period \u2014 and as of the December 15 review date, it has **no Datadog integration, no SIEM, and no alerting**. This means the service operated with zero anomaly detection capability for the entire Q4 observation window. `helix-ml-inference` additionally carries the aggravating circumstance that the ML team deployed it **without notifying Security**, indicating a breakdown in the change management or deployment governance process upstream of the monitoring control itself.\n\nBoth services have remediation target dates of January 15, 2026 \u2014 outside the observation period \u2014 which means an auditor reviewing Q4 2025 will see the full gap duration without a within-period resolution.\n\nFor a Type II audit, the auditor is evaluating whether the control **operated effectively throughout the period**. A service running for 71 days without SIEM integration is not a process anomaly; it is a pattern of the control not functioning as designed.\n\n### Severity: **High**\n\n---\n\n## Finding 2: Alert Acknowledgment SLA Non-Compliance Across Multiple High-Severity Rules\n\n**Section:** Monthly Alert Summary \u2014 `acknowledged_within_sla` column; Policy POL-MON-003 \u00a73.1 and \u00a74.1\n\n### Why It's a Gap\n\nPOL-MON-003 \u00a73.1 requires High severity alerts to be acknowledged within **30 minutes, 24/7**. The monthly summary data shows consistent non-compliance across several High-severity rules throughout Q4:\n\n| Month | Rule | Total Alerts | Acknowledged Within SLA | Not Acknowledged |\n|---|---|---|---|---|\n| October | S3 Bulk Access (High) | 156 | 148 | **8** |\n| October | Security Group Change (Medium) | 34 | 30 | 4 |\n| November | S3 Bulk Access (High) | 89 | 81 | **8** |\n| November | Security Group Change (Medium) | 28 | 24 | 4 |\n| December | Failed Login Brute Force (High) | 298 | 285 | **13** |\n| December | Impossible Travel (High) | 31 | 28 | **3** |\n| December | S3 Bulk Access (High) | 142 | 130 | **12** |\n| December | Security Group Change (Medium) | 41 | 35 | 6 |\n\nThe S3 Bulk Access rule is notable: it carries a high false positive rate (~95%+) caused by legitimate ETL jobs, which plausibly contributes to alert fatigue and SLA slippage. However, alert fatigue from a known noisy rule is itself a control problem \u2014 the policy required tuning within 2 weeks of identifying a false positive rate above 30% (\u00a73.3), a threshold breached in October with only partial remediation applied by November and regression in December after CHG-411.\n\nMore significantly, the December brute force spike (Dec 14-16) resulted in **13 unacknowledged High alerts** \u2014 meaning alerts tied to an active, identified coordinated attack were not acknowledged within SLA. While the attack was ultimately blocked at the WAF, the monitoring control's response function did not operate as designed during a real threat event.\n\nAn auditor will view unacknowledged alerts during a known security event as a meaningful operating effectiveness failure, not mere statistical noise.\n\n### Severity: **High**\n\n---\n\n## Finding 3: Persistent S3 Bulk Access Alert Noise Without Timely Resolution\n\n**Section:** Monthly Alert Summary \u2014 S3 Bulk Access rows (October\u2013December); Policy POL-MON-003 \u00a73.3\n\n### Why It's a Gap\n\nPOL-MON-003 \u00a73.3 requires that false positive rates above 30% trigger tuning within **2 weeks**. The S3 Bulk Access rule had a false positive rate of approximately **97.4% in October** (152 FP out of 156 total). Tuning ticket TUNE-202 was created October 20.\n\nThe Q4 trajectory tells a problematic story:\n\n- **October**: 156 alerts, 152 false positives (~97%), TUNE-202 created\n- **November**: 89 alerts, 86 false positives (~97%), noted as \"still noisy\" \u2014 partial tuning applied\n- **December**: 142 alerts, 135 false positives (~95%), described as \"tuning regressed\" after CHG-411\n\nThree months into the observation period, the rule remains materially noisy, SLA compliance is degrading rather than improving, and a configuration change (CHG-411) caused regression without apparent compensating review of alert rule behavior. The 2-week tuning SLA from the policy was not met.\n\nThis finding is compounded by Finding 2: the high false positive rate is the most probable driver of the S3 rule's acknowledgment SLA failures, creating a causal chain between inadequate tuning discipline and degraded operational response.\n\n### Severity: **Medium**\n\n---\n\n## Finding 4: Impossible Travel Alert \u2014 Rising Unresolved Investigations Without Documented Disposition\n\n**Section:** Monthly Alert Summary \u2014 Impossible Travel rows; Policy POL-MON-003 \u00a74.1 and \u00a74.2\n\n### Why It's a Gap\n\nThe Impossible Travel rule shows an increase in the `requires_investigation` category in December with no corresponding documentation of resolution:\n\n| Month | Total | True Positive | False Positive | Requires Investigation |\n|---|---|---|---|---|\n| October | 23 | 3 | 18 | 2 |\n| November | 19 | 2 | 15 | 2 |\n| December | 31 | 4 | 22 | **5** |\n\nThe December monthly summary note reads: *\"Increase in unresolved investigations.\"* POL-MON-003 \u00a74.1 requires that alerts triaged as \"Requires Investigation\" be escalated per the incident response plan, and \u00a74.2 requires triage notes for all Critical and High alerts within 1 hour of acknowledgment.\n\nThe evidence provided does not include documentation showing that the 5 unresolved December investigations were formally dispositioned, escalated, or accepted. For CC7.2, the requirement is not merely that anomalies are detected \u2014 it is that they are **analyzed to determine whether they represent security events**. Five High-severity alerts in the \"Requires Investigation\" state as of the review date, with no documented outcome, represents an incomplete implementation of the analysis requirement embedded in the control itself.\n\nThis is particularly relevant given the December 14-16 brute force event also occurred in December \u2014 an auditor may reasonably ask whether any of these unresolved impossible travel investigations are related.\n\n### Severity: **Medium**\n\n---\n\n## Finding 5: Unauthorized Large Outbound Transfer (INC-310) \u2014 Limited Evidence of Full Detection Cycle\n\n**Section:** Monthly Alert Summary \u2014 December, Large Outbound Transfer; CC7.2 control language\n\n### Why It's a Gap\n\nThe December alert summary notes that one of two Large Outbound Transfer true positives was an **unauthorized transfer**, escalated as INC-310. This is evidence that the monitoring control **worked** \u2014 the anomaly was detected and escalated, which is a positive indicator.\n\nHowever, the evidence package provided does not include:\n- The INC-310 incident record or post-incident review\n- Confirmation of the scope and impact of the unauthorized transfer\n- Evidence that the transfer was fully contained and did not involve production customer data\n\nFor a CC7.2 readiness assessment, the detection event alone is insufficient. CC7.2 requires that anomalies be analyzed to determine whether they represent security events \u2014 the full detection-to-analysis-to-disposition cycle needs to be documented. The absence of INC-310 supporting documentation from the evidence package is a gap in the evidence provided to auditors, even if the underlying work was performed.\n\nIf the incident involved customer data, it may also carry implications for CC7.3 (incident response) and potentially breach notification obligations \u2014 but those fall outside the scope of this control review.\n\n### Severity: **Medium** *(evidence gap; severity may be revised upon review of INC-310 documentation)*\n\n---\n\n## Observations Reviewed and Not Elevated to Findings\n\nThe following items were reviewed and assessed as **adequately controlled or acceptable operational practice**:\n\n| Item | Assessment |\n|---|---|\n| SQL injection alert disabled (TUNE-203) | Properly handled. CISO approval documented, compensating controls (WAF + CloudTrail bypass monitoring) identified, policy requirement for suppression approval met per \u00a73.3. |\n| Annual penetration test | Completed within period, High finding remediated and re-tested within 30 days. Accepted risks are documented and scoped appropriately (non-production items). No concerns for CC7.2. |\n| Root account usage (Nov 2) | Detected within 2 minutes, investigated, and documented as authorized. Demonstrates detection capability functioning as designed. |\n| Brute force tuning (TUNE-201) | October tuning applied October 28, achieving 63% volume reduction by November. Demonstrates the alert tuning cycle operating within policy expectations. |\n| helix-notification-v2 deployment | Monitoring configured within 2 days of deployment, well within the 5-day SLA. Demonstrates the process works when followed. |\n| Overall monitoring coverage (22/24 services) | 91.7% coverage is a reasonable operational state; the gap is not the coverage ratio itself but the duration and severity of the uncovered services. |\n\n---\n\n## Summary Risk Matrix\n\n| # | Finding | Severity | Likely Auditor Treatment |\n|---|---|---|---|\n| 1 | Two production services without monitoring coverage for material portions of Q4 | **High** | Exception \u2014 policy non-compliance with extended duration |\n| 2 | Alert acknowledgment SLA failures across multiple High-severity rules, including during active threat event | **High** | Exception \u2014 operating effectiveness failure |\n| 3 | S3 bulk access alert tuning non-compliance with regression | **Medium** | Management letter comment or exception depending on auditor judgment |\n| 4 | Unresolved Impossible Travel investigations without documented disposition | **Medium** | Management letter comment |\n| 5 | INC-310 unauthorized transfer \u2014 incomplete evidence package | **Medium** | Evidence request; severity dependent on incident scope |\n\n---\n\n## Recommended Remediation Priorities Before Audit Fieldwork\n\n1. **Immediately complete monitoring integration** for `helix-data-lake-ingestion` and `helix-ml-inference`. Do not allow these to remain open into the audit window. If January 15 target dates slip, this becomes a current-period finding rather than a Q4 remediation.\n\n2. **Implement a deployment gate** requiring Security sign-off before production deployment. The ML team deploying without notifying Security is a process control failure that monitoring alone cannot compensate for.\n\n3. **Document disposition of all 5 open Impossible Travel investigations** from December. If any are escalating, open formal incident records. If closed, document closure rationale.\n\n4. **Produce and provide the INC-310 incident record** as audit evidence. If a post-incident review has not been completed, complete it. Auditors will ask for it.\n\n5. **Address S3 alert tuning regression** from CHG-411. Implement a process requiring alert rule impact review as part of change management for infrastructure changes affecting monitored resources.\n\n6. **Review acknowledgment SLA tracking** to understand whether the unacknowledged alerts represent a tooling gap (alerts not routing correctly to PagerDuty) or a staffing/on-call coverage gap. The December brute force event SLA failures in particular need an explanation auditors can evaluate."
+}

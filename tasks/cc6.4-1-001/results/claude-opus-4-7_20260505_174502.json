@@ -1,0 +1,56 @@
+{
+  "task_id": "cc6.4-1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:45:02.255969",
+  "score": {
+    "task_id": "cc6.4-1-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.16666666666666666,
+    "f1": 0.2857142857142857,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "visitor",
+          "escort",
+          "sign-in",
+          "badge"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CCTV",
+          "retention",
+          "operational needs",
+          "undefined",
+          "footage",
+          "90 days"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1817,
+    "output_tokens": 2455
+  },
+  "raw_response": "# CC6.4 Readiness Assessment: Orion DataTech Physical Security Policy\n\n## Overall Assessment\n\nThe policy provides a reasonable framework covering zones, badges, visitors, surveillance, and environmental controls. However, several gaps would likely be flagged by a SOC 2 auditor evaluating CC6.4. Findings are documented below.\n\n---\n\n## Findings\n\n### Finding 1: No Defined Timeframe for Badge Deactivation Upon Termination\n\n- **Section:** 4.3 Badge Deactivation\n- **Gap:** The policy states deactivation \"should be completed promptly\" but does not define a specific SLA (e.g., within 24 hours, same business day, or immediately upon termination). Without a measurable standard, auditors cannot test timeliness, and there is risk of terminated personnel retaining physical access. This is a common high-impact failure pattern in CC6.4 testing.\n- **Severity:** **High**\n\n---\n\n### Finding 2: No Periodic Access Review / Recertification Requirement\n\n- **Section:** Section 4 (Access Management) \u2014 entirely missing\n- **Gap:** CC6.4 expects entities to periodically review physical access rights to confirm continued business need, particularly for Restricted and High Security zones. The policy describes provisioning and deprovisioning but contains no requirement for managers, the CISO, or Facilities to recertify access on a defined cadence (e.g., quarterly or annually). Stale entitlements would not be detected.\n- **Severity:** **High**\n\n---\n\n### Finding 3: CCTV Footage Retention Period Not Defined\n\n- **Section:** 5.1 CCTV Coverage\n- **Gap:** Footage is retained \"in accordance with operational needs,\" which is not a measurable standard. Auditors require a defined minimum retention period (commonly 30\u201390 days) so that investigations of physical security incidents are supported. The vague language is not auditable.\n- **Severity:** **Medium**\n\n---\n\n### Finding 4: Insufficient Oversight of Colocation Provider (DataVault)\n\n- **Section:** 7.1 Colocation Provider\n- **Gap:** The policy relies on DataVault's SOC 2 Type II report but does not describe the vendor management process \u2014 who reviews the report, frequency of review, handling of CUECs (complementary user entity controls), or actions taken when exceptions are noted. CC6.4 reliance on a subservice organization requires documented oversight.\n- **Severity:** **High**\n\n---\n\n### Finding 5: Visitor Escort Requirements Not Addressed\n\n- **Section:** 4.2 Visitor Management\n- **Gap:** The policy requires sign-in, ID verification, and badge issuance, but does not require visitors to be escorted while in General Office, Restricted, or High Security zones. Without an escort requirement, visitor badges alone may not adequately restrict access. Also missing: prohibition on visitor access to Restricted/High Security zones except under defined conditions.\n- **Severity:** **High**\n\n---\n\n### Finding 6: Visitor Logs \u2014 No Retention or Review Requirement\n\n- **Section:** 4.2 Visitor Management\n- **Gap:** While the receptionist logs visitor information, the policy does not specify how long visitor logs are retained, whether they are reviewed, or how they are protected. Auditors typically expect retention of at least 12 months for visitor records.\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: After-Hours Monitoring Control Weakness\n\n- **Section:** 5.2 Monitoring\n- **Gap:** Live monitoring only occurs during business hours; after-hours coverage relies solely on motion-activated alerts to one on-call guard. There is no documented response SLA, escalation procedure, or backup if the on-call guard is unavailable. This is a single point of failure during the highest-risk hours.\n- **Severity:** **Medium**\n\n---\n\n### Finding 8: Cabinet Combination Lock Controls Are Weak\n\n- **Section:** 7.2 Cabinet Access\n- **Gap:** Combination locks (vs. badge readers or biometric controls) at the colocation cabinets generate no access logs, meaning Orion cannot identify who accessed cabinets or when. Quarterly rotation helps, but there is no mechanism to detect unauthorized access between rotations, and no procedure for immediate combination change upon Infrastructure team member departure.\n- **Severity:** **High**\n\n---\n\n### Finding 9: No Defined Process for Lost/Stolen Badges\n\n- **Section:** Section 4 \u2014 missing\n- **Gap:** The policy does not address reporting requirements, deactivation timelines, or replacement procedures for lost or stolen badges. This is a standard CC6.4 control expectation.\n- **Severity:** **Medium**\n\n---\n\n### Finding 10: Audit Findings Tracking Lacks Specificity\n\n- **Section:** 8.2 Compliance Auditing\n- **Gap:** Semi-annual audits are required and findings are \"tracked to resolution,\" but the policy does not define remediation SLAs based on severity, ownership, or escalation if findings are not closed. Auditors will want evidence that findings are addressed within defined timeframes.\n- **Severity:** **Low**\n\n---\n\n### Finding 11: No Reference to Access Authorization Forms Retention\n\n- **Section:** 4.1 Badge Issuance and Lifecycle\n- **Gap:** Authorization forms are referenced as the basis for badge programming, but the policy does not specify retention requirements or where forms are stored. Auditors testing badge provisioning will need to trace badges back to approved authorizations.\n- **Severity:** **Low**\n\n---\n\n### Finding 12: Tailgating / Piggybacking Not Addressed\n\n- **Section:** Section 3 / Section 4 \u2014 missing\n- **Gap:** No mention of anti-tailgating controls (mantraps, anti-passback, employee training, or signage) for Restricted or High Security zones. Auditors assessing higher-risk environments commonly probe for these controls.\n- **Severity:** **Low**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | No defined badge deactivation SLA | High |\n| 2 | No periodic access recertification | High |\n| 3 | Undefined CCTV retention period | Medium |\n| 4 | Insufficient colocation provider oversight | High |\n| 5 | No visitor escort requirements | High |\n| 6 | Visitor log retention/review undefined | Medium |\n| 7 | After-hours monitoring weakness | Medium |\n| 8 | Combination locks at colocation lack logging | High |\n| 9 | No lost/stolen badge process | Medium |\n| 10 | Audit remediation SLAs not defined | Low |\n| 11 | Authorization form retention not specified | Low |\n| 12 | Anti-tailgating controls not addressed | Low |\n\n## Recommendation\n\nThe policy is structurally sound but contains five **High**-severity gaps that should be remediated before a Type II observation window begins. Priorities are: (1) badge deactivation SLA, (2) periodic access reviews, (3) visitor escort requirements, (4) colocation vendor oversight procedures, and (5) replacing combination locks with logged access controls or implementing compensating monitoring at DataVault cabinets."
+}

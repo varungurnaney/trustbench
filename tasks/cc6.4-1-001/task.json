@@ -1,0 +1,58 @@
+{
+  "id": "cc6.4-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.4",
+  "control_description": "The entity restricts physical access to facilities and protected information assets to meet the entity's objectives.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/physical-security-policy.md",
+      "type": "policy",
+      "description": "Orion DataTech physical security policy covering facility access controls, badge management, and surveillance requirements"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the physical security policy for Orion DataTech. Assess whether it adequately addresses SOC 2 CC6.4 requirements for restricting physical access to facilities and protected information assets. Identify any gaps or missing elements that an auditor would flag.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No visitor escort requirement defined in policy",
+      "description": "Section 4.2 addresses visitor management by requiring visitors to sign in at reception and wear a visitor badge, but does not require visitors to be escorted by an authorized employee while on premises. Without an escort requirement, visitors could access sensitive areas such as server rooms, wiring closets, or workstations containing confidential data. CC6.4 requires the entity to restrict physical access, and unescorted visitors represent an uncontrolled physical access vector.",
+      "evidence_sources": ["evidence/physical-security-policy.md"],
+      "expected_reasoning": "Section 4.2 describes sign-in and badge issuance procedures but is silent on escort requirements. An auditor should recognize that sign-in alone is insufficient — visitors must be escorted to prevent unauthorized access to restricted areas. The policy mentions 'restricted zones' in Section 3.1 but does not link visitor procedures to zone-based access restrictions.",
+      "detection_criteria": {
+        "required_keywords": ["Section 4.2", "visitor", "escort", "unescorted", "restricted area", "sign-in", "badge"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No CCTV retention period defined in policy",
+      "description": "Section 5.1 states that CCTV cameras are deployed at building entrances, server room doors, and loading docks, and that footage is 'retained in accordance with operational needs.' No specific retention period is defined. Without a defined retention period, footage needed for incident investigation or audit evidence may be overwritten before it can be reviewed. Industry standard minimum retention is 90 days. The vague language makes it impossible to verify compliance or hold the organization accountable for maintaining footage availability.",
+      "evidence_sources": ["evidence/physical-security-policy.md"],
+      "expected_reasoning": "Section 5.1 mentions CCTV deployment but uses vague language about retention. An auditor should flag the absence of a specific retention period (e.g., 30, 60, or 90 days) as a control design gap. Without a defined period, footage availability cannot be guaranteed for investigations or audits.",
+      "detection_criteria": {
+        "required_keywords": ["Section 5.1", "CCTV", "retention", "operational needs", "undefined", "footage", "90 days"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["physical_security", "policy_review", "visitor_management", "CCTV_retention", "single_document"]
+  }
+}

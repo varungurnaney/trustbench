@@ -1,0 +1,87 @@
+{
+  "id": "cc3.1-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC3.1",
+  "control_description": "The entity specifies objectives with sufficient clarity to enable the identification of risks to the achievement of its objectives. The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/risk-management-policy.md",
+      "type": "policy",
+      "description": "Pinnacle Cloud Services risk management policy with detailed risk appetite statement and appetite breach protocol"
+    },
+    {
+      "path": "evidence/risk-register-q4.csv",
+      "type": "spreadsheet",
+      "description": "Q4 2025 risk register with 12 risks including residual ratings, appetite breach tracking, and remediation status"
+    },
+    {
+      "path": "evidence/risk-committee-minutes-q3-q4.md",
+      "type": "report",
+      "description": "Risk Committee meeting minutes for Q3 and Q4 2025 documenting appetite breach discussions and remediation plan deferrals"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/security-operations-dashboard-q4.md",
+      "type": "report",
+      "description": "Q4 2025 security operations dashboard with incident metrics and threat intelligence. Provides operational context but is not directly relevant to the risk management governance process."
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Pinnacle Cloud Services' risk identification and assessment process for the Q4 2025 observation period (October 1 - December 31, 2025). Review the risk management policy (including the risk appetite statement and appetite breach protocol), risk register, and Risk Committee meeting minutes. Assess whether CC3.1 requirements for risk identification, assessment, and management are met. Pay attention to how risk appetite breaches are handled and whether the defined escalation protocol is being followed. Consider the full context when making judgments.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "PC-RISK-003 ransomware risk appetite breach unresolved for 2+ quarters without formal exception or Board escalation",
+      "description": "PC-RISK-003 (ransomware attack) has a residual rating of 12 (High), exceeding the information security appetite threshold of Medium (≤9). The appetite breach was first identified at the Q3 2025 Risk Committee meeting (July 1). Policy Section 3.4 states that if an appetite breach is 'not remediated within one quarter, the Risk Committee must either (a) approve a formal exception with documented business justification, or (b) escalate to the Board for decision.' At the Q4 meeting (October 8), the committee acknowledged this was the second quarter of breach but opted to 'continue monitoring' without requesting a formal exception or escalating to the Board. By the December 15 CRO email update, the breach is in its third quarter. The Illumio micro-segmentation remediation has been delayed from Q4 2025 to March 2026. The judgment call: the organization has an active remediation plan (Illumio purchased December 1, deployment starting January 2026), the Risk Committee has discussed this at every meeting, and the CRO has flagged the need for formal action. However, the policy's escalation protocol is unambiguous -- after one quarter without remediation, a formal exception or Board escalation is required, not continued monitoring.",
+      "evidence_sources": ["evidence/risk-register-q4.csv", "evidence/risk-committee-minutes-q3-q4.md", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "The auditor must trace the timeline: appetite breach identified July 1 (Q3) → remediation plan approved (Illumio) → Q4 meeting (Oct 8) shows breach still active after one quarter → policy Section 3.4 requires formal exception or Board escalation → committee chose 'continue monitoring' instead → CRO email Dec 15 shows breach now in third quarter. Supporting the organization: active remediation plan exists, vendor contract signed, deployment scheduled. Against: policy language is mandatory ('must either...approve a formal exception...or escalate to the Board'), and the committee explicitly chose neither option. The ransomware threat intelligence (security ops dashboard shows 'Ransomware-as-a-service groups targeting SaaS providers') adds context to the urgency.",
+      "detection_criteria": {
+        "required_keywords": ["PC-RISK-003", "ransomware", "appetite breach", "2 quarters", "formal exception", "Board escalation", "Section 3.4", "Illumio", "continue monitoring"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "PC-RISK-005 GDPR compliance risk appetite breach unresolved for 3 quarters without formal exception or Board escalation",
+      "description": "PC-RISK-005 (GDPR data subject rights non-compliance) has a residual rating of 6 (Medium), exceeding the compliance appetite threshold of Low (≤4). The breach was first identified in Q2 2025 (April 15). Policy Section 3.4 requires remediation within one quarter or formal exception/Board escalation. The breach has persisted through Q2, Q3, and Q4 2025 -- approximately 8 months. The BigID remediation tool was not procured until November 28, 2025, with deployment not expected until February 2026. Additionally, policy Section 3.2 sets a 60-day compliance risk remediation window, which was exceeded months ago. The Q4 Risk Committee minutes show Katherine Park (CFO) specifically asked whether the 60-day window was exceeded, and Samuel Osei confirmed the breach has been active since April. Despite this acknowledgment, no formal exception was requested and no Board escalation occurred. The judgment call: the organization identified the issue, has an active procurement (BigID), and the CRO flagged the need for formal action. However, a GDPR compliance risk exceeding appetite for 8 months in a 'very low appetite' compliance category -- with zero formal governance action -- is a significant process gap.",
+      "evidence_sources": ["evidence/risk-register-q4.csv", "evidence/risk-committee-minutes-q3-q4.md", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "Timeline: appetite breach since April 15 (Q2) → remediation plan approved Q3 (BigID) → Q4 meeting shows breach in second quarter, policy requires formal exception or Board escalation → committee takes no formal action → CRO email Dec 15 shows breach in third quarter. Compliance risks have 'very low appetite' (Low ≤4) and a 60-day remediation window (Section 3.2). The 8-month breach exceeds the 60-day window by 6x. The auditor should note that this is a compliance risk, which has stricter appetite thresholds than information security risks.",
+      "detection_criteria": {
+        "required_keywords": ["PC-RISK-005", "GDPR", "appetite breach", "3 quarters", "April 2025", "60-day", "formal exception", "Board escalation", "BigID", "compliance appetite"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Risk Committee appetite breach protocol not enforced -- pattern of deferral",
+      "description": "Policy Section 3.4 defines a mandatory appetite breach protocol: if not remediated within one quarter, the Risk Committee 'must either (a) approve a formal exception...or (b) escalate to the Board.' In both PC-RISK-003 and PC-RISK-005, the committee acknowledged the breaches, discussed remediation timelines, and opted to 'continue monitoring' rather than following the defined protocol. The CRO (Brian Nakamura) identified the need for formal action at both the Q4 meeting and in the December 15 email, but the committee did not act. This pattern suggests the appetite breach protocol, while well-designed in policy, is not being enforced in practice. The governance mechanism intended to ensure risk appetite breaches receive appropriate executive attention is not functioning as documented.",
+      "evidence_sources": ["evidence/risk-committee-minutes-q3-q4.md", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "The auditor should identify the pattern: two separate risks, both exceeding appetite for multiple quarters, both discussed at committee meetings, both deferred without formal action despite the CRO recommending action. This is a control design vs. operating effectiveness gap -- the policy is well-designed but the committee is not following it. The 'continue monitoring' approach substitutes informal attention for the formal governance process the policy requires.",
+      "detection_criteria": {
+        "required_keywords": ["appetite breach protocol", "not enforced", "continue monitoring", "formal exception", "Board escalation", "pattern", "CRO", "Section 3.4"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["risk_assessment", "judgment_call", "risk_appetite", "appetite_breach", "escalation_protocol", "governance_effectiveness", "GDPR", "ransomware"]
+  }
+}

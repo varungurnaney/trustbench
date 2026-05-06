@@ -1,0 +1,76 @@
+{
+  "task_id": "cc6.6-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T18:47:30.788247",
+  "score": {
+    "task_id": "cc6.6-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.25,
+    "f1": 0.36363636363636365,
+    "score": 0.36363636363636365,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "admin tool",
+          "bypass",
+          "WAF",
+          "Kong",
+          "SEC-EXC-2024-018",
+          "WebSocket",
+          "compensating controls",
+          "VPN",
+          "customer data export",
+          "schema validation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "admin audit logs",
+          "CloudWatch",
+          "Splunk",
+          "SIEM",
+          "TV-MRD-2025-003",
+          "anomaly detection",
+          "correlation",
+          "not forwarded"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "internal-cron",
+          "VPN"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5226,
+    "output_tokens": 2714
+  },
+  "raw_response": "# CC6.6 Readiness Assessment \u2014 Meridian SaaS\n\n## Overall Conclusion\n\n**Control Status: Partially Effective with Material Exception**\n\nThe boundary architecture is well-designed and effectively implemented for 99.97% of production traffic. However, the admin tool bypass \u2014 while documented as an accepted risk \u2014 represents a direct violation of the entity's own stated policy (MRD-SEC-POL-011 \u00a73.1 and \u00a73.2), which explicitly prohibits bypass of any boundary layer for internal production services. The compensating controls are reasonable but the exception's persistence and the gaps identified below warrant findings that should be addressed before SOC 2 attestation.\n\n---\n\n## Findings\n\n### Finding 1: Policy-Architecture Conflict on Internal Service Boundary Requirements\n\n- **Related to:** MRD-SEC-POL-011 \u00a73.1 and \u00a73.2 vs. MRD-ARCH-005 \u00a73.2\n- **Gap:** The Access Control Policy explicitly states \"No production service shall accept traffic that bypasses any layer of this boundary stack\" and \u00a73.2 specifies internal services are \"subject to the same boundary requirements.\" The admin tool's direct VPN\u2192ALB path is a documented, ongoing violation. While Section 4 of the policy permits exceptions, the policy's absolute language (\"MUST,\" \"No production service shall\") is inconsistent with the existence of a long-running exception. Auditors will read this as the entity not operating in conformance with its documented policy. Either the policy must be amended to acknowledge bypass paths under exception, or the exception must be remediated.\n- **Severity:** Medium\n\n### Finding 2: Exception Approaching Maximum Duration Without Remediation Path\n\n- **Related to:** MRD-SEC-POL-011 \u00a74.1 and MRD-ARCH-005 \u00a73.4 / \u00a75\n- **Gap:** Policy \u00a74.1 mandates a \"Maximum 12-month duration\" for exceptions. SEC-EXC-2024-018 was filed March 2024 and has been active for ~21 months as of the Q4 2025 observation period \u2014 nearly double the policy maximum. The next review is scheduled for March 2026 (24-month mark). Additionally, the original technical blocker (Kong WebSocket support) was resolved in August 2024 per \u00a73.4 of the architecture document, removing the justification for continued exception. This is a direct policy non-compliance and represents a significant control deficiency.\n- **Severity:** High\n\n### Finding 3: Admin Audit Logs Not Forwarded to SIEM\n\n- **Related to:** Pentest finding TV-MRD-2025-003; MRD-SEC-POL-011 \u00a75.1\n- **Gap:** Policy \u00a75.1 requires that \"Boundary bypass attempts trigger immediate alert to security on-call\" and lists Splunk as the centralized monitoring platform for WAF and Kong logs. The admin tool \u2014 the single largest sanctioned bypass path \u2014 logs only to CloudWatch with no SIEM forwarding or anomaly detection. This means the most sensitive operations (customer suspension, data exports, feature flag changes, audit log access) on the bypass path are not subject to correlation or automated detection. Remediation is not planned until Q1 2026, leaving the Q4 2025 observation period without this control. This materially weakens the compensating control set cited in the exception.\n- **Severity:** High\n\n### Finding 4: Insufficient Compensating Controls for Sensitive Operations on Bypass Path\n\n- **Related to:** Admin tool access logs; MRD-ARCH-005 \u00a73.1\n- **Gap:** Review of the four-day log sample shows highly sensitive operations executing on the bypass path with no WAF/Kong inspection: bulk `export_customer_data` (legal hold and GDPR requests, 6-15 second response times indicating large payloads), customer suspension/unsuspension, global feature flag changes affecting all tenants, and rate limit modifications. A service account (`admin-svc@meridian.io`) is exporting customer data autonomously. The compensating controls (VPN + SAML + MFA + RBAC) address authentication but do not address payload inspection, schema validation, anomaly detection, or rate limiting that the standard stack provides. There is no evidence of compensating detection (e.g., DLP on exports, alerting on high-volume export sequences, review of service-account activity).\n- **Severity:** Medium\n\n### Finding 5: Service Account Activity Lacks Differentiated Controls\n\n- **Related to:** Admin tool access logs (admin-svc, ops-bot, internal-cron)\n- **Gap:** Three non-human identities (`admin-svc@meridian.io`, `ops-bot@meridian.io`, `internal-cron@meridian.io`) perform privileged actions including customer data exports. The architecture document \u00a73.3 describes RBAC as \"viewer, operator, admin\" without distinguishing service-account governance. There is no documented evidence of: credential rotation cadence for these accounts, MFA enforcement (MFA is described for Okta SAML SSO \u2014 typically not applied to non-human service accounts), scope restrictions, or attestation/recertification. `admin-svc` performing legal-hold exports is a high-impact capability that would normally warrant out-of-band approval workflow.\n- **Severity:** Medium\n\n### Finding 6: Quarterly Compensating Control Verification Not Evidenced\n\n- **Related to:** MRD-SEC-POL-011 \u00a74.2\n- **Gap:** Policy \u00a74.2 requires that \"compensating controls verified quarterly\" for active exceptions. The pentest report references the exception but documents no independent quarterly verification activity. The September 2025 review noted in MRD-ARCH-005 \u00a75 is described as a \"review\" but no evidence (verification checklist, control test results, sign-off) was provided to demonstrate that VPN posture, SAML/MFA configuration, RBAC mappings, and audit logging were tested and confirmed effective each quarter during the observation period.\n- **Severity:** Medium\n\n### Finding 7: Webhook Receiver Rate Limiting Gap\n\n- **Related to:** Pentest finding TV-MRD-2025-002; MRD-SEC-POL-011 \u00a73.3\n- **Gap:** Policy \u00a73.3 designates Kong as the single enforcement point for \"rate limiting per client/IP.\" The webhook receiver lacks per-source rate limiting, relying only on a global 2,000 req/min WAF limit, which is insufficient against distributed valid-payload floods. Status is \"Remediation in Progress\" with no completion date evidenced.\n- **Severity:** Low\n\n### Finding 8: Pentest Scope Coverage of Bypass Path\n\n- **Related to:** Pentest report scope; MRD-SEC-POL-011 \u00a76\n- **Gap:** Policy \u00a76 requires pentest scope to include \"any exception-granted bypass paths.\" The Q3 2025 pentest covered the admin tool \"via VPN-simulated access,\" which is appropriate. However, the testing identified the bypass itself as a finding rather than performing deep payload-level testing of admin tool endpoints assuming a compromised insider scenario. Given the persistence of the exception, future pentests should explicitly include an authenticated insider-threat scenario against the admin tool's business logic.\n- **Severity:** Low\n\n---\n\n## Recommendations Summary\n\n1. **Immediate:** Accelerate SIEM forwarding of admin audit logs ahead of Q1 2026 plan.\n2. **Immediate:** Re-approve or terminate SEC-EXC-2024-018 given 12-month policy maximum is exceeded.\n3. **Short-term:** Migrate admin tool behind Kong (technical blocker resolved 16+ months ago).\n4. **Short-term:** Document and test quarterly compensating control verification.\n5. **Short-term:** Implement service-account governance program with differentiated controls.\n6. **Policy:** Reconcile MRD-SEC-POL-011 \u00a73.1 absolute language with the exception process to eliminate apparent self-contradiction."
+}

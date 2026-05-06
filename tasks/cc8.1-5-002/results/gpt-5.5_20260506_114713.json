@@ -1,0 +1,66 @@
+{
+  "task_id": "cc8.1-5-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:47:13.200776",
+  "score": {
+    "task_id": "cc8.1-5-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.3333333333333333,
+    "precision": 0.2,
+    "f1": 0.25,
+    "score": 0.25,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "async",
+          "email",
+          "CAB meeting",
+          "cancelled",
+          "CHG-806",
+          "CHG-808",
+          "CHG-810",
+          "Section 3.3"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "CHG-810"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "cancelled"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3270,
+    "output_tokens": 3359
+  },
+  "raw_response": "## Overall assessment\n\nEmail-based CAB approval **can satisfy CC8.1 in principle** when it provides timely authorization, documented reviewer approvals, evidence of testing, risk/impact review, rollback plans, and approval before deployment.\n\nFor Q4 2025, the async approval process appears to have been a reasonable operational adaptation when CAB meetings were cancelled, and the changes generally show testing, risk classification, deployment timing, and post-implementation verification. However, the provided evidence does **not fully demonstrate compliance with Apex\u2019s own Change Management Policy**, primarily because async approvals are not formally defined in the policy and the email threads do not clearly evidence all required individual approvals, especially the VP Engineering approval needed for quorum.\n\n---\n\n## Findings\n\n### 1. Async CAB approval process is not formally defined in the policy\n\n**Relates to:**  \nChange Management Policy, Section 3.3 \u2014 Change Advisory Board\n\n**Why it\u2019s a gap:**  \nThe policy states that the CAB meets weekly on Tuesdays and defines quorum as \u201cVP Engineering + at least 2 other CAB members must be present.\u201d It does not define an alternate approval method when a CAB meeting is cancelled, such as email approval, electronic voting, or asynchronous quorum.\n\nThree Q4 changes \u2014 CHG-806, CHG-808, and CHG-810 \u2014 were approved via email because CAB meetings were cancelled. The email approvals appear to be reasonable and were obtained before deployment, but the process is not explicitly permitted or governed by the policy. The policy should define:\n\n- When async approval may be used\n- Required approvers and quorum for async approval\n- Whether the CAB Chair\u2019s initiation of an email thread counts as approval\n- How approvals must be retained in ServiceNow\n- Whether higher-risk changes require additional or specific functional approval, such as QA or Security\n\nThis is a policy design gap rather than clear evidence of unauthorized production changes.\n\n**Severity:** Low\n\n---\n\n### 2. Evidence does not clearly show VP Engineering\u2019s individual approval for async changes\n\n**Relates to:**  \nChange Management Policy, Section 3.3 \u2014 CAB quorum and documented approvals  \nEmail threads for CHG-806, CHG-808, and CHG-810\n\n**Why it\u2019s a gap:**  \nThe policy requires CAB quorum of \u201cVP Engineering + at least 2 other CAB members\u201d and requires individual member approval and timestamp to be documented.\n\nFor the async approval threads, Sanjay Reddy, VP Engineering, initiated the email requests, but the provided email threads do not show a separate, explicit approval from Sanjay. The change log lists Sanjay as an email approver, and the email thread summaries state that quorum was met, but the actual \u201cfull email threads\u201d provided only show approval replies from the other CAB members:\n\n- **CHG-806:** Patricia, Michael, and Anya approved; Sanjay initiated the thread but did not explicitly approve in the provided thread.\n- **CHG-808:** Patricia and Michael approved; Anya did not respond; Sanjay initiated the thread but did not explicitly approve in the provided thread.\n- **CHG-810:** Patricia and Michael approved; Anya did not respond; Sanjay initiated the thread but did not explicitly approve in the provided thread.\n\nFor CHG-808 and CHG-810 in particular, if Sanjay\u2019s initiation of the email thread is not considered an approval, the evidence only supports two explicit approvals, which would not meet the stated quorum requirement.\n\nThis could be remediated if ServiceNow contains Sanjay\u2019s individual approval with timestamp, but that evidence was not provided.\n\n**Severity:** Medium\n\n---\n\n### 3. ServiceNow documentation of email approvals was not evidenced\n\n**Relates to:**  \nChange Management Policy, Section 3.3 \u2014 \u201cAll approvals must be documented in the ServiceNow change ticket with individual member approval and timestamp.\u201d\n\n**Why it\u2019s a gap:**  \nThe evidence includes email approval threads and a change log, but it does not include the actual ServiceNow ticket approval records or screenshots showing that each email approval was recorded in the system of record with individual approver names and timestamps.\n\nThe policy specifically requires approvals to be documented in ServiceNow. Retaining email threads may be acceptable supporting evidence, but the evidence provided does not demonstrate that the approvals were attached to or recorded in the relevant ServiceNow tickets.\n\nThis affects CHG-806, CHG-808, and CHG-810.\n\n**Severity:** Low\n\n---\n\n### 4. Standard change catalog not provided for CHG-811\n\n**Relates to:**  \nChange Management Policy, Section 2 \u2014 Change Categories, \u201cStandard \u2014 Pre-approved per catalog\u201d  \nChange log entry CHG-811 \u2014 Year-end security patches\n\n**Why it\u2019s a gap:**  \nCHG-811 was categorized as a Standard change with no approval required, noted as \u201cPer standard change catalog.\u201d However, the standard change catalog was not provided.\n\nWithout the catalog, the auditor cannot verify that the year-end security patch batch was within the scope of pre-approved standard changes, including:\n\n- Authorized change type\n- Permitted implementation conditions\n- Required testing or validation\n- Deployment window\n- Rollback expectations\n- Any limitations during the December holiday period\n\nThe change occurred on December 15, before the December 20 change freeze, so the timing does not appear to violate the freeze. The gap is limited to lack of evidence supporting the pre-approved standard change designation.\n\n**Severity:** Low\n\n---\n\n### 5. Segregation of duties is not fully evidenced for SRE-owned changes\n\n**Relates to:**  \nChange Management Policy, Section 3.4 \u2014 Segregation of Duties  \nChange log entries CHG-807 and CHG-811\n\n**Why it\u2019s a gap:**  \nThe policy states that the developer must not approve or deploy their own change and that production deployments are executed by the SRE team.\n\nFor CHG-807 and CHG-811, the developer is listed as \u201csre-team\u201d and the deployer is also listed as \u201csre-team.\u201d Because the evidence is recorded at the team level rather than the individual level, it is not possible to confirm that the person who developed or prepared the change was different from the person who deployed it.\n\nThis does not necessarily mean segregation of duties was violated, but the evidence is insufficient to demonstrate compliance with the policy.\n\n**Severity:** Low"
+}

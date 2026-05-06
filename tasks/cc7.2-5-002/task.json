@@ -1,0 +1,94 @@
+{
+  "id": "cc7.2-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.2",
+  "control_description": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/monitoring-policy.md",
+      "type": "policy",
+      "description": "Cobalt Labs security monitoring and detection policy defining detection rules, alert tuning procedures, MITRE ATT&CK coverage requirements, and supply chain detection standards"
+    },
+    {
+      "path": "evidence/detection-engineering-log.csv",
+      "type": "log",
+      "description": "Q4 2025 detection engineering log showing 7 rule changes including 2 rule disablements"
+    },
+    {
+      "path": "evidence/detection-coverage-matrix.json",
+      "type": "report",
+      "description": "MITRE ATT&CK detection coverage matrix showing 198 active and 2 disabled rules with supply chain detection detail"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Cobalt Labs' monitoring and detection controls for the Q4 2025 observation period. Cobalt Labs operates a CI/CD platform for developers, making supply chain security a critical concern. Review the monitoring policy, detection engineering log, and detection coverage matrix. Assess whether CC7.2 requirements for monitoring and anomaly detection are met. Apply professional judgment to evaluate whether alert tuning decisions appropriately balanced false positive reduction against detection coverage, especially for the organization's specific threat model.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Dependency confusion detection rule disabled without CISO approval and past expiration",
+      "description": "RULE-SCM-021 (dependency confusion — internal package name published to public registry) was disabled on December 10 (DET-307) with only SecOps Lead approval, not CISO approval as required by policy Section 3.3. The rule had a 0% false positive rate and had detected 2 real dependency confusion attempts in Q3 2025 — demonstrating it is an effective, accurate detection rule. It was disabled for a performance reason (Chronicle API rate limiting) rather than a false positive issue. The policy (Section 4.2) states 'No rule may be disabled solely to reduce alert volume,' and while this disable was for API throttling rather than alert volume, the principle is the same — operational convenience is overriding a functioning security control. The expiration was set to December 31, 2025, but the detection coverage matrix notes the rule is 'still disabled' past its expiration date. The compensating control (RULE-SCM-022, public registry resolution detection) is acknowledged in the log as incomplete — it 'detects resolution but not the initial publication' of a confusingly-named package. For a CI/CD platform provider, dependency confusion is a tier-1 supply chain threat. This rule's disable leaves a gap in the organization's most critical threat category.",
+      "evidence_sources": ["evidence/detection-engineering-log.csv", "evidence/detection-coverage-matrix.json", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "The auditor should contrast DET-307 with DET-303. DET-303 (pipeline config change) had CISO approval, 88% false positive rate justifying the disable, and comprehensive compensating controls. DET-307 has no CISO approval, 0% false positive rate (meaning the rule works perfectly), performance-based justification, an incomplete compensating control, and has expired without re-enablement. The judgment elements: (1) Is a performance issue a valid reason to disable a 0% FP detection rule? Most auditors would say the engineering team should optimize the query rather than disable the rule. (2) Is RULE-SCM-022 an adequate compensating control? The log itself says it is not — it detects downstream resolution, not the upstream publication. (3) For a CI/CD platform, dependency confusion is an existential threat. This is the key finding.",
+      "detection_criteria": {
+        "required_keywords": ["RULE-SCM-021", "dependency confusion", "DET-307", "0% false positive", "CISO approval NOT obtained", "expired", "still disabled", "compensating control", "incomplete", "supply chain"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Build pipeline configuration change rule disabled — reducing supply chain detection coverage",
+      "description": "RULE-SCM-018 (build pipeline configuration change) was disabled November 5 (DET-303) with CISO approval due to 88% false positive rate generating approximately 2,400 alerts per day. The compensating controls are reasonable: artifact signing verification (RULE-SCM-019) and build environment integrity checks (RULE-SCM-020). This is a judgment call: the CISO approval and compensating controls satisfy the policy requirements (Section 3.3), but for a CI/CD platform, build pipeline configuration changes are a primary attack vector for supply chain compromise (MITRE T1195.001). The compensating controls detect downstream indicators (tampered artifacts, modified runtimes) but not the initial configuration manipulation itself. Combined with the RULE-SCM-021 disable, this means 2 of 10 supply chain detection rules are disabled, both covering T1195.001 (Supply Chain Compromise: Compromise Software Supply Chain). The detection coverage matrix shows these are the only rules covering initial-stage supply chain manipulation detection.",
+      "evidence_sources": ["evidence/detection-engineering-log.csv", "evidence/detection-coverage-matrix.json", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "The auditor should assess DET-303 on its own merits: CISO approved, 88% FP rate justifies action, compensating controls exist. Standing alone, this is a well-managed exception. But combined with DET-307, two T1195.001 supply chain rules are disabled simultaneously for an organization whose primary business is CI/CD. The judgment: is the combined gap in supply chain detection acceptable? The compensating controls catch downstream indicators but not the initial compromise.",
+      "detection_criteria": {
+        "required_keywords": ["RULE-SCM-018", "DET-303", "pipeline configuration", "88% false positive", "CISO approval", "T1195.001", "supply chain", "2 of 10", "compensating controls", "downstream"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Active rule count dropped below 200-rule minimum during Q4",
+      "description": "Policy Section 3.2 requires a minimum of 200 active detection rules. The detection coverage matrix shows 198 active rules and 2 disabled rules, for a total of 200. With 2 rules disabled, the active count (198) is below the 200-rule minimum. While this is a marginal shortfall (1% below minimum), the two disabled rules are both in the supply chain category — the organization's most critical detection category. The policy sets 200 as a minimum floor, not a target. The judgment: is 198 vs 200 material? In isolation, probably not. But the fact that both shortfall rules are in the same critical category amplifies the concern.",
+      "evidence_sources": ["evidence/detection-coverage-matrix.json", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "The auditor should note that 198 active rules is below the 200 minimum. This is a technical policy violation, though marginal. The materiality depends on which rules are missing — both are supply chain rules, concentrating the gap in the organization's highest-risk category.",
+      "detection_criteria": {
+        "required_keywords": ["198 active", "200 minimum", "2 disabled", "Section 3.2", "supply chain", "below minimum", "shortfall"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Artifact registry bulk download threshold increased 4x — may miss smaller exfiltration",
+      "description": "DET-301 raised the artifact registry bulk download threshold from 50 artifacts/hour to 200 artifacts/hour to accommodate legitimate enterprise CI workflows. The false positive rate dropped from 35% to 11%. While the tuning was properly approved, the 4x threshold increase means smaller exfiltration events (50-199 artifacts/hour) would no longer trigger alerts. The original 50-artifact threshold would have detected the 2 dependency confusion true positives in Q3 at the artifact download stage. This is a judgment call: the tuning was necessary to reduce false positives, but the new threshold provides less sensitive detection for data exfiltration via the artifact registry.",
+      "evidence_sources": ["evidence/detection-engineering-log.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "The auditor should note the magnitude of the threshold change and consider whether the original threshold was too sensitive or the new one too permissive. A 4x increase is significant. The judgment: 200 artifacts/hour may still be reasonable for detecting bulk exfiltration, but targeted theft of specific artifacts (at lower volumes) would be missed.",
+      "detection_criteria": {
+        "required_keywords": ["DET-301", "RULE-SCM-014", "50 to 200", "4x", "threshold", "artifact", "exfiltration", "false positive"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["detection_engineering", "alert_tuning", "supply_chain", "dependency_confusion", "MITRE_ATT&CK", "judgment", "disabled_rules", "CI_CD_platform"]
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "task_id": "pi1.1-1-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T12:56:22.158333",
+  "score": {
+    "task_id": "pi1.1-1-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 15,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Definition of Done",
+          "Section 4.1",
+          "approval",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "data integrity",
+          "processing integrity",
+          "missing",
+          "complete",
+          "accurate"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "completeness",
+          "reconciliation",
+          "record count",
+          "batch",
+          "processing",
+          "Section 3.6",
+          "monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1337,
+    "output_tokens": 1854
+  },
+  "raw_response": "## Overall Assessment\n\nThe SDLC policy supports general software quality, testing, release management, and security practices, but it does **not adequately address SOC 2 PI1.1** on its own.\n\nPI1.1 requires the entity to define **processing objectives** that establish what constitutes **complete, accurate, and timely processing**. The provided policy focuses on development lifecycle controls, but it does not define processing integrity objectives for systems, transactions, data flows, batch jobs, APIs, reports, or customer-facing processing activities.\n\nAn auditor would likely conclude that this document is helpful supporting evidence, but insufficient as primary evidence for PI1.1.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | No Explicit Processing Integrity Objectives Defined | Entire policy; Sections 1, 3, 4 | The policy states that software should meet \u201cquality and security objectives,\u201d but it does not define processing objectives for completeness, accuracy, or timeliness. There is no requirement that systems document what complete, accurate, and timely processing means for each business process, transaction type, data flow, or service. | High |\n| 2 | Completeness Criteria Are Not Defined for Processing | Section 4.1 Definition of Done; Section 4.2 Quality Gates | The policy defines completion of user stories based on acceptance criteria, tests, security scans, and product owner acceptance. However, it does not require controls or criteria to ensure that all expected transactions, records, files, messages, or events are processed completely. Examples such as record counts, control totals, missing transaction detection, or end-to-end reconciliation are absent. | High |\n| 3 | Accuracy Criteria Are Not Defined for Processing | Section 3.1 Requirements Gathering; Section 4 Quality Assurance | The policy requires acceptance criteria and testing but does not require accuracy objectives such as validation rules, calculation accuracy, field-level data integrity requirements, transformation logic verification, or expected output accuracy. There is no requirement that business rules be documented and tested against processing accuracy objectives. | High |\n| 4 | Timeliness Criteria and Processing SLAs Are Missing | Section 5.1 Release Schedule; Section 3.6 Maintenance | The document defines release cadence and bug triage timelines, but it does not define timeliness requirements for system processing. There are no SLAs or thresholds for transaction processing, batch completion, API response processing, data availability, report generation, queue processing, or failure recovery timelines. | High |\n| 5 | Acceptance Criteria Are Not Required to Include Processing Integrity Requirements | Section 3.1 Requirements Gathering | The policy requires Jira user stories with acceptance criteria, but it does not state that acceptance criteria must include completeness, accuracy, and timeliness requirements where applicable. As written, teams could satisfy the SDLC policy without explicitly documenting processing integrity requirements. | Medium |\n| 6 | Testing Requirements Do Not Specifically Address Complete, Accurate, and Timely Processing | Sections 3.4 Testing and 4.2 Quality Gates | Unit, integration, SAST, DAST, and linting requirements are defined, but the policy does not require testing of processing integrity objectives. There is no mention of test cases for duplicate prevention, missing record detection, reconciliation, boundary conditions, processing latency, batch completion, exception handling, or data transformation accuracy. | High |\n| 7 | No Requirement for Reconciliations or Control Totals | Section 3.4 Testing; Section 3.6 Maintenance | The policy does not require the use of reconciliations, record counts, hash totals, financial totals, source-to-target comparisons, or other mechanisms to verify that processing is complete and accurate. For PI1.1, auditors often expect processing objectives to be supported by such control considerations where relevant. | Medium |\n| 8 | Exception Handling for Processing Failures Is Not Defined | Section 3.6 Maintenance | The policy references post-deployment monitoring and bug triage, but it does not define how processing exceptions are identified, logged, escalated, corrected, or reprocessed. It also does not establish objectives for timely detection and resolution of failed or incomplete processing. | Medium |\n| 9 | Monitoring Is Not Tied to Processing Integrity Objectives | Section 3.6 Maintenance | Datadog APM monitoring is mentioned, but the policy does not require monitoring for processing completeness, accuracy, or timeliness indicators. There are no required metrics such as failed jobs, delayed queues, unprocessed transactions, reconciliation breaks, data pipeline failures, or stale data alerts. | Medium |\n| 10 | Security Threat Modeling Does Not Cover Processing Integrity Risks Broadly | Section 3.1 Requirements Gathering | STRIDE threat modeling is required only for features involving authentication, authorization, or data handling. PI1.1 requires broader consideration of processing objectives. The policy does not require teams to identify processing integrity risks for all relevant business workflows, including non-security-related risks such as duplicate processing, skipped records, incorrect calculations, or delayed processing. | Medium |\n| 11 | Change Approval Does Not Require Assessment of Impact to Processing Objectives | Section 5.2 Change Approval | Production changes require Release Manager approval and ServiceNow documentation, but the policy does not require change requests to assess impacts on completeness, accuracy, or timeliness of processing. An auditor may expect change management to include review of whether processing objectives are affected by system changes. | Medium |\n| 12 | Roles and Responsibilities Do Not Assign Ownership for Processing Objectives | Section 7 Roles and Responsibilities | The policy assigns responsibilities for development, QA, release management, and security, but it does not identify who is responsible for defining, approving, maintaining, and monitoring processing integrity objectives. Ownership by product, business process, engineering, QA, or operations is not specified. | Medium |\n| 13 | No Documentation Requirement for Processing Flows or Data Lineage | Sections 3.1 Requirements Gathering and 3.2 Design | The policy requires user stories and ADRs, but it does not require documentation of processing flows, data inputs, outputs, interfaces, transformations, dependencies, or expected results. Without this, it is difficult to establish what complete, accurate, and timely processing means for each system or process. | Medium |\n| 14 | Definition of Done Focuses on Development Completion, Not Processing Completion | Section 4.1 Definition of Done | The \u201cDefinition of Done\u201d confirms that a feature is development-ready, tested, and accepted, but it does not define when processing itself is considered complete. For example, there is no distinction between a completed user story and a completed business transaction, batch process, API event, or data pipeline run. | Low |\n| 15 | Policy Does Not Address Customer or Business Commitments Related to Processing | Entire policy | The document does not reference customer commitments, contractual SLAs, product processing commitments, regulatory deadlines, or business-defined processing expectations. PI1.1 generally expects processing objectives to align with system commitments and business requirements. | Medium |\n\n---\n\n## Summary Conclusion\n\nThe SDLC policy provides useful controls over software development quality, testing, release management, and security, but it does **not sufficiently define processing objectives** for completeness, accuracy, and timeliness.\n\nFor SOC 2 PI1.1 readiness, Meridian should supplement this policy with documented processing integrity requirements, such as:\n\n- System-level processing objectives.\n- Definitions of complete, accurate, and timely processing.\n- Business rules and validation requirements.\n- Processing SLAs and timeliness thresholds.\n- Reconciliation and control total requirements.\n- Exception handling and reprocessing procedures.\n- Monitoring and alerting criteria for failed, delayed, duplicate, or incomplete processing.\n- Ownership and approval of processing objectives.\n- Requirements for testing processing integrity during SDLC and change management."
+}

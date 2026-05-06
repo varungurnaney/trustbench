@@ -1,0 +1,88 @@
+{
+  "task_id": "a1.2-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:24:48.536866",
+  "score": {
+    "task_id": "a1.2-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "no re-run",
+          "failed",
+          "gap",
+          "RPO",
+          "WAL",
+          "compensating"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Q4",
+          "quarterly",
+          "missing",
+          "observation period",
+          "control"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RTO",
+          "exceed",
+          "growth",
+          "4 hours",
+          "data volume"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "WAL",
+          "evidence",
+          "RPO",
+          "4 hour",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6990,
+    "output_tokens": 3263
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment: Control A1.2\n\n**Entity:** NexGen Platform\n**Observation Period:** October 1 \u2013 December 31, 2025 (Q4 2025)\n**Control:** A1.2 \u2014 Environmental protections, backup, and recovery infrastructure\n\n---\n\n## Executive Summary\n\nThe control is **largely operating effectively** with strong evidence of daily backup execution, integrity verification, and quarterly restore testing. However, several gaps were identified, ranging from policy non-conformance to evidence completeness issues. None individually rise to a control failure, but in aggregate they warrant remediation prior to a Type II examination.\n\n**Overall Readiness:** \u26a0\ufe0f **Qualified Pass** \u2014 remediate findings below before formal audit window.\n\n---\n\n## Findings\n\n### Finding 1: Missing Backup Evidence for December 29\u201331, 2025\n**Relates to:** Daily backup execution logs (Q4 2025 evidence file)\n**Gap:** The evidence file claims to cover 92 days of Q4 2025 but the log terminates at 2025-12-28. Three days (Dec 29, 30, 31) are missing from the observation period. For a Type II audit, the auditor requires complete population coverage. Without these records, the auditor cannot conclude the control operated effectively across the *entire* period.\n**Severity:** **High**\n**Recommendation:** Provide the complete log through 12/31/2025, or if backups did not execute, document the reason and any compensating actions.\n\n---\n\n### Finding 2: Incremental Backups and WAL Archiving Not Evidenced\n**Relates to:** Policy \u00a73.1 (Backup Requirements) vs. evidence provided\n**Gap:** Policy POL-AV-002 mandates incremental backups every 4 hours and continuous WAL archiving to support the 4-hour RPO. The evidence provided shows *only daily full backups*. There is no log evidence demonstrating:\n- Incremental backup execution and success rate\n- WAL archive shipping and continuity\n- Verification that the 4-hour RPO is actually achievable\n\nWithout this evidence, the stated RPO cannot be substantiated. A daily-only backup regime implies a worst-case RPO of ~24 hours, not 4.\n**Severity:** **High**\n**Recommendation:** Provide incremental backup logs and WAL archive monitoring records covering Q4 2025, or formally amend the policy to reflect actual practice.\n\n---\n\n### Finding 3: No Q4 2025 Restore Test Performed (or Evidenced)\n**Relates to:** Policy \u00a73.3 (Backup Verification) \u2014 \"Full restore test performed quarterly\"\n**Gap:** Restore tests are provided for Q2 (June 15) and Q3 (Sept 20) 2025, but no Q4 2025 restore test is included in the evidence. The cadence implies the next test was due in December 2025. For the Type II observation period, the auditor needs to see at least one restore test executed *within* the observation window.\n**Severity:** **High**\n**Recommendation:** Provide the Q4 2025 restore test results. If not yet performed, schedule and execute before the audit fieldwork begins; otherwise, the auditor will likely issue an exception for non-performance during the observation period.\n\n---\n\n### Finding 4: Backup Failure Recovery Not Fully Aligned with RPO on 2025-11-16\n**Relates to:** Daily backup logs (Nov 16 entry) and Policy \u00a74 (RPO: 4 hours)\n**Gap:** On 2025-11-16, the backup failed due to a network timeout to GCS, and there is **no re-run entry** for that date. The next successful backup is 2025-11-17 at 02:00 UTC \u2014 meaning approximately 24+ hours elapsed without a successful full backup. Contrast this with the 2025-11-03 failure, which was properly remediated with a manual re-run at 04:30 the same day. The Nov 16 gap, if not compensated by incremental/WAL backups (see Finding 2), represents a potential RPO breach. Additionally, there is no evidence of an incident ticket, root cause analysis, or remediation tracking for this failure.\n**Severity:** **Medium** (would be **High** if WAL/incremental evidence is also missing)\n**Recommendation:** Provide the incident record, RCA, and evidence that point-in-time recovery via WAL would have satisfied RPO. Establish a control requiring same-day re-run of failed backups.\n\n---\n\n### Finding 5: Backup Storage Region Inconsistent with Policy\n**Relates to:** Policy \u00a73.1 (\"separate GCS bucket in a different region\") and \u00a74 (Primary: us-central1; DR: us-east1)\n**Gap:** Backup logs show storage location `gs://nexgen-backup-us-east1/daily/`. The policy states the primary region is **us-central1** and DR is **us-east1**. Storing backups in us-east1 is consistent with cross-region requirements *if* primary is in us-central1. However, the auditor would want to confirm:\n- That production actually runs in us-central1 (no evidence provided)\n- That the bucket is in a different region from production\n- That encryption-at-rest (AES-256) is enabled on this bucket\n\nCurrently this is *implied* but not *evidenced*.\n**Severity:** **Low**\n**Recommendation:** Provide GCS bucket configuration export (region, encryption settings, IAM, lifecycle/retention rules) as supplementary evidence.\n\n---\n\n### Finding 6: RTO Trend Risk Identified but Not Tracked\n**Relates to:** Q3 2025 restore test notes\n**Gap:** The Q3 restore test notes explicitly state: *\"Growth in data volume increasing restore time \u2014 may exceed RTO by Q2 2026 if trend continues.\"* This is a known risk identified by the testing team, but there is no evidence of:\n- A risk register entry\n- Capacity planning or remediation initiative\n- Management review/acceptance\n\nPer A1.2, the entity must *monitor* recovery infrastructure to meet objectives. A documented but un-actioned trend toward RTO breach is a monitoring weakness.\n**Severity:** **Medium**\n**Recommendation:** Open a tracked remediation item (e.g., parallelized restore, faster storage class, incremental restore strategy) with management ownership and target date.\n\n---\n\n### Finding 7: Backup Monitoring/Alerting Not Evidenced\n**Relates to:** Implicit requirement of A1.2 (\"monitors\")\n**Gap:** While failures appear in the log (Nov 3, Nov 16), there is no evidence of the *detection and alerting mechanism* \u2014 i.e., who was notified, when, via what channel, and what the SLA for response is. The policy references Datadog for availability monitoring but does not specify backup job alerting. The Nov 16 failure with no documented same-day response suggests alerting may not be operating effectively.\n**Severity:** **Medium**\n**Recommendation:** Provide alerting configuration (Datadog monitor definitions, PagerDuty rotation, runbook) and a sample of alert tickets generated during Q4 2025.\n\n---\n\n### Finding 8: Environmental Protections Not Addressed in Evidence\n**Relates to:** A1.2 control language (\"environmental protections\")\n**Gap:** A1.2 explicitly requires environmental protections (power, fire suppression, HVAC, physical security of facilities). No evidence has been provided. While NexGen runs on GCP and could rely on GCP's SOC 2 / ISO certifications as a Carve-out or Inclusive subservice organization, the entity must:\n- Identify GCP as a subservice organization\n- Document complementary user entity controls (CUECs)\n- Obtain and review GCP's SOC 2 report annually\n\nNone of this is in the evidence package.\n**Severity:** **Medium**\n**Recommendation:** Provide subservice organization treatment documentation and most recent GCP SOC 2 / SOC 1 report review evidence.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Missing backup logs Dec 29\u201331, 2025 | High |\n| 2 | Incremental & WAL backups not evidenced | High |\n| 3 | No Q4 2025 restore test evidenced | High |\n| 4 | Nov 16 backup failure \u2014 no same-day recovery / RCA | Medium |\n| 5 | Backup bucket configuration not independently evidenced | Low |\n| 6 | Restore-time growth trend not tracked as a risk | Medium |\n| 7 | Backup alerting/monitoring not evidenced | Medium |\n| 8 | Environmental protections (subservice org) not addressed | Medium |\n\n---\n\n## Auditor's Professional Judgment\n\nThe three **High** findings (1, 2, 3) would each likely result in an **audit exception** if unresolved, because they relate directly to the operating effectiveness of the control during the observation period. Findings 1 and 3 are evidence-completeness issues that may be curable before fieldwork. Finding 2 is more substantive \u2014 if the entity is in fact only running daily fulls, the policy is misstated and the RPO is overstated, which is a material misrepresentation risk.\n\nThe **Medium** findings would likely be raised as management observations/recommendations rather than exceptions, provided the High findings are remediated.\n\n**Recommended next steps before audit fieldwork:**\n1. Close evidence gaps (Findings 1, 2, 3) \u2014 highest priority.\n2. Document incident response for Nov 16 backup failure.\n3. Formalize subservice organization treatment for GCP.\n4. Reconcile policy with actual practice (or vice versa) for backup frequency."
+}

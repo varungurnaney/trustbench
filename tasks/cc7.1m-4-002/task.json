@@ -1,0 +1,75 @@
+{
+  "id": "cc7.1m-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "The entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/maintenance-policy.md",
+      "type": "policy",
+      "description": "Bastion Technologies maintenance policy defining equipment maintenance schedules, overdue escalation thresholds, and preventive maintenance intervals"
+    },
+    {
+      "path": "evidence/equipment-maintenance-logs-q4-2025.csv",
+      "type": "log",
+      "description": "Equipment maintenance logs for Q4 2025 with 14 entries covering UPS, HVAC, generators, fire suppression, PDUs, and network equipment"
+    },
+    {
+      "path": "evidence/system-uptime-reports-q4-2025.csv",
+      "type": "report",
+      "description": "Monthly system uptime reports for Q4 2025 showing availability percentages, downtime, and SLA compliance"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Bastion Technologies' equipment maintenance program for the Q4 2025 observation period (October 1 - December 31, 2025). Review the maintenance policy, equipment maintenance logs, and system uptime reports. Assess whether CC7.1 requirements for maintaining system components are met. Pay attention to maintenance scheduling, preventive maintenance adherence, and the distinction between equipment functioning normally and equipment being properly maintained. Not all operational equipment is well-maintained.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "Core switch downtime of 285 minutes violated 99.99% SLA — but caused by hardware failure with proper emergency response",
+      "description": "The uptime reports show core-switch-01 had 285 minutes of unplanned downtime in November (99.34% vs 99.99% SLA). This initially appears to be a maintenance failure. However, cross-referencing with the equipment maintenance logs and maintenance window schedule reveals: (1) the switch had received its annual preventive maintenance on November 8 (EML-509), just 5 days before the failure, (2) the failure was caused by a power supply hardware defect that preventive maintenance cannot predict, (3) the emergency response followed policy with CISO authorization, approved vendor, and retroactive change ticket, and (4) the post-incident review recommended adding redundant power supply monitoring and pre-staging a spare. This is NOT a maintenance program failure — it is a hardware failure with proper incident response. The 99.99% SLA was missed for November, but this reflects the inherent risk of hardware failure, not a maintenance deficiency.",
+      "evidence_sources": [
+        "evidence/system-uptime-reports-q4-2025.csv",
+        "evidence/equipment-maintenance-logs-q4-2025.csv"
+      ],
+      "expected_reasoning": "The model should note the SLA miss for core-switch-01, then check the maintenance history. EML-509 shows annual maintenance was completed 5 days before the failure. The failure was hardware-related (power supply), not maintenance-related. Emergency response was proper. The SLA miss is an availability incident, not a maintenance gap.",
+      "detection_criteria": {
+        "required_keywords": ["core-switch-01", "285 minutes", "99.34%", "99.99%", "hardware failure", "EML-509", "annual maintenance", "power supply"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["not a maintenance failure", "hardware defect", "proper emergency response", "preventive maintenance completed"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Diesel generator quarterly maintenance deferred to January — 86 days since last maintenance approaching quarterly threshold",
+      "description": "EML-514 (December 29) shows the diesel generator GEN-DC-01 has not received its quarterly preventive maintenance. Last maintenance was October 4 (EML-503) — 86 days ago. The quarterly interval is 90 days, so the next maintenance was due January 4. The facilities team deferred December maintenance because the December MW-EQUIP window was used for HVAC priority work. The generator is functioning normally and passes its automated weekly 5-minute self-test. However, the full quarterly maintenance (30-minute load test, oil change, air filter replacement, coolant check) has not been performed. The 5-minute self-test is not equivalent to a 30-minute load test — it confirms the generator starts and runs briefly but does not test sustained load capacity. Policy Section 5.3 states maintenance overdue by more than 30 days must be escalated. Since the quarterly interval is 90 days and 86 days have elapsed, the maintenance is not yet technically overdue. However, this is a judgment call: the maintenance was deferred without formal rescheduling, the generator's ability to sustain a full load for an extended period is unverified for nearly 3 months, and the generator is the last line of defense for data center power.",
+      "evidence_sources": [
+        "evidence/equipment-maintenance-logs-q4-2025.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note that while the generator is technically not overdue yet (86 of 90 days), the maintenance was deferred without formal rescheduling. The 5-minute weekly self-test does not replace the 30-minute load test that is part of quarterly maintenance. A generator that starts but cannot sustain load is a false sense of security. The deferral also reveals a resource constraint — the MW-EQUIP window was consumed by HVAC work, suggesting the single monthly equipment window is insufficient.",
+      "detection_criteria": {
+        "required_keywords": ["GEN-DC-01", "generator", "86 days", "quarterly", "deferred", "January", "5-minute self-test", "30-minute load test", "EML-503", "EML-514", "Section 5.3"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "25 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["system_maintenance", "equipment_maintenance", "generator", "preventive_maintenance", "red_herring", "hardware_failure", "deferred_maintenance"]
+  }
+}

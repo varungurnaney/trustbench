@@ -1,0 +1,92 @@
+{
+  "task_id": "c1.1-4-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:11:03.631717",
+  "score": {
+    "task_id": "c1.1-4-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-011",
+          "VPC",
+          "no PII",
+          "approved",
+          "compensating"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "partner-data-sync",
+          "CBC",
+          "AES-128",
+          "Restricted",
+          "PII",
+          "no exception",
+          "customer names",
+          "account numbers"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "bft-prod-ml-training",
+          "SSE-S3",
+          "SSE-KMS",
+          "EXC-2025-013",
+          "PII",
+          "remediation",
+          "SageMaker",
+          "derived"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "partner-data-sync",
+          "HSTS",
+          "Restricted",
+          "downgrade",
+          "production"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5634,
+    "output_tokens": 2658
+  },
+  "raw_response": "# COMPLIANCE ASSESSMENT REPORT\n**Control: C1.1 \u2013 Confidential Information Identification and Maintenance**  \n**Period: Q4 2025 (October 1 \u2013 December 31, 2025)**  \n**Organization: Bridgeport Financial Technologies**\n\n---\n\n## EXECUTIVE SUMMARY\n\nAssessment of evidence across data classification, encryption policies, S3 bucket audits, exception management, TLS configurations, and incident response reveals **two genuine control deficiencies** that warrant remediation. The organization demonstrates strong overall encryption posture with properly documented exceptions and compensating controls for most deviations. However, two material gaps exist where confidential data is not adequately protected.\n\n---\n\n## FINDINGS\n\n### FINDING 1: Unencrypted Production S3 Bucket Containing Derived PII\n\n**Title:** Non-Compliant Encryption for ML Training Data Containing Derived PII Features\n\n**Related Policy Section:**  \n- POL-ENC-002, Section 4.2 (Data at Rest): \"S3 buckets must use SSE-KMS with customer-managed keys for Confidential/Restricted data.\"\n- POL-ENC-002, Section 3 (Data Classification): Confidential data requires \"Encryption in transit and at rest.\"\n\n**Gap Description:**  \nThe S3 bucket `bft-prod-ml-training` is classified as Confidential and contains derived PII features (income brackets and zip codes linked to customer IDs). However, the S3 bucket audit dated December 20, 2025 shows:\n- **Encryption Type:** SSE-S3 (not SSE-KMS)\n- **Compliance Status:** Non-Compliant (explicitly noted in audit)\n\nWhile exception EXC-2025-013 exists with CISO approval and documents compensating controls (IAM restrictions, VPC endpoint access, monthly audits, planned Q1 2026 remediation), the exception **expired on February 25, 2026** (future date, but the compensating controls are inherently temporary). The more critical issue: **the exception was last reviewed on November 20, 2025** and the policy requires quarterly reviews per Section 9. A December 2025 or January 2026 review does not appear to have occurred prior to the latest bucket audit (December 20, 2025).\n\nThe data classification itself confirms this is Confidential data requiring SSE-KMS per policy. While the SageMaker integration issue is a legitimate technical constraint, the lack of a current compensating control review and the absence of encryption at rest creates a gap in C1.1's requirement to \"maintain\" confidential information.\n\n**Severity:** **HIGH**\n\n**Rationale:**  \n- Derived PII is classified as Confidential and explicitly requires encryption at rest per policy\n- Compensating controls exist but are documented as time-bound (\"planned for Q1 2026\")\n- No evidence of the required quarterly exception review post-November 20, 2025\n- The bucket audit explicitly flags this as non-compliant\n- Potential for unauthorized access to derived PII features if IAM or VPC controls fail\n\n---\n\n### FINDING 2: Weak Cipher Suite on Restricted Data Endpoint\n\n**Title:** Weak TLS Cipher Suite (AES-128-CBC) on Production Partner API Handling Restricted Data\n\n**Related Policy Section:**  \n- POL-ENC-002, Section 4.1 (Data in Transit): \"All external-facing endpoints must use TLS 1.2 or higher.\"\n- POL-ENC-002, Section 4.3 (Minimum Algorithm Standards): \"Symmetric: AES-256 (AES-128 acceptable only for non-Restricted data with documented justification)\"\n\n**Gap Description:**  \nThe TLS configuration audit (December 22, 2025) reveals that `partner-data-sync.bridgeportft.com` uses:\n- **Cipher Suite:** `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256` (AES-128-CBC with SHA256 hash)\n- **Data Classification:** Restricted\n- **Contains PII:** Yes (customer names and account numbers)\n- **Protocol Version:** TLS 1.2 \u2713 (compliant)\n- **HSTS Enabled:** No\n\n**Policy Violation:**  \nPer POL-ENC-002, Section 4.3, AES-128 is \"acceptable only for non-Restricted data with documented justification.\" This endpoint handles Restricted data (PII) and therefore **must use AES-256**.\n\nAdditionally, **no exception record exists** in the exception register for this deviation. EXC-2025-012 (AES-128 webhook payload encryption) explicitly states the data is Confidential, not Restricted, and applies to a different system (webhooks.bridgeportft.com). The partner API endpoint does not have documented CISO approval for using a weaker cipher on Restricted data.\n\n**Severity:** **HIGH**\n\n**Rationale:**  \n- Direct violation of encryption standards for Restricted data (PII)\n- AES-128-CBC is weaker than AES-256-GCM (no authenticated encryption)\n- No approved exception or compensating controls documented\n- External-facing endpoint increases exposure risk\n- Handles customer PII (names, account numbers)\n\n---\n\n### FINDING 3: Missing HSTS Header on Restricted Data Endpoints\n\n**Title:** Missing HSTS Header on Internal Restricted Data Export Service\n\n**Related Policy Section:**  \n- POL-ENC-002, Section 4.1 (Data in Transit): Best practice for TLS-protected endpoints\n- Implicit under C1.1: maintaining confidential information in transit\n\n**Gap Description:**  \nThe endpoint `customer-export.internal.bridgeportft.com` (port 8443) is classified as Restricted, contains PII, and uses TLS 1.2 with AES-256-GCM cipher. However, the TLS audit shows:\n- **HSTS Enabled:** No\n\nWhile this is an internal endpoint, it serves PII and handles Restricted data. The lack of HSTS on a Restricted endpoint increases the risk of protocol downgrade attacks. Although the impact is lower than external endpoints, this represents an incomplete control implementation.\n\nNote: The partner-data-sync endpoint (Finding 2) also shows HSTS: No, compounding the risk for external Restricted data flows.\n\n**Severity:** **MEDIUM**\n\n**Rationale:**  \n- Restricted data endpoint lacks HTTP Strict-Transport-Security protection\n- While internal, the endpoint processes customer PII\n- HSTS is a standard best practice for maintaining confidential data in transit\n- Risk is lower than Finding 2 (internal-only) but represents a control gap\n- Relatively low remediation effort (header configuration)\n\n---\n\n## OBSERVATIONS (NON-FINDINGS)\n\nThe following items were reviewed but do **not** constitute control deficiencies:\n\n1. **EXC-2025-009 (Legacy SFTP cipher suite)** \u2013 Expired and properly closed. Cipher suite was upgraded and exception was not renewed. This is compliant behavior.\n\n2. **EXC-2025-010 (Development database unencrypted)** \u2013 Expired and properly closed. Developer sandbox bucket now uses SSE-S3, which is appropriate for non-production synthetic data. Closure is documented and compliant.\n\n3. **EXC-2025-011 (Prometheus HTTP endpoint)** \u2013 Active exception with valid CISO approval through June 18, 2026. Compensating controls are well-documented (VPC-only, security group restrictions, system metrics only, no PII/business data). December 15 review confirms effectiveness. This is **properly managed** and does not constitute a finding.\n\n4. **EXC-2025-012 (AES-128 webhooks)** \u2013 Active exception with valid CISO approval through January 5, 2026. Data is explicitly classified as Confidential (not Restricted), which aligns with policy allowance of AES-128 for non-Restricted data. Exception is properly renewed and compliant.\n\n5. **S3 Bucket Encryption Audit (Compliant buckets)** \u2013 All production buckets handling Restricted or Confidential data (bft-prod-customer-data, bft-prod-payment-tokens, bft-prod-documents, bft-prod-backups, bft-prod-partner-sftp, bft-prod-analytics-exports, bft-prod-compliance-reports) are properly encrypted with SSE-KMS and customer-managed keys. Public access blocking and versioning are enabled appropriately.\n\n6. **TLS Configuration (Compliant endpoints)** \u2013 All external-facing production endpoints except partner-data-sync.bridgeportft.com use TLS 1.3 or TLS 1.2 with AES-256-GCM cipher suites. HSTS is properly enabled on public-facing endpoints.\n\n7. **Q4 2025 Incident Response** \u2013 No data breaches or confidential data exposures occurred. INC-2025-102 (bulk customer list email) was intercepted by DLP controls before data left the organization. All remediation actions were completed timely. No control failures identified.\n\n8. **Vendor Security Assessments** \u2013 All critical vendors (Stripe, AWS, GitHub, Okta) maintain current SOC 2 Type II reports with no critical findings. One minor finding (Datadog API key rotation documentation) does not impact C1.1 controls. Jira assessment is overdue by 7 days but is marked as in-progress renewal; project metadata classification is Internal, not Confidential/Restricted.\n\n9. **Data Classification and Policy** \u2013 POL-ENC-002 is current (Version 3.0, effective January 15, 2025), comprehensive, and clearly defines encryption requirements by data classification level. Policy scope, exception process, and key rotation requirements are well-documented.\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Title | Severity | Status | Required Action |\n|---------|-------|----------|--------|-----------------|\n| 1 | Unencrypted ML Training Bucket (Derived PII) | HIGH | Open | Upgrade bft-prod-ml-training to SSE-KMS; complete SageMaker remediation; renew/update exception with current review date |\n| 2 | Weak Cipher on Partner API (Restricted Data) | HIGH | Open | Upgrade partner-data-sync.bridgeportft.com cipher to AES-256-GCM; create formal exception or remediate non-compliance |\n| 3 | Missing HSTS on Restricted Endpoints | MEDIUM | Open | Enable HSTS header on customer-export.internal.bridgeportft.com and partner-data-sync.bridgeportft.com |\n\n---\n\n## CONCLUSION\n\nBridgeport Financial Technologies demonstrates strong overall confidential information protection through encryption, access controls, and monitoring. The organization maintains a mature exception management process with documented compensating controls for legitimate deviations. However, **two high-severity gaps** exist where confidential and restricted data are not protected per policy requirements:\n\n1. A production S3 bucket containing derived PII remains unencrypted at rest without current exception review\n2. An external API endpoint handling PII uses a weak cipher suite not approved for Restricted data\n\nThese gaps must be remediated to achieve C1.1 compliance for SOC 2 Type II attestation."
+}

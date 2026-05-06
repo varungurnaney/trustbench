@@ -1,0 +1,72 @@
+{
+  "task_id": "cc6.6-5-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:27:08.907865",
+  "score": {
+    "task_id": "cc6.6-5-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "shared VPC",
+          "crestline-shared-compute",
+          "staging",
+          "production ML",
+          "SEC-EXC-2025-012",
+          "cost optimization"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "staging",
+          "ML overflow",
+          "production data",
+          "route table",
+          "lateral movement",
+          "pivot"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "management",
+          "monitoring",
+          "broad",
+          "data subnets"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3689,
+    "output_tokens": 1824
+  },
+  "raw_response": "Certainly. Below is a structured analysis of Crestline AI\u2019s segmentation and boundary controls as tested against SOC 2 CC6.6, citing relevant sections, with professional judgment regarding sufficiency and residual risks.\n\n---\n\n## 1. **Shared VPC Between Staging and Production ML Training Overflow**\n\n**Section(s):**  \n- Network Segmentation and Boundary Security Policy \u00a73.2, \u00a73.3  \n- Exception Register SEC-EXC-2025-012  \n- Cost Optimization Review Q3 2025  \n- VPC Architecture Export (\"crestline-shared-compute\" VPC)  \n\n**Why it's a gap:**  \nCrestline\u2019s policy requires dedicated VPCs per environment with no peering or overlap between production and non-production. However, a shared VPC (\"crestline-shared-compute\") is used for both staging (non-production) and production ML training (overflow workloads). The approved exception (SEC-EXC-2025-012) documents this deviation and describes compensating controls (subnet and security group isolation, namespace and IAM separation).\n\nWhile technical controls (network segmentation, IAM roles, traffic monitoring) reduce risk and are actively reviewed, sharing a VPC for production and staging represents a **reduced logical boundary**:  \n- A vulnerability in a staging workload (often less guarded) could potentially allow adversaries to pivot to production ML overflow resources, as all reside within the same VPC.  \n- The peering setup further connects this shared VPC to core production data subnets, albeit with security group restrictions.  \n- Compensating controls (security groups, monitoring) reduce but do not entirely eliminate this attack vector.  \n- Exception is high risk and extended for cost reasons.\n\n**Severity:** **High**  \n*Rationale: While risk is being mitigated and formally managed, this is a high-impact deviation from standard security best practice for environment isolation. The risk is not theoretical, given active lateral movement techniques common in cloud environments. Cost optimization does not fully justify weakened segmentation at this layer for a SOC 2 relevant environment.*\n\n---\n\n## 2. **Policy-Exception Drift and Expansion Risk**\n\n**Section(s):**  \n- Exception Register (SEC-EXC-2025-012)  \n- Cost Optimization Review Q3 2025  \n\n**Why it's a gap:**  \nThe presence of an active high-risk exception creates the risk of policy drift and possible normalization of weakened segmentation. The cost review highlights ongoing desire for savings, which may incentivize prolongation of shared environment boundaries.  \n- There is evidence of a formal review and compensating control verification, but the risk is institutionalized, not temporary.  \n- The exception was scheduled for 6 months (matches policy), but the October review suggests consideration for renewal based on economic benefit, not reduced technical risk.\n\n**Severity:** **Medium**  \n*Rationale: Exception management is well-documented and regularly reviewed, which reduces the risk, but the underlying business driver (cost) rather than a clear plan for risk elimination/mitigation can be a warning sign for future control erosion.*\n\n---\n\n## 3. **Compensating Controls for Shared VPC Only Address Known Vectors**\n\n**Section(s):**  \n- Cost Optimization Review Q3 2025 (\u201cSecurity Controls Implemented\u201d)  \n- Security Groups in VPC Architecture Export  \n- Exception Register (SEC-EXC-2025-012)  \n\n**Why it's a gap:**  \nThe compensating controls mostly address **network segmentation and IAM only**.  \n- There is **no mention of host-level controls (such as hypervisor-level isolation, EDR, workload firewalls), or continuous validation of separation** beyond traffic monitoring and namespace separation.  \n- In Kubernetes-based environments, namespace and network segmentation help, but may not fully prevent lateral movement through container breakout or privilege escalation.  \n- No evidence presented that the compensating controls have been pen-tested or validated through simulated attacks.\n\n**Severity:** **Medium**  \n*Rationale: Technical mitigation is well-thought-out, but not exhaustive. Shared compute VPC introduces risk that is only partially addressed by network controls; in particular, risks from container/cloud workload bypassing those controls are not explicitly addressed.*\n\n---\n\n## 4. **Exception Review Process is Robust, but Duration Extensions Not Tied to Residual Risk**\n\n**Section(s):**  \n- Network Segmentation and Boundary Security Policy \u00a77  \n- Exception Register (SEC-EXC-2025-012, last_review_date 2025-10-15)  \n\n**Why it's a gap:**  \nPolicy requires a 6-month maximum exception duration and quarterly review. Reviews are documented, and the October 2025 review verified controls and found no cross-traffic anomalies. However, the decision to renew is justified by cost savings, not explicit reduction in risk or progress towards environment separation. Over time, this could lead to entrenched exceptions outside the original policy intent.\n\n**Severity:** **Low**  \n*Rationale: Exception management practice is sound, but justification for renewal is not risk-centric. This is a process improvement area, not an immediate failure.*\n\n---\n\n## 5. **Production Data Access via Peering\u2014Potential Expansion of Attack Surface**\n\n**Section(s):**  \n- VPC Architecture Export (vpc_peering_connections, route tables)\n- Security Groups\n\n**Why it's a gap:**  \nThe shared VPC is peered to production data subnets for ML training data access. The routing and security groups restrict ingress/egress to specific subnets and ports, but:  \n- Should an attacker compromise the shared VPC, peering could potentially be leveraged to attempt attacks on production data resources.  \n- The architecture relies on the assumption that security groups and routing are correctly configured at all times, with no misconfigurations.\n\n**Severity:** **Medium**  \n*Rationale: Such peering increases the blast radius of any issue in the shared VPC. While controls are robust, the peering increases attack surface in a way not fully present in strictly separated network architectures.*\n\n---\n\n## 6. **Policy Documentation Remains Consistent and Clear**\n\n**Section(s):**  \n- Network Segmentation and Boundary Security Policy (entire document)\n\n**Why it's **not** a gap:**  \nPolicy specifies dedicated VPCs, denial of peering, and no shared resources across environment boundaries, all in-line with SOC 2 expectations. Exceptions are allowed only via formal process, with compensating controls and risk documentation.\n\n**Severity:** N/A  \n*Rationale: No gap identified, policy itself aligns with leading practice.*\n\n---\n\n# Summary Table\n\n| #  | Title                                                       | Section(s)                                 | Why It's a Gap                                                                                                                                                           | Severity |\n|----|-------------------------------------------------------------|--------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|\n| 1  | Shared VPC Between Staging and Production ML Training       | Policy \u00a73.2/3.3; Exception SEC-EXC-2025-012; Cost Review; VPC Export | Shared VPC weakens logical segmentation; risk of pivot from staging to production exists despite controls.                                                                | High     |\n| 2  | Policy-Exception Drift and Expansion Risk                   | Exception Register; Cost Review            | High-risk exception is normalized for economic reasons instead of reduction of risk; risk of policy drift and future broadening.                                            | Medium   |\n| 3  | Compensating Controls Only Address Known Vectors            | Cost Review; Security Groups; Exception    | Mitigations focus only on network/IAM; workload, container, or host-level controls absent; attack vectors outside those controls possible, not validated via red teaming. | Medium   |\n| 4  | Exception Review Robust but Renewal not Linked to Risk      | Policy \u00a77; Exception Register              | Reviews and controls are in place, but renewals are cost-driven, not clearly tied to progress on security or environment separation.                                       | Low      |\n| 5  | Production Data Access via Peering\u2014Attack Surface Expanded  | VPC Export; Security Groups                | Peering allows necessary function but exposes production subnets to indirect risk if shared VPC compromised.                                                               | Medium   |\n\n---\n\n# Overall Assessment\n\nDespite a strong documented policy and formal exception handling, the use of a shared VPC for production overflow and staging is a significant, high-severity deviation from logical segmentation best practice. The compensating controls are good but do not eliminate all risks inherent in a shared boundary, especially in a cloud context where lateral movement techniques continue to grow more sophisticated.\n\n**SOC 2 CC6.6 requires strong logical boundaries to protect production systems from external and uncontrolled sources; the documented exception reduces this protection to a mediating controls approach.** Continued operation with this exception should be explicitly disclosed as a risk in the SOC 2 report, and further technical and process controls (e.g., continuous pen-testing/validation, stronger workload isolation, prioritization of restoring dedicated VPC architecture) should be recommended."
+}

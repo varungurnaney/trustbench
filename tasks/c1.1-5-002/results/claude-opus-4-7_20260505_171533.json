@@ -1,0 +1,91 @@
+{
+  "task_id": "c1.1-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:15:33.117306",
+  "score": {
+    "task_id": "c1.1-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.6,
+    "f1": 0.6666666666666665,
+    "score": 0.6666666666666665,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "deidentification",
+          "de-identification",
+          "HTTP",
+          "PHI",
+          "patient names",
+          "unencrypted",
+          "raw PHI",
+          "CERT-NHA-005",
+          "compensating",
+          "remediation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "addressable",
+          "implemented",
+          "not declined",
+          "HIPAA",
+          "policy",
+          "de-identification"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "should",
+          "Confidential"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-NHA-007",
+          "grafana",
+          "auto_renewal",
+          "No",
+          "manual",
+          "Internal",
+          "minor"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5713,
+    "output_tokens": 2732
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 Controls C1.1 and CC6.7\n## Nextera Health Analytics\n\n---\n\n## Executive Summary\n\nEvidence review identifies a **material control deficiency** related to the transmission of Protected Health Information (PHI) over an unencrypted channel between the PHI pipeline and the de-identification service. While compensating controls exist and a third-party HIPAA risk assessment has documented the gap with a remediation target, the deficiency represents a **current state failure** of the entity's own stated data protection policy and warrants reporting as a finding under C1.1 / CC6.7.\n\nBelow are the specific findings.\n\n---\n\n## Finding 1: Unencrypted Transmission of PHI Between PHI Pipeline and De-identification Service\n\n**Related Evidence:** TLS Endpoint Audit (deidentification-svc.internal.nextera-health.com); Certificate Inventory (CERT-NHA-005); HIPAA Risk Assessment Section 7.3; Data Protection Policy \u00a75.2 and \u00a75.4\n\n**Gap Description:**\nThe de-identification service runs on EC2 over plaintext HTTP (port 8080) and receives raw PHI (patient names, MRNs, diagnosis codes, dates of service) from the PHI pipeline. This directly contradicts:\n\n- **Policy POL-DP-006 \u00a75.2:** \"All internal communications carrying Restricted data (PHI/PII) **must** be encrypted using TLS 1.2 or higher.\"\n- **Policy POL-DP-006 \u00a75.4:** Nextera has affirmatively determined that encryption of PHI in transit is \"reasonable and appropriate\" \u2014 the addressable HIPAA specification has been **implemented, not declined**. The current state contradicts this stated implementation.\n\nThe data classification field in the endpoint audit explicitly marks this endpoint as `Restricted / contains_phi=Yes / protocol=HTTP (plaintext)`, confirming the entity is aware this is a Restricted data flow without required encryption.\n\n**Severity: High**\n\nRationale: This is the single most significant point in the data flow because it is precisely where **raw, re-identifiable PHI** transits before identifiers are stripped. Compensating controls (VPC isolation, security groups, Flow Logs, no public IP, VPN+MFA) reduce likelihood but do not satisfy the entity's policy requirement, which contains \"no exceptions\" language for PHI in transit. SOC 2 evaluates whether controls operate as designed; here the design (policy) is sound but operation has failed.\n\n---\n\n## Finding 2: No Documented Policy Exception for Known Non-Compliant PHI Flow\n\n**Related Evidence:** Data Protection Policy \u00a79 (Exceptions); HIPAA Risk Assessment dated September 15, 2025\n\n**Gap Description:**\nPOL-DP-006 \u00a79 requires that any deviation from encryption requirements involving PHI receive:\n- CISO approval,\n- A HIPAA risk assessment,\n- A maximum 6-month exception duration, and\n- Quarterly review.\n\nThe HIPAA risk assessment (RA-HIPAA-2025) was conducted in September 2025 and identifies the gap, but **no formal CISO-approved exception document with an expiration date** was provided. Without a documented and time-bound exception, the gap exists as an unmanaged policy violation rather than a managed risk acceptance. Additionally, the remediation target (\"Q1 2026\") is approximately within the 6-month window from the September assessment but is not explicitly scoped as an exception per \u00a79.\n\n**Severity: Medium**\n\nRationale: The substantive risk analysis exists (via the third-party assessor), but the entity's own governance process under \u00a79 \u2014 which is the SOC 2-relevant control \u2014 has not been formally exercised or evidenced.\n\n---\n\n## Finding 3: Configuration Drift \u2014 Service Deployed Outside Encryption-Enforcing Architecture\n\n**Related Evidence:** TLS Endpoint Audit notes; HIPAA Risk Assessment \u00a77.3; Certificate Inventory CERT-NHA-005\n\n**Gap Description:**\nThe de-identification service was deployed on EC2 outside the Kubernetes cluster, thereby falling outside the Istio mTLS STRICT enforcement that the entity relies upon for internal PHI encryption (per POL-DP-006 \u00a75.2). This indicates a control design weakness:\n\n- Architecture-level encryption enforcement (Istio mTLS) is not universally applicable.\n- No compensating preventive control (e.g., AWS Config rule, deployment gate, security group denying plaintext PHI ports) exists to prevent PHI services from being deployed outside the encrypted mesh.\n- The Policy \u00a78 requirement that \"AWS Config rules enforce encryption on resource creation\" appears not to extend to compute-level service protocol enforcement.\n\n**Severity: Medium**\n\nRationale: This is a systemic preventive-control gap. The current finding may not be the only such instance over time absent a control that flags or blocks PHI-handling workloads deployed outside the mesh.\n\n---\n\n## Finding 4: Inconsistent Certificate Inventory Hygiene \u2014 Manual Renewal of Internal Certificate\n\n**Related Evidence:** Certificate Inventory CERT-NHA-007 (grafana.internal); Data Protection Policy \u00a77\n\n**Gap Description:**\nPOL-DP-006 \u00a77 states \"Auto-renewal required for **all** production certificates.\" CERT-NHA-007 (Grafana) shows `auto_renewal=No` with manual renewal noted. While Grafana is classified Internal (not Restricted), the policy language is unqualified and does not exempt non-PHI internal services. This is a minor policy/practice misalignment.\n\n**Severity: Low**\n\nRationale: Low data sensitivity and low likelihood of impacting PHI confidentiality, but represents a policy compliance gap auditors will flag.\n\n---\n\n## Finding 5: Staging Endpoint Lacks HSTS\n\n**Related Evidence:** TLS Endpoint Audit (staging-api.nextera-health.com)\n\n**Gap Description:**\nStaging API does not have HSTS enabled. While the endpoint is documented as carrying synthetic data only, public-facing endpoints typically warrant HSTS to prevent downgrade attacks regardless of data classification. Not a direct C1.1 violation but worth noting for CC6.7 hygiene.\n\n**Severity: Low**\n\n---\n\n## Auditor's Judgment on Materiality\n\n**On the question of whether the de-identification gap is a current deficiency or a managed risk:**\n\nFor SOC 2 purposes, this is a **current control deficiency**, not merely a managed risk, because:\n\n1. The entity's own policy (\u00a75.2, \u00a75.4) is unambiguous and contains no \"addressable\" out \u2014 Nextera explicitly committed to implementation.\n2. No formal \u00a79 exception with CISO sign-off and expiration is in evidence.\n3. Compensating controls reduce likelihood but the policy does not authorize compensating controls as a substitute for encryption of PHI in transit.\n4. The HIPAA assessor itself rated the area \"Substantially Compliant **with one identified gap requiring remediation**\" \u2014 i.e., not currently compliant.\n\n**On materiality given PHI sensitivity:** The heightened sensitivity of PHI, combined with the High impact rating in the entity's own risk assessment, supports treating this as **High severity** rather than Medium despite the Low likelihood. SOC 2 reporting should disclose this as an exception in the C1.1/CC6.7 control area, with the remediation plan referenced as management's response.\n\n**Recommendation to Management:**\n1. Implement TLS on the de-identification service ahead of the Q1 2026 target if feasible.\n2. Until remediation completes, formalize a \u00a79 exception with CISO approval, expiration date, and quarterly review documentation.\n3. Implement a preventive control (AWS Config rule or equivalent) to detect PHI-handling workloads deployed outside the encrypted service mesh.\n4. Remediate auto-renewal gap on CERT-NHA-007."
+}

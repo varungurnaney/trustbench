@@ -1,0 +1,90 @@
+{
+  "task_id": "c1.1-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:12:49.682455",
+  "score": {
+    "task_id": "c1.1-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-reporting",
+          "TLS 1.0",
+          "deprecated",
+          "CBC",
+          "financial reports",
+          "Confidential",
+          "enterprise clients"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-011",
+          "legacy-reporting",
+          "auto-renewal",
+          "No",
+          "expires",
+          "manual"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-007",
+          "internal-tools",
+          "auto-renewal",
+          "manual",
+          "expires"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-reporting",
+          "HSTS",
+          "disabled",
+          "downgrade",
+          "production",
+          "Confidential"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2406,
+    "output_tokens": 2925
+  },
+  "raw_response": "## SOC 2 Readiness Findings \u2014 C1.1 / CC6.7 Encryption in Transit\n\nAssessment based on the Q4 2025 period and TLS scan dated **2025-12-28**.\n\n| # | Finding Title | Related Document Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Legacy reporting portal uses deprecated TLS 1.0 and weak cipher suite** | TLS configuration audit report \u2014 `legacy-reporting.crestline.com` | The endpoint uses **TLS 1.0** with `TLS_RSA_WITH_AES_128_CBC_SHA`. TLS 1.0 is deprecated and no longer considered secure. The cipher suite also uses static RSA key exchange and CBC mode, which do not meet modern encryption expectations for confidential data in transit. This endpoint is Production, classified as **Confidential**, and serves quarterly financial reports to enterprise clients. | **Critical** |\n| 2 | **Expired certificate on restricted payment processing endpoint** | TLS configuration audit report \u2014 `payments.crestline.com`; Certificate inventory \u2014 `CERT-002` | The certificate for `payments.crestline.com` expired on **2025-09-30**, before the start of the Q4 review period. The 2025-12-28 scan still shows the expired certificate in use, and the certificate inventory lists it as \u201cActive\u201d despite being expired. This affects a Production endpoint classified as **Restricted** and used for payment processing. Auto-renewal is marked \u201cYes,\u201d indicating renewal controls may have failed. | **Critical** |\n| 3 | **Certificate inventory inaccurately marks expired certificate as active** | Certificate inventory \u2014 `CERT-002` | `CERT-002` is listed with status \u201cActive\u201d even though the expiry date is **2025-09-30**. This indicates the certificate inventory is not being accurately maintained. Under C1.1, the organization should identify and maintain information assets and supporting safeguards for confidential/restricted information. Inaccurate certificate status undermines effective encryption management. | **High** |\n| 4 | **Internal tools certificate nearing expiration with no auto-renewal** | TLS configuration audit report \u2014 `internal-tools.crestline.net`; Certificate inventory \u2014 `CERT-007` | The certificate expires on **2026-01-10**, only 13 days after the 2025-12-28 scan and shortly after the Q4 period. Auto-renewal is disabled, and the endpoint is manually renewed by IT Operations. There is no evidence in the provided inventory that renewal was already completed or in progress, despite a 30-day monitoring alert threshold. | **Medium** |\n| 5 | **Legacy reporting certificate has no auto-renewal and expires shortly after period end** | TLS configuration audit report \u2014 `legacy-reporting.crestline.com`; Certificate inventory \u2014 `CERT-011` | The certificate expires on **2026-01-30**, approximately 30 days after Q4 close, and auto-renewal is disabled. Given that the endpoint is Production, Confidential, and already has weak TLS configuration, lack of automated renewal increases the risk of service disruption or insecure emergency remediation. | **Medium** |\n| 6 | **CDN certificate expires soon with short monitoring window** | TLS configuration audit report \u2014 `cdn.crestline.com`; Certificate inventory \u2014 `CERT-004` | The CDN certificate expires on **2026-01-15**, shortly after the Q4 period. Auto-renewal is enabled through ACM, which reduces risk, but the monitoring alert threshold is only **14 days**. For a Production endpoint, this provides limited time to detect and respond if automated renewal fails. | **Low** |\n| 7 | **HSTS not enabled on legacy Production HTTPS endpoint handling confidential data** | TLS configuration audit report \u2014 `legacy-reporting.crestline.com` | HSTS is disabled on `legacy-reporting.crestline.com`. Because the endpoint is Production, browser-accessible, and handles Confidential financial reporting data, lack of HSTS increases exposure to protocol downgrade or SSL-stripping attacks. This is especially concerning when combined with TLS 1.0 usage. | **High** |\n| 8 | **HSTS disabled on staging browser endpoints** | TLS configuration audit report \u2014 `staging-api.crestline.com`, `staging-app.crestline.com` | HSTS is disabled for staging endpoints. While these are not Production and are classified as Internal, staging environments may still contain test data, configuration details, or non-public application functionality. If accessible over the internet, lack of HSTS weakens transport security posture. | **Low** |\n| 9 | **HSTS disabled on internal web applications containing internal or restricted information** | TLS configuration audit report \u2014 `internal-tools.crestline.net`, `grafana.crestline.net`, `kibana.crestline.net`, `vault.crestline.net`, `jenkins.crestline.net` | Several internal HTTPS endpoints do not have HSTS enabled. These include systems that may expose operational data, logs, monitoring dashboards, CI/CD access, and secrets management. Although internal-only systems may have compensating network controls, the absence of HSTS is a configuration gap for browser-accessible internal applications. | **Medium** |\n| 10 | **Partner SFTP endpoint not represented in certificate/host key inventory** | TLS configuration audit report \u2014 `partner-sftp.crestline.com`; Certificate inventory | `partner-sftp.crestline.com` uses SFTP/SSH with `chacha20-poly1305@openssh.com`, which is a strong cipher. However, the certificate inventory does not include an equivalent SSH host key inventory, rotation status, or monitoring configuration. For a Production endpoint classified as Confidential and used for partner file exchange, the organization should maintain evidence of SSH host key management and encryption configuration monitoring. | **Medium** |\n\n## Summary of Key Risks\n\n- **Most significant encryption gap:** `legacy-reporting.crestline.com` uses **TLS 1.0** and a weak cipher suite while handling Confidential Production data.\n- **Most significant certificate gap:** `payments.crestline.com` has an apparently **expired certificate during the Q4 review period**, despite being Restricted and payment-related.\n- **Maintenance/control gap:** Certificate inventory data is not fully reliable, as at least one expired certificate remains marked \u201cActive.\u201d\n- **Configuration gaps:** HSTS is inconsistently applied, especially on the legacy reporting endpoint and several internal web applications.\n- **Monitoring/renewal gaps:** Several certificates expire shortly after Q4, including manually renewed certificates, with limited evidence of proactive renewal."
+}

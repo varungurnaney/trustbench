@@ -1,0 +1,70 @@
+{
+  "task_id": "a1.2-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:07:57.999965",
+  "score": {
+    "task_id": "a1.2-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.1111111111111111,
+    "f1": 0.1818181818181818,
+    "score": 0.1818181818181818,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "WAL",
+          "CISO",
+          "EXC-2025-051",
+          "compensating",
+          "firmware"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "TLS certificate",
+          "7.5 hours",
+          "no exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "checksum",
+          "skipped",
+          "false",
+          "verification",
+          "data integrity",
+          "no exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7654,
+    "output_tokens": 3060
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 Control A1.2\n## Orion Cloud Inc. \u2014 Q4 2025 Observation Period\n\n## Summary of Evidence Reviewed\n\n- **Backup & Recovery Policy (POL-BKP-006 v3.0)** \u2014 Relevant\n- **Backup execution log (Q4 2025, 92 days)** \u2014 Relevant\n- **Exception register** \u2014 Relevant\n- **Cloud Infrastructure Summary (DOC-INF-001)** \u2014 Limited relevance; informational only\n\nThree failure events occurred in Q4 2025: **BKP-2025-1022 (Oct 22)**, **BKP-2025-1128 (Nov 28)**, and **BKP-2025-1214 (Dec 14)**. Each is evaluated separately below.\n\n---\n\n## Findings\n\n### Finding 1: Checksum Verification Skipped on Re-run Backup (Nov 28)\n- **Reference:** Policy \u00a73.5 (Backup Verification); Log entry BKP-2025-1128R\n- **Gap:** The Nov 28 re-run completed at 05:52 UTC with `checksum_verified=false` and the operator note \"Checksum verification skipped to meet maintenance window deadline.\" Policy \u00a73.5 explicitly states that \"Backups failing checksum verification must be re-run\" and that checksum verification is required before a backup can be marked successful. This backup is marked `success` despite violating a mandatory verification control. There is no exception register entry for this event \u2014 meaning the policy was bypassed without CISO approval, and the integrity of that backup artifact cannot be attested. This is a direct policy violation that was neither detected nor escalated.\n- **Severity:** **High**\n\n### Finding 2: Dec 14 Failure \u2014 Missing Exception and SLA Breach\n- **Reference:** Policy \u00a76.1 (Response Procedures), \u00a76.2 (Exception Process); Log entries BKP-2025-1214 / BKP-2025-1214R\n- **Gap:** The Dec 14 backup failed at 02:47 UTC due to an expired TLS certificate. The re-run did not begin until 10:18 UTC \u2014 approximately 7.5 hours after failure \u2014 clearly exceeding the policy \u00a76.1 requirement that \"On-call engineer investigates and initiates re-run within 2 hours.\" The root cause (operator note) was that the on-call engineer lacked access to the certificate renewal process, indicating an access/runbook gap. Despite the SLA breach, **no entry exists in the exception register** for this event, even though \u00a76.2 requires a CISO-approved exception for any failure that cannot be resolved within policy timelines. Additionally, an expired TLS certificate on production backup infrastructure is itself a preventable certificate lifecycle management failure.\n- **Severity:** **High**\n\n### Finding 3: Nov 28 Failure \u2014 No Exception Register Entry\n- **Reference:** Policy \u00a76.2 (Exception Process); Log entry BKP-2025-1128\n- **Gap:** The Nov 28 cross-region network failure was re-run the same day, but the re-run completed without checksum verification (Finding 1) and there is no documentation in the exception register addressing either the original failure cause or the verification skip. Policy \u00a76.2 requires formal documentation of compensating controls and remediation timelines for any failure not resolved per standard procedure. The cross-region link degradation also raises questions about the durability of cross-region replication as a recovery control (Infrastructure doc \u00a72) that are not addressed anywhere in evidence.\n- **Severity:** **Medium**\n\n### Finding 4: Oct 22 Backup Not Re-run \u2014 Reliance on WAL Alone\n- **Reference:** Policy \u00a73.5, \u00a76.1; Exception EXC-2025-051\n- **Gap:** This event is the **best-handled** of the three. The exception is properly documented, CISO-approved, identifies root cause (NetApp firmware bug 12.4.1), specifies compensating controls (continuous WAL archiving with ~12 minute effective RPO \u2014 well within the 4-hour policy RPO), and includes a remediation plan with owner and date (firmware auto-update by Nov 15, 2025). However, two minor concerns remain: (a) no evidence is provided that the Nov 15 remediation milestone was actually completed, and (b) the policy \u00a73.5 requirement to re-run failed backups was waived without explicit policy language permitting WAL-based substitution \u2014 suggesting Policy \u00a76.2 should be enhanced to formally recognize WAL-based PITR as an acceptable compensating control class.\n- **Severity:** **Low**\n\n### Finding 5: No Evidence of Quarterly Restore Testing\n- **Reference:** Policy \u00a77 (Restore Testing)\n- **Gap:** Policy \u00a77 requires \"Quarterly full restore test in DR environment validating restoration success, data integrity, and RTO compliance.\" For a Q4 2025 observation period, a Q4 restore test should have been performed, and ideally Q3 test results would also be referenced. **No restore test reports, results, or artifacts have been provided.** Without restore testing evidence, the entity cannot demonstrate that backups are actually recoverable or that the 4-hour RTO is achievable \u2014 this is a foundational gap in A1.2 since the control specifically requires recovery procedures that meet availability commitments.\n- **Severity:** **High**\n\n### Finding 6: Backup Log Scope Limited to Single Database Cluster\n- **Reference:** Policy \u00a72 (Scope); Backup log\n- **Gap:** Policy \u00a72 lists six PostgreSQL clusters (oc-db-prod-01 through -06), S3 asset buckets, HashiCorp Vault, and the certificate store as in-scope systems. The backup execution log provided covers **only oc-db-prod-01**. There is no evidence of backup execution for the other 5 database clusters, S3 buckets, Vault, or the certificate store. Either the evidence sample is incomplete, or these systems are not being backed up consistently. This is a significant scoping gap that should be resolved before the formal audit.\n- **Severity:** **High**\n\n### Finding 7: Incremental and WAL Archiving Activity Not Evidenced\n- **Reference:** Policy \u00a73.2, \u00a73.3\n- **Gap:** Policy requires incremental backups every 4 hours and continuous WAL archiving with 15-minute maximum lag. The execution log only contains daily full backups. While the Oct 22 exception references WAL archiving as a compensating control, there is no monitoring data, log evidence, or WAL archive metrics provided to demonstrate ongoing operation of these mechanisms throughout the observation period. An auditor cannot rely on a single exception narrative as evidence of continuous operation.\n- **Severity:** **Medium**\n\n### Finding 8: No Evidence of Encryption Key Rotation\n- **Reference:** Policy \u00a74 (Encryption)\n- **Gap:** Policy requires quarterly KMS key rotation. No KMS key rotation evidence (CloudTrail logs, KMS key configuration, rotation reports) has been provided for the Q4 observation period. While this is more of an evidence-collection gap than a definitive control failure, it must be remediated before audit fieldwork.\n- **Severity:** **Low**\n\n### Finding 9: Pattern of Operational Weaknesses Across Failure Events\n- **Reference:** Policy \u00a76.1; aggregated observations\n- **Gap:** Across three failures, two distinct operational deficiencies are visible: (1) on-call engineer lacked TLS renewal access (Dec 14), and (2) operator chose to skip mandatory checksum verification under time pressure (Nov 28). Together these suggest weaknesses in on-call runbook completeness, access provisioning, and policy enforcement culture. While each individual event may be defensible, the *pattern* indicates the operational layer of A1.2 is weaker than the documented policy layer. Recommend a post-incident review covering all three Q4 events and updates to on-call training and access matrices.\n- **Severity:** **Medium**\n\n---\n\n## Overall Readiness Assessment\n\n| Area | Status |\n|---|---|\n| Policy design | **Adequate** \u2014 POL-BKP-006 is well-structured with clear RPO/RTO, retention, and exception process |\n| Exception management (Oct 22) | **Strong** \u2014 properly documented and approved |\n| Exception management (Nov 28, Dec 14) | **Weak** \u2014 no exception entries despite policy violations / SLA breaches |\n| Verification integrity | **Weak** \u2014 checksum bypass undermines control reliability |\n| Restore testing evidence | **Missing** \u2014 critical gap |\n| Scope coverage in evidence | **Incomplete** \u2014 5 of 6 DB clusters and other systems not evidenced |\n\n**Overall Recommendation:** Orion Cloud is **not yet audit-ready** for A1.2. Findings 1, 2, 5, and 6 must be remediated (or evidence supplied) before formal audit fieldwork. The control is well-designed on paper, but operational discipline and evidence completeness require strengthening."
+}

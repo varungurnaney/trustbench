@@ -1,0 +1,83 @@
+{
+  "task_id": "cc6.4-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T18:54:11.499811",
+  "score": {
+    "task_id": "cc6.4-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.25,
+    "f1": 0.3333333333333333,
+    "score": 0.3333333333333333,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "multi-tenant",
+          "shared building",
+          "lobby",
+          "property management"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "colocation",
+          "SecureVault",
+          "overdue",
+          "Section 8.2",
+          "SOC 2",
+          "independent"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "calibration",
+          "overdue",
+          "TEMP-01",
+          "HUM-01",
+          "Section 9.3",
+          "6 months"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "multi-tenant"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6570,
+    "output_tokens": 3271
+  },
+  "raw_response": "## CC6.4 Readiness Assessment Summary\n\nMeridian has several physical security controls documented and partially operating, including badge-controlled suite access, restricted server room access, CCTV coverage, visitor management requirements, and reliance on a colocation provider with documented physical security controls. However, the evidence for Q4 2025 shows multiple gaps in operating effectiveness and audit evidence, particularly around colocation oversight, environmental monitoring calibration, and access review evidence.\n\nNo Critical findings were identified, but there are High and Medium readiness gaps that should be remediated before a SOC 2 Type II audit.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Annual colocation physical security audit is overdue** | Physical Security Policy, Section 8.2; Colocation Data Center Annual Physical Security Audit Report | Policy requires Meridian to conduct an annual physical security audit of SecureVault Colocation in addition to reviewing the provider SOC 2. The only audit report provided is dated **August 15, 2024**, covering **August 2023 \u2013 July 2024**, with the next audit due by **August 15, 2025**. No 2025 audit evidence was provided for the Q4 2025 observation period. This means Meridian cannot demonstrate current oversight of physical security for production infrastructure hosted at SecureVault. | **High** |\n| 2 | **Environmental monitoring sensor calibration is overdue or inconsistently documented** | Physical Security Policy, Section 9.3; Environmental Sensor Calibration History | Policy requires environmental monitoring sensors to be calibrated every 6 months. The calibration history marks several sensors as **Overdue**, including server room temperature and humidity sensors: TEMP-01, TEMP-02, HUM-01, and HUM-02, all with next calibration due **2025-10-10**. TEMP-03 in the network closet is also overdue. Although readings are currently within range, overdue calibration reduces confidence that the readings are reliable. Additionally, the calibration records are internally inconsistent because some sensors last calibrated on **2025-08-10** show a next due date only two months later, despite the policy stating a six-month calibration cycle. Meridian should reconcile the calibration schedule and complete overdue calibrations. | **Medium** |\n| 3 | **Quarterly badge access review evidence not provided** | Physical Security Policy, Section 4.4; Badge Access Log for Q4 2025 | Policy requires all badge access to be reviewed quarterly by the Security Manager. The badge log shows access activity during Q4 2025, but there is no evidence of a formal quarterly review, such as reviewer sign-off, review date, access exceptions, remediation tracking, or reconciliation against active employee and role-based authorization records. Without this, Meridian cannot demonstrate that access to the suite, server room, or other restricted areas remained appropriate during the period. | **Medium** |\n| 4 | **Server room badge + PIN enforcement not evidenced** | Physical Security Policy, Sections 3.1 and 3.4; Badge Access Log for Q4 2025 | The policy states the server room, AP-SRV-01, requires **HID SEOS badge + 4-digit PIN**. The access log includes server room entries but only shows badge ID, employee name, access point, zone, and result. It does not evidence that PIN authentication was enforced or successfully used. While server room access appears limited to Infrastructure and SRE personnel, the evidence does not confirm operation of the required two-factor physical access control. | **Medium** |\n| 5 | **Access authorization basis for granted badge permissions not provided** | Physical Security Policy, Sections 4.1 and 8.3; Badge Access Log for Q4 2025 | The policy states employee badges are issued based on approved Access Authorization Forms and that restricted access should be role-based. The badge log shows granted access, including server room access by Ian Foster and Justin Park, but no underlying authorization forms, approved access matrix, or active employee listing were provided. As a result, the auditor cannot independently verify that granted physical access aligns with job responsibilities and approved access levels. | **Medium** |\n| 6 | **CCTV retention records show less than required 90-day retention in multiple cases** | Physical Security Policy, Section 5.2; CCTV Footage Retention Verification Log | Policy requires **90-day CCTV retention**. Several retention checks show only **89 days** of available footage but are marked \u201cCompliant\u201d with notes such as \u201cWithin 1 day of minimum \u2014 acceptable\u201d or \u201cWithin tolerance.\u201d The policy does not define an acceptable tolerance below 90 days. If 90 days is the control requirement, then 89-day retention should be treated as an exception unless formally approved and documented. | **Low** |\n| 7 | **Visitor management operating evidence not provided** | Physical Security Policy, Section 6 | The policy requires visitors to be pre-registered, identity-verified, issued temporary badges, escorted, restricted to the General Office zone, and have badges returned or deactivated. No Q4 2025 visitor log, visitor badge issuance/return log, escort evidence, or attestation that no visitors occurred was provided. In a shared building environment, visitor control is important to demonstrate that non-employees cannot access protected areas without authorization. | **Low** |\n| 8 | **Reliance on multi-tenant building controls lacks oversight evidence** | Physical Security Policy, Sections 2.2 and 3.3 | Meridian operates in a multi-tenant office building and relies on Greystone Property Management for lobby, elevator, stairwell, parking garage, loading dock, and after-hours building access controls. The policy acknowledges this reliance, but no evidence was provided showing Meridian reviews or receives assurance over Greystone\u2019s controls, such as building access procedures, after-hours access list review, incident reporting, contract security obligations, or property management control attestations. Meridian\u2019s suite badge control mitigates this risk, but the first layer of physical security is not independently evidenced. | **Low** |\n\n---\n\n## Overall CC6.4 Readiness Conclusion\n\nMeridian\u2019s physical security program is directionally aligned with CC6.4, and the documented policy includes appropriate expectations for badge access, restricted areas, CCTV, visitor control, environmental monitoring, and colocation oversight. However, the control is **not fully ready** for a clean SOC 2 Type II conclusion based on the evidence provided.\n\nThe most significant gap is the **overdue 2025 colocation physical security audit**, because it affects the physical protection of production infrastructure. Meridian should also remediate or document exceptions for the overdue environmental sensor calibrations and produce evidence of quarterly badge access reviews, access authorizations, and server room badge + PIN enforcement."
+}

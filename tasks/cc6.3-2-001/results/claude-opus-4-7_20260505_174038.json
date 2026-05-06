@@ -1,0 +1,76 @@
+{
+  "task_id": "cc6.3-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:40:38.706546",
+  "score": {
+    "task_id": "cc6.3-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "TRUNCATE",
+          "customers",
+          "row 22",
+          "Restricted",
+          "QA",
+          "destructive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Finance",
+          "payment_transactions",
+          "INSERT",
+          "UPDATE",
+          "segregation",
+          "Section 3.3",
+          "write access"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "svc-etl-legacy",
+          "owner",
+          "ALL TABLES",
+          "SELECT",
+          "least privilege",
+          "postgres",
+          "Section 5.1"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4760,
+    "output_tokens": 2767
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 CC6.3 Data Access Controls\n\n## Findings\n\n---\n\n### Finding 1: Finance User Has Write Access to Restricted Payment Transactions Table\n\n**Policy Reference:** Section 3.3 (Segregation of Duties)\n\n**Evidence:** Row 21 \u2014 Femi Okonkwo (Finance) granted `SELECT, INSERT, UPDATE` on `zenith_prod.payment_transactions` (Restricted).\n\n**Gap:** Policy explicitly states \"Finance department personnel must not have direct write access to financial transaction tables (payment_transactions, invoices, revenue_reports). Finance team members may only have read access.\" The note in the row itself (\"requires review\") suggests this was flagged but never remediated. This is a clear, documented SoD violation on Restricted PII/payment data.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: QA Analyst Granted TRUNCATE on Restricted Customer Table\n\n**Policy Reference:** Section 3.2 (Destructive Operations) and Section 3.1 (RBAC role definition)\n\n**Evidence:** Row 22 \u2014 Diego Martinez (QA) granted `SELECT, TRUNCATE` on `zenith_prod.customers` (Restricted).\n\n**Gap:** Two violations: (a) The `qa-analyst` role per policy is defined as `SELECT` only, yet TRUNCATE has been granted; (b) Policy 3.2 prohibits destructive operations (DELETE, TRUNCATE, DROP) on Restricted tables for non-DBA roles. TRUNCATE on the customers table could destroy all PII records \u2014 a catastrophic risk.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 3: QA Role Granted Production Read Access Without Masking\n\n**Policy Reference:** Section 3.4 (Data Masking)\n\n**Evidence:** Rows 22\u201324 \u2014 Diego Martinez has direct SELECT on `zenith_prod.customers` (Restricted) without indication of masked view usage. Similar issue for Rows 25, 32 (app-read users on customers).\n\n**Gap:** Policy 3.4 requires \"Non-DBA, non-application roles accessing Restricted tables must use masked views that redact PII fields.\" There is no evidence that QA, app-read, or support roles are accessing via masked views \u2014 they appear to have direct table access.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Engineering Personnel With Direct Write Access to Production\n\n**Policy Reference:** Section 3.3 (Segregation of Duties)\n\n**Evidence:**\n- Row 9\u201310 \u2014 Brandon Nakamura (Engineering) has `INSERT, UPDATE` on `zenith_prod.products` and `orders`\n- Row 31 \u2014 Jordan Rivera (Engineering) has `INSERT, UPDATE` on `zenith_prod.products`\n\n**Gap:** Policy 3.3 states \"Development personnel must not have direct write access to production databases.\" These are individual engineer accounts (not service accounts) with INSERT/UPDATE in zenith_prod.\n\n**Severity:** **High**\n\n---\n\n### Finding 5: Legacy ETL Service Account Has Overly Broad Access\n\n**Policy Reference:** Section 3.1 (Least Privilege), Section 5.1 (Service Account Governance)\n\n**Evidence:** Rows 29\u201330 \u2014 `svc-etl-legacy` granted SELECT on `ALL TABLES` in both `zenith_prod` and `zenith_analytics`. The `department` field is blank and there is no documented owner.\n\n**Gap:** (a) Violates least privilege \u2014 granted across all tables including Restricted (customers, payment_transactions, user_credentials, audit_log) rather than specific tables required for ETL function. (b) Section 5.1 requires every service account to have a designated human owner \u2014 owner field is empty. (c) Granted directly by `postgres` superuser, bypassing standard `db_admin` provisioning.\n\n**Severity:** **High**\n\n---\n\n### Finding 6: Service Account Permissions Granted Directly by postgres Superuser\n\n**Policy Reference:** Section 4.1 (Provisioning), Section 5.1 (Governance)\n\n**Evidence:** Rows 11\u201312, 27\u201330 \u2014 All `dba-admin` and `svc-etl-legacy` grants performed by `postgres` rather than `db_admin`.\n\n**Gap:** Use of the `postgres` superuser for routine grant operations indicates the standard provisioning workflow is being bypassed. Auditability of who authorized these grants is impaired.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Two DBAs With Full Admin \u2014 Insufficient Evidence of SoD on Privileged Operations\n\n**Policy Reference:** Section 3.1 (RBAC), Section 3.2 (Destructive Operations)\n\n**Evidence:** Rows 11\u201312 (Chiara Patel) and 27\u201328 (Hiroshi Tanaka) \u2014 both hold `ALL PRIVILEGES` on all schemas, including a \"Junior DBA\" with full admin.\n\n**Gap:** While dba-admin is permitted by policy, there is no evidence of compensating controls (break-glass procedures, four-eyes review, session logging) for privileged DBA actions on Restricted data. A junior DBA having unfettered ALL PRIVILEGES on production warrants tiered DBA roles or workflow gating.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 8: Missing Owner Documentation for Several Service Accounts\n\n**Policy Reference:** Section 5.1 (Service Account Governance)\n\n**Evidence:** Row 29\u201330 (`svc-etl-legacy`) has no owner. (All other service accounts do show owners \u2014 svc-app-api: Derek Huang; svc-billing: Aisha Patel; svc-reporting: Marcus Webb; svc-monitoring: Tom Okafor.)\n\n**Gap:** Policy requires \"All service accounts must have a designated human owner, documented business purpose.\" The legacy ETL account fails this requirement.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 9: No Evidence of Quarterly Access Review Execution\n\n**Policy Reference:** Section 4.2 (Quarterly Reviews)\n\n**Evidence:** The permission matrix has grants dating back to January 2024 (Rows 11\u201312, 27\u201328) and February 2024 (Rows 29\u201330). No \"last reviewed\" or \"review attestation\" column appears in the matrix.\n\n**Gap:** Policy mandates quarterly reviews with revocation within 5 business days. The findings above (Finance write access flagged \"requires review\", legacy ETL with no owner, qa-analyst with TRUNCATE) suggest reviews are either not occurring or not effective. No attestation evidence provided.\n\n**Severity:** **High**\n\n---\n\n### Finding 10: Reporting Service Account Writing to Analytics Tables \u2014 Potential SoD Concern\n\n**Policy Reference:** Section 3.3 (Segregation of Duties on revenue_reports)\n\n**Evidence:** Row 17 \u2014 `svc-reporting` has `SELECT, INSERT` on `zenith_analytics.revenue_reports`.\n\n**Gap:** Policy 3.3 lists `revenue_reports` as a financial transaction table where writes must \"flow through the application layer with audit logging.\" This is plausibly compliant (it is an application service account), but evidence of audit logging and pipeline integrity controls for this write path was not provided.\n\n**Severity:** **Low** (clarification / additional evidence needed)\n\n---\n\n## Summary\n\n| Severity | Count |\n|----------|-------|\n| Critical | 2 |\n| High | 4 |\n| Medium | 3 |\n| Low | 1 |\n\n**Highest priorities for remediation before SOC 2 Type II audit window:**\n1. Revoke Finance user's write access on `payment_transactions` (Finding 1)\n2. Revoke TRUNCATE privilege from QA on `customers` (Finding 2)\n3. Establish and execute quarterly access review with documented attestation (Finding 9)\n4. Remediate engineer direct production write access (Finding 4)"
+}

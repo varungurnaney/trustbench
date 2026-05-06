@@ -1,0 +1,76 @@
+{
+  "id": "cc6.3-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.3",
+  "control_description": "The entity authorizes, modifies, or removes access to data, software functions, and other protected information assets based on roles and responsibilities, segregation of duties, and least privilege principles.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/data-access-policy.md",
+      "type": "policy",
+      "description": "Zenith Software data access authorization policy with data classification and least-privilege requirements"
+    },
+    {
+      "path": "evidence/database-permission-matrix.csv",
+      "type": "spreadsheet",
+      "description": "PostgreSQL production database permission matrix showing all users, roles, schemas, and granted privileges as of December 15, 2025"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are reviewing the data access controls for Zenith Software as part of a SOC 2 Type II readiness assessment covering Q4 2025. Review the data access policy and the database permission matrix. Cross-reference the policy requirements against the actual permissions granted. Identify any permissions that violate the policy's least-privilege or segregation of duties requirements. Pay careful attention to every row in the permission matrix.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "User d.martinez has TRUNCATE privilege on production customers table buried in row 22 of the matrix",
+      "description": "Row 22 of the database permission matrix shows user d.martinez (Diego Martinez, QA department) has been granted TRUNCATE on the zenith_prod.customers table. TRUNCATE allows irreversible bulk deletion of all rows in the table without logging individual row deletions. The data access policy Section 3.2 states: 'Destructive operations (DELETE, TRUNCATE, DROP) on production tables classified as Restricted are prohibited for non-DBA roles.' The customers table is classified as Restricted per the policy's data classification table. d.martinez holds the qa-analyst role, which should only have SELECT access to production data per the RBAC matrix in Section 3.1. There is no documented justification or exception for this grant.",
+      "evidence_sources": ["evidence/database-permission-matrix.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "Scanning all rows of the permission matrix → row 22 shows d.martinez with TRUNCATE on customers → policy Section 3.2 prohibits destructive ops for non-DBA on Restricted tables → customers is Restricted → QA role should be SELECT-only → no exception documented → critical violation.",
+      "detection_criteria": {
+        "required_keywords": ["d.martinez", "TRUNCATE", "customers", "row 22", "Restricted", "QA", "destructive", "prohibited"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "User f.okonkwo in Finance has INSERT and UPDATE on payment_transactions — segregation of duties violation",
+      "description": "The permission matrix shows f.okonkwo (Femi Okonkwo, Finance department) with INSERT and UPDATE privileges on the zenith_prod.payment_transactions table. Policy Section 3.3 states: 'Finance department personnel must not have direct write access to financial transaction tables. Finance team members may only have read access; all write operations must flow through the application layer with audit logging.' This is a segregation of duties violation — Femi could potentially create or modify payment records directly in the database, bypassing application-level controls and audit trails.",
+      "evidence_sources": ["evidence/database-permission-matrix.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "f.okonkwo is Finance → has INSERT/UPDATE on payment_transactions → policy Section 3.3 explicitly prohibits Finance write access to financial tables → SoD violation → direct database access bypasses application audit trail.",
+      "detection_criteria": {
+        "required_keywords": ["f.okonkwo", "Finance", "payment_transactions", "INSERT", "UPDATE", "segregation", "Section 3.3", "write access"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Service account svc-etl-legacy has SELECT on all schemas without a designated owner",
+      "description": "The permission matrix shows svc-etl-legacy with SELECT on ALL TABLES across both zenith_prod and zenith_analytics schemas. The grant was issued by the postgres superuser on 2024-02-10. Policy Section 5.1 requires all service accounts to have a designated human owner. The owner column for svc-etl-legacy is blank. Additionally, the broad SELECT across all tables violates least-privilege — an ETL service account should only read from the specific tables it needs to extract.",
+      "evidence_sources": ["evidence/database-permission-matrix.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "svc-etl-legacy has no owner → violates Section 5.1 → also has SELECT on ALL TABLES → least privilege violation → granted by postgres superuser suggests legacy ungoverned access.",
+      "detection_criteria": {
+        "required_keywords": ["svc-etl-legacy", "owner", "ALL TABLES", "SELECT", "least privilege", "postgres", "Section 5.1"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "12 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["data_access", "permission_matrix", "TRUNCATE", "segregation_of_duties", "least_privilege", "service_account"]
+  }
+}

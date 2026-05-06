@@ -1,0 +1,101 @@
+{
+  "id": "cc3.1-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC3.1",
+  "control_description": "The entity specifies objectives with sufficient clarity to enable the identification of risks to the achievement of its objectives. The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/risk-management-policy.md",
+      "type": "policy",
+      "description": "Nexus Financial Technologies risk management policy with risk appetite statement, review cadence, and exception process"
+    },
+    {
+      "path": "evidence/risk-register.csv",
+      "type": "spreadsheet",
+      "description": "Active risk register with 15 risks including a Board-approved Critical risk acceptance and two overdue reviews"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Exception register documenting the Board-approved risk acceptance for NF-RISK-009 (cross-border regulatory divergence)"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/market-risk-report-q4.md",
+      "type": "report",
+      "description": "Q4 2025 market risk report covering VaR, stress testing, and portfolio risk metrics -- related to financial risk but not to the information security risk management process being audited"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Nexus Financial Technologies' risk management controls under CC3.1 for the Q4 2025 observation period (October 1 - December 31, 2025). Review the risk management policy, risk register, exception register, and any supporting documentation. Assess completeness, timeliness, and governance effectiveness. Be careful to distinguish properly managed risk acceptances from genuine gaps. Not all documents may be relevant to the CC3.1 assessment.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "NF-RISK-009 Critical risk accepted without mitigation -- but properly governed through Board-approved exception",
+      "description": "NF-RISK-009 (cross-border regulatory divergence) is rated Critical (Likelihood 4, Impact 5, Rating 20) with treatment strategy 'Accept.' This appears to be an unmitigated Critical risk. However, the exception register (EXC-2025-031) documents a fully governed risk acceptance: Clifford Chance LLP provided external legal analysis, comprehensive compensating controls are documented (dual compliance team, RegTech monitoring, quarterly attestation), CRO recommended approval, CISO approved, Board approved via resolution BR-2025-018, quarterly reviews have been conducted (Q3 and Q4 2025), AIG insurance covers fines up to $15M (Policy FIN-2025-NF-0091), and the exception has a defined expiration date (September 2026). This follows all seven steps of the exception process defined in policy Section 5.",
+      "evidence_sources": ["evidence/risk-register.csv", "evidence/exception-register.csv", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "An auditor might flag a Critical risk with Accept treatment. However, review of the exception register shows all policy Section 5 requirements are met: formal request, compensating controls, CRO recommendation, CISO approval, Board resolution, quarterly reviews, and expiration date. This is a model risk acceptance governance process.",
+      "detection_criteria": {
+        "required_keywords": ["NF-RISK-009", "Critical", "Accept", "Board resolution", "BR-2025-018", "unmitigated"],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": ["properly governed", "compliant", "exception process followed", "not a finding", "Board approved"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "NF-RISK-014 High risk overdue for quarterly review by 8 months",
+      "description": "NF-RISK-014 (legacy reconciliation engine vulnerabilities) is classified as High with last_review_date of 2025-04-22 and next_review_date of 2025-07-22. Policy Section 3.2 requires quarterly review for High risks. As of the end of Q4 2025, this risk has not been reviewed in approximately 8 months. The notes indicate the migration timeline slipped from Q1 to Q3 2026, but the risk itself has not been reassessed despite the timeline extension. A legacy system with known vulnerabilities that is not being reviewed quarterly means evolving threats may not be captured in the risk rating.",
+      "evidence_sources": ["evidence/risk-register.csv", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "Check last_review_date for all High and Critical risks against Section 3.2 quarterly requirement. NF-RISK-014 last reviewed April 2025, next review was due July 2025. Over 5 months past the quarterly review deadline. The migration timeline slippage makes the review even more important -- the risk exposure is extended.",
+      "detection_criteria": {
+        "required_keywords": ["NF-RISK-014", "High", "April 2025", "overdue", "quarterly", "8 months", "legacy", "reconciliation"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "NF-RISK-015 High risk overdue for quarterly review by 6 months",
+      "description": "NF-RISK-015 (DORA compliance readiness) is classified as High with last_review_date of 2025-06-10 and next_review_date of 2025-09-10. As of Q4 2025, this risk has not been reviewed in approximately 6 months, exceeding the quarterly review requirement. The notes indicate the gap assessment identified 8 findings with 3 remaining open. A DORA compliance risk that is overdue for review while remediation findings remain open is particularly concerning for a financial services company subject to EU regulatory requirements.",
+      "evidence_sources": ["evidence/risk-register.csv", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "NF-RISK-015 last reviewed June 2025, next review due September 2025. Over 3 months past quarterly deadline as of Q4 end. The risk has open remediation findings (3 of 8) making the overdue review more significant. DORA is a mandatory EU regulation for financial entities.",
+      "detection_criteria": {
+        "required_keywords": ["NF-RISK-015", "High", "June 2025", "overdue", "quarterly", "DORA", "6 months", "3 remain open"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Two overdue reviews suggest systemic failure in quarterly risk review process",
+      "description": "Both NF-RISK-014 (overdue 8 months) and NF-RISK-015 (overdue 6 months) have review dates that were due during Q2-Q3 2025. Policy Section 3.2 requires overdue reviews to be escalated to the CRO within 5 business days. There is no evidence of escalation for either risk. The pattern of multiple overdue High risks suggests the quarterly review process is not being monitored for compliance, and the escalation mechanism defined in the policy is not functioning. All other High and Critical risks in the register have current review dates, so this may be limited to specific risk owners -- but the lack of escalation is a process gap regardless.",
+      "evidence_sources": ["evidence/risk-register.csv", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "Two separate High risks are overdue, both from different owners (Elena Rodriguez and James Foster). Policy defines an escalation mechanism for overdue reviews (5 business days to CRO). No escalation evidence. The pattern suggests the monitoring and escalation process is not effective.",
+      "detection_criteria": {
+        "required_keywords": ["NF-RISK-014", "NF-RISK-015", "overdue", "escalation", "CRO", "systemic", "monitoring", "process gap"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["risk_assessment", "red_herring", "risk_acceptance", "overdue_review", "exception_management", "DORA", "financial_services"]
+  }
+}

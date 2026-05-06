@@ -1,0 +1,76 @@
+{
+  "task_id": "cc6.6-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T18:50:17.392131",
+  "score": {
+    "task_id": "cc6.6-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 0.4615384615384615,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "shared VPC",
+          "crestline-shared-compute",
+          "staging",
+          "production ML",
+          "Section 3.2",
+          "Section 3.3",
+          "SEC-EXC-2025-012",
+          "cost optimization",
+          "VPC boundary"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "pcx-0xsharedprod01",
+          "10.0.20.0/23",
+          "staging",
+          "ML overflow",
+          "production data",
+          "route table",
+          "lateral movement"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "management",
+          "monitoring",
+          "broad",
+          "data subnets"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5524,
+    "output_tokens": 3869
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 CC6.6 Environment Segmentation\n\n**Auditor:** Independent Compliance Review\n**Control:** CC6.6 \u2014 Logical access security measures protecting against threats from outside system boundaries\n**Period:** Q4 2025\n**Overall Conclusion:** **Control NOT operating effectively as designed.** Material exceptions to documented policy exist, and while compensating controls and an approved exception are in place, several deficiencies undermine the integrity of the environment segmentation control.\n\n---\n\n## Finding 1: Direct Policy Violation \u2014 Shared VPC Hosting Production and Non-Production Workloads\n\n**Relates to:** CRT-SEC-POL-007 Section 3.2 and 3.3; VPC architecture export (vpc-0xshared001); Cost optimization review Section 1\n\n**Gap:** Policy CRT-SEC-POL-007 Section 3.2 explicitly requires that \"Each environment must operate in its own dedicated VPC\" and Section 3.3 prohibits \"shared subnets between environments.\" The `crestline-shared-compute` VPC (vpc-0xshared001) hosts both staging workloads (sub-shared-staging-*) and production ML training overflow (sub-shared-prod-ml-overflow-*) within the same VPC boundary (CIDR 10.50.0.0/16). Although different subnets are used, the workloads share a common VPC network boundary, route tables, and broadcast domain. This is a direct violation of the documented control. While SEC-EXC-2025-012 has been filed, the existence of an exception does not make the control effective \u2014 it documents a known control deficiency.\n\n**Severity:** **High**\n\n---\n\n## Finding 2: Production-to-Non-Production VPC Peering Prohibited by Policy\n\n**Relates to:** CRT-SEC-POL-007 Section 3.3; VPC peering connection pcx-0xsharedprod01\n\n**Gap:** Section 3.3 explicitly states \"No VPC peering between production and non-production environments.\" Peering connection `pcx-0xsharedprod01` connects the production VPC (vpc-0xprod001) to the shared VPC (vpc-0xshared001), which contains staging workloads. Even though route table entries are scoped to specific subnets (10.0.20.0/23 and 10.50.10.0/23), the peering relationship itself violates the policy. A misconfigured route table entry, security group rule, or NACL change could inadvertently expose production data subnets to staging workloads. The exception register references this but does not appear to explicitly address Section 3.3's peering prohibition \u2014 it cites Section 3.2 (VPC architecture).\n\n**Severity:** **High**\n\n---\n\n## Finding 3: Exception Scope Does Not Cover All Policy Violations\n\n**Relates to:** Exception register SEC-EXC-2025-012; Policy Sections 3.2, 3.3\n\n**Gap:** Exception SEC-EXC-2025-012 is filed against \"CRT-SEC-POL-007 Section 3.2\" only. However, the implemented architecture violates multiple policy provisions:\n- Section 3.2 (dedicated VPCs) \u2014 covered by exception\n- Section 3.3 (no peering between prod and non-prod) \u2014 **not covered**\n- Section 3.3 (no shared security groups between environments) \u2014 partially implicated; sg-shared-ml-overflow is in the shared VPC but governs production ML overflow workloads\n\nThe exception process under Section 7 requires documented compensating controls for the specific deviations. Undocumented deviations are operating without formal risk acceptance.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 4: Shared IAM Roles Across Environment Boundary\n\n**Relates to:** Cost optimization review Section 1, \"Security Controls Implemented\"; CC6.6 boundary protection\n\n**Gap:** The cost review states \"Production ML overflow instances use the same IAM roles as production ML instances.\" While this maintains production-equivalent privileges for the overflow workloads, it means production-privileged IAM credentials are present on EC2 instances residing in a VPC that also hosts staging workloads. A successful lateral movement from staging to the ML overflow subnet (whether via misconfigured SG, kernel vulnerability, or hypervisor issue) would expose IAM credentials with full production ML access, including data subnet access via the peering connection. The exception register references \"separate IAM roles per environment\" as a compensating control, which **directly contradicts** the cost review documentation. This inconsistency suggests either inaccurate compensating control documentation or inaccurate cost review documentation.\n\n**Severity:** **High**\n\n---\n\n## Finding 5: Inconsistency Between Compensating Controls and Implementation Documentation\n\n**Relates to:** Exception SEC-EXC-2025-012 compensating controls; Cost optimization review Section 1\n\n**Gap:** The exception register lists \"separate IAM roles per environment\" as a compensating control, but the cost optimization review explicitly states that production ML overflow uses the same IAM roles as production ML. Additionally, the exception cites \"monthly review of cross-subnet traffic patterns\" but no evidence of these monthly reviews has been provided for the audit period (only a single October 15 renewal review is referenced). Compensating controls that are documented but not evidenced cannot be relied upon.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 6: Insufficient Evidence of Cross-Subnet Traffic Monitoring\n\n**Relates to:** Exception SEC-EXC-2025-012 compensating controls; CC6.6 monitoring requirements\n\n**Gap:** The exception cites VPC Flow Logs and \"monthly review of cross-subnet traffic patterns\" as key compensating controls. No evidence has been provided of:\n- Flow log retention configuration\n- Detection rules or alerting on anomalous staging\u2192ML-overflow traffic\n- Monthly review artifacts (review logs, ticket evidence, sign-offs) other than the October 15 renewal note\n- Defined criteria for what constitutes a \"traffic anomaly\"\n\nFor a High-rated risk exception, monthly reviews should produce auditable artifacts. Without these, the compensating control cannot be evidenced as operating.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 7: Egress Control Weakness in Shared VPC\n\n**Relates to:** CRT-SEC-POL-007 Section 6; Security group sg-shared-staging rule sgr-shared-005\n\n**Gap:** Section 6 requires production egress to be \"restricted to allowlisted destinations via NAT Gateway with DNS filtering.\" Security group `sg-shared-staging` permits outbound HTTPS to `0.0.0.0/0` (rule sgr-shared-005). While this rule is attached to staging workloads, those workloads share VPC infrastructure (route tables, NAT Gateway potentially) with production ML overflow instances. If the staging and production overflow workloads share egress infrastructure, this could create a pathway that bypasses production allowlisting requirements. The evidence does not clarify whether separate NAT Gateways are used per subnet group.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 8: Risk Rating vs. Exception Duration Inconsistency\n\n**Relates to:** Exception SEC-EXC-2025-012; Policy Section 7\n\n**Gap:** The exception is rated \"High\" risk, yet was approved for the maximum 6-month duration permitted by Section 7. The policy does not differentiate exception duration by risk rating, but professional judgment suggests High-risk exceptions warrant shorter review cycles or remediation milestones. Additionally, the exception was renewed in October 2025 with the justification including \"GPU cost savings of $367K/year justifies continued shared architecture\" \u2014 this indicates cost considerations are driving renewal of a High-rated security exception without a documented remediation plan or sunset date for the underlying architecture.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 9: No Documented Remediation Plan for Architectural Deviation\n\n**Relates to:** Exception SEC-EXC-2025-012; CC6.6 control design\n\n**Gap:** Exceptions should generally be temporary measures pending remediation. The exception register and cost review show no documented plan to:\n- Migrate production ML overflow to a dedicated production VPC\n- Establish a sunset criterion (e.g., when GPU on-demand pricing changes, when reserved capacity becomes available)\n- Define when the shared architecture would be unwound\n\nThe October 2025 renewal note explicitly cites cost savings as justification, suggesting the \"exception\" has become permanent architecture without policy update. Either the policy should be amended through governance channels (with appropriate risk re-baselining) or remediation should be planned. Operating indefinitely under exception undermines the control framework.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 10: Production Data Subnet Access from Shared VPC\n\n**Relates to:** Peering route 10.0.20.0/23 (production data subnets); sg-shared-ml-overflow rules sgr-shared-002, sgr-shared-003\n\n**Gap:** The shared VPC has bidirectional network access to production data subnets (10.0.20.0/23) for \"training data retrieval\" and \"model artifact storage.\" The compensating control claim that \"production ML overflow accesses only training datasets (no customer PII in training data)\" is a data classification assertion, not a network control. No evidence has been provided of:\n- Data classification controls verifying training datasets contain no PII\n- Technical controls preventing the shared VPC from reaching PII-containing data\n- Access logging on production data subnet S3 endpoints distinguishing production-VPC vs. shared-VPC requests\n\nThe network path exists; the protection relies entirely on application-layer assumptions.\n\n**Severity:** **High**\n\n---\n\n## Summary of Findings\n\n| # | Title | Severity |\n|---|-------|----------|\n| 1 | Direct policy violation \u2014 shared VPC for prod/non-prod | High |\n| 2 | Prohibited prod-to-non-prod VPC peering | High |\n| 3 | Exception scope does not cover all policy violations | Medium |\n| 4 | Shared IAM roles across environment boundary | High |\n| 5 | Inconsistency between compensating controls and implementation docs | Medium |\n| 6 | Insufficient evidence of cross-subnet traffic monitoring | Medium |\n| 7 | Egress control weakness in shared VPC | Medium |\n| 8 | High-risk exception with cost-driven renewal | Medium |\n| 9 | No documented remediation plan | Medium |\n| 10 | Production data subnet access from shared VPC | High |\n\n## Auditor's Professional Judgment\n\nCost optimization is a legitimate business consideration, but $367K in annual savings does not, in itself, justify reduced security boundaries when those boundaries are explicitly required by the entity's own documented policy. The exception process exists for genuine, time-bound deviations with active remediation paths; it is being used here to permanently authorize an architecture that contradicts policy. **Recommendation:** Either (a) formally amend CRT-SEC-POL-007 to permit shared VPC architectures with defined controls (subject to governance and risk committee approval, and disclosed to relevant customers/auditors), or (b) implement remediation to restore dedicated VPC isolation. The current state \u2014 operating in violation of policy under a perpetually renewed exception \u2014 represents a control environment weakness that should be disclosed in management's CC6.6 representation."
+}

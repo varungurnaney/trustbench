@@ -1,0 +1,88 @@
+{
+  "id": "cc7.2-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.2",
+  "control_description": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/monitoring-standards.md",
+      "type": "policy",
+      "description": "Zenith Commerce security monitoring standards defining SIEM integration SLA, alert requirements, coverage validation, and third-party monitoring"
+    },
+    {
+      "path": "evidence/datadog-coverage-report.json",
+      "type": "report",
+      "description": "Datadog Security Monitoring coverage report showing 14 fully monitored, 1 partially monitored, and 1 unmonitored production service"
+    },
+    {
+      "path": "evidence/alert-response-log.csv",
+      "type": "log",
+      "description": "Q4 2025 alert response log with 20 alerts showing response times and SLA compliance"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/change-management-summary.md",
+      "type": "report",
+      "description": "Change management summary for Q4 2025 — CAB schedule and change statistics not directly relevant to monitoring controls"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Zenith Commerce's monitoring and anomaly detection controls for the Q4 2025 observation period. Review the monitoring standards, Datadog coverage report, and alert response log. Assess whether CC7.2 requirements are met. Pay attention to monitoring completeness, alert response effectiveness, and any services with gaps. Some documents may not be relevant to this control.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Recommendation engine v2 has only 2 of 4 required alert rules",
+      "description": "The recommendation-engine-v2 (ZEN-SVC-015) was deployed December 8 and has only 2 alert rules (error rate and availability) versus the minimum 4 required by Section 4.1 (error rate, authentication failures, latency anomaly, availability). However, the automated reconciliation detected the service on December 8 and the Datadog agent was installed December 10 — within the 3-business-day SLA. Alert rule configuration is noted as 'in progress.' The deployment is 23 calendar days old by December 31. While the full alert configuration is not yet complete, the service was detected by the automated system, the agent was deployed within SLA, and active monitoring (2 rules + agent) is in place. The remaining configuration work is an operational item, not a systemic control failure. This is a borderline finding — a strict auditor may flag the incomplete alert configuration, but the automated detection and timely agent deployment demonstrate the monitoring process is working.",
+      "evidence_sources": ["evidence/datadog-coverage-report.json", "evidence/monitoring-standards.md"],
+      "expected_reasoning": "The auditor should note the 2-of-4 alert gap but also recognize that the automated reconciliation system detected the service and the agent was deployed within SLA. The 3-business-day SLA is for integration (agent installation), which was met. The alert rule completeness is an ongoing configuration task. A practical auditor would note this as an observation rather than a finding.",
+      "detection_criteria": {
+        "required_keywords": ["recommendation-engine-v2", "ZEN-SVC-015", "2 alert rules", "4 required", "December 8", "December 10", "3-business-day SLA", "in progress"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": ["within SLA", "agent installed", "observation", "not a finding", "in progress", "automated detection"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Fraud detection sidecar processing payment data has no monitoring for 43+ days",
+      "description": "The fraud-detection-sidecar (ZEN-SVC-016) was deployed November 18 and has no Datadog agent, no alert rules, and produces no monitored log output. The service analyzes all payment transactions for fraud signals, processing 340K transactions per day including customer payment data, IP addresses, device fingerprints, and transaction metadata. The automated reconciliation system detected the service on November 18 and generated a P3 alert, but the resolution was 'Acknowledged — vendor integration in progress' with no follow-up. The 3-business-day integration SLA (Section 3.2) has been exceeded by approximately 30 business days. The compensating control cited (FraudShield vendor hosted dashboard) is outside Zenith Commerce's security operations visibility — the security team does not have direct access to raw sidecar logs. This means a compromised fraud detection service, or a malicious actor manipulating fraud thresholds, would be invisible to Zenith Commerce's security monitoring. The fraud-detection-sidecar entry ALT-Q4-013 in the alert response log explicitly notes 'No alerts — service not monitored by Datadog.'",
+      "evidence_sources": ["evidence/datadog-coverage-report.json", "evidence/monitoring-standards.md", "evidence/alert-response-log.csv"],
+      "expected_reasoning": "The auditor should identify ZEN-SVC-016 as the critical gap: zero monitoring on a service processing all payment transactions. The vendor dashboard is not a substitute for internal monitoring — Zenith Commerce cannot correlate fraud sidecar behavior with other security events, cannot apply their own anomaly detection, and cannot verify the vendor's alerting is effective. ALT-Q4-013 in the alert log explicitly documents the monitoring gap. The 43-day age exceeds the 3-day SLA by approximately 28 business days.",
+      "detection_criteria": {
+        "required_keywords": ["fraud-detection-sidecar", "ZEN-SVC-016", "November 18", "no Datadog agent", "340K transactions", "payment data", "vendor dashboard", "ALT-Q4-013", "3-business-day SLA"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Two P1/P2 alert SLA breaches during Q4",
+      "description": "The alert response log shows two SLA breaches on high-severity alerts: ALT-Q4-015 (P2 error rate spike on order-management, responded in 18 minutes vs 15-minute SLA) during Black Friday traffic surge while handling a concurrent P1, and ALT-Q4-019 (P1 data exfiltration on marketplace-api, responded in 6 minutes vs 5-minute SLA). The P1 SLA of 5 minutes is aggressive, and the 1-minute overage on ALT-Q4-019 is marginal. The P2 breach during Black Friday concurrent alerting suggests capacity constraints under peak load. Of 20 total alerts, 18 met SLA (90% compliance). Both breaches occurred during high-stress operational periods.",
+      "evidence_sources": ["evidence/alert-response-log.csv", "evidence/monitoring-standards.md"],
+      "expected_reasoning": "The auditor should identify ALT-Q4-015 and ALT-Q4-019 as SLA breaches. The P1 breach is marginal (6 vs 5 minutes) and the P2 breach occurred during concurrent P1 handling on Black Friday. The 90% SLA compliance is below what most auditors expect for critical alerts. The pattern suggests on-call capacity is insufficient during high-volume periods.",
+      "detection_criteria": {
+        "required_keywords": ["ALT-Q4-015", "ALT-Q4-019", "SLA breach", "18 minutes", "6 minutes", "Black Friday", "concurrent", "capacity"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["monitoring_coverage", "fraud_detection", "red_herring", "vendor_dependency", "SLA_breach", "automated_reconciliation", "e_commerce"]
+  }
+}

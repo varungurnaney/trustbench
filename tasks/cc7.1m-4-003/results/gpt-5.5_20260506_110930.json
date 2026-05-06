@@ -1,0 +1,55 @@
+{
+  "task_id": "cc7.1m-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:09:30.352107",
+  "score": {
+    "task_id": "cc7.1m-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 0.33333333333333337,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-P-060",
+          "PaperCut",
+          "compensating controls"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "VMA-2025-003",
+          "Fortinet",
+          "expired",
+          "September 30",
+          "hardware maintenance",
+          "lapsed"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3266,
+    "output_tokens": 2990
+  },
+  "raw_response": "## Overall Assessment\n\nKeystone Data Services demonstrates a defined maintenance policy, regular Q4 patch activity, documented maintenance windows, and a formal exception process for vendor-dependent patch issues. The two vendor-dependency exceptions include approvals, planned remediation dates, and compensating controls that appear directionally appropriate.\n\nHowever, CC7.1 is **not fully met for readiness purposes** due to gaps in vendor maintenance coverage, incomplete evidence that maintenance covers all in-scope system components, and weaknesses in the timeliness/formality of patch exception handling.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Fortinet firewall maintenance agreement expired during Q4 | Vendor maintenance agreement tracking \u2014 `VMA-2025-003`; Policy \u00a75.2 Vendor Agreements | The Fortinet maintenance agreement expired on **September 30, 2025**, and the status is listed as **Expired** throughout the Q4 audit period. The notes state that firewall hardware maintenance coverage has lapsed, although FortiGuard threat intelligence remains active under a separate contract. Policy \u00a75.2 requires all vendor maintenance agreements to be current and reviewed annually. Firewalls are critical security infrastructure, and a lapse in hardware maintenance or TAC support could impair Keystone\u2019s ability to respond to firewall failures or urgent vendor support needs. | **High** |\n| 2 | Incomplete evidence that patching covers all in-scope system components | Policy \u00a72 Scope; Policy \u00a74 Patching; Policy \u00a76 Documentation; Q4 patch records | The maintenance policy applies to **all production, staging, and corporate systems**, but the Q4 patch records only evidence patching for a limited set of systems: web servers, application servers, one database server, and FortiGate firewalls. There is no Q4 maintenance evidence provided for several apparent in-scope components or vendor-supported technologies, including Cisco network devices, VMware/vCenter, Oracle databases, SAP ERP, PaperCut, UPS/PDU infrastructure, corporate endpoints, or staging systems. Without an asset-to-patch coverage reconciliation, Keystone cannot demonstrate that all relevant application, database, operating system, and infrastructure components were maintained in accordance with CC7.1. | **Medium** |\n| 3 | Critical patch exception for legacy ERP appears significantly overdue | Patch exception register \u2014 `EXC-2025-P-058`; Policy \u00a74.1 Patch SLAs; Policy \u00a74.2 Patch Exceptions | `EXC-2025-P-058` relates to a **Critical** Windows RDS RCE vulnerability with a Microsoft patch released in **July 2024**. Keystone\u2019s policy requires Critical patches to be applied within **14 days**, or an exception to be documented when the SLA cannot be met. The exception was dated **September 20, 2025**, more than a year after the patch release, with remediation planned for **March 31, 2026**. Although compensating controls are documented and appear reasonable, the evidence does not demonstrate timely exception approval or timely risk acceptance when the SLA was first missed. | **High** |\n| 4 | Patch exception records lack a formal residual risk assessment | Patch exception register \u2014 `EXC-2025-P-060`, `EXC-2025-P-058`; Policy \u00a74.2 Patch Exceptions | Policy \u00a74.2 requires a documented **risk assessment of the unpatched vulnerability**. The exceptions include vulnerability severity, descriptions, compensating controls, approvals, and remediation timelines, but they do not clearly document residual risk after compensating controls, likelihood/impact, risk owner acceptance, or criteria supporting the length of the deferral. This is particularly important because the exceptions involve **High** and **Critical** vulnerabilities. | **Medium** |\n\n---\n\n## Notes on Areas That Appear Adequate\n\n- Q4 patch records show successful deployments within approved maintenance windows.\n- High and Medium patches recorded in Q4 appear to align with the policy\u2019s patching cadence.\n- The PaperCut vendor-dependency exception, `EXC-2025-P-060`, includes vendor acknowledgment, expected release timeline, interim workaround, compensating controls, approval, and a planned remediation date.\n- The legacy ERP exception includes strong compensating controls, including disabling RDS, blocking inbound RDP, network isolation, EDR, and IDS signatures. The main issue is timeliness and formal residual risk documentation, not necessarily the compensating control design."
+}

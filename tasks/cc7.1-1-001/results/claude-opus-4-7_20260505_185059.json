@@ -1,0 +1,73 @@
+{
+  "task_id": "cc7.1-1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T18:50:59.120413",
+  "score": {
+    "task_id": "cc7.1-1-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "regular basis",
+          "scan frequency",
+          "undefined",
+          "cadence",
+          "measurable",
+          "weekly"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely manner",
+          "remediation SLA",
+          "severity",
+          "Critical",
+          "days",
+          "undefined"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "authenticated",
+          "credentialed",
+          "unauthenticated",
+          "coverage",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1936,
+    "output_tokens": 2614
+  },
+  "raw_response": "# Compliance Readiness Assessment: SOC 2 CC7.1\n\n**Control:** CC7.1 \u2014 Detection and monitoring procedures for configuration changes introducing vulnerabilities and susceptibility to newly discovered vulnerabilities.\n\n**Document Reviewed:** POL-VM-001 v2.1, Vulnerability Management Policy\n\n---\n\n## Overall Assessment\n\nThe policy establishes a reasonable framework for vulnerability management but contains **several material gaps** that an auditor reviewing CC7.1 would likely flag. The policy is heavy on governance structure but light on the specific, measurable detection commitments that CC7.1 evaluates. Specifically, CC7.1 emphasizes (a) detecting **configuration changes** that introduce vulnerabilities and (b) timely awareness of **newly discovered vulnerabilities** \u2014 both of which are underspecified.\n\n---\n\n## Findings\n\n### Finding 1: Undefined Scan Frequency\n- **Section:** 3.3 Scan Frequency\n- **Gap:** The policy states scans will be performed \"on a regular basis\" without defining a cadence (e.g., weekly authenticated scans, daily SCA on commits, continuous endpoint assessment). Auditors cannot test compliance against an undefined frequency, and CC7.1 specifically requires assurance of *timely* identification.\n- **Severity:** **High**\n\n### Finding 2: No Defined Remediation SLAs\n- **Section:** 5.2 Remediation Procedures\n- **Gap:** Remediation is to occur \"in a timely manner commensurate with severity,\" but no SLA matrix exists (e.g., Critical = 7 days, High = 30 days, Medium = 90 days). Without SLAs, aging analysis (\u00a76.2) is meaningless and exception/risk acceptance triggers (\u00a77) cannot function. This is one of the most commonly cited SOC 2 deficiencies.\n- **Severity:** **Critical**\n\n### Finding 3: Missing Configuration Change Detection\n- **Section:** Entire policy (notably absent from \u00a73)\n- **Gap:** CC7.1 explicitly addresses detection of **configuration changes that introduce vulnerabilities**. The policy does not reference configuration baselines, CIS benchmarks, configuration drift detection, IaC scanning (e.g., Checkov, Terrascan), or CSPM tooling. This is a direct misalignment with the language of CC7.1.\n- **Severity:** **Critical**\n\n### Finding 4: No Threat Intelligence / Newly Discovered Vulnerability Monitoring\n- **Section:** \u00a73 Vulnerability Identification\n- **Gap:** The second clause of CC7.1 \u2014 \"susceptibilities to newly discovered vulnerabilities\" \u2014 requires a process for monitoring external threat intelligence (CISA KEV, vendor advisories, CVE feeds) and assessing exposure to zero-days between scan cycles. The policy contains no such process.\n- **Severity:** **High**\n\n### Finding 5: Cloud Infrastructure and Container Scanning Not Addressed\n- **Section:** 3.1 Scanning Tools / 2 Scope\n- **Gap:** The toolset covers network, SCA, and endpoints, but omits container image scanning, Kubernetes workload scanning, and cloud configuration scanning (CSPM). For a company named \"Cirrus Technologies\" (likely cloud-oriented), this is a notable scope gap.\n- **Severity:** **High**\n\n### Finding 6: Penetration Testing Not Referenced\n- **Section:** \u00a73 Vulnerability Identification\n- **Gap:** While not strictly required by CC7.1, SOC 2 examiners typically expect annual penetration testing as a complementary detection control. Its absence from the policy creates ambiguity about whether pen testing is governed elsewhere.\n- **Severity:** **Medium**\n\n### Finding 7: No Authenticated Scanning Requirement\n- **Section:** 3.2 Scanning Scope\n- **Gap:** The policy does not specify whether scans are authenticated (credentialed) vs. unauthenticated. Unauthenticated scans miss the majority of host-level vulnerabilities, which undermines the control's effectiveness.\n- **Severity:** **Medium**\n\n### Finding 8: Weak Risk Acceptance Controls\n- **Section:** 7.1 Exception Process\n- **Gap:** The process allows annual review but does not require: (a) a maximum acceptance duration, (b) re-evaluation when a related new exploit is published (KEV addition), or (c) compensating control validation. This could allow indefinite acceptance of critical risks.\n- **Severity:** **Medium**\n\n### Finding 9: Asset Inventory Coupling Is Weak\n- **Section:** 3.2 Scanning Scope\n- **Gap:** Quarterly validation of network segments against the asset inventory is reasonable, but there is no requirement that newly provisioned assets be scanned within a defined window of deployment. Auditors will look for evidence that no asset escapes scanning coverage at provisioning time.\n- **Severity:** **Medium**\n\n### Finding 10: No Metrics, KPIs, or Control Effectiveness Measurement\n- **Section:** \u00a76 Tracking and Reporting\n- **Gap:** Reports include open counts and aging, but no defined KPIs (e.g., % of critical vulns remediated within SLA, mean-time-to-remediate). Without metrics, management cannot demonstrate the control is operating effectively \u2014 a core SOC 2 expectation.\n- **Severity:** **Medium**\n\n### Finding 11: No Linkage to Change Management or SDLC\n- **Section:** Policy-wide\n- **Gap:** CC7.1's emphasis on configuration-introduced vulnerabilities implies integration with change management (CC8.1) and SDLC controls. The policy does not require pre-deployment scanning, gating of releases on critical findings, or coordination with the change management process.\n- **Severity:** **High**\n\n### Finding 12: Third-Party / Vendor Systems Deferred Without Specifics\n- **Section:** \u00a72 Scope\n- **Gap:** \"Third-party hosted systems are covered under vendor management agreements\" is a deflection without controls. Auditors will want to see how SaaS/IaaS vulnerabilities are tracked (e.g., reviewing vendor SOC 2 reports, subscribing to advisories).\n- **Severity:** **Low**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Undefined scan frequency | High |\n| 2 | No remediation SLAs | **Critical** |\n| 3 | No configuration change detection | **Critical** |\n| 4 | No threat intel / newly discovered vuln monitoring | High |\n| 5 | Cloud/container scanning gap | High |\n| 6 | Penetration testing not referenced | Medium |\n| 7 | Authenticated scanning not specified | Medium |\n| 8 | Weak risk acceptance controls | Medium |\n| 9 | Provisioning-to-scan window undefined | Medium |\n| 10 | No KPIs / effectiveness metrics | Medium |\n| 11 | No SDLC / change management linkage | High |\n| 12 | Vendor coverage vague | Low |\n\n## Recommendation\n\nPrior to the SOC 2 examination, prioritize remediation of Findings 2, 3, and 11 (Critical/High) as these represent direct misalignment with the explicit language of CC7.1. Findings 1, 4, and 5 should be addressed through policy revision (v2.2) before fieldwork begins. The remaining items can be addressed via supporting standards/procedures referenced from this policy."
+}

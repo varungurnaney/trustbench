@@ -1,0 +1,60 @@
+{
+  "task_id": "pi1.1-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:48:44.112157",
+  "score": {
+    "task_id": "pi1.1-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.1,
+    "f1": 0.18181818181818182,
+    "score": 0.18181818181818182,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-7203",
+          "EXC-SAST-2025-044",
+          "false positive",
+          "PartnerApiClient"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-7207",
+          "XXE",
+          "XmlDataIngester",
+          "data-pipeline",
+          "110 days",
+          "30-day SLA",
+          "no exception",
+          "unassigned",
+          "no action taken",
+          "escalation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6548,
+    "output_tokens": 2943
+  },
+  "raw_response": "# PI1.1 Readiness Assessment \u2014 Vantage Analytics Q4 2025\n\n## Scope of Review\n\nI evaluated the SDLC policy (POL-SDLC-007 v4.2), SonarQube SAST findings (Q4 2025), SAST exception register, and merge request records against PI1.1 requirements for complete, accurate, and timely processing \u2014 with particular focus on the policy's defined SAST quality gates and 30-day High-severity SLA.\n\n---\n\n## Findings\n\n### Finding 1: High-severity SSRF finding (SQ-7203) lacks proper exception linkage in SonarQube\n\n**Related to:** SDLC Policy \u00a74.2 (False Positive Management) and \u00a74.1 (SAST Quality Gates)\n\n**Gap:** SQ-7203 (High, SSRF in PartnerApiClient.java) was first detected 2025-09-02 and remains in \"Open\" status as of 2025-12-29 \u2014 118 days. While EXC-SAST-2025-044 documents this as a false positive (dated 2025-09-20), the SonarQube finding itself was not transitioned to a \"Won't Fix\" / \"False Positive\" status in the tool. An auditor performing population testing on open High findings would flag this as an SLA breach (88 days past the 30-day SLA). The exception register and SonarQube state are not synchronized, creating ambiguity about whether the control operated as designed.\n\n**Severity:** Medium\n\n---\n\n### Finding 2: High-severity XXE vulnerability (SQ-7207) materially exceeds 30-day SLA with no exception or escalation\n\n**Related to:** SDLC Policy \u00a74.1 (Quality Gate) and \u00a74.3 (Escalation)\n\n**Gap:** SQ-7207 (High, XXE in XmlDataIngester.java) was first detected 2025-09-10 and remains \"Open / Unassigned\" as of 2025-12-29 \u2014 110 days. There is **no entry in the SAST Exception Register** for this finding and **no evidence of escalation to the Engineering VP** as required by \u00a74.3. The resolution note (\"No action taken \u2014 ETL pipeline processes partner data feeds\") does not constitute a false positive determination and arguably increases risk (XXE on partner-supplied XML is a realistic attack vector). This is a direct policy violation and a genuine processing integrity concern, since the XML parser feeds the data pipeline.\n\n**Severity:** High\n\n---\n\n### Finding 3: Exception EXC-SAST-2025-047 (MD5) appears to contradict the active finding SQ-7213\n\n**Related to:** SDLC Policy \u00a74.2 (False Positive Management)\n\n**Gap:** EXC-SAST-2025-047 declares MD5 use a false positive in `shared-lib/FileHasher.java`. However, SQ-7213 (Medium, weak hashing) is an *open* finding in `data-pipeline/ChecksumValidator.java` with the resolution note \"MD5 used for non-security checksum \u2014 evaluating migration to SHA-256.\" These are different files, but the justifications overlap. Additionally, MR-3805 (\"Add checksum validation to data pipeline\") merged 2025-10-23 with the comment \"SHA-256 instead of MD5 per review\" \u2014 yet SQ-7213 was first detected 2025-11-22, after that MR. This suggests MD5 was reintroduced or exists in a separate code path. The exception management process is not consistently applied across instances of the same rule.\n\n**Severity:** Medium\n\n---\n\n### Finding 4: Multiple Medium-severity vulnerabilities approaching or exceeding 90-day SLA\n\n**Related to:** SDLC Policy \u00a74.1 (Medium SLA: 90 calendar days)\n\n**Gap:** Several Medium-severity vulnerabilities have aged near or past the 90-day threshold without resolution or exception:\n- SQ-7221 (Basic auth, AdminPortalAuth) \u2014 detected 2025-10-12, open, 78 days, \"OAuth2 migration in Q1 2026\" implies SLA will be missed\n- SQ-7211 (SQL injection, LegacyReportDao) \u2014 detected 2025-11-18 (note: MR-3860 merged 2025-12-19 may resolve, but finding still shows Open as of 2025-12-29 \u2014 status not updated)\n- SQ-7213 (Weak hashing) \u2014 detected 2025-11-22, open\n\nWhile Mediums are not yet uniformly breached, the pattern indicates a lack of proactive SLA tracking. No evidence of a tracking dashboard, aging report, or governance review.\n\n**Severity:** Medium\n\n---\n\n### Finding 5: Stale SonarQube statuses not reconciled with merge activity\n\n**Related to:** SDLC Policy \u00a74.1 (SAST Integration) \u2014 implicit control operation\n\n**Gap:** Findings appear to remain \"Open\" even after remediation merges. Examples:\n- SQ-7211 (SQL injection) shows Open, but MR-3860 (\"SQL injection remediation complete\") merged 2025-12-19\n- SQ-7204 (NPE in ReportBuilder) shows \"PR #3811 in review,\" but MR-3811 merged 2025-11-03\n\nWithout timely status reconciliation, the SAST register cannot be relied upon to demonstrate the 30/90-day SLA control is operating. This affects the evidentiary value of SonarQube as a control of record.\n\n**Severity:** Medium\n\n---\n\n### Finding 6: No documented Critical-severity threshold enforcement evidence\n\n**Related to:** SDLC Policy \u00a74.1 (Critical = Block merge)\n\n**Gap:** The policy states Critical findings block merges, but no evidence (e.g., pipeline configuration export, blocked-merge log, or quality gate definition screenshot) was provided to demonstrate this gate is enforced automatically. The Q4 dataset contains no Critical findings, which could mean either (a) the gate works and prevented introduction, or (b) the gate isn't configured. An auditor cannot conclude operating effectiveness without evidence of the configured rule.\n\n**Severity:** Low\n\n---\n\n### Finding 7: Unassigned High-severity findings indicate ownership gap\n\n**Related to:** SDLC Policy \u00a74.1 (SLA tracking presupposes assignment)\n\n**Gap:** Both High-severity findings (SQ-7203 and SQ-7207) are listed as \"Unassigned.\" Without an assigned owner, no one is accountable for SLA compliance, escalation, or exception filing. This is a procedural gap in the control's operating design.\n\n**Severity:** Medium\n\n---\n\n### Finding 8: Policy lacks explicit linkage between SAST controls and PI1.1 processing objectives\n\n**Related to:** SDLC Policy \u00a76 (Processing Integrity) \u2014 design gap\n\n**Gap:** PI1.1 requires the entity to *define* processing objectives for completeness, accuracy, and timeliness. The SDLC policy \u00a76.1 mentions \"All external inputs must be validated\" and \u00a76.2 mentions reconciliation/checksums, but does not articulate measurable processing objectives (e.g., target accuracy rates, completeness thresholds, timeliness SLAs for batch processing). SAST findings such as XXE (SQ-7207), SQL injection (SQ-7211), and weak hashing in the data pipeline (SQ-7213) directly threaten processing accuracy, yet the policy does not tie SAST gate enforcement to a stated processing integrity objective. This is a design-level gap in PI1.1 coverage.\n\n**Severity:** High\n\n---\n\n### Finding 9: MR-3845 in extended review without documented timeline\n\n**Related to:** SDLC Policy \u00a73.2 (Code Review)\n\n**Gap:** MR-3845 (BigDecimal migration for invoice calculator) submitted 2025-12-05, still \"In Review\" as of period close with \"2 comments pending response.\" Given this addresses SQ-7219 (floating point in InvoiceCalculator \u2014 a billing accuracy control directly relevant to PI1.1), the prolonged review without resolution represents both a remediation delay and a potential financial accuracy risk.\n\n**Severity:** Low\n\n---\n\n## Summary\n\n| Severity | Count |\n|----------|-------|\n| High | 2 |\n| Medium | 5 |\n| Low | 2 |\n\n**Overall Conclusion:** The control is **partially effective**. The policy framework is well-designed, the exception register is detailed, and code review evidence is strong. However, the unaddressed High-severity XXE finding (SQ-7207) without exception or escalation, combined with stale SonarQube statuses and the absence of measurable PI1.1 processing objectives, prevents an unqualified opinion. Remediation of Findings 2 and 8 should be prioritized before the SOC 2 Type II audit window."
+}

@@ -1,0 +1,53 @@
+{
+  "id": "cc7.1m-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "The entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/maintenance-policy.md",
+      "type": "policy",
+      "description": "Silverline Industries maintenance policy defining vendor access requirements including CyberArk Vendor PAM for remote sessions and vendor access log documentation"
+    },
+    {
+      "path": "evidence/vendor-maintenance-log-q4-2025.csv",
+      "type": "log",
+      "description": "Vendor maintenance log for Q4 2025 with 13 entries across Dell EMC, Fortinet, Cisco, VMware, Oracle, Palo Alto, and Schneider Electric vendors"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Silverline Industries' vendor maintenance controls for the Q4 2025 observation period. Review the maintenance policy and vendor maintenance log. Assess whether CC7.1 vendor maintenance requirements are met. Cross-reference each vendor maintenance session against the policy's vendor access requirements (Section 5.1) to identify any gaps between policy and practice.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Two Oracle remote maintenance sessions conducted outside CyberArk Vendor PAM with no session recording and no vendor access log entries",
+      "description": "VML-307 (November 19) and VML-311 (December 14) show Oracle DBA Pradeep Mehta performed remote maintenance on production Oracle databases (db-oracle-prod-01 and db-oracle-prod-02) without using the required CyberArk Vendor PAM. Both entries show session_recording_id as 'N/A' and vendor_access_log_entry as 'N/A.' The notes explicitly state the technician 'Connected via standard VPN — did NOT use CyberArk Vendor PAM' with 'No session recording' and 'No vendor access log entry created.' Policy Section 5.1.4 requires all remote vendor sessions to be conducted through CyberArk Vendor PAM with full session recording. Section 5.1.5 requires all vendor activities to have vendor access log entries. Both requirements were violated twice for the same vendor. The Oracle databases are production systems containing critical business data, making the lack of session recording and access logging a significant control failure. Compare with Fortinet (VML-302, VML-309), Cisco (VML-310), VMware (VML-304, VML-313), and Palo Alto (VML-306), which all used CyberArk Vendor PAM with recorded sessions and access log entries.",
+      "evidence_sources": [
+        "evidence/vendor-maintenance-log-q4-2025.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should examine each vendor maintenance entry for compliance with Section 5.1 requirements. VML-307 and VML-311 both show N/A for session_recording_id and vendor_access_log_entry. The notes confirm VPN was used instead of CyberArk Vendor PAM. All other remote sessions (VML-302, VML-304, VML-306, VML-309, VML-310, VML-313) have session recording IDs and access log entries. The Oracle sessions are the only non-compliant entries, and both involve the same vendor and technician accessing production databases.",
+      "detection_criteria": {
+        "required_keywords": ["VML-307", "VML-311", "Oracle", "Pradeep Mehta", "CyberArk", "Vendor PAM", "no session recording", "no vendor access log", "standard VPN", "Section 5.1"],
+        "minimum_keyword_matches": 5
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "18 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["system_maintenance", "vendor_access", "session_recording", "access_logging", "cross_reference", "Oracle", "CyberArk"]
+  }
+}

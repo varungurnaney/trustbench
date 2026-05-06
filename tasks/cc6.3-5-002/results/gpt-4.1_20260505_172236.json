@@ -1,0 +1,81 @@
+{
+  "task_id": "cc6.3-5-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:22:36.497497",
+  "score": {
+    "task_id": "cc6.3-5-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.375,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Priya Mehta",
+          "NDA",
+          "48 hours",
+          "active"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Marcus Webb",
+          "CloudNine",
+          "NDA",
+          "Section 6.1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-appdev-team",
+          "shared",
+          "Jason Torres",
+          "Lisa Huang",
+          "Kevin Park",
+          "AppDev Partners",
+          "individual",
+          "accountability"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3896,
+    "output_tokens": 1865
+  },
+  "raw_response": "Certainly. Below are specific findings from the evidence reviewed, mapped to relevant policy/document sections, with explanations and severity ratings per SOC 2 readiness assessment conventions.\n\n---\n\n### 1. **Contractor Access Not Revoked After Project Completion**\n\n- **Document Section:** Data Access Policy, Section 6.3 (Access Duration and Revocation); Active Contractor Access Register\n- **Why It's a Gap:** The policy requires that *\u201caccess must be revoked within 48 hours of SOW completion or contract end date.\u201d* Priya Mehta\u2019s SOW ended on **2025-11-15** (\u201cCompleted\u201d in the contract register). However, database access for *p.mehta* continued \u2014 with documented queries on **2025-11-22**, **2025-12-08**, and **2025-12-18** (i.e., up to 33 days after SOW end). The access register still shows the access as not revoked (no \u201caccess_revoked_date\u201d). This is a direct violation of policy requirements for prompt removal of access post-contract.\n- **Severity:** **Critical**  \n  *This is a fundamental failure of control: former contractors retained access to confidential data for weeks after engagement ended. It presents a material risk of unauthorized data exposure or breach.*\n\n---\n\n### 2. **Incomplete Alignment of Access Register and NDA Register**\n\n- **Document Section:** Active Contractor Access Register; NDA Register; Data Access Policy Section 6.2/6.4\n- **Why It's a Gap:** The access register shows active database access for Marcus Webb (CloudNine Consulting) under *m.webb*, but **no NDA reference is present** (\"nda_reference\" column is blank) for this individual. The NDA register also does not list an executed NDA for Marcus Webb. Policy Section 6.1 and 6.4 require *executed NDAs on file before data access is provisioned* for contractors, covering the relevant data classifications.\n- **Severity:** **High**  \n  *Provisioning access to contractors without a documented and executed NDA fails a key legal and compliance safeguard, increasing risk of unprotected data disclosure.*\n\n---\n\n### 3. **Use of Shared Database Accounts for Contractor Teams**\n\n- **Document Section:** Data Access Policy Section 6.2 (Individual Accountability); Access Register; Audit Log\n- **Why It's a Gap:** The access policy **explicitly prohibits shared accounts**, stating \u201ceach contractor must have an individual database account. Shared accounts for contractor teams are prohibited. All contractor activity must be attributable to a named individual.\u201d The access register provides the account *svc-appdev-team* to three individuals (Jason Torres, Lisa Huang, Kevin Park, all from AppDev Partners) \u2014 and the database audit log shows significant activity under that shared account. This severely limits accountability and traceability of actions to individuals.\n- **Severity:** **High**  \n  *Shared accounts for contractors are directly disallowed in policy, undermining individual accountability and complicating incident response/investigation.*\n\n---\n\n### 4. **Gaps in Access Review Process Documentation/Execution**\n\n- **Document Section:** Data Access Policy Section 6.5 (Contractor Access Reviews); Access Register\n- **Why It's a Gap:** Policy calls for **monthly reviews** of active contractor access by sponsors, to ensure SOWs are still active, access is correct, and NDAs up to date. The access register shows monthly review date fields completed for some contractors (e.g., \u201c2025-12-01\u201d), but there is no record for several (notably Marcus Webb, who has no NDA or NDA review date at all), and for Priya Mehta, the last listed review is **2025-11-01**, even though access continued erroneously for weeks after SOW end. This suggests the review either was not performed, not documented, or was ineffective in driving timely access revocation.\n- **Severity:** **Medium**  \n  *Incomplete or ineffective review process increases the risk of dormant/unauthorized access persisting unnoticed, and demonstrates lack of operational discipline around a key mitigating control.*\n\n---\n\n### 5. **NDA Terms Not Covering All Contractors with Data Access**\n\n- **Document Section:** Data Access Policy Section 6.1, 6.4; NDA Register; Access Register\n- **Why It's a Gap:** Marcus Webb (CloudNine Consulting) is provisioned access but does not appear in the NDA register and has no NDA reference in the access register. Moreover, no NDA is referenced for his engagement. This violates the policy requirement that \u201cAll contractors must have an executed NDA on file before data access is provisioned.\u201d\n- **Severity:** **High**  \n  *Without an executed NDA, NovaBridge cannot enforce post-engagement confidentiality or data handling obligations, compounding risks if a terminated contractor misuses data.*\n\n---\n\n### 6. **Access Scope Largely Conforms to Least Privilege, But Some Overlap Exists**\n\n- **Document Section:** Data Access Policy Section 4.1 (Least Privilege), 4.2 (RBAC); Access Register; Audit Log\n- **Why It's a Gap:** Access scopes for contractors (as shown in the register) are generally limited to role-appropriate tables for each engagement (e.g., Rachel Kim and Omar Hassan only access \"customer_profiles, payment_history\u201d), but the *svc-appdev-team* account is used by three individuals covering a broad set of tables (product and feature data) with both SELECT and INSERT. While not direct over-provisioning, grouping multiple users and functions under one privileged account increases risk of privilege creep and hinders granular enforcement. There is **no enforced technical RBAC segmentation at the individual user level** for AppDev Partners.\n- **Severity:** **Medium**  \n  *Increased risk of unauthorized activities and difficulty limiting access strictly to job duties when roles or responsibilities change within a contractor team.*\n\n---\n\n### 7. **Delayed Notification/Revocation Workflow by Contractor Sponsors**\n\n- **Document Section:** Data Access Policy Section 6.3 (Access Duration/Revocation); Access Register; Audit Log\n- **Why It's a Gap:** Policy puts responsibility for timely revocation on \u201ccontractor sponsor notifying IT of SOW completion.\u201d In the case of Priya Mehta, access persisted long after the SOW ended, suggesting a breakdown in the notification workflow or lack of prompt response by IT. This indicates gaps in execution and follow-up (and possibly training or accountability) for sponsors.\n- **Severity:** **Medium**  \n  *Control breakdown at this handoff point can undermine all upstream policy enforcement, leading to persistent risk from former contractors.*\n\n---\n\n### 8. **Evidence of Monitoring and Logging per Policy**\n\n- **Document Section:** Data Access Policy Section 7 (Monitoring); Audit Log\n- **Why It's Not a Gap:** The presence and detail of the audit log, including timestamps, user accounts, activity types, and attached context/notes, demonstrates policy-aligned monitoring. Automated alert thresholds are mentioned (though we lack direct evidence of their function here). However, unauthorized access for a former contractor (Priya Mehta) was captured in the logs \u2014 but *no evidence appears of alerting or incident response when those post-SOW queries occurred*.\n- **Severity:** **Low**\n  *Logging works, but the lack of incident closure/follow-up for clear policy violations points to a gap in linking monitoring to corrective action.*\n\n---\n\n## Summary Table\n\n| # | Title | Section | Gap / Insufficiency | Severity |\n|---|-------|---------|---------------------|----------|\n| 1 | Contractor Access Not Revoked After Project Completion | Policy 6.3; Access Register | Access retained 33+ days post-SOW for Priya Mehta | Critical |\n| 2 | Incomplete Alignment of Access and NDA Registers | Policy 6.2/6.4; Registers | Marcus Webb has access but no NDA on file | High |\n| 3 | Use of Shared Contractor Database Accounts | Policy 6.2; Registers; Audit Log | AppDev Partners uses shared *svc-appdev-team* account | High |\n| 4 | Gaps in Access Review Process | Policy 6.5; Access Register | Reviews not performed/effective/documented for ex-contractors | Medium |\n| 5 | NDA Terms Not Covering All Contractors | Policy 6.1, 6.4; Registers | Marcus Webb missing NDA entirely | High |\n| 6 | Incomplete Enforcement of Least Privilege/RBAC | Policy 4; Registers; Audit Log | Shared accounts broaden access surface | Medium |\n| 7 | Delayed Notification/Revocation by Contractor Sponsors | Policy 6.3; Registers; Audit Log | Sponsors not notifying/triggering timely revocation | Medium |\n| 8 | Audit Logging, but No Evident Response to Policy Breach | Policy 7; Audit Log | Monitoring works, but enforcement/remediation lacking | Low |\n\n---\n\n**Note:** Severity ratings should be further calibrated by management\u2019s own risk criteria, and immediate remediation (especially for critical/high findings) should be recommended for SOC 2 readiness."
+}

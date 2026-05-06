@@ -1,0 +1,91 @@
+{
+  "task_id": "cc6.6-4-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:41:49.157480",
+  "score": {
+    "task_id": "cc6.6-4-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-internal-grpc-lb",
+          "internal",
+          "Cloud Armor",
+          "Istio mTLS"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-data-export-lb",
+          "external",
+          "no Cloud Armor",
+          "Section 3.1",
+          "WAF",
+          "customer data"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-webhook-waf",
+          "XSS",
+          "LFI",
+          "RFI",
+          "rate limiting",
+          "adaptive protection",
+          "disabled",
+          "inconsistent"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-mgmt-vpc",
+          "Cloud IDS",
+          "not deployed",
+          "peering",
+          "production",
+          "CI/CD",
+          "management VPC"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2922,
+    "output_tokens": 1683
+  },
+  "raw_response": "# CC6.6 Control Assessment Report\n## Logical Access Security Measures \u2014 System Boundary Protection\n\n---\n\n## FINDINGS\n\n### Finding 1: Cloud IDS Not Deployed on Management VPC\n**Document:** Cloud IDS deployment status table  \n**Policy Reference:** VTX-SEC-POL-006, Section 4.1\n\n**Gap Description:**  \nThe management VPC (vtx-mgmt-vpc) does not have Cloud IDS deployed, despite the policy requirement that \"Google Cloud IDS must be deployed on all production VPC networks.\" The management VPC contains CI/CD runners and monitoring infrastructure with peering connections to production via vtx-shared-vpc, creating a potential attack vector into the production environment. An attacker compromising the management VPC could leverage the VPC peering relationship to access production systems.\n\n**Why This Matters for CC6.6:**  \nCC6.6 requires logical access security measures to protect against external threats. A management VPC without intrusion detection represents a gap in threat detection coverage for a network segment with direct access to production infrastructure.\n\n**Severity:** **High**\n\n---\n\n### Finding 2: External-Facing Load Balancer Without Cloud Armor Protection\n**Document:** Cloud Armor WAF configurations \u2014 load_balancers_without_cloud_armor array  \n**Policy Reference:** VTX-SEC-POL-006, Section 3.1\n\n**Gap Description:**  \nThe `vtx-prod-data-export-lb` is an external-facing load balancer serving a customer data export endpoint with no Cloud Armor WAF policy attached. While the policy states \"All public-facing endpoints must be served through Google Cloud Load Balancer with Cloud Armor security policies,\" this external endpoint relies only on signed URL authentication (1-hour TTL) with no protection against:\n- Application-layer DDoS attacks\n- OWASP Top 10 vulnerabilities (SQLi, XSS, LFI, RFI)\n- Rate-based attacks\n- Malicious payloads in bulk data requests\n\n**Why This Matters for CC6.6:**  \nThis represents a direct violation of the stated perimeter security policy and leaves an external system boundary unprotected against common web application attacks.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 3: Incomplete OWASP Rule Coverage on Webhook Endpoint\n**Document:** Cloud Armor WAF configurations \u2014 vtx-prod-webhook-waf  \n**Policy Reference:** VTX-SEC-POL-006, Section 3.1\n\n**Gap Description:**  \nThe webhook ingestion endpoint (`vtx-prod-webhook-waf`) has a minimal ruleset covering only SQL injection, with XSS, LFI, and RFI protection missing. Additionally, adaptive protection is disabled (`\"adaptive_protection\": false`) for this endpoint. The webhook endpoint accepts external data from third-party sources, making it a direct attack surface. Missing XSS and LFI protections leave the endpoint vulnerable to common injection attacks that could compromise data integrity or lead to unauthorized access.\n\n**Why This Matters for CC6.6:**  \nInconsistent application of protective rules across external endpoints creates gaps in boundary protection. The webhook endpoint, by design, accepts external input and should have equivalent or stricter controls than other ingress points.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Internal Load Balancer Protection Justification Not Documented\n**Document:** Cloud Armor WAF configurations \u2014 vtx-prod-internal-grpc-lb  \n**Policy Reference:** VTX-SEC-POL-006, Section 3.1 and 3.3\n\n**Gap Description:**  \nThe internal gRPC load balancer (`vtx-prod-internal-grpc-lb`) lacks Cloud Armor protection with the justification that it is \"protected by Istio mTLS.\" While mTLS provides encryption and mutual authentication for service-to-service traffic, mTLS alone does not provide application-layer DDoS protection, rate limiting, or vulnerability scanning equivalent to Cloud Armor. \n\nAdditionally, the policy scope (Section 2) explicitly covers \"All GCP infrastructure in us-central1 and europe-west1,\" and Section 3.3 requires the Istio ingress gateway to use mTLS + JWT validation, not mTLS as a standalone replacement for WAF protections. No documented exception or risk acceptance for this configuration gap is present.\n\n**Why This Matters for CC6.6:**  \nThe control requires documented justification for deviations from stated boundary protection policies. The current documentation suggests a misalignment between policy intent and implementation without formal exception.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: Management VPC IDS Deployment Policy Interpretation Ambiguity\n**Document:** Cloud IDS deployment status table; VTX-SEC-POL-006, Section 4.1  \n**Policy Reference:** VTX-SEC-POL-006, Section 2\n\n**Gap Description:**  \nThe policy states Cloud IDS \"must be deployed on all production VPC networks.\" The management VPC (vtx-mgmt-vpc) contains production-grade infrastructure (CI/CD runners, monitoring) but may not be explicitly classified as a \"production VPC\" in the organization's naming conventions. However, the fact that it has VPC peering to production infrastructure indicates it is part of the production system boundary and should have equivalent protections.\n\nThe policy scope (Section 2) is somewhat ambiguous: it specifies \"us-central1 and europe-west1\" regions but does not explicitly list all VPC networks that qualify as \"production.\" This ambiguity has resulted in a coverage gap.\n\n**Why This Matters for CC6.6:**  \nClear, explicit policies with unambiguous scope prevent implementation gaps. The current policy language allows for misinterpretation regarding which networks require IDS coverage.\n\n**Severity:** **Medium**\n\n---\n\n## SUMMARY\n\n| Severity | Count | Findings |\n|----------|-------|----------|\n| **Critical** | 1 | External data export LB without Cloud Armor |\n| **High** | 2 | Management VPC without IDS; Incomplete OWASP rules on webhook endpoint |\n| **Medium** | 2 | Internal gRPC LB justification undocumented; Policy scope ambiguity |\n\n---\n\n## CONCLUSION\n\n**Control Status:** **NOT MET**\n\nVertex Data has implemented a comprehensive perimeter security policy and has deployed the majority of required controls. However, there are significant gaps that prevent full compliance with CC6.6:\n\n1. **Critical gap:** An external-facing customer data export endpoint lacks any WAF protection, directly contradicting policy requirements.\n2. **High-severity gaps:** The management VPC (with production access via peering) has no intrusion detection, and a webhook endpoint lacks standard OWASP protections.\n3. **Policy clarity issues:** Scope ambiguities and undocumented exceptions create audit and operational risk.\n\n**Remediation Priority:**\n- **Immediate:** Deploy Cloud Armor to `vtx-prod-data-export-lb` with full OWASP rule set and adaptive protection.\n- **Urgent:** Deploy Cloud IDS to management VPC and document the scope of \"production VPC networks\" in the policy.\n- **Short-term:** Add XSS/LFI/RFI rules to webhook endpoint; enable adaptive protection; document internal gRPC exception."
+}

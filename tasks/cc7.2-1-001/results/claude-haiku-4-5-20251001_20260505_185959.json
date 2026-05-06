@@ -1,0 +1,88 @@
+{
+  "task_id": "cc7.2-1-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T18:59:59.085820",
+  "score": {
+    "task_id": "cc7.2-1-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "retention",
+          "log retention",
+          "retention period",
+          "undefined",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "privileged",
+          "privilege escalation",
+          "IAM",
+          "configuration change",
+          "admin",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "periodically",
+          "should",
+          "vague",
+          "undefined",
+          "log review",
+          "frequency"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "slow query",
+          "database",
+          "data access",
+          "PHI",
+          "audit"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 839,
+    "output_tokens": 2553
+  },
+  "raw_response": "# CC7.2 Compliance Assessment \u2013 Beacon Health Security Monitoring and Alerting Policy\n\n## Findings Summary\n**Overall Rating:** NOT READY FOR SOC 2 TYPE II CERTIFICATION\n\nThe policy establishes basic monitoring infrastructure but lacks critical elements required by CC7.2, particularly around anomaly analysis, security event determination procedures, and sustained monitoring of certain system components.\n\n---\n\n## Individual Findings\n\n### 1. **Undefined Anomaly Analysis Process**\n**Related Section:** 5 (Log Review)  \n**Severity:** CRITICAL\n\n**Gap Description:**  \nCC7.2 explicitly requires that \"anomalies are analyzed to determine whether they represent security events.\" The policy states logs \"should be reviewed periodically\" but provides:\n- No defined methodology for anomaly analysis\n- No criteria for distinguishing security events from operational issues\n- No documented procedures for root cause analysis\n- Vague timeframe (\"periodically\" is not a control)\n- No assignment of responsibility for analysis\n\n**SOC 2 Requirement:**  \nThe control requires active analysis and classification of detected anomalies, not passive log collection.\n\n---\n\n### 2. **Insufficient Coverage of Security-Relevant Log Sources**\n**Related Section:** 3.1 (Log Collection)\n\n**Severity:** HIGH\n\n**Gap Description:**  \nCritical log sources are absent or incomplete:\n- **No firewall/WAF logs** \u2013 Essential for detecting network-based attacks\n- **No endpoint/host-based intrusion detection** \u2013 Missing malware, privilege escalation events\n- **No DNS query logs** \u2013 Cannot detect C2 communication, data exfiltration patterns\n- **Database query logs limited to \"slow query only\"** \u2013 Misses unauthorized access attempts, privilege abuse\n- **No configuration change logs** \u2013 Cannot detect unauthorized system modifications\n- **No privileged access/sudo logs** \u2013 Cannot monitor admin activities\n- **No file integrity monitoring** \u2013 Cannot detect malicious or unauthorized file modifications\n\n**SOC 2 Requirement:**  \nCC7.2 requires monitoring \"system components\" broadly to detect \"malicious acts.\" The current scope is application/infrastructure-centric and misses security-critical data sources.\n\n---\n\n### 3. **No Baseline or Threshold Definition for Anomalies**\n**Related Section:** 4.1 (Alert Categories)\n\n**Severity:** HIGH\n\n**Gap Description:**  \nWhile the policy defines alert thresholds for some technical metrics (>1% error rate, >90% CPU), it provides:\n- No behavioral baselines for security anomalies\n- No definition of what constitutes \"unusual geographic access patterns\" (Section 4.1)\n- No thresholds for detecting privilege escalation, lateral movement, or data access anomalies\n- No guidance on seasonality, business context, or user role-based anomalies\n\n**SOC 2 Requirement:**  \nEffective anomaly detection requires established baselines against which deviations are measured.\n\n---\n\n### 4. **Inadequate Monitoring of Natural Disasters and Backup Integrity**\n**Related Section:** 3.2 (Infrastructure Monitoring)\n\n**Severity:** HIGH\n\n**Gap Description:**  \nCC7.2 includes monitoring for \"natural disasters\" and systemic failures. The policy monitors:\n- Infrastructure uptime (implicit in metrics)\n- **BUT MISSING:**\n  - Backup job success/failure rates and integrity validation\n  - Disaster recovery failover readiness\n  - Data replication lag or failure\n  - Geographic redundancy status\n  - Business continuity system health\n\n**SOC 2 Requirement:**  \nThe control requires monitoring of components affecting the entity's ability to meet objectives, which includes disaster recovery and continuity capabilities.\n\n---\n\n### 5. **No Incident Response or Escalation Workflow for Security Events**\n**Related Section:** 4.3 (Alert Response)\n\n**Severity:** HIGH\n\n**Gap Description:**  \nThe alert response procedure addresses operational alerts but lacks security-specific procedures:\n- No formal incident determination criteria\n- No escalation path for confirmed security events (who declares an incident?)\n- No requirement to preserve evidence or perform forensics\n- No integration with incident response procedures\n- No communication to affected parties or audit functions\n- No documented investigation outcomes\n\n**SOC 2 Requirement:**  \nMonitoring must include procedures to classify anomalies as security events and trigger appropriate response.\n\n---\n\n### 6. **Inadequate Monitoring Frequency for Security-Relevant Logs**\n**Related Section:** 5 (Log Review)\n\n**Severity:** HIGH\n\n**Gap Description:**  \nThe policy requires:\n- **Critical alerts:** 30-minute acknowledgment SLA\n- **Warning alerts:** Business hours response only\n- **Informational & security logs:** \"Weekly\" review via dashboard\n\nHowever:\n- Weekly review is insufficient for detecting active intrusions\n- No requirement for real-time or near-real-time analysis of security logs\n- Business-hours-only response creates coverage gaps\n- No distinction between alert triage and substantive log analysis\n\n**SOC 2 Requirement:**  \nCC7.2 requires monitoring for malicious acts, which demand timely detection (real-time or continuous, depending on risk).\n\n---\n\n### 7. **No Monitoring of Third-Party or Cloud Service Provider Activities**\n**Related Section:** 3.1 (Log Collection)\n\n**Severity:** MEDIUM\n\n**Gap Description:**  \nThe policy covers internal systems but lacks:\n- AWS CloudTrail coverage limited to API calls; missing other AWS services (IAM, S3 access logs, etc.)\n- No monitoring of Okta logs beyond authentication (admin actions, policy changes)\n- No monitoring of Elastic Stack/Datadog administrator actions\n- No vendor log collection from other SaaS tools\n\n**SOC 2 Requirement:**  \nWhere third parties have access to systems or data, their activities must be monitored.\n\n---\n\n### 8. **No Documentation of Monitoring Tool Calibration or Tuning**\n**Related Section:** 4.1 & 4.2 (Alert Categories & Routing)\n\n**Severity:** MEDIUM\n\n**Gap Description:**  \nThe policy lacks:\n- Justification for alert thresholds (why >1% error rate? why 10 failed logins?)\n- Process for tuning thresholds to reduce false positives\n- Documentation of alert fatigue assessment or improvement efforts\n- Change management for alert rule updates\n- No testing or validation that detection rules work as intended\n\n**SOC 2 Requirement:**  \nEffective monitoring controls require documented calibration to ensure they actually detect relevant anomalies.\n\n---\n\n### 9. **No Audit Trail or Change History for Monitoring Configuration**\n**Related Section:** 7 (Policy Review)\n\n**Severity:** MEDIUM\n\n**Gap Description:**  \nThe policy requires:\n- Annual policy review only\n- **Missing:**\n  - Change log for alert rules and monitoring configuration\n  - Audit trail of who modified detection rules and when\n  - Testing documentation for new monitoring rules\n  - Approval workflow for changes\n  - Rollback procedures if monitoring changes cause issues\n\n**SOC 2 Requirement:**  \nChanges to monitoring controls themselves must be managed and auditable.\n\n---\n\n### 10. **Insufficient Retention and Log Storage Requirements**\n**Related Section:** 3.1 (Log Collection)\n\n**Severity:** MEDIUM\n\n**Gap Description:**  \nThe policy does not specify:\n- Log retention periods (critical for security investigations and audit)\n- Storage redundancy or availability requirements\n- Access controls on logs (who can view/delete logs?)\n- Encryption of logs in transit and at rest\n- Log integrity assurance (tamper detection)\n\n**SOC 2 Requirement:**  \nLogs must be protected and retained adequately to support investigations and audits.\n\n---\n\n### 11. **No Procedure for Handling Contradictions: Operational vs. Security Monitoring**\n**Related Section:** 4.2 (Alert Routing)\n\n**Severity:** MEDIUM\n\n**Gap Description:**  \nThe alert routing creates a potential blind spot:\n- Operational metrics (CPU, memory, errors) \u2192 immediate escalation\n- Security logs \u2192 weekly review by dashboard\n- **Risk:** A compromise might not trigger alerts; only logs would show it\n- No procedure for correlating operational and security anomalies\n\n**Example:** Unusual data exfiltration may not raise CPU alerts but should trigger security investigation.\n\n**SOC 2 Requirement:**  \nMonitoring must integrate security and operational visibility.\n\n---\n\n### 12. **No Evidence of Testing or Validation**\n**Related Section:** All\n\n**Severity:** MEDIUM\n\n**Gap Description:**  \nThe policy document shows no evidence of:\n- Test results validating detection rules work\n- Penetration tests or red team exercises validating monitoring effectiveness\n- Metrics on detection accuracy (true positive rate)\n- Evidence that the monitoring actually detected past incidents\n- Tabletop exercises validating the alert/response workflow\n\n**SOC 2 Requirement:**  \nControls must be tested and validated to ensure they function as designed.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Impact |\n|---|---------|----------|--------|\n| 1 | No anomaly analysis process | CRITICAL | Cannot meet CC7.2 core requirement |\n| 2 | Incomplete log sources | HIGH | Miss malicious acts and errors |\n| 3 | No behavioral baselines | HIGH | Cannot detect meaningful anomalies |\n| 4 | No disaster recovery monitoring | HIGH | Miss systemic failures |\n| 5 | No incident response workflow | HIGH | Cannot classify/respond to security events |\n| 6 | Insufficient monitoring frequency | HIGH | Delayed detection of active incidents |\n| 7 | No third-party monitoring | MEDIUM | Incomplete visibility |\n| 8 | No threshold justification | MEDIUM | Alert tuning & effectiveness unclear |\n| 9 | No monitoring config audit trail | MEDIUM | Cannot prove controls are maintained |\n| 10 | Insufficient log retention | MEDIUM | Limits investigation capability |\n| 11 | Operational vs. security silos | MEDIUM | Potential blind spots |\n| 12 | No testing/validation evidence | MEDIUM | Unproven control effectiveness |\n\n---\n\n## Recommendation\n\n**This policy is NOT READY for SOC 2 TYPE II audit.** It requires substantial revision to address:\n\n1. **Immediate (Critical):**\n   - Define and document anomaly analysis procedures\n   - Add missing log sources (firewall, DNS, file integrity, privileged access)\n   - Establish incident response workflow triggered by detected anomalies\n\n2. **Short-term (High):**\n   - Expand monitoring to cover disaster recovery and business continuity\n   - Increase security log review frequency to at least daily\n   - Define behavioral baselines and security-specific thresholds\n\n3. **Medium-term (Medium):**\n   - Add testing/validation evidence\n   - Document configuration management for monitoring rules\n   - Clarify log retention, access control, and integrity requirements\n\nA revised policy should align with industry frameworks (NIST Cybersecurity Framework, ISO 27001) and reference supporting procedures for incident detection and response."
+}

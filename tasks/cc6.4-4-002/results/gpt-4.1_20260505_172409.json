@@ -1,0 +1,71 @@
+{
+  "task_id": "cc6.4-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:24:09.665301",
+  "score": {
+    "task_id": "cc6.4-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 0.4444444444444445,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Andrea Walsh",
+          "B-5088",
+          "Denied",
+          "deactivated"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Luis Ortega",
+          "CTR-0145",
+          "12 days",
+          "NexGen Consulting",
+          "contract start date"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Janet Yee",
+          "CTR-0139",
+          "Brightworks Electric",
+          "deactivation",
+          "Active",
+          "1 business day"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6401,
+    "output_tokens": 1568
+  },
+  "raw_response": "Certainly! Here is an evaluation of Solaris Tech Group\u2019s physical access controls for SOC 2 Trust Service Principle CC6.4 (\"The entity restricts physical access to facilities and protected information assets to meet the entity's objectives\") based on the provided evidence. Each finding includes a title, policy reference, explanation, and severity rating.\n\n---\n\n## Finding 1: Contractor Badge Active Past Contract End Date\n\n**1. Title:** Contractor Badge Remains Active After Contract End  \n**2. Related Section:** Physical Security Policy \u00a74.7; Access Provisioning Records  \n**3. Why It's a Gap:**  \n- **Policy Requirement:** Contractor badges must be deactivated within 1 business day of the contract end date.\n- **Observation:** Contractor CTR-0139 (Janet Yee, Brightworks Electric) was issued a badge for a contract (start: 2025-10-15, end: 2025-11-30). Provisioning record PROV-0081 states the badge is still *Active* even after the contract ended. Badge access logs show Janet Yee badge activity (ACL-4045: 2025-11-25, ACL-4026: 2025-10-29) within the contract, but no logs after Nov 30; however, the badge was not deactivated as required, which means access *could* still be granted if used.\n- **Implication:** Risk of unauthorized physical access by a former contractor due to delayed badge deactivation.\n**4. Severity:** **High**\n\n---\n\n## Finding 2: Premature Contractor Badge Activation\n\n**1. Title:** Contractor Badge Activated Before Contract Start  \n**2. Related Section:** Physical Security Policy \u00a74.6; Access Provisioning Records  \n**3. Why It's a Gap:**  \n- **Policy Requirement:** Contractor badges must not be activated before the contract start date.\n- **Observation:** Contractor badge CTR-0145 (Luis Ortega, NexGen Consulting) was activated on 2025-10-08, but the contract start date is 2025-10-20 per provisioning (PROV-0083). Badge is listed as *Active* between these dates, and badge access logs confirm entries (first: 2025-10-10).\n- **Implication:** Luis Ortega had active badge access for 12 days before formally needing access, which is against policy and creates unnecessary risk.\n**4. Severity:** **Medium**\n\n---\n\n## Finding 3: Lag in Badge Deactivation After Employee Termination\n\n**1. Title:** Employee Badge Not Deactivated Same Day as Termination  \n**2. Related Section:** Physical Security Policy \u00a74.5; Access Provisioning Records; Access Log  \n**3. Why It's a Gap:**  \n- **Policy Requirement:** Employee badges must be deactivated on the termination effective date, prior to the employee\u2019s departure.\n- **Observation:** Andrea Walsh\u2019s (B-5088) deactivation record states the badge was deactivated Nov 1, 2025 at 16:30 \u201cper termination effective date 2025-11-01\u201d; however, badge access logs show a denial event (ACL-4038: 2025-11-12 08:45:17) \u2014 11 days later \u2014 meaning the badge was not accepted, but the attempt suggests that timely deactivation did occur, and logs do not show granted access after the termination date.\n- **Assessment:** While the attempt was denied (indicating timely badge deactivation), it is evidence the badge was not usable after the stated deactivation. There is no clear evidence of a policy gap, as the access was rejected, and the badge was collected per exit procedures.\n**4. Severity:** **None / Not a Gap**  \n*(This is included for transparency\u2014evidence shows control was in place and functioning.)*\n\n---\n\n## Finding 4: Contractor Badge Review Process Weakness\n\n**1. Title:** Incomplete Weekly Review/Deactivation Validation for Contractors  \n**2. Related Section:** Physical Security Policy \u00a74.7  \n**3. Why It's a Gap:**  \n- **Policy Requirement:** Facilities Coordinator must validate expired contractor badges weekly and deactivate them within 1 business day.\n- **Observation:** The provisioning record (PROV-0081) for CTR-0139 shows the badge is still *Active* despite contract end date passing (Nov 30). This suggests periodic review and prompt deactivation did not consistently occur.\n- **Implication:** Potential systematic delay in deactivating expired contractor badges, increasing risk of unauthorized building access.\n**4. Severity:** **High**  \n*(Separate from Finding 1 as this appears systemic, not one-off.)*\n\n---\n\n## Finding 5: After-Hours Access Requests Properly Controlled\n\n**1. Title:** After-Hours Access Exception Process Functioning as Designed  \n**2. Related Section:** Physical Security Policy \u00a77, After-Hours Exception Register, Badge Access Logs  \n**3. Why It's a Gap:**  \n- **Assessment:** Review of badge access logs vs. approved after-hours exception register shows after-hours entries correspond to users with documented exceptions for those dates (e.g., on-call or one-day approvals). There are no unauthorized after-hours entries.\n- **Implication:** No gaps observed here. Controls are being followed for after-hours access.\n**4. Severity:** **None / Not a Gap**\n\n---\n\n## Finding 6: Visitor and Surveillance Policy Coverage\n\n**1. Title:** Visitor and Surveillance Controls Meet Policy Requirements  \n**2. Related Section:** Physical Security Policy \u00a7\u00a75, 6  \n**3. Why It's a Gap:**  \n- **Assessment:** Policy covers visitor escort, badge types, access levels and CCTV in line with industry standards. No evidence of violations provided in the observation period.\n- **Implication:** No gaps detected for visitors or video coverage.\n**4. Severity:** **None / Not a Gap**\n\n---\n\n## Summary Table\n\n| Title                                              | Section                       | Gap/Reason                                                       | Severity  |\n|----------------------------------------------------|-------------------------------|------------------------------------------------------------------|-----------|\n| Contractor Badge Remains Active After Contract End  | Policy \u00a74.7, Provisioning     | Badge active after contract end (CTR-0139 Janet Yee)             | **High**  |\n| Contractor Badge Activated Before Contract Start    | Policy \u00a74.6, Provisioning     | Badge activation precedes contract (CTR-0145 Luis Ortega)        | **Medium**|\n| Employee Badge Not Deactivated Same Day as Termination   | Policy \u00a74.5, Provisioning, Logs | Evidence of timely deactivation; denial event only              | None      |\n| Incomplete Weekly Review/Contractor Deactivation   | Policy \u00a74.7                   | Weekly review process not effectively enforced                   | **High**  |\n| After-Hours Access Properly Controlled             | Policy \u00a77, Exception Register, Logs | All exceptions documented and match logs                        | None      |\n| Visitor/Surveillance Policy Coverage               | Policy \u00a7\u00a75, 6                 | No deviation observed                                            | None      |\n\n---\n\n## Recommendations\n\n- **For High severity gaps (Findings 1 and 4):** Immediately review and improve the badge deactivation process and the Facilities team\u2019s weekly review/validation procedures for contractor badges. Conduct a full review to ensure no other badges remain active past access-end dates.\n- **For Medium severity gap (Finding 2):** Retrain Facilities staff and require system controls to prevent badge activation prior to contract start.\n- **For All other areas:** Continue current practices, as controls appear effective and appropriately documented.\n\n---\n\n**If you need verbatim language or management response suggestions for your SOC 2 report, please advise.**"
+}

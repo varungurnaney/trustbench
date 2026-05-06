@@ -1,0 +1,122 @@
+{
+  "export_metadata": {
+    "account_id": "334455667788",
+    "region": "us-east-1",
+    "exported_by": "infra-audit-tool v2.1",
+    "export_timestamp": "2025-12-20T10:00:00Z"
+  },
+  "vpcs": [
+    {
+      "vpc_id": "vpc-0xaa11bb22",
+      "vpc_name": "stratos-production",
+      "cidr_block": "10.10.0.0/16",
+      "environment": "production"
+    },
+    {
+      "vpc_id": "vpc-0xcc33dd44",
+      "vpc_name": "stratos-staging",
+      "cidr_block": "10.20.0.0/16",
+      "environment": "staging"
+    },
+    {
+      "vpc_id": "vpc-0xee55ff66",
+      "vpc_name": "stratos-development",
+      "cidr_block": "10.30.0.0/16",
+      "environment": "development"
+    },
+    {
+      "vpc_id": "vpc-0x7788aabb",
+      "vpc_name": "stratos-management",
+      "cidr_block": "10.40.0.0/16",
+      "environment": "management"
+    }
+  ],
+  "vpc_peering_connections": [
+    {
+      "peering_id": "pcx-0x001122aa",
+      "requester_vpc": "vpc-0x7788aabb",
+      "requester_name": "stratos-management",
+      "accepter_vpc": "vpc-0xaa11bb22",
+      "accepter_name": "stratos-production",
+      "status": "active",
+      "route_table_entries": [
+        {
+          "direction": "management-to-production",
+          "destination_cidr": "10.10.8.0/24",
+          "description": "Route to production monitoring subnet only"
+        },
+        {
+          "direction": "production-to-management",
+          "destination_cidr": "10.40.2.0/24",
+          "description": "Route to management log aggregation subnet"
+        }
+      ],
+      "security_group_rules": [
+        {
+          "rule_id": "sgr-peer-001",
+          "direction": "inbound",
+          "from_cidr": "10.40.2.0/24",
+          "port_range": "9090",
+          "protocol": "tcp",
+          "description": "Prometheus metrics scraping from management VPC"
+        },
+        {
+          "rule_id": "sgr-peer-002",
+          "direction": "inbound",
+          "from_cidr": "10.40.2.0/24",
+          "port_range": "9200",
+          "protocol": "tcp",
+          "description": "Elasticsearch log shipping from management VPC"
+        },
+        {
+          "rule_id": "sgr-peer-003",
+          "direction": "inbound",
+          "from_cidr": "10.40.2.0/24",
+          "port_range": "5044",
+          "protocol": "tcp",
+          "description": "Logstash forwarding from management VPC"
+        }
+      ],
+      "notes": "Peering limited to monitoring and log aggregation per policy Section 3.3"
+    },
+    {
+      "peering_id": "pcx-0x334455bb",
+      "requester_vpc": "vpc-0xcc33dd44",
+      "requester_name": "stratos-staging",
+      "accepter_vpc": "vpc-0xaa11bb22",
+      "accepter_name": "stratos-production",
+      "status": "active",
+      "route_table_entries": [
+        {
+          "direction": "staging-to-production",
+          "destination_cidr": "10.10.0.0/16",
+          "description": "Full production VPC access from staging — database migration tooling"
+        },
+        {
+          "direction": "production-to-staging",
+          "destination_cidr": "10.20.0.0/16",
+          "description": "Full staging VPC access from production — bidirectional sync"
+        }
+      ],
+      "security_group_rules": [
+        {
+          "rule_id": "sgr-peer-004",
+          "direction": "inbound",
+          "from_cidr": "10.20.0.0/16",
+          "port_range": "0-65535",
+          "protocol": "tcp",
+          "description": "All TCP ports from staging VPC — database migration support"
+        },
+        {
+          "rule_id": "sgr-peer-005",
+          "direction": "outbound",
+          "to_cidr": "10.20.0.0/16",
+          "port_range": "0-65535",
+          "protocol": "tcp",
+          "description": "All TCP ports to staging VPC — database migration support"
+        }
+      ],
+      "notes": "Cross-VPC peering for database schema migration tooling. Exception SEC-EXC-2025-009 applies."
+    }
+  ]
+}

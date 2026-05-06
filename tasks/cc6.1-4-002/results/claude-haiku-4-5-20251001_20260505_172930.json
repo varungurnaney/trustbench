@@ -1,0 +1,85 @@
+{
+  "task_id": "cc6.1-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:29:30.135395",
+  "score": {
+    "task_id": "cc6.1-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.42857142857142855,
+    "f1": 0.6,
+    "score": 0.6,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "svc-datadog-apm",
+          "EXC-2025-031",
+          "exception",
+          "compensating",
+          "Datadog"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "rachel.nguyen",
+          "departure",
+          "December 15",
+          "November",
+          "active"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-jenkins-legacy",
+          "Key 1",
+          "June",
+          "rotation",
+          "compensating control",
+          "EXC-2025-019"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "direct",
+          "CyberArk",
+          "privileged"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5199,
+    "output_tokens": 2167
+  },
+  "raw_response": "# SOC 2 CC6.1 Readiness Assessment \u2014 Stratos Cloud Solutions\n**Assessment Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n\n---\n\n## Executive Summary\n\nStratos Cloud Solutions demonstrates a **mature logical access control environment** with well-documented policies, active exception management, and evidence of compensating controls. The organization has implemented industry-standard controls including SSO via Okta, MFA enforcement, privileged access management via CyberArk, and quarterly access reviews.\n\nHowever, the assessment identified **3 findings** of varying severity related to access control execution and documentation. No critical gaps in control architecture were identified.\n\n---\n\n## Detailed Findings\n\n### Finding 1: Dormant User Access \u2014 Rachel Nguyen\n**Document Reference:** AWS IAM Credential Report (December 30, 2025) + Change Management Record CHG-2025-Q4-018\n\n**Issue:**\nRachel Nguyen (arn:aws:iam::123456789012:user/rachel.nguyen) shows:\n- Last password used: **December 15, 2025**\n- Access key 1 & 2: Both inactive\n- Attached policy: **PowerUserAccess**\n- Change record CHG-2025-Q4-018 documents her \"transition to Orbit Systems\" with knowledge transfer completion by November 15, 2025\n\nHowever, as of the credential report (December 30), her IAM user account remains **active and enabled with PowerUserAccess** \u2014 15 days after documented transition completion and 45 days after the transition start date.\n\n**Policy Requirement:**\nPOL-AC-2025-003 Section 6.1 mandates: \"Okta account suspended within 4 hours of termination notification\" and \"AWS IAM access keys deactivated within 24 hours.\"\n\n**Why This Is a Gap:**\n- No evidence that the offboarding workflow was triggered in ServiceNow\n- IAM user account was not deactivated post-transition\n- Applies to a user with elevated permissions (PowerUserAccess)\n- Violates documented termination procedures by approximately 14+ days\n\n**Severity:** **High**\n\n---\n\n### Finding 2: Legacy Service Account with Elevated Permissions and Extended Key Rotation\n**Document Reference:** AWS IAM Credential Report + Exception Register (EXC-2025-019)\n\n**Issue:**\nsvc-jenkins-legacy shows:\n- Access Key 1: Last rotated **January 10, 2024** (695 days ago; now December 30, 2025)\n- Access Key 2: Last rotated **June 1, 2025**, last used **December 29, 2025**\n- Attached policy: **PowerUserAccess** (highest privilege for a service account)\n- Last activity: December 29, 2025 (actively in use)\n\nException EXC-2025-019 documents \"Legacy Jenkins CI/CD static credentials\" with compensating controls including \"Key rotation every 90 days.\" However:\n- Access Key 1 has **not been rotated in 695 days** (7.7x the documented 90-day cycle)\n- The exception was last reviewed October 1, 2025, and noted \"rotation schedule verified\"\n- Change record CHG-2025-Q4-004 (October 28) documents \"Phase 2 of Jenkins decommission \u2014 migrate remaining 12 pipelines to GitHub Actions\" to Completed status\n\n**Policy Requirement:**\nPOL-AC-2025-003 Section 3.4: \"Service accounts must have credentials rotated every 90 days.\"\n\n**Why This Is a Gap:**\n- The control (90-day rotation) documented in the exception has not been enforced for the primary key\n- The October 1 review should have flagged the rotation gap but no evidence of remediation is present\n- If Jenkins is decommissioned (CHG-2025-Q4-004, completed October 28), this service account should have been deprovisioned, not left active with stale credentials\n- Actively used account (December 29) with unrotated high-privilege credentials represents control ineffectiveness\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Service Account with No Evidence of Credential Rotation Compliance\n**Document Reference:** AWS IAM Credential Report + Exception Register (EXC-2025-031)\n\n**Issue:**\nsvc-datadog-apm shows:\n- Access Key 1: Last rotated **April 20, 2025** (254 days ago as of December 30, 2025)\n- Last used: **December 29, 2025** (actively in use)\n- Exception EXC-2025-031 documents \"Datadog APM agent static API key\" with compensating controls including \"weekly key usage audit\"\n\nThe 254-day rotation age indicates the key has **exceeded the 90-day rotation requirement** by 164 days (~5.8 months), similar to the Jenkins service account.\n\n**Policy Requirement:**\nPOL-AC-2025-003 Section 3.4: \"Service accounts must have credentials rotated every 90 days.\"\n\n**Why This Is a Gap:**\n- Exception documents valid compensating controls (IP restriction, read-only scope, weekly audit) but does **not extend the 90-day rotation requirement**\n- The exception was renewed October 1, 2025, with \"compensating controls verified\" but the underlying 90-day rotation requirement was not explicitly waived or adjusted\n- Access key has not been rotated since initial provisioning (April 20, 2025)\n- Discrepancy between documented control expectation (90 days) and actual practice (254 days)\n\n**Note:** This finding is lower severity than Finding 2 because the compensating controls (read-only scope, IP restriction) substantively limit risk exposure, and the exception approval provides some governance context. However, the rotation policy gap remains unresolved.\n\n**Severity:** **Medium**\n\n---\n\n## Positive Control Observations\n\nThe following control elements demonstrate effective implementation:\n\n1. **Okta SSO Enforcement:** All human users authenticated via Okta; policy prohibits direct application authentication except by exception.\n\n2. **MFA Activation:** All human users show `mfa_active: true`. Administrator users (wei.zhang) verified with enforced FIDO2 keys (CHG-2025-Q4-010).\n\n3. **Privileged Access Management:** CyberArk JIT access with 2-hour session limits, dual approval, and 24-month session recording retention documented in policy.\n\n4. **Exception Governance:** EXC-2025-019 and EXC-2025-031 demonstrate CISO approval, compensating controls documentation, and quarterly review cycles.\n\n5. **Access Review Process:** Policy Section 5 defines quarterly reviews with 15-business-day windows; change records show Year-end access review preparation (CHG-2025-Q4-020, completed December 22).\n\n6. **Root Account Controls:** Root account shows MFA active; exception EXC-2025-012 documents hardware YubiKey, break-glass-only access, and zero root logins in review period.\n\n7. **Change Management Integration:** WAF rules (CHG-2025-Q4-005), S3 bucket policy enforcement (CHG-2025-Q4-006), and Okta MFA policies (CHG-2025-Q4-010) demonstrate security controls being deployed through formal change processes.\n\n---\n\n## Recommendations\n\n### For Finding 1 (Rachel Nguyen):\n- **Immediate action:** Deactivate rachel.nguyen IAM user and revoke all access keys\n- **Review:** Confirm ServiceNow offboarding workflow was triggered and identify why IAM deprovisioning did not complete\n- **Process improvement:** Audit other recent departures (Q4 2025) for similar gaps\n\n### For Finding 2 (svc-jenkins-legacy):\n- **Immediate action:** Deactivate or delete svc-jenkins-legacy service account if Jenkins Phase 2 migration is complete; if still in use, rotate both access keys immediately\n- **Clarification needed:** Confirm completion status of Jenkins decommission (CHG-2025-Q4-004); if incomplete, schedule key rotation immediately and establish compensating controls\n- **Process improvement:** Add service account deprovisioning checklist to change management template for infrastructure decommissions\n\n### For Finding 3 (svc-datadog-apm):\n- **Action:** Rotate access key within 30 days (by January 29, 2026)\n- **Policy clarification:** If 90-day rotation is not feasible for Datadog agent due to technical constraints, formally extend EXC-2025-031 to explicitly waive rotation frequency and document technical justification\n- **Process improvement:** Add key rotation tracking dashboard to monitor compliance against 90-day SLA\n\n---\n\n## Conclusion\n\nStratos Cloud Solutions' logical access control framework aligns with CC6.1 requirements and demonstrates mature security practices. The three findings identified are **execution gaps** rather than architectural deficiencies. With remediation of the dormant account and service account key rotation issues, the organization will achieve **effective compliance** with CC6.1 for SOC 2 Type II purposes.\n\nRecommended timeline for remediation: **30 days** (by January 30, 2026)."
+}

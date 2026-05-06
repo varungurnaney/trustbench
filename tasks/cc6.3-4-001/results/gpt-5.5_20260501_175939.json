@@ -1,0 +1,87 @@
+{
+  "task_id": "cc6.3-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T17:59:39.931471",
+  "score": {
+    "task_id": "cc6.3-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.5,
+    "f1": 0.6,
+    "score": 0.6,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "data-analytics",
+          "EXC-2025-014",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "j.morrison",
+          "billing-service",
+          "segregation of duties"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "r.santos",
+          "contractor",
+          "expiration"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-etl-snowflake",
+          "owner",
+          "revenue_records"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5433,
+    "output_tokens": 5127
+  },
+  "raw_response": "## Overall Readiness Assessment for CC6.3\n\nAurora Labs has several foundational elements in place for CC6.3, including a formal Data Access Authorization Policy, documented MongoDB Atlas RBAC roles, quarterly access certification, and an exception register with CISO approval and compensating controls. However, the evidence also shows gaps in least privilege enforcement, service account ownership, contractor access expiration, segregation-of-duties validation, and effectiveness of quarterly access reviews.\n\nThe following findings should be addressed before relying on this control as operating effectively.\n\n---\n\n## Finding 1: Contractor Production Write Access Is Not Time-Bound and Exceeds Policy Limits\n\n**Related document / section:**  \n- MongoDB Atlas RBAC export \u2014 `r.santos` user assignment  \n- Data Access Authorization Policy \u2014 Section 6.2, Contractor and Temporary Accounts  \n- Data Access Authorization Policy \u2014 Section 3.2, Segregation of Duties\n\n**Why this is a gap:**  \nThe contractor account `r.santos` is assigned the `app-backend-readwrite` role, which allows production write access including `insert` and `update` on `users`, `products`, and `orders`, and `remove` on `sessions`.\n\nThe account was assigned on **2025-09-01**, has a contract end date of **2025-12-31**, but has **no expiration date**. Under Section 6.2, contractor accounts must have a defined expiration date not exceeding the contract end date or **90 days**, whichever is shorter. Ninety days from 2025-09-01 would be approximately **2025-11-30**, yet the account was still active and authenticated on **2025-12-14**.\n\nAdditionally, the account belongs to an Engineering contractor and has direct write access to a production database. Section 3.2 states that development personnel must not have direct write access to production databases. No approved exception was provided for this access.\n\n**Severity:** High\n\n---\n\n## Finding 2: ETL Service Account Has No Documented Owner and May Retain Access Tied to an Expired Exception\n\n**Related document / section:**  \n- MongoDB Atlas RBAC export \u2014 `svc-etl-snowflake` user assignment and `etl-pipeline` role  \n- Data Access Authorization Policy \u2014 Section 6.1, Service Account Requirements  \n- Exception Register \u2014 `EXC-2025-022`, Temporary elevated access for data warehouse migration\n\n**Why this is a gap:**  \nThe service account `svc-etl-snowflake` has no documented human owner or owner email. Section 6.1 requires all service accounts to have a designated human owner documented in the service account registry.\n\nThe account is also associated with a migration-related note: \u201cCreated during Q3 2024 data warehouse migration project.\u201d The exception register includes `EXC-2025-022` for temporary elevated access for the data warehouse migration, which expired on **2025-10-31** and states that access was reverted to standard permissions.\n\nHowever, as of the **2025-12-15** RBAC export, the `svc-etl-snowflake` account remains active and authenticated, and the `etl-pipeline` role still includes `insert` and `update` access to `revenue_records`. The evidence does not demonstrate that the elevated access was actually removed or that the current permissions represent an approved standard baseline.\n\nThis creates concern that a high-risk, temporary access exception may not have been fully remediated after expiration.\n\n**Severity:** High\n\n---\n\n## Finding 3: Finance Employee Assigned Production Financial Write Role Without Clear Segregation-of-Duties Evidence\n\n**Related document / section:**  \n- MongoDB Atlas RBAC export \u2014 `j.morrison` user assignment and `billing-service` role  \n- Data Access Authorization Policy \u2014 Section 3.2, Segregation of Duties  \n- Data Access Authorization Policy \u2014 Section 3.3, Role-Based Access Control  \n- Exception Register \u2014 `EXC-2025-008`, Billing service write access\n\n**Why this is a gap:**  \nThe Finance employee `j.morrison` is assigned the `billing-service` role. This role allows write access to sensitive financial collections, including:\n\n- `billing` \u2014 `find`, `insert`, `update`\n- `invoices` \u2014 `find`, `insert`, `update`\n- `payment_transactions` \u2014 `find`, `insert`\n\nThe role description indicates it is intended for the **billing microservice**, not a human Finance user. While `EXC-2025-008` provides an approved exception for billing service write access, the exception appears to apply to the billing service workflow and compensating controls, not necessarily to direct human user access by Finance personnel.\n\nSection 3.2 requires that users with write access to financial collections must not simultaneously hold administrative or approval privileges on those same collections. The evidence does not show whether `j.morrison` has financial approval authority outside MongoDB, nor does it show a documented segregation-of-duties review for this assignment.\n\nAs a result, Aurora Labs has not provided sufficient evidence that this human financial write access is least-privileged, role-appropriate, and free of segregation-of-duties conflicts.\n\n**Severity:** Medium\n\n---\n\n## Finding 4: Quarterly MongoDB Access Certification Did Not Detect Existing Policy Violations\n\n**Related document / section:**  \n- Quarterly Access Certification Log \u2014 `CERT-Q4-2025-001`, MongoDB Atlas  \n- MongoDB Atlas RBAC export  \n- Data Access Authorization Policy \u2014 Section 5.1 and 5.2, Quarterly Access Certification  \n- Data Access Authorization Policy \u2014 Section 6.1 and 6.2\n\n**Why this is a gap:**  \nThe Q4 2025 MongoDB Atlas certification was completed on time and reported:\n\n- 10 access grants reviewed\n- 0 findings noted\n- 0 access grants revoked\n- Comment: \u201cAll access grants verified against RBAC matrix\u201d\n\nHowever, the RBAC export shows multiple issues that should have been identified during certification, including:\n\n- `svc-etl-snowflake` has no documented human owner.\n- `r.santos`, a contractor, has no expiration date.\n- `r.santos` has direct production write access despite being Engineering personnel.\n- `j.morrison` has human access to a service-oriented financial write role without clear SoD evidence.\n\nAt least the missing service account owner and missing contractor expiration date existed before or during the Q4 certification period. The certification process therefore appears to have been completed procedurally but did not effectively validate compliance with policy requirements.\n\n**Severity:** Medium\n\n---\n\n## Finding 5: RBAC Role-to-Job Function Mapping Was Not Provided for Human Users Assigned Service-Oriented Roles\n\n**Related document / section:**  \n- MongoDB Atlas RBAC export \u2014 role descriptions and user assignments  \n- Data Access Authorization Policy \u2014 Section 3.3, Role-Based Access Control\n\n**Why this is a gap:**  \nSection 3.3 requires access to be managed through predefined roles aligned to job functions, with roles documented in the Aurora Labs RBAC Matrix and reviewed quarterly.\n\nThe MongoDB roles are documented, but several roles appear to be service-oriented while also being assigned to human users:\n\n- `app-backend-readwrite` \u2014 described for application backend services, assigned to contractor `r.santos`\n- `app-backend-readonly` \u2014 described for application backend query services, assigned to employee `t.williams`\n- `billing-service` \u2014 described for the billing microservice, assigned to Finance employee `j.morrison`\n\nThe quarterly certification log states access was verified against the RBAC matrix, but the actual RBAC matrix was not provided. Without that matrix or equivalent role-to-job mapping, the auditor cannot verify that these human assignments are appropriate, least-privileged, or aligned to approved job responsibilities.\n\n**Severity:** Medium\n\n---\n\n## Finding 6: Exception Register Contains Expired Structured Dates for Renewed Exceptions\n\n**Related document / section:**  \n- Exception Register \u2014 `EXC-2025-014` and `EXC-2025-008`  \n- Data Access Authorization Policy \u2014 Section 7, Exception Process\n\n**Why this is a gap:**  \nThe exception register shows certain exceptions with a status of \u201cRenewed,\u201d but their structured `expiration_date` fields still show past dates:\n\n- `EXC-2025-014` has expiration date **2025-08-14**, but review outcome says extended to **2026-02-14**\n- `EXC-2025-008` has expiration date **2025-07-08**, but review outcome says extended to **2026-01-08**\n\nThe renewal appears to be documented in the `review_outcome` field, so the exceptions may be valid. However, the authoritative expiration date field was not updated. This weakens exception monitoring because automated reporting or review processes could incorrectly treat these exceptions as expired or, conversely, fail to enforce the new expiration date in a structured way.\n\nThis is a documentation and governance issue rather than evidence that the exceptions themselves are invalid.\n\n**Severity:** Low\n\n---\n\n## Notes on Apparent Issues That Are Mitigated by Exceptions\n\nThe `data-analytics` role grants broad production read access across multiple collections, including financial and audit-related collections. However, this access is covered by `EXC-2025-014`, which was CISO-approved, reviewed, and renewed with compensating controls including data masking, audit logging, and bulk export alerts.\n\nSimilarly, the billing service\u2019s write access is covered by `EXC-2025-008` for the service workflow. The issue noted above is specifically the assignment of that service-oriented role to a human Finance employee without separate evidence of SoD validation.\n\n"
+}

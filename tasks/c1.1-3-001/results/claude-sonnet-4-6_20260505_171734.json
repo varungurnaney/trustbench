@@ -1,0 +1,93 @@
+{
+  "task_id": "c1.1-3-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T17:17:34.743136",
+  "score": {
+    "task_id": "c1.1-3-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.8,
+    "f1": 0.888888888888889,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "crestline_analytics",
+          "customer_profiles",
+          "plaintext",
+          "email",
+          "phone",
+          "field-level encryption",
+          "ETL",
+          "nightly"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "GraphQL",
+          "DLP",
+          "not yet integrated",
+          "bulk",
+          "pagination",
+          "October 2025",
+          "DLP-API-001",
+          "REST",
+          "known_gaps"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "crestline_analytics",
+          "customer_profiles",
+          "engagement_events",
+          "plaintext"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "September 2025",
+          "last_updated",
+          "GraphQL",
+          "October 2025",
+          "DPIA",
+          "DLP rules"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5591,
+    "output_tokens": 3245
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 Control C1.1\n## Crestline Data Systems | Q4 2025 (October 1 \u2013 December 31, 2025)\n\n---\n\n## Executive Summary\n\nEvidence review identified **five findings** ranging from Critical to Medium severity. The most significant issues involve plaintext PII persisting in the analytics database in direct violation of the encryption policy, and an unmonitored GraphQL API capable of bulk PII extraction without DLP controls. These findings represent material gaps against C1.1 and would likely result in exceptions in a SOC 2 Type II audit if not remediated.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Plaintext PII Stored in Analytics Database in Violation of Encryption Policy\n\n**Severity: Critical**\n\n**Policy Reference:** POL-DCP-003 \u00a73.1 (Classification Framework), \u00a73.2 (PII Data Elements), \u00a74.1 (Database Storage)\n\n**Evidence Sources:** Database encryption status report; Data flow diagram \u00a73.1\n\n**Gap Description:**\n\nThe data classification policy explicitly classifies email addresses and phone numbers as **Restricted** data elements requiring field-level encryption (AES-256) in all database storage. The production `crestline_prod.users` table correctly implements this requirement. However, the database encryption status report reveals that the nightly ETL pipeline copies these fields **in plaintext** into two locations in `crestline_analytics`:\n\n| Database | Table | Column | Field-Level Encryption | Notes |\n|---|---|---|---|---|\n| crestline_analytics | customer_profiles | email | **No \u2014 None** | PLAINTEXT via nightly ETL |\n| crestline_analytics | customer_profiles | phone | **No \u2014 None** | PLAINTEXT via nightly ETL |\n| crestline_analytics | engagement_events | user_email | **No \u2014 None** | PLAINTEXT, denormalized |\n\nThe data flow diagram (\u00a73.1) corroborates this, explicitly noting the ETL copies email and phone fields for \"query performance\" without any encryption step. The database-level RDS encryption on `crestline_analytics` does not satisfy the field-level encryption requirement \u2014 it protects only against physical media theft, not against authorized or unauthorized users querying the database directly.\n\nThis means that any user with read access to the `crestline_analytics` database \u2014 described as the entire Analytics Team \u2014 can retrieve plaintext PII for all customers with no decryption controls or audit gate. The source database (`crestline_prod`) enforces field-level encryption precisely to prevent this exposure; the ETL pipeline defeats that control entirely.\n\n**What Is Missing:**\n- Field-level encryption applied to PII columns in `crestline_analytics` before or during ETL load\n- Alternatively, pseudonymization or tokenization of PII fields used for analytics purposes (referencing only the `user_id` foreign key rather than raw PII)\n- A documented and approved exception or compensating control, neither of which appears in any provided artifact\n\n**Auditor Note:** This gap has likely persisted across the entire Q4 2025 audit period based on the December 15, 2025 verification date in the report, which records the plaintext status as a known condition rather than an anomaly. A SOC 2 auditor would flag this as a sustained control failure, not a point-in-time exception.\n\n---\n\n### Finding 2: GraphQL API Launched October 2025 Has No DLP Coverage\n\n**Severity: Critical**\n\n**Policy Reference:** POL-DCP-003 \u00a75.1 (DLP Coverage), \u00a76 (Data Flow Documentation \u2014 DPIA requirement)\n\n**Evidence Sources:** DLP configuration (`api_gateway.known_gaps`); Data flow diagram \u00a74.2\n\n**Gap Description:**\n\nThe GraphQL API (`api.crestline.com/graphql`) launched in **October 2025** \u2014 the first day of the audit period \u2014 and is explicitly acknowledged as a gap in the DLP configuration:\n\n> *\"GraphQL API (api.crestline.com/graphql) launched October 2025 \u2014 not yet integrated with DLP rules. Bulk query capability exists via GraphQL pagination.\"*\n\nThe policy requires DLP rules to be configured to detect and prevent unauthorized transmission of Restricted data across all API data export paths. The only existing API DLP rule (`DLP-API-001`) explicitly covers only `v2 REST API` endpoints and does not apply to the GraphQL endpoint.\n\nThe data flow diagram (\u00a74.2) makes the risk concrete:\n\n> *\"A single query can retrieve all user PII by paginating through the users connection. Rate limiting is per-query, not per-record, so bulk extraction is possible within rate limits.\"*\n\nThis means an authorized API client \u2014 or a compromised credential \u2014 could systematically extract the full customer PII dataset (email, phone, physical address) through paginated GraphQL queries without triggering any DLP alert or block. The per-query rate limit that exists provides no meaningful protection against bulk extraction.\n\n**Compounding Issue \u2014 Missing DPIA:**\nPolicy \u00a76 requires that *\"new data flows involving Restricted data require Data Protection Impact Assessment (DPIA) approval\"* before launch. The data flow diagram was updated November 10, 2025 \u2014 approximately six weeks after the GraphQL API launched \u2014 and there is no reference to a completed DPIA for this flow. The CISO's review signature (November 12, 2025) post-dates the launch and does not constitute a pre-launch DPIA. The GraphQL API appears to have been introduced into the production environment handling Restricted data without the required impact assessment.\n\n**What Is Missing:**\n- DLP rule(s) covering the GraphQL endpoint, monitoring for bulk PII extraction (record count thresholds equivalent to `DLP-API-001`)\n- Evidence of a completed DPIA prior to the October 2025 launch\n- Compensating controls (e.g., query depth/complexity limits, field-level authorization checks, per-record rate limiting) during the period before DLP integration is complete\n\n**Auditor Note:** Because this gap existed for the entirety of Q4 2025 with no compensating control documented, the full audit period is affected.\n\n---\n\n### Finding 3: SSN Stored as One-Way Hash \u2014 Inconsistent with Policy's Encryption Requirement\n\n**Severity: High**\n\n**Policy Reference:** POL-DCP-003 \u00a73.2 (PII Data Elements), \u00a74.1 (Database Storage)\n\n**Evidence Sources:** Database encryption status report (`users.ssn_hash`)\n\n**Gap Description:**\n\nThe policy classifies Social Security Numbers (SSN) as Restricted data requiring field-level encryption using AES-256 via the application encryption layer. The database report shows the SSN column is implemented as follows:\n\n| Column | Encryption Method | Field-Level Encryption |\n|---|---|---|\n| ssn_hash | SHA-256 + HMAC | Yes (reported) |\n\nThe column is named `ssn_hash`, and the encryption method recorded is `SHA-256 + HMAC` \u2014 a **cryptographic hash with a keyed MAC**, not reversible AES-256 encryption. This is a meaningful architectural distinction with compliance implications:\n\n1. **Policy non-conformance:** The policy specifies AES-256 field-level encryption, which is reversible and allows the organization to retrieve the original value when needed (e.g., for customer verification, legal holds, or deletion confirmation). A one-way hash cannot satisfy use cases that require access to the original SSN value.\n\n2. **Classification as \"field_level_encryption: Yes\" is misleading:** Hashing is not encryption. Reporting it as encrypted may mask the discrepancy during internal reviews and obscure the actual data protection approach from auditors and the Data Governance Team.\n\n3. **Potential functional gap:** If Crestline is required to verify, transmit, or process the original SSN for any business or regulatory purpose, the current implementation cannot support that without storing a plaintext or encrypted copy elsewhere \u2014 which may exist undocumented.\n\n**What Is Missing:**\n- Explicit policy language permitting hashing as an alternative to encryption for SSN, with defined acceptable use cases\n- Clarification of whether a retrievable (AES-256 encrypted) copy of the SSN exists in any system\n- If hashing is intentional and approved, a formal policy exception or amendment documenting this as an accepted deviation\n\n**Auditor Note:** If the organization intentionally chose hashing over encryption and can demonstrate it meets all business and regulatory requirements, this may be resolvable with a policy update rather than a technical change. However, in the current state, the implementation does not match the written control.\n\n---\n\n### Finding 4: API Gateway DLP Rule Covers Only v2 REST Endpoints \u2014 Scope Gap Predates GraphQL Launch\n\n**Severity: High**\n\n**Policy Reference:** POL-DCP-003 \u00a75.1 (DLP Coverage \u2014 API data exports)\n\n**Evidence Sources:** DLP configuration (`api_gateway` section); Data flow diagram \u00a74.1\n\n**Gap Description:**\n\nThis finding is related to but distinct from Finding 2. Even setting aside the GraphQL API, the existing API DLP coverage has a structural scoping limitation. Rule `DLP-API-001` is explicitly restricted to three specific endpoints:\n\n```\n/api/v2/users\n/api/v2/customers\n/api/v2/accounts\n```\n\nThe policy requires DLP coverage across *API data exports* generally, not a subset of enumerated endpoints. A hardcoded endpoint list creates a brittle control that will fail silently whenever:\n\n- New REST API endpoints are added (e.g., `/api/v3/*`, `/api/v2/partners`)\n- Existing endpoints are versioned or renamed\n- Internal or administrative APIs expose PII data\n\nThe data flow diagram does not enumerate all API endpoints that may return PII, and no evidence was provided of a process to ensure new endpoints are added to DLP rules before going live. The GraphQL gap is the most acute current manifestation of this structural weakness, but the underlying issue is the absence of coverage-by-default for API data exports.\n\n**What Is Missing:**\n- DLP coverage designed to inspect response content (record count, PII field presence) rather than relying solely on endpoint allowlists\n- A process requiring security review and DLP rule updates as part of API deployment pipeline (shift-left DLP integration)\n- Documentation of all PII-returning API endpoints and confirmation each is covered\n\n---\n\n### Finding 5: DLP Configuration Not Updated Since September 2025 \u2014 Stale Through Audit Period\n\n**Severity: Medium**\n\n**Policy Reference:** POL-DCP-003 \u00a75.1 (DLP Coverage), \u00a76 (Data Flow Documentation \u2014 annual review)\n\n**Evidence Sources:** DLP configuration metadata (`last_updated: 2025-09-15`); Data flow diagram (updated November 10, 2025)\n\n**Gap Description:**\n\nThe DLP configuration carries a `last_updated` timestamp of **September 15, 2025** \u2014 two weeks before the start of the Q4 2025 audit period. During Q4, at least one material change occurred that required DLP updates: the GraphQL API launched in October 2025 (addressed in Finding 2). The DLP configuration was not updated to reflect this change despite the policy requiring DLP rules to cover all Restricted data transmission paths.\n\nMore broadly, the gap between the DLP configuration date (September 15) and the data flow diagram update date (November 10) suggests that the DLP team and architecture team are not operating in a synchronized change management process. The data flow diagram was revised to document the new GraphQL flow, but the corresponding DLP update did not follow.\n\n**What Is Missing:**\n- Evidence of a change management or review process that triggers DLP rule assessment when new data flows are introduced\n- A DLP configuration review during Q4 2025 that accounts for environment changes during the audit period\n- Alignment between the data flow diagram review cycle and the DLP rule review cycle\n\n---\n\n## Summary Table\n\n| # | Finding Title | Severity | Policy Section | Primary Evidence |\n|---|---|---|---|---|\n| 1 | Plaintext PII in Analytics Database | **Critical** | \u00a73.1, \u00a73.2, \u00a74.1 | DB Encryption Report; DFD \u00a73.1 |\n| 2 | GraphQL API Lacks DLP Coverage and DPIA | **Critical** | \u00a75.1, \u00a76 | DLP Config (known_gaps); DFD \u00a74.2 |\n| 3 | SSN Stored as Hash, Not AES-256 Encryption | **High** | \u00a73.2, \u00a74.1 | DB Encryption Report |\n| 4 | API DLP Scope Limited to Hardcoded Endpoints | **High** | \u00a75.1 | DLP Config (api_gateway) |\n| 5 | DLP Configuration Stale Through Q4 Audit Period | **Medium** | \u00a75.1, \u00a76 | DLP Config metadata; DFD metadata |\n\n---\n\n## Recommended Remediation Priorities\n\n**Immediate (before audit fieldwork):**\n1. Apply field-level encryption to PII columns in `crestline_analytics` \u2014 or replace raw PII with tokenized references \u2014 and re-run the ETL pipeline to remediate existing plaintext data\n2. Implement DLP monitoring on the GraphQL endpoint with equivalent controls to `DLP-API-001`; consider query complexity limits as an interim compensating control\n3. Complete a retrospective DPIA for the GraphQL API and document approval\n\n**Short-term (within audit period remediation window):**\n\n4. Resolve the SSN hashing vs. encryption question with a formal policy decision and update either the implementation or the policy to achieve alignment\n5. Redesign API DLP coverage to use content inspection rather than endpoint allowlists, and integrate DLP review into the API deployment process\n\n**Ongoing process improvement:**\n\n6. Establish synchronized change management between architecture, development, and security teams to ensure DLP rules and data flow documentation are updated concurrently when new data flows are introduced"
+}

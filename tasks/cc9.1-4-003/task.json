@@ -1,0 +1,88 @@
+{
+  "id": "cc9.1-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC9.1",
+  "control_description": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions or from the use of vendors and business partners.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/vendor-management-policy.md",
+      "type": "policy",
+      "description": "Solaris Tech vendor risk management policy defining vendor tiers, SOC 2 review requirements, and subservice organization monitoring"
+    },
+    {
+      "path": "evidence/vendor-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Vendor inventory with 12 vendors showing tier, SOC 2 status, business review dates, and risk notes"
+    },
+    {
+      "path": "evidence/vendor-risk-assessment-log.csv",
+      "type": "log",
+      "description": "Vendor risk assessment log documenting annual risk assessments and findings for each vendor"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/incident-response-plan-excerpt.md",
+      "type": "documentation",
+      "description": "Excerpt from incident response plan covering vendor-related incident procedures"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Solaris Tech Inc. covering the observation period Q4 2025 (October 1 - December 31, 2025). Review all provided evidence and assess compliance with CC9.1 (Risk Mitigation for Vendors and Business Partners). Cross-reference the vendor policy, inventory, and risk assessment log. Not all documents may be relevant. Identify genuine control deficiencies while avoiding false positives from documented risk acceptances.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "MongoDB Atlas risk assessment flagged 'Elevated' — but documented risk acceptance with compensating controls",
+      "description": "MongoDB Atlas (ST-V-007) is a High-tier vendor providing managed database services. The risk assessment log shows an 'Elevated' risk rating from the October 2025 assessment due to a prior data exposure incident in 2024. This looks concerning. However, the risk assessment log documents a formal risk acceptance: the CISO reviewed the incident root cause (misconfigured customer cluster, not a MongoDB platform vulnerability), confirmed MongoDB's remediation (mandatory security defaults, automated misconfiguration alerts), and accepted the residual risk with compensating controls (encryption at rest with customer-managed keys, network peering with no public endpoint, quarterly configuration audit).",
+      "evidence_sources": ["evidence/vendor-risk-assessment-log.csv", "evidence/vendor-inventory.csv"],
+      "expected_reasoning": "Elevated risk rating on MongoDB Atlas → check risk assessment details → formal risk acceptance documented → CISO reviewed root cause → incident was customer misconfiguration not platform vulnerability → compensating controls in place → documented and accepted risk → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["MongoDB Atlas", "Elevated", "risk acceptance", "CISO", "misconfiguration", "compensating", "not platform vulnerability"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["accepted", "documented", "approved", "mitigated", "not a finding"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "LaunchDarkly annual risk assessment overdue by 5 months with no documented justification",
+      "description": "LaunchDarkly (ST-V-009) is a High-tier vendor providing feature flag management that has access to production application configuration and customer segment data. The risk assessment log shows the last assessment was completed May 15, 2025, with a 'Standard' risk rating. Policy Section 4.3 requires annual risk assessments for all Critical and High tier vendors, with the next assessment due within 12 months. However, the vendor inventory shows the vendor's risk assessment status as 'Current' despite the fact that the policy also requires assessments to be refreshed when a vendor's data access scope changes. The vendor inventory notes indicate LaunchDarkly was granted access to customer segmentation data in August 2025 — a scope change that should have triggered a reassessment per Section 4.4. No updated risk assessment exists for this scope change, and the original assessment did not contemplate customer data access.",
+      "evidence_sources": ["evidence/vendor-risk-assessment-log.csv", "evidence/vendor-inventory.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "LaunchDarkly's annual assessment is technically not overdue (May 2025, next due May 2026). However, the vendor's data access scope changed in August 2025 when it was granted access to customer segmentation data. Policy Section 4.4 requires a risk assessment refresh when vendor data access changes. The original May 2025 assessment rated the vendor as 'Standard' risk based on internal-only data access. The scope change to customer data was not accompanied by a reassessment.",
+      "detection_criteria": {
+        "required_keywords": ["LaunchDarkly", "scope change", "customer segmentation", "August 2025", "Section 4.4", "reassessment", "original assessment", "internal-only"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Vendor risk assessment log missing entries for two Critical vendors",
+      "description": "The vendor inventory lists 4 Critical-tier vendors: AWS (ST-V-001), Snowflake (ST-V-002), Stripe (ST-V-003), and Auth0 (ST-V-004). The risk assessment log contains entries for AWS and Snowflake but has no entries for Stripe or Auth0. Policy Section 4.3 requires annual risk assessments for all Critical and High tier vendors. Two Critical vendors — Stripe (payment processing, customer financial data) and Auth0 (identity management, customer authentication credentials) — have no documented risk assessment at any point.",
+      "evidence_sources": ["evidence/vendor-risk-assessment-log.csv", "evidence/vendor-inventory.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "The auditor should cross-reference the vendor inventory's Critical tier vendors against the risk assessment log entries. AWS and Snowflake have assessments; Stripe and Auth0 do not. For Critical vendors processing customer financial data and authentication credentials respectively, the absence of any risk assessment is a significant gap.",
+      "detection_criteria": {
+        "required_keywords": ["Stripe", "Auth0", "Critical", "no risk assessment", "missing", "Section 4.3", "financial data", "authentication"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["vendor_management", "risk_assessment", "scope_change", "red_herring", "risk_acceptance", "cross_reference"]
+  }
+}

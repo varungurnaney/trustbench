@@ -1,0 +1,108 @@
+{
+  "task_id": "c1.1-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:18:26.222170",
+  "score": {
+    "task_id": "c1.1-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "webhook-payload-key",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "policy requires",
+          "cryptographically",
+          "exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vpc-prod",
+          "vpc-data",
+          "HTTP",
+          "unencrypted",
+          "Confidential",
+          "analytics",
+          "cross-VPC",
+          "port 8080"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "APP-PROD-006",
+          "notification",
+          "15 days",
+          "14-day grace",
+          "variance"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "rotation",
+          "late",
+          "APP-PROD-001",
+          "APP-PROD-003",
+          "APP-PROD-006"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "vrs-prod-ml-models",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "SSE-KMS",
+          "ML model",
+          "derived"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3923,
+    "output_tokens": 3250
+  },
+  "raw_response": "## Overall Assessment\n\nVanguard Risk Solutions has evidence of a defined encryption policy, resource-level classification, encryption posture monitoring, and key rotation tracking. These support C1.1 and CC6.7 in many areas. However, several exceptions indicate that encryption controls are **not operating fully effectively** across all Confidential/Restricted data flows and assets.\n\nThe most significant issue is the **unencrypted cross-VPC analytics pipeline carrying Confidential data over HTTP**. Other issues are policy deviations with lower practical security risk due to mitigating factors such as use of AES-128-GCM, SSE-KMS, documented notification, or short duration.\n\n---\n\n## Findings\n\n| # | Finding Title | Document Section | Why It\u2019s a Gap | Severity | Auditor Judgment |\n|---|---|---|---|---|---|\n| 1 | Unencrypted Cross-VPC Analytics Traffic Carrying Confidential Data | **Network Architecture Summary, Section 3.3 \u2013 Cross-VPC Traffic vpc-prod \u2194 vpc-data**; also conflicts with **Encryption Standards Policy Sections 4.2 and 4.3** | Confidential customer analytics events, including `user_id`, `event_type`, and `session_data`, are transmitted over HTTP on port 8080 between `vpc-prod` and `vpc-data`. The traffic is not encrypted at the network layer and does not use TLS at the application layer. This conflicts with policy requiring TLS 1.2+ for service-to-service communications handling Confidential data. The AWS private backbone reduces exposure but does not fully mitigate the absence of encryption, particularly for SOC 2 confidentiality expectations and defense-in-depth. | **High** | **Significant control deficiency.** This is an active unencrypted data-in-transit path for Confidential information and should be remediated by enabling TLS 1.2+ or mTLS between the analytics ingestion service and analytics pipeline. |\n| 2 | Webhook Payload Key Uses AES-128 for Confidential Data | **Q4 2025 Encryption Posture Audit \u2013 Application Key: `webhook-payload-key`**; **Encryption Standards Policy Section 3.1** | The `webhook-payload-key` protects Confidential customer event data but uses AES-128-GCM. Policy requires AES-256 minimum for Confidential data. While AES-128-GCM remains cryptographically strong, this is a clear policy violation and lacks documented exception approval or compensating control rationale. | **Medium** | **Minor-to-moderate control deficiency.** Not a severe cryptographic weakness, but it is a production policy deviation involving Confidential data. Remediation or formal exception approval is required. |\n| 3 | ML Model Artifacts Encrypted Below Required Standard | **Q4 2025 Encryption Posture Audit \u2013 S3 Bucket: `vrs-prod-ml-models`**; **Encryption Standards Policy Sections 3.1 and 5.2** | The S3 bucket containing Confidential ML model artifacts uses SSE-KMS but with AES-128 rather than the required AES-256. The models are derived from Confidential customer data, so the policy requires AES-256/SSE-KMS. The note states no PII is present, which lowers risk, but the classification remains Confidential and no exception is documented. | **Low** | **Minor variance.** Actual security risk appears limited because the bucket is encrypted and contains no direct PII, but it remains a policy deviation requiring correction or documented risk acceptance. |\n| 4 | Application Key Rotation Exceeded 14-Day Grace Period | **Key Rotation Status Log \u2013 `APP-PROD-006 notification-encryption-key`**; **Encryption Standards Policy Section 6.1** | The notification encryption key rotation was completed 15 days after the scheduled due date, exceeding the 14-day grace period by one day. Policy requires completion within 14 calendar days. The delay was documented, CISO notification occurred, and re-encryption completed shortly thereafter, which mitigates the issue. | **Low** | **Minor variance / managed exception.** Because the delay was one day beyond the grace period, documented, and escalated per policy, this does not appear to be a significant control deficiency. Continued tracking is appropriate. |\n| 5 | Inconsistent Key Rotation Status Labeling | **Key Rotation Status Log \u2013 `APP-PROD-001` and `APP-PROD-003`** | `APP-PROD-001` was completed 3 days after the due date but marked \u201cOn-Time,\u201d while `APP-PROD-003` was completed 14 days late and marked \u201cWithin Grace.\u201d If \u201cOn-Time\u201d is intended to mean completed by the scheduled date, the log is inconsistent. This could weaken management\u2019s ability to monitor rotation timeliness and trend grace-period usage. | **Low** | **Minor reporting/control monitoring variance.** The underlying rotations were within the policy grace period, so this is not a data protection failure, but status definitions should be standardized. |\n\n---\n\n## Items Not Considered Significant Findings\n\n- **KMS CMK rotations** appear compliant or not yet due.\n- Application key rotations completed within the 14-day grace period are acceptable under the policy.\n- Use of AES-128 for **Internal** data, such as the `session-encryption-key` and `cache-encryption-key`, is consistent with the policy.\n- Public static assets encrypted with SSE-S3 exceed requirements and do not present a confidentiality concern.\n\n---\n\n## Summary Conclusion\n\nThe control environment is partially effective. Vanguard has a mature encryption policy and evidence of classification-based monitoring, but the **unencrypted Confidential analytics data flow** is a significant exception requiring remediation. The remaining issues are lower-severity policy deviations or monitoring variances that should be corrected or formally risk-accepted."
+}

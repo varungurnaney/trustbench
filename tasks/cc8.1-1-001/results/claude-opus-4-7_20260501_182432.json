@@ -1,0 +1,74 @@
+{
+  "task_id": "cc8.1-1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:24:32.224808",
+  "score": {
+    "task_id": "cc8.1-1-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.23076923076923078,
+    "f1": 0.375,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 13,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "segregation",
+          "same person",
+          "requesting engineer",
+          "developer",
+          "independent",
+          "review"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "testing",
+          "test",
+          "validation",
+          "staging",
+          "no requirement",
+          "before production",
+          "missing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "emergency",
+          "verbal",
+          "retroactive",
+          "post-implementation",
+          "documentation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1000,
+    "output_tokens": 2365
+  },
+  "raw_response": "# Compliance Readiness Assessment: CC8.1 \u2014 Orion Health Change Management Policy\n\n## Overall Assessment\n\nThe policy establishes a baseline framework for change management with categorization, approval tiers, and Jira-based tracking. However, several gaps exist that could prevent the policy from fully satisfying SOC 2 CC8.1 requirements. CC8.1 expects the entity to **authorize, design, develop/acquire, configure, document, test, approve, and implement** changes \u2014 and the policy is notably weak on **testing, segregation of duties, and certain change types**.\n\n---\n\n## Findings\n\n### Finding 1: No Testing Requirements Defined\n- **Section:** 4.3 Implementation\n- **Gap:** The policy states changes flow through staging before production but does not require any specific testing activities (unit tests, integration tests, security testing, UAT, regression testing). CC8.1 explicitly requires that changes be **tested** prior to implementation. Simply passing through a staging environment is not equivalent to documented testing with evidence of results.\n- **Severity:** **Critical**\n\n### Finding 2: Lack of Segregation of Duties in Deployment\n- **Section:** 4.3 Implementation\n- **Gap:** \"Changes are deployed by the requesting engineer.\" This allows the same person who developed the change to deploy it to production, with no requirement for an independent reviewer, peer code review, or separate deployer. CC8.1 implicitly requires controls to prevent unauthorized changes; lack of segregation of duties (SoD) is a common audit finding.\n- **Severity:** **Critical**\n\n### Finding 3: No Code Review or Pre-Approval Technical Review Required\n- **Section:** 4.2 Review and Approval\n- **Gap:** Approval is described only at the CAB / managerial level. There is no requirement for technical peer review (e.g., pull request approval) before merge to main or deployment. This is a key control to demonstrate that changes are properly designed and reviewed.\n- **Severity:** **High**\n\n### Finding 4: Database and Infrastructure Changes Not Differentiated\n- **Section:** 2 Scope / 3 Change Categories\n- **Gap:** While the scope mentions database schema changes and infrastructure modifications, the Change Categories table and process flow are oriented toward application deployments via CI/CD. There are no specific procedures, approvals, or testing requirements tailored to higher-risk infrastructure or data changes (e.g., production database schema migrations, IAM changes, network changes).\n- **Severity:** **High**\n\n### Finding 5: Standard Change Catalog Not Defined or Governed\n- **Section:** 3 / 4.2\n- **Gap:** \"Standard\" changes are auto-approved \"per the Standard Change Catalog,\" but the catalog is not referenced, defined, or attached. There is no process for how items are added to the catalog, who approves additions, or how often the catalog is reviewed. Without governance, this could become a loophole bypassing CAB approval.\n- **Severity:** **High**\n\n### Finding 6: Emergency Change Approval Lacks Documentation Rigor\n- **Section:** 4.2 Review and Approval\n- **Gap:** Emergency changes rely on **verbal approval** with retroactive ticket creation. There is no requirement to document the verbal approval contemporaneously (e.g., Slack message, email), no defined criteria for what qualifies as \"emergency,\" and no required content for the retrospective CAB review. Auditors will likely flag verbal-only approvals as insufficient evidence.\n- **Severity:** **High**\n\n### Finding 7: Rollback Plan Testing Not Required\n- **Section:** 5 Rollback\n- **Gap:** The policy requires a documented rollback plan and a 30-minute execution target, but does not require the rollback plan to be tested or validated, nor does it define what constitutes an acceptable rollback plan. A 30-minute SLA without testing may not be achievable.\n- **Severity:** **Medium**\n\n### Finding 8: No Post-Implementation Validation Standards\n- **Section:** 4.4 Post-Implementation\n- **Gap:** \"The change owner verifies the deployment was successful\" \u2014 but the policy does not define what verification entails, what evidence must be captured, or where the verification result is documented. CC8.1 expects evidence of post-implementation review.\n- **Severity:** **Medium**\n\n### Finding 9: No Treatment of Customer/Stakeholder Communication\n- **Section:** Overall\n- **Gap:** The policy does not address customer or stakeholder notification for changes that may impact availability, functionality, or data. CC8.1 considerations include communicating changes appropriately.\n- **Severity:** **Medium**\n\n### Finding 10: Missing Linkage to Risk Assessment\n- **Section:** 4.1 Submission\n- **Gap:** \"Impact assessment\" is required in the Jira ticket but no guidance is given on what the impact assessment must contain (security impact, privacy impact, availability impact, affected systems). CC8.1 ties to risk-based change evaluation.\n- **Severity:** **Medium**\n\n### Finding 11: No Periodic Review of Implemented Changes\n- **Section:** Overall\n- **Gap:** There is no requirement for periodic sampling or audit review of implemented changes to verify the policy is being followed (e.g., quarterly review of a sample of Jira tickets to confirm approvals, testing, and rollback plans were present).\n- **Severity:** **Medium**\n\n### Finding 12: Roles and Responsibilities Not Defined\n- **Section:** Overall\n- **Gap:** While \"VP Engineering,\" \"CAB,\" and \"change owner\" are referenced, there is no dedicated section defining roles, responsibilities, CAB membership, quorum requirements, or escalation paths.\n- **Severity:** **Low**\n\n### Finding 13: No Reference to Access Control for Production Deployments\n- **Section:** 4.3 Implementation\n- **Gap:** The policy does not specify who has the ability to deploy to production or how that access is controlled and reviewed. This intersects with CC6 but is also relevant to CC8.1 authorization requirements.\n- **Severity:** **Low**\n\n---\n\n## Summary of Severity Distribution\n\n| Severity | Count |\n|----------|-------|\n| Critical | 2 |\n| High | 4 |\n| Medium | 5 |\n| Low | 2 |\n\n## Recommended Priority Remediation\n1. **Add explicit testing requirements** with evidence retention (Finding 1).\n2. **Establish segregation of duties** between developers and deployers, or require peer code review as a compensating control (Findings 2, 3).\n3. **Document and govern the Standard Change Catalog** (Finding 5).\n4. **Strengthen emergency change documentation** with contemporaneous written approval (Finding 6).\n5. **Differentiate procedures for infrastructure and database changes** (Finding 4).\n\nAddressing these items would significantly strengthen the entity's posture against CC8.1 and reduce the likelihood of audit exceptions."
+}

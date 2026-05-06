@@ -1,0 +1,123 @@
+{
+  "id": "p1.1-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "P1.1",
+  "control_description": "The entity provides notice to data subjects about its privacy practices to meet the entity's objectives related to privacy.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/privacy-policy.md",
+      "type": "policy",
+      "description": "Luminos EdTech privacy policy describing data collection, processing, and consent practices for an educational technology platform"
+    },
+    {
+      "path": "evidence/cookie-consent-config.json",
+      "type": "config",
+      "description": "Cookie consent management configuration showing analytics tracking setup"
+    },
+    {
+      "path": "evidence/privacy-impact-assessment.md",
+      "type": "report",
+      "description": "Privacy impact assessment for Luminos EdTech analytics tracking implementation"
+    },
+    {
+      "path": "evidence/data-retention-schedule.csv",
+      "type": "spreadsheet",
+      "description": "Data retention schedule with retention periods by data category"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/penetration-test-executive-summary.md",
+      "type": "report",
+      "description": "Penetration test executive summary — not relevant to P1.1"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Luminos EdTech's privacy notice practices under Trust Services Criteria P1.1. Luminos EdTech provides an online learning platform used by universities and corporate training departments. Review all provided evidence documents to assess whether the privacy notice accurately and completely describes the organization's data processing practices. This assessment requires professional judgment — several of the issues you will find involve legitimate disagreements about legal interpretation, proportionality, and materiality. For each finding, explain your reasoning about why it constitutes a genuine gap versus an acceptable business practice.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Analytics tracking deployed without explicit consent using 'legitimate interest' basis despite collecting detailed learning behavioral data",
+      "description": "Luminos EdTech deploys Mixpanel analytics tracking on its learning platform without requiring explicit consent, relying on 'legitimate interest' (GDPR Art. 6(1)(f)) as the legal basis. The cookie consent configuration shows analytics cookies are set with consent_required=false and the legal_basis field states 'legitimate_interest.' The privacy policy Section 3 states: 'We use analytics tools under our legitimate interest in improving our educational platform. You can opt out of analytics tracking in your account settings.' However, the privacy impact assessment (PIA-LUM-2025-001) documents that the analytics implementation collects: course completion rates, quiz scores, time spent on each learning module, video watch percentages, search queries within the platform, and click paths through course materials. This is granular educational behavioral data that reveals learning difficulties, interests, and performance. The auditor must assess whether 'legitimate interest' is an appropriate legal basis for this level of behavioral tracking in an educational context, or whether the nature of educational performance data (which can reveal cognitive abilities and learning disabilities) requires explicit consent. The company argues that analytics is essential for improving educational outcomes, but the PIA's own risk assessment rates the privacy impact as 'High' and recommends 'consider explicit consent for detailed learning analytics.'",
+      "evidence_sources": ["evidence/cookie-consent-config.json", "evidence/privacy-policy.md", "evidence/privacy-impact-assessment.md"],
+      "expected_reasoning": "The auditor must weigh: (1) Legitimate interest requires a balancing test — does the company's interest in platform improvement outweigh the data subject's reasonable expectation of privacy? (2) Educational behavioral data is arguably sensitive — learning performance can reveal learning disabilities. (3) The company's own PIA rates privacy impact as 'High' and recommends explicit consent, but management chose not to follow the recommendation. (4) The opt-out mechanism in account settings shifts the burden to the user and does not apply to unauthenticated browsing. (5) The ICO (UK) and EDPB have expressed skepticism about legitimate interest for detailed behavioral analytics. A reasonable auditor should flag this as a gap because the company's own PIA contradicts their chosen approach.",
+      "detection_criteria": {
+        "required_keywords": ["legitimate interest", "consent_required", "false", "Mixpanel", "learning analytics", "PIA", "High", "educational", "behavioral", "opt-out"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Privacy impact assessment is 18 months old and predates significant platform changes",
+      "description": "The privacy impact assessment PIA-LUM-2025-001 was completed on June 15, 2024, making it 18 months old at the audit date (December 2025). The PIA was conducted before three significant changes documented in its own 'Scope Limitations' section: (1) the addition of AI-powered learning recommendations (deployed September 2024), (2) integration with a third-party proctoring service for online exams (deployed January 2025), and (3) expansion into corporate training clients with different privacy requirements (Q2 2025). The PIA's own header states 'Review frequency: Annual' but no review has been conducted. The current PIA does not assess the privacy impact of AI-based profiling, exam proctoring (which may involve biometric data), or corporate training use cases. The privacy notice has not been updated to reflect these changes either.",
+      "evidence_sources": ["evidence/privacy-impact-assessment.md"],
+      "expected_reasoning": "The PIA is 18 months old against a 12-month review cycle — it is 6 months overdue. More importantly, three significant processing changes occurred after the PIA was completed. AI recommendations involve automated decision-making (GDPR Art. 22). Exam proctoring may involve biometric processing. Corporate clients may have different controller/processor relationships. The PIA is stale and the privacy notice does not reflect current processing activities.",
+      "detection_criteria": {
+        "required_keywords": ["18 months", "June 2024", "annual review", "overdue", "AI recommendations", "proctoring", "biometric", "stale", "corporate training", "scope limitations"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Data retained 5 years for learning records but retention policy says 2 years — 'tax compliance' justification lacks documented legal basis",
+      "description": "The data retention schedule shows 'Learning Activity Records' (row 3) have a 5-year retention period with the justification: 'Required for tax compliance — corporate training expenditure substantiation and continuing education credit verification.' The privacy policy Section 6 states: 'We retain your learning data for 2 years after your last platform activity, after which it is permanently deleted.' This creates a 3-year discrepancy between what data subjects are told and what actually happens. Additionally, the 'tax compliance' justification is questionable — learning activity records (course completions, quiz scores, time-on-task) are not tax documents. While corporate clients may need training completion records for tax deduction substantiation, this requirement applies to the corporate client (the employer), not to Luminos (the processor). There is no documented legal analysis explaining why Luminos itself needs to retain individual learning records for 5 years for tax purposes. The auditor must assess whether the tax compliance justification is legitimate or a pretext for extended data retention.",
+      "evidence_sources": ["evidence/data-retention-schedule.csv", "evidence/privacy-policy.md"],
+      "expected_reasoning": "The auditor faces a judgment call: (1) The privacy notice says 2 years, the retention schedule says 5 years — this is a factual contradiction regardless of justification. (2) The 'tax compliance' basis is questionable — learning records are not tax documents for Luminos. (3) If corporate clients need records for tax deduction substantiation, the retention obligation should be on the client, not Luminos. (4) No legal memorandum or tax counsel opinion supports the 5-year requirement. (5) Even if a legitimate tax basis existed, the privacy notice must accurately state the actual retention period. At minimum, the privacy notice is inaccurate.",
+      "detection_criteria": {
+        "required_keywords": ["5 years", "2 years", "tax compliance", "discrepancy", "learning records", "retention", "Section 6", "no documented", "legal basis", "justification"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Privacy policy does not disclose automated decision-making in AI-powered learning recommendations",
+      "description": "The privacy impact assessment 'Scope Limitations' section notes that 'AI-powered learning path recommendations' were deployed in September 2024. The data retention schedule row 5 references 'AI Model Training Data' with a note: 'Includes learner behavioral profiles used for recommendation engine training.' However, the privacy policy does not mention AI-based processing, automated decision-making, or profiling anywhere. Under GDPR Article 22, data subjects have the right not to be subject to decisions based solely on automated processing that significantly affects them. Learning path recommendations based on behavioral profiling may constitute automated decision-making. At minimum, GDPR Article 13(2)(f) requires the privacy notice to disclose 'the existence of automated decision-making, including profiling' and 'meaningful information about the logic involved.'",
+      "evidence_sources": ["evidence/privacy-impact-assessment.md", "evidence/data-retention-schedule.csv", "evidence/privacy-policy.md"],
+      "expected_reasoning": "The auditor must assess: (1) Do AI-powered learning recommendations constitute 'automated decision-making' under GDPR Art. 22? Recommendations that determine learning paths could significantly affect educational outcomes. (2) Even if Art. 22 does not fully apply, Art. 13(2)(f) requires disclosure of the existence of profiling. (3) The privacy policy is entirely silent on AI processing. (4) The degree to which this affects the learner (blocking content, determining certification eligibility) determines severity.",
+      "detection_criteria": {
+        "required_keywords": ["AI", "automated decision", "profiling", "Article 22", "Article 13", "recommendation", "not disclosed", "learning path", "behavioral"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Cookie consent opt-out mechanism unavailable to unauthenticated users despite analytics cookies being set pre-login",
+      "description": "The privacy policy Section 3 states users can 'opt out of analytics tracking in your account settings.' However, the cookie consent configuration shows analytics cookies (Mixpanel, Hotjar) are set on page load before authentication, including on the marketing site, course catalog, and registration pages. Unauthenticated visitors — including prospective students browsing course offerings — have no mechanism to opt out because the opt-out is in 'account settings' which requires login. There is no cookie consent banner offering analytics opt-out for pre-authentication pages. The privacy policy's stated opt-out mechanism is inaccessible to a significant category of data subjects (website visitors who have not yet created accounts).",
+      "evidence_sources": ["evidence/cookie-consent-config.json", "evidence/privacy-policy.md"],
+      "expected_reasoning": "Analytics cookies fire pre-authentication → opt-out requires account login → unauthenticated visitors cannot opt out → prospective students browsing courses are tracked without any opt-out mechanism → privacy policy's stated opt-out is incomplete and misleading for non-account-holders.",
+      "detection_criteria": {
+        "required_keywords": ["unauthenticated", "pre-login", "account settings", "no mechanism", "pre-authentication", "cookie banner", "prospective", "visitors"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["legitimate_interest", "analytics_consent", "retention_discrepancy", "PIA_review", "AI_profiling", "automated_decision_making", "judgment_calls", "educational_data", "tax_compliance"]
+  }
+}

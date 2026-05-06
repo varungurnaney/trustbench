@@ -1,0 +1,57 @@
+{
+  "task_id": "a1.2-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:06:33.651003",
+  "score": {
+    "task_id": "a1.2-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 0.7142857142857143,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "backup log",
+          "RPO",
+          "missing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAL",
+          "archiving",
+          "no evidence",
+          "continuous",
+          "point-in-time",
+          "verify",
+          "log"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5137,
+    "output_tokens": 1242
+  },
+  "raw_response": "Below are my findings after evaluating Nexus Platforms\u2019 backup controls for Control A1.2. I compared both the **Backup and Recovery Policy (POL-BKP-005 v2.8)** and the **Q4 2025 backup execution log**.\n\n---\n\n### 1. **No Evidence of Incremental Backups Logged**\n- **Section**: Policy \u00a73.2 (Incremental Backups)\n- **Why it\u2019s a gap**: The policy states that incremental file system backups occur every 4 hours. The provided backup execution log contains only daily full backup entries (one per day), with no entries for incremental backups. There\u2019s no evidence that incremental backups were actually executed or monitored, nor that the entity can restore from a recent incremental in event of partial failure.\n- **Severity**: **High**\n\n---\n\n### 2. **No Evidence WAL Archiving Performed or Monitored**\n- **Section**: Policy \u00a73.3 (WAL Archiving)\n- **Why it\u2019s a gap**: The policy requires continuous WAL archiving of PostgreSQL clusters with a max lag of 15 minutes for point-in-time recovery (PITR). The backup log contains no mention of WAL archive status, timings, or retention confirmation. There is no documentation to verify that WAL archiving occurred or was monitored for compliance with RPO/PITR objectives.\n- **Severity**: **High**\n\n---\n\n### 3. **No Backup Data for Other In-Scope Systems**\n- **Section**: Policy \u00a72 (Scope)\n- **Why it\u2019s a gap**: Policy Scope includes databases, application file storage (S3 buckets: nx-prod-assets, nx-prod-uploads, nx-prod-configs), and HashiCorp Vault configuration management. The log covers only full backups of a single PostgreSQL cluster (\u201cnx-db-prod-01\u201d), with no evidence for full/incremental backups of the other three listed clusters, S3 buckets, or Vault.\n- **Severity**: **High**\n\n---\n\n### 4. **No Evidence of Quarterly Restore Test**\n- **Section**: Policy \u00a77 (Restore Testing)\n- **Why it\u2019s a gap**: Policy mandates a quarterly full restore test. There is no evidence (e.g., a restore test report, ticket, log entry, or sign-off) to show that a Q4 2025 restore test was performed or passed, or that RTO/RPO compliance is being validated as required.\n- **Severity**: **Medium**\n\n---\n\n### 5. **No Logs Evidencing Backup Failures or Monitoring**\n- **Section**: Policy \u00a78 (Failure Handling)\n- **Why it\u2019s a gap**: Policy states failed backups trigger immediate operator alert and investigation. While the log lists all backups as \u201csuccess\u201d, there is no visibility into how failures are detected, how quickly they\u2019re addressed, or if any failures occurred and were resolved. Absence of failure cases may signal incomplete or selectively reported logging.\n- **Severity**: **Low**\n\n---\n\n### 6. **No Evidence of Backup Encryption Controls in Operation**\n- **Section**: Policy \u00a75 (Backup Encryption)\n- **Why it\u2019s a gap**: Policy describes encryption at rest (AES-256 via AWS KMS) and in transit (TLS 1.3); however, no evidence is provided to show encryption keys are actually used, are rotated quarterly, or that security controls are enforced in the backup process. There\u2019s no key rotation log, certificate record, or encryption monitoring report provided for the period.\n- **Severity**: **Low**\n\n---\n\n### 7. **No Evidence of Retention Enforcement for Backups**\n- **Section**: Policy \u00a76 (Backup Retention)\n- **Why it\u2019s a gap**: The log does not include evidence of aged backup deletion or confirmation that backup retention periods (e.g., 30-day for full, 7-day for incremental/WAL, 12 months for monthly snapshots) are enforced. There are no S3 lifecycle policy screenshots, cloud storage listings, or deleted backup logs.\n- **Severity**: **Low**\n\n---\n\n## **Summary Table**\n\n| Finding Title                                   | Policy Section      | Gap Description                                                                                         | Severity  |\n|-------------------------------------------------|--------------------|--------------------------------------------------------------------------------------------------------|-----------|\n| No Evidence of Incremental Backups Logged       | \u00a73.2               | Incremental backups not shown in logs; can\u2019t verify their performance or compliance                     | High      |\n| No Evidence WAL Archiving Performed or Monitored| \u00a73.3               | No logs show WAL archiving events or compliance with the required 15-minute max lag                     | High      |\n| No Backup Data for Other In-Scope Systems       | \u00a72                 | Only one DB cluster backed up; no evidence for S3 storage or Vault backups as in policy scope           | High      |\n| No Evidence of Quarterly Restore Test           | \u00a77                 | No proof that quarterly restore test was performed or passed                                            | Medium    |\n| No Logs Evidencing Backup Failures or Monitoring| \u00a78                 | No entries for failures, no evidence of alerting/handling as described in the policy                    | Low       |\n| No Evidence of Backup Encryption Controls       | \u00a75                 | No technical evidence that encryption/rotation controls are in place or functioning                     | Low       |\n| No Evidence of Retention Enforcement            | \u00a76                 | No demonstration of regular deletion of old backups or of retention period enforcement                  | Low       |\n\n---\n\n**Conclusion:**  \nThe evidence provided adequately demonstrates successful daily full backups of a single production database cluster. However, control A1.2 requires robust, proven implementation and oversight of **all** backup and recovery procedures as documented. The following are significant gaps: (a) missing logs for incremental and WAL/PITR backups, (b) absence of evidence for non-database backup in scope, and (c) lack of evidence for restore testing. These findings indicate that the provided evidence does **not** sufficiently support that backup and recovery controls meet the standard defined in A1.2 for the Q4 2025 observation period."
+}

@@ -1,0 +1,91 @@
+{
+  "task_id": "c1.1-4-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:16:28.105190",
+  "score": {
+    "task_id": "c1.1-4-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "Meridian Financial",
+          "EXC-2025-022",
+          "24-month",
+          "approved",
+          "compensating",
+          "partner"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "APP-006",
+          "notification",
+          "OVERDUE",
+          "EXC-2025-021",
+          "expired",
+          "email",
+          "phone"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-021",
+          "expired",
+          "without renewal",
+          "remediation not completed",
+          "no follow-up",
+          "process",
+          "lifecycle"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "key inventory",
+          "APP-006",
+          "OVERDUE",
+          "escalation",
+          "monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3699,
+    "output_tokens": 4503
+  },
+  "raw_response": "## Findings\n\n| # | Short title | Document section / evidence | Why it\u2019s a gap | Severity |\n|---|---|---|---|---|\n| 1 | **Production Notification Service key rotation is overdue with no active exception** | **Key Rotation Log:** `APP-006`  \\| **Exception Register:** `EXC-2025-021`  \\| **SOP-KM-001:** Section 4.1, Key Rotation; Section 4.2, Application Key Rotation Process | `APP-006` was due for rotation on **2024-10-01** and remains marked **OVERDUE** as of the Q4 2025 review period. The key protects customer contact preferences, including email and phone numbers. The related exception, `EXC-2025-021`, expired on **2025-07-10**, was not renewed, and remediation was not completed. The log indicates remediation is deferred to **Q1 2026**, leaving the deviation unmanaged during Q4 2025. | **High** |\n| 2 | **Expired key management exception was not remediated or renewed** | **Exception Register:** `EXC-2025-021`  \\| **SOP-KM-001:** Section 7, Compliance Monitoring | The exception process did not ensure timely closure, renewal, or escalation of the APP-006 rotation deferral. The exception expired in July 2025 with the review outcome: \u201cExpired without renewal. Remediation not completed. No follow-up exception filed.\u201d This indicates a breakdown in exception governance and ongoing compliance monitoring for key lifecycle deviations. | **Medium** |\n| 3 | **Application key retirement/destruction is not consistently evidenced** | **SOP-KM-001:** Section 4.2, Rotation Process \u2014 Application Keys; Section 6.2, Destruction  \\| **Key Rotation Log:** Application keys `APP-001` through `APP-005` | The SOP requires old application key versions to be disabled after a 30-day coexistence period and deleted after a 90-day retention period. The rotation log records re-encryption activity for several application keys, but does not consistently evidence old key disablement or deletion. For example, `APP-002` and `APP-005` were rotated before or during the Q4 review period, but the log does not show that prior key versions were disabled/deleted in accordance with the lifecycle requirements. | **Medium** |\n| 4 | **TLS certificate private keys are in scope but absent from the rotation inventory evidence** | **SOP-KM-001:** Section 2, Scope; Section 4.1, Rotation Schedule  \\| **Key Rotation Log** | SOP-KM-001 explicitly includes **TLS certificate private keys** in scope and states they rotate on certificate renewal. However, the provided rotation log covers KMS, application, PGP, and SSH keys only; TLS certificate/private key inventory and renewal evidence are not included. As a result, the entity cannot demonstrate complete identification and maintenance of all encryption keys in scope for confidentiality objectives. | **Medium** |\n| 5 | **Partner-sync endpoint appears to use AES-128-CBC without a current exception** | **SOP-KM-001:** Section 3.1, Standards  \\| **Q4 Change Log:** `CHG-2025-355`  \\| **Exception Register** | The change log indicates the partner-sync endpoints are currently using `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256`, and the update was postponed to Q1 2026. SOP-KM-001 requires symmetric keys to use AES-256 unless an approved exception exists for AES-128. No active exception was provided for this partner-sync TLS configuration. If this standard is intended to apply to TLS cipher suites, the current configuration is an unmanaged deviation. | **Medium** |\n| 6 | **Acme Bank PGP rotation evidence is inconsistent between logs** | **Key Rotation Log:** `PGP-001`  \\| **Q4 Change Log:** `CHG-2025-401`  \\| **SOP-KM-001:** Section 4.4, Rotation Tracking | The key rotation log shows the Acme Bank PGP key was rotated on **2025-07-01**, while the Q4 change log shows a completed Acme Bank PGP renewal on **2025-12-20**. The evidence does not reconcile whether there were two rotations, whether the July or December date is authoritative, or whether the rotation log was not updated after the December change. This weakens the auditability of key rotation tracking. | **Low** |\n\n## Items not considered deficiencies\n\n- **`EXC-2025-020` \u2014 AES-128 for event streaming:** Although expired, the review outcome states it was not renewed because the system migrated to AES-256. This appears appropriately closed.\n- **`EXC-2025-022` \u2014 Meridian Financial PGP key validity:** This exception is active through March 2026, includes compensating controls, and the key is due in January 2026, outside the Q4 2025 period. This appears appropriately managed.\n- **KMS and SSH key rotations:** Based on the provided log, KMS and SSH key rotations appear completed in accordance with SOP-KM-001.\n- **PGP 24-month rotation cadence:** SOP-KM-001 allows PGP partner keys to rotate every 24 months, so the Meridian Financial schedule is not, by itself, a deviation."
+}

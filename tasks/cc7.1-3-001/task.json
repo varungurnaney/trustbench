@@ -1,0 +1,109 @@
+{
+  "id": "cc7.1-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "To meet its objectives, the entity uses detection and monitoring procedures to identify changes to configurations that result in the introduction of new vulnerabilities, and susceptibilities to newly discovered vulnerabilities.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/vulnerability-management-policy.md",
+      "type": "policy",
+      "description": "NimbusCore Inc. vulnerability management policy defining scan coverage requirements, frequencies, and remediation SLAs"
+    },
+    {
+      "path": "evidence/scan-coverage-report-q4-2025.json",
+      "type": "report",
+      "description": "Q4 2025 Qualys VMDR scan coverage report showing 18 of 22 subnets scanned with details on 4 uncovered subnets"
+    },
+    {
+      "path": "evidence/asset-inventory-subnets.csv",
+      "type": "spreadsheet",
+      "description": "Enterprise asset inventory listing all 22 registered subnets with classifications, owners, and asset counts"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating NimbusCore Inc.'s vulnerability scanning program for the Q4 2025 observation period (October 1 - December 31, 2025). Review the vulnerability management policy, scan coverage report, and asset inventory. Assess whether the organization is meeting its CC7.1 obligations for vulnerability detection across all information assets. Cross-reference the coverage report against the asset inventory to identify any gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "EU production subnets with GDPR customer data have zero scan coverage for entire Q4",
+      "description": "Subnets 10.20.6.0/24 (eu-west-1a) and 10.20.7.0/24 (eu-west-1b) are classified as Critical in the asset inventory, host 110 production assets processing GDPR customer data, and have had zero vulnerability scan coverage for the entire Q4 observation period. The scan coverage report states Qualys Cloud Agent deployment is 'blocked by data residency review.' Policy Section 3.3 requires 100% subnet coverage each scan cycle. These are production subnets with the highest data sensitivity classification, and they have been completely invisible to the vulnerability management program since their registration in April 2025 — approximately 9 months without a single scan.",
+      "evidence_sources": [
+        "evidence/scan-coverage-report-q4-2025.json",
+        "evidence/asset-inventory-subnets.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should cross-reference the scan coverage report (18 of 22 subnets scanned) against the asset inventory (22 subnets registered). The not_scanned_subnets section shows 10.20.6.0/24 and 10.20.7.0/24 blocked by data residency review. The asset inventory classifies these as Critical production subnets with GDPR customer data. Policy Section 3.3 requires 100% coverage. These subnets have been in the inventory since April 2025 without any scanning — a fundamental gap in vulnerability detection for the organization's most sensitive data.",
+      "detection_criteria": {
+        "required_keywords": ["eu-west-1", "10.20.6.0", "10.20.7.0", "GDPR", "Critical", "100% coverage", "data residency", "zero scan", "production"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "IoT and Building Management subnet unscanned for 75+ days due to pending firewall rule",
+      "description": "Subnet 10.10.20.0/24 (IoT and Building Management, 28 assets) has not been scanned because the firewall rule request (FW-REQ-2025-0892) has been pending since October 15 — over 75 days. The asset inventory classifies this subnet as Production with Medium sensitivity. While IoT devices may present different scanning challenges, the policy requires 100% subnet coverage with gaps remediated within one scan cycle. Building management systems (HVAC, access control, badge readers) are connected to the corporate network and can be lateral movement vectors if compromised.",
+      "evidence_sources": [
+        "evidence/scan-coverage-report-q4-2025.json",
+        "evidence/asset-inventory-subnets.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The scan coverage report shows 10.10.20.0/24 is not scanned due to a pending firewall rule (FW-REQ-2025-0892) since October 15. The asset inventory confirms 28 IoT/building management assets including badge readers and HVAC. Policy requires gaps to be remediated within one scan cycle. A 75-day wait for a firewall rule indicates a process breakdown. IoT devices are known attack vectors.",
+      "detection_criteria": {
+        "required_keywords": ["10.10.20.0", "IoT", "Building Management", "FW-REQ-2025-0892", "firewall rule", "75 days", "badge readers", "HVAC", "lateral movement"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Lab and Research subnet unscanned due to separate AD domain credential gap",
+      "description": "Subnet 10.10.21.0/24 (Lab and Research Network, 15 assets) is not scanned because scan credentials have not been provisioned for the separate AD domain used by the lab environment. While classified as Non-Production with Medium sensitivity, the policy requires 100% subnet coverage with no exemption for non-production environments. The lab network could contain experimental software with unpatched vulnerabilities that could be used as a pivot point into the corporate network.",
+      "evidence_sources": [
+        "evidence/scan-coverage-report-q4-2025.json",
+        "evidence/asset-inventory-subnets.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The scan coverage report shows 10.10.21.0/24 is not scanned due to credential gaps for a separate AD domain. The asset inventory shows 15 assets in a research lab environment. Policy Section 3.3 requires 100% coverage and Section 3.4 requires credentialed scanning. The credential gap has persisted without documented remediation timeline.",
+      "detection_criteria": {
+        "required_keywords": ["10.10.21.0", "Lab", "Research", "separate AD domain", "credentials", "not provisioned", "100% coverage"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Overall scan coverage at 81.8% violates 100% policy requirement",
+      "description": "The scan coverage report shows 81.8% subnet coverage (18 of 22 subnets). Policy Section 3.3 explicitly requires 100% coverage of all registered subnets each scan cycle, with gaps remediated within one scan cycle. The 4 unscanned subnets represent 153 assets (12.3% of total inventory) that are completely invisible to the vulnerability management program. None of the coverage gaps have documented risk acceptances per policy Section 6, and multiple gaps have persisted for the entire observation period without remediation.",
+      "evidence_sources": [
+        "evidence/scan-coverage-report-q4-2025.json",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note the headline coverage metric: 81.8% against a 100% requirement. This is not a marginal miss — 4 entire subnets are excluded. The policy states gaps must be remediated within one scan cycle, yet these gaps persisted throughout Q4. No risk acceptances exist for any of the coverage gaps.",
+      "detection_criteria": {
+        "required_keywords": ["81.8%", "100%", "18 of 22", "4 subnets", "153 assets", "coverage gap", "no risk acceptance", "Section 3.3"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "20 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["vulnerability_management", "scan_coverage", "cross_reference", "asset_inventory", "subnet_coverage", "GDPR", "IoT"]
+  }
+}

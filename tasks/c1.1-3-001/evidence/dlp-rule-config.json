@@ -1,0 +1,129 @@
+{
+  "dlp_configuration": {
+    "organization": "Crestline Data Systems",
+    "last_updated": "2025-09-15",
+    "updated_by": "Sarah Kim, Security Engineer",
+    "version": "3.2",
+    "platforms": {
+      "email": {
+        "provider": "Microsoft 365 DLP",
+        "status": "Active",
+        "rules": [
+          {
+            "rule_id": "DLP-EMAIL-001",
+            "name": "SSN Detection",
+            "pattern": "\\b\\d{3}-\\d{2}-\\d{4}\\b",
+            "sensitivity_label": "Restricted",
+            "action": "Block",
+            "notification": ["sender", "manager", "soc@crestline.com"],
+            "enabled": true
+          },
+          {
+            "rule_id": "DLP-EMAIL-002",
+            "name": "Credit Card Number Detection",
+            "pattern": "\\b(?:4[0-9]{12}(?:[0-9]{3})?|5[1-5][0-9]{14}|3[47][0-9]{13})\\b",
+            "sensitivity_label": "Restricted",
+            "action": "Block",
+            "notification": ["sender", "manager", "soc@crestline.com"],
+            "enabled": true
+          },
+          {
+            "rule_id": "DLP-EMAIL-003",
+            "name": "Bulk PII Detection",
+            "description": "Detects emails with 10+ email addresses or phone numbers in body or attachments",
+            "pattern": "threshold_match",
+            "threshold": 10,
+            "data_types": ["email_address", "phone_number"],
+            "sensitivity_label": "Restricted",
+            "action": "Quarantine",
+            "notification": ["sender", "soc@crestline.com"],
+            "enabled": true
+          }
+        ]
+      },
+      "cloud_storage": {
+        "provider": "Netskope CASB",
+        "status": "Active",
+        "rules": [
+          {
+            "rule_id": "DLP-CASB-001",
+            "name": "PII Upload to Unapproved Cloud Storage",
+            "monitored_services": ["Google Drive", "Dropbox", "Box", "OneDrive Personal"],
+            "data_types": ["ssn", "credit_card", "email_address_bulk"],
+            "action": "Block",
+            "notification": ["user", "soc@crestline.com"],
+            "enabled": true
+          },
+          {
+            "rule_id": "DLP-CASB-002",
+            "name": "Large File Upload Monitoring",
+            "description": "Alert on uploads > 50MB to any cloud service",
+            "threshold_mb": 50,
+            "action": "Alert",
+            "notification": ["soc@crestline.com"],
+            "enabled": true
+          }
+        ]
+      },
+      "endpoint": {
+        "provider": "CrowdStrike Falcon DLP",
+        "status": "Active",
+        "rules": [
+          {
+            "rule_id": "DLP-EPT-001",
+            "name": "USB Copy of Sensitive Files",
+            "data_types": ["ssn", "credit_card", "source_code"],
+            "action": "Block",
+            "notification": ["soc@crestline.com"],
+            "enabled": true
+          },
+          {
+            "rule_id": "DLP-EPT-002",
+            "name": "Print of Restricted Documents",
+            "sensitivity_labels": ["Restricted"],
+            "action": "Alert",
+            "notification": ["soc@crestline.com"],
+            "enabled": true
+          }
+        ]
+      },
+      "api_gateway": {
+        "provider": "AWS API Gateway",
+        "status": "Partial",
+        "rules": [
+          {
+            "rule_id": "DLP-API-001",
+            "name": "Bulk Data Export via REST API",
+            "description": "Alert when API response contains more than 1000 records with PII fields",
+            "endpoints_covered": [
+              "/api/v2/users",
+              "/api/v2/customers",
+              "/api/v2/accounts"
+            ],
+            "threshold_records": 1000,
+            "action": "Alert",
+            "notification": ["soc@crestline.com"],
+            "enabled": true,
+            "notes": "Only covers v2 REST API endpoints"
+          }
+        ],
+        "known_gaps": "GraphQL API (api.crestline.com/graphql) launched October 2025 - not yet integrated with DLP rules. Bulk query capability exists via GraphQL pagination."
+      },
+      "database_activity_monitoring": {
+        "provider": "AWS RDS Performance Insights + Custom CloudWatch",
+        "status": "Active",
+        "rules": [
+          {
+            "rule_id": "DLP-DAM-001",
+            "name": "Bulk SELECT on PII Tables",
+            "tables_monitored": ["users", "payment_methods"],
+            "threshold_rows": 5000,
+            "action": "Alert",
+            "notification": ["soc@crestline.com", "dba-team@crestline.com"],
+            "enabled": true
+          }
+        ]
+      }
+    }
+  }
+}

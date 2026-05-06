@@ -1,0 +1,106 @@
+{
+  "id": "cc7.3-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.3",
+  "control_description": "The entity responds to identified security incidents by executing a defined incident response program to understand, contain, remediate, and communicate security incidents, as appropriate.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/incident-response-policy.md",
+      "type": "policy",
+      "description": "Stratosphere AI incident response policy with AI-specific incident types including model poisoning and training data exfiltration"
+    },
+    {
+      "path": "evidence/incident-log-q4-2025.csv",
+      "type": "log",
+      "description": "Q4 2025 incident register with 8 incidents including AI-specific incidents (training data exfiltration, model poisoning, prompt injection)"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Security exception register documenting approved resolution SLA extension for INC-2025-605 model poisoning investigation"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/soc2-readiness-checklist.md",
+      "type": "report",
+      "description": "SOC 2 Type II readiness checklist — internal preparation document, not direct evidence of control effectiveness"
+    },
+    {
+      "path": "evidence/infrastructure-patching-report.md",
+      "type": "report",
+      "description": "Q4 2025 infrastructure patching report — vulnerability management distinct from incident response controls"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Stratosphere AI's incident response controls for the Q4 2025 observation period (October 1 - December 31, 2025). Stratosphere AI provides enterprise AI model training and inference services. Review the incident response policy, incident log, exception register, and any supporting documentation. Assess whether CC7.3 requirements for incident response are met. Be careful to distinguish between genuine control gaps and situations where apparent issues have valid documented justifications.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "high",
+      "title": "INC-2025-605 (P1) resolution time of 60 hours exceeds 24-hour target",
+      "description": "INC-2025-605 (suspected model poisoning on customer FinServ-Alpha model) was resolved in 60 hours, well past the 24-hour P1 resolution target. This appears to be a significant SLA breach. However, the exception register (SEC-EXC-2025-103) documents a CEO-approved extension to 72 hours. The justification is sound: containment was achieved in 1.25 hours (model reverted to known-good checkpoint, training pipeline halted), but thorough investigation required computationally intensive model weight comparison (~8 hours GPU time) and customer coordination for model validation. The customer (FinServ-Alpha) was notified at 09:30 UTC on December 1 and approved the extended investigation timeline with daily status updates. Resolution at 60 hours was within the approved 72-hour extension. This is NOT a finding — it is a properly documented and approved exception with appropriate compensating controls.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/exception-register.csv"],
+      "expected_reasoning": "The model should flag INC-2025-605's 60-hour resolution vs. 24-hour target, then check the exception register for SEC-EXC-2025-103. The exception shows CEO approval, sound justification (model integrity verification is inherently time-consuming), rapid containment (1.25 hours), customer notification and approval of extended timeline, and resolution within the approved extension. A competent auditor would dismiss this as a well-managed exception.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-605", "SEC-EXC-2025-103", "60 hours", "72-hour extension", "CEO approved", "FinServ-Alpha", "model poisoning"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["approved exception", "not a finding", "valid extension", "properly documented", "dismissed", "within extended window", "customer approved"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "INC-2025-607 (P2) post-mortem never started — former employee access via stale Okta session token",
+      "description": "INC-2025-607 (unauthorized access to model registry via former employee's Okta session token) was resolved on December 13. The post-mortem was due by December 18 (5 business days per policy Section 5.1). As of end of Q4, the post-mortem status is 'Not Started' and zero action items have been created. No exception was filed for the missed deadline. The root cause — Okta session tokens remaining valid for 7 days after account deprovisioning — is a systemic issue affecting all employee offboarding. Without a post-mortem, the Okta session policy gap has no corrective action tracking. Unlike INC-2025-605 which has a documented exception, this SLA miss has no justification on file.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "INC-2025-607: P2, post_mortem_status='Not Started', due December 18. The root cause (7-day Okta session token validity after deprovisioning) is a systemic offboarding gap. No exception filed, unlike INC-2025-605. Zero action items means the Okta session policy has not been addressed. This is a genuine finding — a confirmed unauthorized access incident with no post-mortem or corrective action.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-607", "Not Started", "Okta session token", "7-day validity", "December 18 deadline", "former employee", "no exception filed", "model registry"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-604 (P2 prompt injection) classified as data breach but customer notification timing unclear",
+      "description": "INC-2025-604 (prompt injection attack extracting system prompts for 3 customer deployments) is noted as 'Classified as data breach per customer agreements.' Policy Section 6.1 requires affected customer notification within 72 hours of data breach confirmation. The incident was resolved November 17 at 16:00 UTC. The incident log does not record when customers were notified. The post-mortem is 'Complete' but the report is not provided as evidence. Only 2 of 6 action items are complete. If customer system prompts contain business logic, this is sensitive IP — timely notification is critical. Without the post-mortem report, the auditor cannot verify customer notification compliance.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "INC-2025-604: P2, classified as data breach, system prompts extracted for 3 customers. Policy requires 72-hour customer notification for breaches. No evidence of notification timing — incident log doesn't capture it, and the post-mortem report is not in the evidence package. 2 of 6 action items complete suggests remediation is lagging. The auditor should request the post-mortem and customer notification records.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-604", "prompt injection", "system prompts", "data breach", "72-hour notification", "customer notification", "3 customer deployments", "post-mortem not provided"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-601 and INC-2025-605 (both P1) have significant action item completion gaps",
+      "description": "INC-2025-601 (training data exfiltration, October 8) has 6 of 8 action items complete — with 2 items remaining after nearly 3 months. INC-2025-605 (model poisoning, December 1) has only 3 of 10 action items complete. Combined, these two P1 incidents have 9 of 18 action items complete (50%). Policy Section 5.3 requires weekly review and 14-day escalation. INC-2025-601's remaining 2 items have been open for nearly 12 weeks — well past the 14-day escalation threshold. The 30-day CEO escalation should have been triggered by early November.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "Two P1 incidents with 50% aggregate action item completion. INC-2025-601 has 2 items open for ~12 weeks — 6x past the 14-day escalation trigger and 3x past the 30-day CEO escalation. INC-2025-605 is more recent (December 1) so lower completion is somewhat expected, but 3 of 10 is still a low rate 4 weeks out. The escalation process described in policy Section 5.3 appears not to be functioning.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-601", "INC-2025-605", "action items", "6 of 8", "3 of 10", "14-day escalation", "30-day CEO escalation", "P1"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 3,
+    "tags": ["incident_response", "red_herring", "AI_security", "model_poisoning", "prompt_injection", "resolution_SLA", "action_item_tracking", "customer_notification"]
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "task_id": "cc6.1-5-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T18:51:08.427052",
+  "score": {
+    "task_id": "cc6.1-5-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.3333333333333333,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Diana Vasquez",
+          "TERM-Q4-024",
+          "December 19",
+          "December 22",
+          "holiday",
+          "on-call",
+          "staffing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Marcus Hall",
+          "TERM-Q4-016",
+          "involuntary",
+          "AWS",
+          "access key",
+          "November 14",
+          "November 19",
+          "bypass"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "AR-Q4-003",
+          "AR-Q4-007"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5976,
+    "output_tokens": 3530
+  },
+  "raw_response": "# SOC 2 CC6.1 Compliance Audit Report\n## Access Revocation & Termination Controls \u2014 Q4 2025\n**CrestPoint Technologies | Prepared by: Compliance Audit Team**\n\n---\n\n## Executive Summary\n\nThe Q4 2025 termination population consists of 25 terminations across the review period. The access control policy (POL-AC-2025-010) is well-structured and reflects mature design intent. The quarterly access review program operated effectively across all 15 in-scope systems, completing on time with appropriate findings and remediation. However, testing of operating effectiveness identified **two control deviations** in the termination offboarding population and **one design-level observation** warranting attention. These are evaluated below with professional judgment applied to materiality, risk context, and compensating factors.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: AWS IAM Access Key Not Revoked Within 24-Hour SLA \u2014 Marcus Hall (TERM-Q4-016)\n\n**Severity: High**\n\n#### Document References\n- POL-AC-2025-010, Section 6.1 (Employee Termination \u2014 Access Revocation SLAs)\n- Termination Log: TERM-Q4-016\n- Okta Audit Log: marcus.hall@crestpoint.io entries (2025-11-14 through 2025-11-15)\n\n#### Description of Gap\n\nMarcus Hall (EMP-3267, Engineering, Involuntary Termination) was terminated on November 14, 2025 at 10:00. Per policy Section 6.1, all cloud infrastructure access (AWS IAM) must be removed within 24 hours of termination notification. The HR notification was sent at 10:05 on November 14, establishing the SLA deadline as approximately 10:05 on November 15.\n\nThe termination log documents that AWS IAM access key deactivation did not occur until **November 19, 2025 at 09:00** \u2014 **five days after termination** and approximately four days beyond the 24-hour SLA. The notes acknowledge this directly: *\"access key was missed in initial offboarding checklist.\"*\n\nThis finding is compounded by three aggravating factors:\n\n1. **Termination type**: This was an **involuntary** termination, the highest-risk category under the policy. Section 6.2 applies additional controls precisely because of elevated insider threat risk during involuntary separations.\n2. **System sensitivity**: The unrevoked access was specifically to **AWS Console / cloud infrastructure** \u2014 a high-privilege environment hosting production workloads and customer data in scope for CC6.1.\n3. **Nature of access**: AWS IAM access keys are **programmatic credentials** that operate independently of Okta SSO. The policy's reliance on Okta suspension as the primary control does not remediate standalone IAM key risk. Even though the Okta account was locked at 08:00 on November 15 (within the 22-hour window, satisfying the Okta SLA), this did not address the IAM access key, which remained independently usable for API calls.\n\n#### Mitigating Factors\n\nThe termination log notes *\"No evidence of API usage during gap,\"* which provides some assurance that the orphaned credential was not exploited. However, absence of detected usage does not equate to confirmed non-use, and the adequacy of API monitoring coverage during this period is not independently evidenced in the documents provided.\n\nThe offboarding checklist is marked \"Complete,\" which is inconsistent with the documented access key miss. This internal inconsistency further undermines the reliability of the checklist as a detective control.\n\n#### Auditor Assessment\n\nWhile the single-instance occurrence in a population of 25 (4% deviation rate) is noted, the specific circumstances \u2014 involuntary termination, privileged cloud infrastructure, programmatic credential bypass of the primary IAM control, and a multi-day gap \u2014 elevate this beyond a low-risk administrative miss. This represents a **real, unmitigated window of unauthorized access capability** that is directly contrary to the control's purpose under CC6.1.\n\n**This finding should be reported as an exception.** It reflects both an operating effectiveness failure and a potential design gap regarding the completeness of automated offboarding coverage for AWS IAM credentials specifically.\n\n---\n\n### Finding 2: Okta Account Not Disabled Within 24-Hour SLA \u2014 Diana Vasquez (TERM-Q4-024)\n\n**Severity: Medium**\n\n#### Document References\n- POL-AC-2025-010, Section 6.1 (Employee Termination \u2014 24-Hour Okta SLA)\n- Termination Log: TERM-Q4-024 (SLA Met field: **No**)\n- Okta Audit Log: diana.vasquez@crestpoint.io entries (2025-12-19 through 2025-12-22)\n\n#### Description of Gap\n\nDiana Vasquez (EMP-3401, Engineering, Voluntary Termination) was terminated on December 19, 2025 at 16:30. HR notification was sent at 16:45, establishing the SLA deadline as approximately 16:45 on December 20. Her Okta account was not disabled until **December 22, 2025 at 09:15** \u2014 **64.75 hours after termination**, exceeding the 24-hour SLA by approximately 40 hours.\n\nThe termination log explicitly flags this as an SLA miss and attributes the delay to **IT on-call not being staffed December 19\u201321 due to the holiday schedule**.\n\n#### Mitigating Factors\n\nSeveral factors reduce the severity of this finding relative to TERM-Q4-016:\n\n1. **Voluntary departure**: The risk profile of a voluntary termination is materially lower than an involuntary one. There is no elevated insider threat concern documented.\n2. **No login activity**: The Okta audit log confirms that Vasquez's final session ended at 16:30 on December 19 and that her account lock event on December 22 at 09:16 is the next action recorded. There are no session starts, authentication attempts, or application access events during the 64.75-hour gap. The audit log coverage for her account appears complete.\n3. **Known operational gap**: The holiday staffing gap was a foreseeable condition, and the deviation appears to have been recognized and documented transparently.\n\n#### Why This Remains a Reportable Finding\n\nDespite the mitigating factors, the policy's 24-hour SLA contains **no carved-out exception for holiday periods or reduced staffing**. The control as designed requires consistent operation regardless of schedule. The existence of a foreseeable, recurring staffing gap that reliably produces SLA misses represents a **control design weakness**: if CrestPoint cannot operationally meet its stated SLA during predictable periods (year-end holidays, weekends with after-hours terminations), the policy overstates the actual control posture.\n\nAdditionally, the termination log marks this employee's `offboarding_checklist_status` as \"Complete\" despite the documented SLA failure and the SLA field being marked \"No.\" This inconsistency in record-keeping is a secondary observation.\n\n#### Auditor Assessment\n\nGiven the voluntary departure, absence of any access attempts during the gap, and transparent documentation of the cause, this finding does not represent the same risk magnitude as TERM-Q4-016. However, it should be reported as a **medium-severity exception** with a recommendation to establish a holiday/reduced-staffing contingency procedure (e.g., automated suspension triggers, an escalation path to an always-available on-call resource, or a pre-termination Okta suspension workflow for known end dates).\n\n---\n\n### Finding 3: Design Gap \u2014 Okta Suspension Does Not Comprehensively Remediate AWS IAM Programmatic Credentials\n\n**Severity: Medium (Design Observation)**\n\n#### Document References\n- POL-AC-2025-010, Sections 3.1, 6.1, and 6.2\n- Termination Log: TERM-Q4-016 (evidence of gap materializing)\n\n#### Description of Gap\n\nSection 3.1 of the policy states: *\"All human user authentication is managed through Okta SSO. Direct application authentication is prohibited.\"* The policy appears to rely substantially on Okta account suspension as the primary and near-simultaneous control for terminating access across systems. This assumption is **architecturally incomplete** for AWS IAM.\n\nAWS IAM access keys are static, long-lived programmatic credentials that authenticate directly to the AWS API and are **entirely independent of Okta SSO**. An Okta account suspension does not invalidate an existing IAM access key. The materialization of this gap in TERM-Q4-016 \u2014 where Okta was suspended but the IAM key remained active for five days \u2014 confirms that the offboarding workflow does not automatically address IAM key revocation as part of the Okta-triggered process.\n\nThis is distinct from Finding 1 (which concerns operating effectiveness) in that this finding concerns the **design** of the offboarding control architecture. Even if TERM-Q4-016 had been a manual execution error, the underlying design does not appear to guarantee that AWS IAM key revocation is triggered atomically or through automation alongside Okta suspension.\n\nThe policy does list \"All cloud infrastructure access (AWS IAM, GCP) removed within 24 hours\" as a requirement, but the evidence suggests this step depends on manual checklist completion rather than automated enforcement. The checklist being marked \"Complete\" despite the miss further suggests the checklist itself may not have adequate verification steps for programmatic credentials specifically.\n\n#### Auditor Assessment\n\nThis is a design-level observation rather than a standalone operating exception, but it is material to CC6.1's requirement to implement logical access security **architectures** that protect information assets. CrestPoint should evaluate whether AWS IAM access key revocation can be automated as part of the ServiceNow/Okta offboarding workflow \u2014 for example, through an AWS Lambda trigger, AWS Organizations SCP, or a CyberArk-integrated workflow \u2014 to eliminate reliance on manual checklist steps for this specific credential class.\n\n---\n\n### Finding 4 (Observation): Terminated Employees Appearing as System Owners/Reviewers in Q4 Access Review Records\n\n**Severity: Low (Observation)**\n\n#### Document References\n- Q4 2025 Access Review Records: AR-Q4-003, AR-Q4-007, AR-Q4-008, AR-Q4-009, AR-Q4-015\n- Termination Log: TERM-Q4-005 (Tyler Morrison), TERM-Q4-011 (Omar Hassan), TERM-Q4-013 (Brandon Taylor), TERM-Q4-017 (Lena Okonkwo), TERM-Q4-016 (Marcus Hall)\n\n#### Description of Gap\n\nCross-referencing the Q4 access review records against the termination log reveals that several individuals who completed access reviews during Q4 subsequently departed during the same quarter:\n\n| Review ID | System | Reviewer | Termination Date | Review Completed |\n|---|---|---|---|---|\n| AR-Q4-003 | GitHub Enterprise | Jason Wright | Nov 21 (TERM-Q4-018) | Oct 22 |\n| AR-Q4-007 | Datadog | Marcus Hall | Nov 14 (TERM-Q4-016) | Oct 22 |\n| AR-Q4-008 | Slack Enterprise | Omar Hassan | Nov 4 (TERM-Q4-011) | Oct 14 |\n| AR-Q4-009 | Confluence | Lena Okonkwo | Nov 18 (TERM-Q4-017) | Oct 19 |\n| AR-Q4-015 | PagerDuty | Marcus Hall | Nov 14 (TERM-Q4-016) | Oct 21 |\n\nIn all cases, the review was **completed before the employee's termination date**, meaning the reviews themselves were performed by active employees with the appropriate access and authority at the time. The sequence of events does not represent a control failure in the access review population.\n\n#### Why This Is Noted\n\nThis observation is raised because it highlights a **coverage continuity consideration**: the access reviews completed by these individuals in October would not be revisited until Q1 2026. For systems like Datadog and PagerDuty where Marcus Hall served as both system owner and reviewer, his subsequent termination means those systems currently have **no designated active system owner** on record. If access changes occurred in those systems after the review and before year-end, there would be no owner-level oversight until a new owner is formally assigned and a subsequent review initiated.\n\nThis is not a CC6.1 exception but warrants a process recommendation: when a system owner is terminated, a control should exist to (a) reassign system ownership promptly and (b) evaluate whether a mid-cycle access review is warranted for systems they owned.\n\n---\n\n## Summary Table\n\n| # | Finding Title | Policy Reference | Severity | Exception? |\n|---|---|---|---|---|\n| 1 | AWS IAM Access Key Not Revoked Within SLA \u2014 Marcus Hall | POL-AC-2025-010 \u00a76.1, \u00a76.2 | **High** | Yes |\n| 2 | Okta Account Not Disabled Within 24-Hour SLA \u2014 Diana Vasquez | POL-AC-2025-010 \u00a76.1 | **Medium** | Yes |\n| 3 | Design Gap: Okta Suspension Does Not Cover IAM Programmatic Credentials | POL-AC-2025-010 \u00a73.1, \u00a76.1 | **Medium** | Design Obs. |\n| 4 | Terminated Employees as Former System Owners \u2014 No Mid-Cycle Reassignment Process | Q4 Access Review Records | **Low** | Observation |\n\n---\n\n## Overall Control Assessment\n\n**CC6.1 \u2014 Access Revocation and Termination Controls: Qualified**\n\nThe control framework is well-designed at the policy level, and the quarterly access review program operated effectively across all 15 systems with no exceptions. The 24-hour Okta SLA was met for 24 of 25 terminations, and involuntary terminations were generally handled with appropriate urgency.\n\nHowever, two reportable exceptions exist in the termination population. Finding 1 (Marcus Hall / AWS IAM) is the more significant of the two: it involves an involuntary termination, a privileged credential class that bypasses the primary identity control, a five-day exposure window, and an internal documentation inconsistency. It is sufficient, in this auditor's judgment, to constitute a **control exception** that should be communicated to management with a request for a formal management response and remediation plan.\n\nFinding 2 (Diana Vasquez) is less severe given the voluntary nature and absence of access activity, but the underlying cause \u2014 a foreseeable holiday staffing gap with no compensating procedure \u2014 represents a **systemic vulnerability** that will recur without a process change.\n\nNeither finding, individually or in combination, rises to the level of a **material weakness** given the overall population performance (92% clean), the absence of evidence of unauthorized access, and the transparent documentation. However, they represent **deficiencies** that management should remediate before the next audit period."
+}

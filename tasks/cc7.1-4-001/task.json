@@ -1,0 +1,99 @@
+{
+  "id": "cc7.1-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "To meet its objectives, the entity uses detection and monitoring procedures to identify changes to configurations that result in the introduction of new vulnerabilities, and susceptibilities to newly discovered vulnerabilities.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/vulnerability-management-policy.md",
+      "type": "policy",
+      "description": "Apex Digital vulnerability management policy defining scan requirements, severity classification, remediation SLAs, and risk acceptance process"
+    },
+    {
+      "path": "evidence/qualys-scan-report-q4-2025.csv",
+      "type": "report",
+      "description": "Qualys VMDR scan report for Q4 2025 with 33 vulnerability findings across production and corporate assets"
+    },
+    {
+      "path": "evidence/risk-acceptance-register.csv",
+      "type": "exception_register",
+      "description": "Risk acceptance register documenting CISO-approved risk acceptances with compensating controls and revalidation records"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/pentest-executive-summary.md",
+      "type": "report",
+      "description": "Annual penetration test executive summary from CyberForge Security Consulting — operational security assessment not directly relevant to vulnerability management program compliance"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Apex Digital's vulnerability management program for the Q4 2025 observation period (October 1 - December 31, 2025). Review the vulnerability management policy, Qualys scan report, risk acceptance register, and any supporting documentation. Assess whether CC7.1 requirements for vulnerability detection and remediation are met. Identify any gaps where controls are not operating as designed. Be careful to distinguish between genuine gaps and situations where apparent issues have valid explanations or documented risk acceptances.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "high",
+      "title": "CVE-2025-22224 Critical VMware ESXi vulnerability appears past SLA but has valid CISO-approved risk acceptance",
+      "description": "CVE-2025-22224 (CVSS 9.3, Critical) on esxi-prod-07 was first detected August 28, 2025, and remains open as of December 29 — 123 days past the 15-day SLA. This initially appears to be a significant SLA breach. However, the risk acceptance register shows RA-2025-017, approved by the CISO on September 12, 2025, with 5 documented compensating controls: WAF virtual patching, network micro-segmentation restricting the ESXi management interface, CrowdStrike Falcon on all guest VMs, VMware Tools guest isolation, and IDS/IPS signatures. The quarterly revalidation was completed on December 12, 2025, confirming all controls remain operational. Remediation is planned for the January 14 maintenance window. This is NOT a finding — the risk acceptance process was followed correctly with documented, validated compensating controls.",
+      "evidence_sources": [
+        "evidence/qualys-scan-report-q4-2025.csv",
+        "evidence/risk-acceptance-register.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The model should identify CVE-2025-22224 as a Critical vulnerability past SLA, then cross-reference the risk acceptance register to find RA-2025-017 with CISO approval, 5 compensating controls, and a completed quarterly revalidation. The model should recognize this follows the policy's risk acceptance process (Section 5) and dismiss it as a properly managed exception.",
+      "detection_criteria": {
+        "required_keywords": ["CVE-2025-22224", "RA-2025-017", "esxi-prod-07", "compensating controls", "CISO approved", "risk acceptance", "revalidation"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["not a finding", "properly managed", "valid risk acceptance", "dismissed", "compensating controls verified", "approved exception"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "CVE-2025-24472 Critical FortiOS authentication bypass open 137 days with no risk acceptance",
+      "description": "CVE-2025-24472 (CVSS 9.8, Critical) on fw-internal-03 (10.30.0.7) was first detected August 15, 2025, and remains Open as of December 29 — 136 days since first detection. The policy defines a 15-day SLA for Critical vulnerabilities, making this 121 days past the SLA deadline. The remediation notes state the patch was 'tested in lab but deployment delayed due to HA cluster complexity' with 'no risk acceptance filed.' Unlike CVE-2025-22224 which has RA-2025-017, this Critical vulnerability has no documented risk acceptance, no approved compensating controls, and no CISO sign-off. A CVSS 9.8 authentication bypass on an internal firewall is a severe exposure — an attacker who reaches the management interface could bypass authentication entirely. Per policy Section 4.2, vulnerabilities exceeding SLA by more than 100% must be reported to the Board Risk Committee.",
+      "evidence_sources": [
+        "evidence/qualys-scan-report-q4-2025.csv",
+        "evidence/risk-acceptance-register.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The model should identify both Critical vulnerabilities in the scan report. After dismissing CVE-2025-22224 due to RA-2025-017, the model should examine CVE-2025-24472 and find no corresponding entry in the risk acceptance register. The scan report explicitly states 'No risk acceptance filed.' At 136 days past first detection and 121 days past the 15-day SLA, this exceeds the 100% escalation threshold (Section 4.2) requiring Board Risk Committee notification. The contrast between the two Critical vulnerabilities is the key insight — one is properly managed, the other is not.",
+      "detection_criteria": {
+        "required_keywords": ["CVE-2025-24472", "fw-internal-03", "9.8", "authentication bypass", "FortiOS", "no risk acceptance", "136 days", "VULN-4870", "Board Risk Committee", "Section 4.2"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Multiple Medium-severity vulnerabilities approaching or past 90-day SLA without tracking",
+      "description": "Several Medium-severity vulnerabilities are approaching or have exceeded the 90-day remediation SLA: CVE-2024-11680 on internal-share-02 (first detected October 3, 87 days — approaching SLA) and CVE-2025-21311 on print-srv-02 (first detected October 28, 62 days — within SLA but has a risk acceptance RA-2025-009 for a different system). While individual Medium-severity SLA breaches are less severe than Critical breaches, a pattern of SLA non-compliance across multiple severity tiers would indicate systemic remediation process weakness.",
+      "evidence_sources": [
+        "evidence/qualys-scan-report-q4-2025.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should review the full scan report for SLA compliance across all severity tiers, not just Critical. Medium vulnerabilities with first detection dates in September and early October are approaching or past the 90-day SLA. This supplements the Critical finding and may indicate broader remediation capacity issues.",
+      "detection_criteria": {
+        "required_keywords": ["Medium", "90-day SLA", "approaching", "remediation", "CVE-2024-11680", "internal-share-02", "pattern"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["vulnerability_management", "red_herring", "risk_acceptance", "remediation_SLA", "compensating_controls", "CVE", "FortiOS", "VMware"]
+  }
+}

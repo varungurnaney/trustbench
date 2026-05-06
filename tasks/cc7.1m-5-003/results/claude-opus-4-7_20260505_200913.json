@@ -1,0 +1,92 @@
+{
+  "task_id": "cc7.1m-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T20:09:13.687806",
+  "score": {
+    "task_id": "cc7.1m-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "VMA-2025-104",
+          "VMware",
+          "Broadcom",
+          "December 31",
+          "renewal",
+          "pricing dispute",
+          "vCenter"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "KB95823",
+          "72 hours",
+          "4-hour SLA",
+          "not escalated",
+          "Section 6.4",
+          "vendor account manager",
+          "breach",
+          "documented",
+          "VMware"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "MW-Q4-012",
+          "notification",
+          "December 20",
+          "ops-all"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "SSL certificate",
+          "90-day validity",
+          "monitoring gap",
+          "short-lived",
+          "PIR-2025-0098",
+          "certificate monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5689,
+    "output_tokens": 2908
+  },
+  "raw_response": "# CC7.1 Compliance Audit \u2014 Apex Infrastructure Group Q4 2025\n\n## Executive Summary\n\nThe maintenance program demonstrates strong operational discipline overall: 12 maintenance windows executed, 17 patches deployed successfully, two emergencies handled within policy, and equipment maintenance cycles tracked. However, several control gaps were identified spanning notification compliance, vendor agreement currency, vendor SLA breach escalation, and monitoring coverage. The most significant exposure is the **VMware/Broadcom agreement lapse risk** combined with **unescalated vendor SLA breach**, which together indicate a weakness in vendor lifecycle management.\n\n---\n\n## Findings\n\n### Finding 1: VMware (Broadcom) Vendor Agreement Approaching Lapse Without Renewal\n- **Related Document/Section:** Vendor Agreement Tracking (VMA-2025-104); Maintenance Policy \u00a76.3 (Vendor Agreements)\n- **Gap:** The VMware (Broadcom) agreement expires December 31, 2025, and renewal negotiations remain unresolved due to a pricing dispute. Policy \u00a76.3 requires agreements to be \"current and reviewed annually before renewal.\" The hypervisor and vCenter platform underpins production virtualization; lapse on January 1, 2026 would leave a critical infrastructure component without vendor support, violating CC7.1's requirement to maintain system components to meet entity objectives. There is no documented contingency plan, escalation to executive leadership, or risk acceptance memo on file.\n- **Severity:** **High**\n\n### Finding 2: Vendor SLA Breach Documented but Not Escalated\n- **Related Document/Section:** Vendor Agreement Tracking (VMA-2025-104); Maintenance Policy \u00a76.4 (Vendor SLAs)\n- **Gap:** VMware support response on the vCenter KB95823 ticket took 72 hours against a 4-hour SLA \u2014 an 18\u00d7 breach. The notes explicitly state the breach was \"documented but not escalated to the vendor account manager per Section 6.4.\" Policy \u00a76.4 mandates that vendor SLA breaches \"must be documented **and** escalated to the vendor account manager.\" The control as designed was not operating effectively. Compounded with Finding 1, this suggests deteriorating Broadcom support quality during a contentious renewal \u2014 precisely when escalation matters most.\n- **Severity:** **High**\n\n### Finding 3: Maintenance Window Notification Policy Violation (MW-Q4-012)\n- **Related Document/Section:** Maintenance Window Log (MW-Q4-012); Maintenance Policy \u00a73.1\n- **Gap:** The December 20 production patching window was scheduled with only ~24 hours of Slack-only notice. Policy \u00a73.1 requires 48 hours advance notice for MW-PROD windows and the established practice is dual-channel (email + Slack). Email to ops-all was not sent. The log entry self-identifies the gap. Although no objections were raised, the control failed regardless of outcome \u2014 stakeholders cannot object to notifications they don't receive. Indicates process discipline weakness around year-end ad-hoc windows.\n- **Severity:** **Medium**\n\n### Finding 4: Certificate Expiration Monitoring Gap\n- **Related Document/Section:** Maintenance Window Log (MW-Q4-011); PIR-2025-0098\n- **Gap:** The December 18 SSL certificate expiry on api.apex.io occurred because monitoring was configured for 30-day expiry warnings, but the certificate was issued with 90-day validity. Short-lived certificates were not detected by the monitoring system. While the PIR was completed, the evidence does not show the remediation has been implemented (e.g., dynamic threshold tuning, inventory of all certificate validity periods, or 7/14-day cascading alerts). This represents an unmitigated systemic monitoring control gap directly relevant to CC7.1 (maintaining system components).\n- **Severity:** **Medium**\n\n### Finding 5: Change Ticket ID Reused Across Two Maintenance Windows\n- **Related Document/Section:** Maintenance Window Log (MW-Q4-002 and MW-Q4-003)\n- **Gap:** CHG-2025-9005 is referenced in both MW-Q4-002 (Quarterly equipment maintenance, Oct 4) and MW-Q4-003 (FortiGate firmware update, Oct 8). A change ticket should uniquely identify a single change. This is either a data entry error in the log or a genuine ticketing hygiene issue. Either way, it weakens audit traceability between maintenance activities and change records \u2014 a recurring SOC 2 concern under CC7.1 and CC8.1.\n- **Severity:** **Low**\n\n### Finding 6: Quarterly UPS Maintenance Cycle Shifted Without Documented Justification\n- **Related Document/Section:** Maintenance Window Log (MW-Q4-009); Maintenance Policy \u00a75.1\n- **Gap:** MW-Q4-009 notes \"quarterly UPS (Q1 cycle started early).\" Policy \u00a75.1 prescribes quarterly UPS intervals but does not authorize informal cycle shifts. Pulling forward maintenance is generally low-risk, but no documentation explains why the cycle was shifted or whether the next interval has been recalibrated. Without a recorded justification or updated schedule, future intervals could drift, eventually triggering the \u00a75.2 overdue thresholds without detection.\n- **Severity:** **Low**\n\n### Finding 7: No Evidence of Required Monthly Maintenance Reports or Quarterly Review\n- **Related Document/Section:** Maintenance Policy \u00a77.1 and \u00a77.2\n- **Gap:** Policy \u00a77.1 requires monthly maintenance reports covering activities, patch compliance, equipment compliance, overdue items, and vendor SLA compliance. \u00a77.2 requires a quarterly maintenance program review by the IT Director. No such reports or review minutes were provided as evidence for Q4 2025. A robust quarterly review would likely have surfaced the VMware renewal risk, the unescalated SLA breach, and the certificate monitoring gap. Absence of this evidence indicates either a documentation gap or that the reporting/review controls are not operating.\n- **Severity:** **Medium**\n\n### Finding 8: No Critical Patches Deployed in Q4 \u2014 Verify Coverage vs. Absence\n- **Related Document/Section:** Patching Records (PATCH-9001 to PATCH-9017); Maintenance Policy \u00a74.1\n- **Gap:** All 17 Q4 patches are classified High or Medium; no Critical patches appear. While this could legitimately reflect the Q4 vulnerability landscape, auditors should verify via vulnerability management evidence that no Critical patches were missed or deferred. This is an evidence completeness observation, not a confirmed gap. The 14-day Critical SLA would be impossible to validate without a corresponding vulnerability scan record showing zero Critical findings during the period.\n- **Severity:** **Low** (observation pending corroborating evidence)\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | VMware/Broadcom agreement lapse risk | High |\n| 2 | Vendor SLA breach not escalated | High |\n| 3 | MW-Q4-012 notification policy violation | Medium |\n| 4 | Certificate monitoring threshold gap | Medium |\n| 5 | Change ticket ID reuse | Low |\n| 6 | UPS quarterly cycle shift undocumented | Low |\n| 7 | Missing monthly reports / quarterly review evidence | Medium |\n| 8 | No Critical patches \u2014 verify coverage | Low (Observation) |\n\n## Pattern Observation\n\nFindings 1, 2, and 7 cluster around **vendor lifecycle management and program oversight**. The unescalated VMware SLA breach (Finding 2) likely went unaddressed *because* the monthly maintenance report and quarterly review (Finding 7) are not operating \u2014 the very controls designed to surface vendor SLA compliance issues. This in turn obscures the urgency of the renewal stalemate (Finding 1). Management should treat this as a connected control deficiency rather than three isolated items.\n\n## Recommended Audit Conclusion\n\n**CC7.1 \u2014 Operating with Exceptions.** Core maintenance execution is effective, but governance and vendor management layers show meaningful gaps requiring management response prior to the Type II opinion period close."
+}

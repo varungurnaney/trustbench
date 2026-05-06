@@ -1,0 +1,72 @@
+{
+  "task_id": "cc8.1-5-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T20:09:43.682789",
+  "score": {
+    "task_id": "cc8.1-5-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.3333333333333333,
+    "f1": 0.4444444444444444,
+    "score": 0.4444444444444444,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "async",
+          "email",
+          "CAB meeting",
+          "cancelled",
+          "CHG-806",
+          "CHG-808",
+          "CHG-810",
+          "policy does not define",
+          "Section 3.3"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-810",
+          "High risk",
+          "async email",
+          "GraphQL",
+          "rate limiting",
+          "Anya Volkov"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "cancelled"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3826,
+    "output_tokens": 3240
+  },
+  "raw_response": "# CC8.1 Compliance Assessment \u2013 Apex Cloud Solutions\n## Q4 2025 Change Management Audit\n\n---\n\n## FINDINGS\n\n### Finding 1: Asynchronous Email Approvals Lack Documented Authorization Framework\n\n**Related Document Section:**  \nPOL-CHG-021, Section 3.3 (Change Advisory Board) + Email approval threads (CHG-806, CHG-808, CHG-810)\n\n**Gap Description:**  \nThe change management policy defines the CAB as a formal governance body that \"meets weekly on Tuesdays at 2:00 PM ET\" with specific quorum requirements (VP Eng + 2 others). However, the policy contains **no documented procedure for asynchronous email approvals** when meetings are cancelled. \n\nThree changes (CHG-806, CHG-808, CHG-810) were approved via email threads without:\n- Explicit policy authorization for the async method\n- Documented deviation approval from policy owner\n- Criteria defining when async approvals are acceptable\n- Formal amendment to POL-CHG-021\n\n**Why This Matters for CC8.1:**  \nCC8.1 requires that changes be \"authorized\" through defined processes. Using an undocumented approval pathway\u2014even if operationally sound\u2014creates ambiguity about whether authorization actually occurred per the entity's stated control framework. This is a **process documentation gap**, not necessarily an operational failure.\n\n**Severity:** **High**\n\n**Recommendation:**  \nFormally document an \"Asynchronous CAB Approval\" procedure in POL-CHG-021 v4.1, including:\n- Conditions triggering async approval (meeting cancellations, time-critical reviews)\n- Quorum requirements for async (same as in-person: VP Eng + 2 others)\n- Approval deadline and escalation if quorum not met within timeframe\n- Audit trail requirements (email thread as artifact, or formal sign-off in ServiceNow)\n\n---\n\n### Finding 2: Incomplete Quorum Documentation for CHG-808 and CHG-810\n\n**Related Document Section:**  \nPOL-CHG-021, Section 3.3 (Quorum requirement) + Change log + Email threads for CHG-808 and CHG-810\n\n**Gap Description:**  \nBoth CHG-808 and CHG-810 were approved by only **3 of 4 CAB members** (Anya Volkov did not respond; she was out of office). The change log notes \"Quorum met (VP Eng + 2 others)\" for both.\n\nHowever:\n- The policy states quorum is \"VP Engineering + at least 2 other CAB members\"\n- Both approvals included: Sanjay Reddy (VP Eng) + Patricia Okafor + Michael Chen (2 others) = meets the stated quorum\n- **But the policy does not explicitly address** whether quorum can be met when a CAB member is unavailable/did not respond\n\n**Ambiguity:**  \nIs \"quorum met\" defined as:\n- **(A)** A minimum number of approvals received (3 total), or  \n- **(B)** A minimum number of members *present/responding* from the full CAB roster?\n\nThe policy language (\"must be present\") suggests intent for **(B)**, but email threads don't confirm whether Anya's absence was flagged or acknowledged before deployment.\n\n**Why This Matters for CC8.1:**  \nAuthorization requires clarity on whether a decision is *binding* and *complete*. Ambiguity around quorum undermines the integrity of the approval record.\n\n**Severity:** **Medium**\n\n**Recommendation:**  \nClarify quorum in POL-CHG-021:\n- Define: \"Quorum is met if approval is received from the VP Engineering AND at least 2 other CAB members within the approval deadline.\"\n- For async approvals: Document process for escalating if quorum cannot be met (e.g., request expedited in-person review, defer change to next scheduled CAB meeting).\n- In ServiceNow, flag approvals as \"Quorum Met: Yes/No\" explicitly.\n\n---\n\n### Finding 3: High-Risk Change (CHG-810) Approved via Undocumented Async Process\n\n**Related Document Section:**  \nPOL-CHG-021, Section 3.3 (CAB process) + CHG-810 email thread + Change log\n\n**Gap Description:**  \nCHG-810 (Rate limiting for public GraphQL endpoint) is classified as **High Risk** and includes a **required security review** per policy Section 3.2. The change:\n- Was approved via asynchronous email (not a formal CAB meeting)\n- Had only 3 of 4 approvers respond\n- Security review was completed and referenced, but not explicitly attached or linked in the email thread\n- No evidence that security review was formally confirmed as part of approval criteria\n\nFor a High-Risk change, one might reasonably expect elevated governance rigor (e.g., mandatory in-person CAB review, security team sign-off noted explicitly in approval record).\n\n**Why This Matters for CC8.1:**  \nHigh-risk changes warrant proportionate authorization scrutiny. Using an informal approval method (email) for a high-risk change, especially one requiring security review, creates perception and audit risk that the change received appropriate senior review depth.\n\n**Severity:** **Medium**\n\n**Recommendation:**  \nAmend POL-CHG-021 to specify:\n- High-Risk and Critical changes **require in-person CAB review** or escalation procedure if meeting is cancelled\n- If async approval is used for High-Risk: Security team lead (Michael Chen) and VP Eng (Sanjay) must both explicitly approve, and security review document must be formally linked/attached in approval record\n- Post-deployment verification for High-Risk changes must be signed off by security lead\n\n---\n\n### Finding 4: ServiceNow Integration Gaps in Email Approval Workflow\n\n**Related Document Section:**  \nPOL-CHG-021, Section 3.3 (CAB approval documentation) + Email threads + Change log\n\n**Gap Description:**  \nThe policy requires: \"All approvals must be documented in the ServiceNow change ticket with individual member approval and timestamp.\"\n\nFor CHG-806, CHG-808, and CHG-810:\n- Approvals occurred in **email threads** (external to ServiceNow)\n- Change log notes indicate approvals happened via email, but the email threads provided do **not show** explicit \"approved in ServiceNow\" confirmations\n- No evidence that individual CAB members formally signed off within the ServiceNow ticket itself (which is the system of record per policy)\n\n**Gaps:**\n- Email may be the *channel*, but approval *record* should still be in ServiceNow\n- Approval artifacts (email thread) are not linked to tickets\n- No timestamp verification that approvals in ServiceNow match email thread dates\n\n**Why This Matters for CC8.1:**  \nCC8.1 requires authorization to be \"documented.\" Email threads alone, without ServiceNow entry, complicate audit trails and create risk that approval records could be lost, altered, or questioned in an external audit.\n\n**Severity:** **Medium**\n\n**Recommendation:**  \nImplement a process for async email approvals:\n1. CAB members reply to email thread with approval\n2. CAB chair (Sanjay) logs each approval in ServiceNow ticket with CAB member name, timestamp, and method (\"Async Email Approval - [Date]\")\n3. Email thread or screenshot is attached to ServiceNow as supporting artifact\n4. Change cannot be deployed until all approvals are recorded in ServiceNow\n\n---\n\n### Finding 5: Emergency Change (CHG-807) Retro-CAB Process Not Fully Documented\n\n**Related Document Section:**  \nPOL-CHG-021, Section 2 (Emergency category) + Change log for CHG-807\n\n**Gap Description:**  \nCHG-807 (OpenSSH CVE patch, Critical risk) was deployed via VP Engineering verbal approval (Sanjay Reddy) with a retroactive CAB review scheduled for Nov 18 (1 business day post-deployment).\n\nThe policy states: \"VP Eng verbal + retro CAB within 5 business days.\"\n\nHowever:\n- Policy does **not specify** what happens if the retroactive CAB *rejects* the change\n- No documentation of whether the Nov 18 retro-CAB review actually occurred\n- Change log states \"Retro CAB: Nov 18\" but provides no evidence (no meeting notes, approval, or outcome recorded)\n- No policy guidance on scope/authority of retro-CAB (can it require rollback?)\n\n**Why This Matters for CC8.1:**  \nEmergency changes need explicit authorization *at deployment time* (VP Eng verbal) AND *after* (CAB validation). Without evidence that the retro-CAB review occurred and approved, the change's authorization status is incomplete on the record.\n\n**Severity:** **Medium**\n\n**Recommendation:**  \nAmend POL-CHG-021 to require:\n- Retro-CAB review must be documented in ServiceNow with meeting notes\n- Retro-CAB must explicitly approve or reject the emergency change\n- If rejected: Escalation procedure to CISO/CTO (cannot be automatically rolled back without business decision)\n- Retro-CAB documentation must be completed before emergency change is considered fully authorized\n\n---\n\n### Finding 6: Testing Evidence Pass Rate Threshold Inconsistently Applied\n\n**Related Document Section:**  \nPOL-CHG-021, Section 3.2 (Testing requirements) + Change log\n\n**Gap Description:**  \nPolicy Section 3.2 states: \"Automated test suite (minimum 97% pass rate).\"\n\n**Observations:**\n- CHG-806: 98.2% \u2713\n- CHG-807: 100% \u2713\n- CHG-808: 97.9% \u2713\n- CHG-810: 98.5% \u2713\n\nAll async email approvals met the 97% threshold. However:\n- **Policy does not define** what happens if a change falls below 97% pass rate (rejection? escalation for CAB waiver?)\n- **Policy does not address** what happens if testing evidence is missing or incomplete\n- No evidence of peer review (GitHub PR approval) requirement enforcement per Section 3.4 in the change log\n\n**Why This Matters for CC8.1:**  \nWhile current changes passed the threshold, lack of clarity on thresholds and escalation creates risk of inconsistent enforcement. A future change just below threshold could be approved without documented exception.\n\n**Severity:** **Low**\n\n**Recommendation:**  \nClarify POL-CHG-021, Section 3.2:\n- Define threshold breach response: \"Changes with <97% pass rate require CAB Chair waiver and documented risk acceptance\"\n- Require evidence that peer review (Section 3.4) was completed\u2014add GitHub PR link or code review sign-off to ServiceNow ticket\n- Monthly audit: verify all deployed changes have both testing evidence AND peer review documentation\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Title | Severity | Category |\n|---------|-------|----------|----------|\n| 1 | Asynchronous Email Approvals Lack Documented Authorization Framework | **High** | Policy Gap |\n| 2 | Incomplete Quorum Documentation for CHG-808 and CHG-810 | **Medium** | Clarity Gap |\n| 3 | High-Risk Change Approved via Undocumented Async Process | **Medium** | Risk Governance |\n| 4 | ServiceNow Integration Gaps in Email Approval Workflow | **Medium** | Process Gap |\n| 5 | Emergency Change Retro-CAB Process Not Fully Documented | **Medium** | Audit Trail |\n| 6 | Testing Evidence Pass Rate Threshold Inconsistently Applied | **Low** | Clarity Gap |\n\n---\n\n## OVERALL CONTROL ASSESSMENT\n\n**CC8.1 Maturity: Partially Effective**\n\n**Strengths:**\n- Core CAB structure and membership are well-defined\n- Testing evidence rigor is consistently applied (all changes >97%)\n- Post-implementation verification is documented\n- Segregation of duties (developer/deployer/approver) is enforced\n- Emergency change process (verbal approval + retro-CAB) provides flexibility without abandoning oversight\n\n**Weaknesses:**\n- Asynchronous approval method not formally authorized in policy\n- High-Risk changes permitted through informal approval pathway\n- Approval records fragmented (email + ServiceNow) with no integration process\n- Emergency change retro-CAB outcome not documented\n- Quorum criteria ambiguous for unavailable/non-responsive members\n\n**Risk Impact:**\n- **Audit Finding Risk:** External auditors may question whether changes approved via email without ServiceNow entry satisfy the \"documented authorization\" requirement of CC8.1\n- **Control Repeatability Risk:** Without formal async approval procedures, future CAB chairs may apply inconsistent standards\n- **Governance Risk:** High-Risk changes using informal approval channels reduce senior leadership visibility\n\n**Maturity Level: 2-3 (Repeatable but Inconsistent)**\n\n---\n\n## REMEDIATION PRIORITY\n\n**Immediate (before next audit):**\n1. Publish formal async approval procedure (Finding 1)\n2. Document retro-CAB outcome for CHG-807 retroactively; establish process for future emergency changes (Finding 5)\n3. Audit CHG-808 and CHG-810: Confirm approvals were logged in ServiceNow (Finding 4)\n\n**Short-term (next 60 days):**\n4. Clarify quorum definition in policy (Finding 2)\n5. Restrict High-Risk changes to in-person CAB review or documented waiver (Finding 3)\n6. Test ServiceNow + email integration workflow (Finding 4)\n\n**Ongoing:**\n7. Monthly audit sampling to verify peer review evidence (Finding 6)"
+}

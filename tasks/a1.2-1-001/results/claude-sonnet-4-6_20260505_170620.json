@@ -1,0 +1,72 @@
+{
+  "task_id": "a1.2-1-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T17:06:20.502389",
+  "score": {
+    "task_id": "a1.2-1-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2727272727272727,
+    "f1": 0.42857142857142855,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "RPO",
+          "RTO",
+          "recovery objective",
+          "missing",
+          "measurable",
+          "availability commitments"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "restore test",
+          "no requirement",
+          "testing",
+          "recover",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "failure",
+          "no procedure",
+          "escalation",
+          "alerting",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 679,
+    "output_tokens": 2859
+  },
+  "raw_response": "# SOC 2 A1.2 Readiness Assessment\n## Cirrus Labs \u2013 Backup and Data Protection Policy (POL-BKP-001)\n\n---\n\n### Assessment Summary\n\nThe policy establishes a foundational backup framework but contains several significant gaps relative to SOC 2 A1.2 requirements. A1.2 goes beyond backup creation \u2014 it requires demonstrated recovery capability, defined recovery objectives, and end-to-end operational controls. As written, this policy addresses *backup procedures* but does not adequately address *recovery infrastructure or procedures*, which is the other half of the control requirement.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: No Recovery Time or Recovery Point Objectives Defined\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Policy-wide (no section addresses this) |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap Description:**\nThe policy contains no reference to Recovery Time Objectives (RTO) or Recovery Point Objectives (RPO). A1.2 explicitly requires that backup and recovery processes meet the entity's **availability commitments and system requirements**. Without defined RTOs and RPOs, there is no measurable standard against which recovery success can be evaluated, no basis for designing recovery infrastructure appropriately, and no linkage to the entity's broader availability commitments made to customers (typically reflected in an SLA or availability SLA in the Trust Services Criteria). An auditor cannot determine whether the 24-hour backup cadence is sufficient without knowing the RPO, and whether recovery infrastructure can restore operations within an acceptable window without knowing the RTO.\n\n**What's Missing:**\n- Formally defined RPO per system tier (e.g., databases vs. file storage)\n- Formally defined RTO per system tier\n- Traceability from those objectives to the backup schedule and recovery infrastructure design\n\n---\n\n### Finding 2: No Recovery Procedures Documented\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Policy-wide (no section addresses this) |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap Description:**\nThe policy addresses how backups are *created* but contains no procedures for how data, systems, or infrastructure are *recovered*. A1.2 explicitly calls out \"recovery plan procedures\" and \"procedures for recovery of data, systems, and infrastructure.\" A backup without a tested, documented recovery procedure provides no assurance of actual restorability. In an audit, the absence of recovery procedures means the second half of the control is entirely unaddressed by this document.\n\n**What's Missing:**\n- Step-by-step recovery runbooks or reference to a separate recovery plan\n- Defined escalation paths and decision authority during a recovery event\n- Recovery procedures for each backup type (database restore, S3 replication failover, etc.)\n- Reference to a Business Continuity Plan (BCP) or Disaster Recovery Plan (DRP)\n\n---\n\n### Finding 3: No Backup Testing or Restoration Validation Requirements\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Policy-wide (no section addresses this) |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap Description:**\nThe policy does not require periodic testing of backup restoration. Without evidence of restoration testing, there is no assurance that backups are actually recoverable. Backups can silently fail, become corrupted, or be rendered unrestorable due to configuration drift \u2014 none of which would be detected under the current policy. SOC 2 auditors will routinely request evidence of restoration tests (e.g., test logs, tickets, results reports). This policy provides no mechanism to generate that evidence.\n\n**What's Missing:**\n- A defined frequency for restoration testing (e.g., quarterly full restore tests, monthly spot-check restores)\n- Documentation requirements for test outcomes\n- A pass/fail criteria for restoration tests\n- A remediation process when a restoration test fails\n\n---\n\n### Finding 4: No Backup Monitoring or Alerting Controls\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Policy-wide (no section addresses this) |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap Description:**\nA1.2 requires that the entity *monitors* environmental protections and backup infrastructure. The policy has no requirements for monitoring backup job success or failure, alerting on failed backups, or reviewing backup logs. If a backup job silently fails, no control exists in this policy to detect or remediate it. This is a monitoring gap that directly contradicts the \"monitors\" element of A1.2.\n\n**What's Missing:**\n- Requirements for automated alerting on backup job failures (e.g., AWS Backup notifications via SNS)\n- Defined ownership for reviewing backup monitoring alerts\n- SLA for remediation of failed backup jobs\n- Periodic review of backup job completion logs\n\n---\n\n### Finding 5: Incomplete Scope \u2013 No Coverage of Non-AWS or Additional System Types\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Section 2 \u2013 Scope |\n| **Severity** | \ud83d\udfe0 High |\n\n**Gap Description:**\nThe scope is limited to \"production databases, application servers, and file storage systems hosted in the Cirrus Labs AWS environment (us-east-1).\" This raises questions an auditor would pursue: Are there SaaS tools, third-party systems, or non-AWS infrastructure that contain production data or support service delivery? If so, those systems are out of scope with no justification. Additionally, application servers are listed in scope but Section 3 only defines backup procedures for databases (Section 3.1) and S3 file storage (Section 3.2) \u2014 application server backups are mentioned in scope but have no corresponding backup procedure defined.\n\n**What's Missing:**\n- Backup procedures explicitly covering application servers (despite being listed in scope)\n- A rationale or exclusion statement for systems not covered\n- Coverage or reference to SaaS platforms or third-party tools if applicable\n\n---\n\n### Finding 6: No Incremental or Continuous Backup for High-Criticality Data\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Section 3 \u2013 Backup Schedule |\n| **Severity** | \ud83d\udfe0 High |\n\n**Gap Description:**\nThe policy defines only daily full backups with no incremental, differential, or continuous/transaction-log-level backups. For production databases, a 24-hour backup interval implies a potential data loss of up to 24 hours, which may not align with customer availability commitments or reasonable RPO expectations for a SaaS product. Without knowing the RPO (see Finding 1), this cannot be confirmed as compliant, but the absence of any sub-daily backup mechanism is a design risk that an auditor would flag for further inquiry.\n\n**What's Missing:**\n- Assessment of whether daily-only backups meet the entity's RPO\n- Consideration of transaction log backups or point-in-time recovery for databases\n- Tiered backup approach based on data criticality\n\n---\n\n### Finding 7: No Defined Roles for Recovery Execution\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Section 7 \u2013 Roles and Responsibilities |\n| **Severity** | \ud83d\udfe0 High |\n\n**Gap Description:**\nThe roles table defines responsibilities for backup *management and maintenance* but assigns no one responsibility for executing or overseeing *recovery* operations. A1.2 requires the entity to operate and maintain recovery procedures. Without assigned ownership of recovery execution, there is no accountability structure for responding to a data loss event.\n\n**What's Missing:**\n- A designated Recovery Owner or Incident Commander role\n- Responsibility for initiating and validating recovery procedures\n- On-call or escalation contacts for after-hours recovery events\n\n---\n\n### Finding 8: Retention Periods Not Tied to Business or Regulatory Requirements\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Section 5 \u2013 Backup Retention |\n| **Severity** | \ud83d\udfe1 Medium |\n\n**Gap Description:**\nThe retention schedule (30-day daily, 12-month monthly) is stated without any documented rationale linking it to business requirements, customer commitments, or applicable regulatory or contractual obligations. An auditor will ask how these periods were determined. If Cirrus Labs is subject to industry regulations (e.g., HIPAA, PCI-DSS, GDPR data minimization constraints) or contractual data retention commitments, the retention periods may be insufficient or may create unnecessary data retention liability \u2014 neither of which is addressable from this document alone.\n\n**What's Missing:**\n- Documented rationale for retention period selection\n- Reference to applicable regulatory or contractual requirements\n- A data classification-based retention approach, if applicable\n\n---\n\n### Finding 9: No Immutability or Ransomware Protection Controls\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Section 6 \u2013 Backup Storage |\n| **Severity** | \ud83d\udfe1 Medium |\n\n**Gap Description:**\nThe policy stores backups in a separate AWS account with restricted cross-account access, which is a positive control. However, it does not require backup immutability (e.g., AWS Backup Vault Lock or S3 Object Lock). Without immutability controls, backups remain susceptible to deletion or encryption by a malicious actor or ransomware that has compromised the backup service role. For availability-focused controls under SOC 2, backup integrity is a reasonable auditor expectation, particularly for entities with sensitive customer data.\n\n**What's Missing:**\n- Immutability requirements (write-once, read-many protection)\n- Controls preventing backup deletion within the retention period\n- Reference to backup vault locking or equivalent controls\n\n---\n\n### Finding 10: No Exception or Deviation Management Process\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Section 8 \u2013 Policy Review |\n| **Severity** | \ud83d\udfe1 Medium |\n\n**Gap Description:**\nThe policy defines an annual review cycle but provides no process for handling exceptions, deviations, or emergency changes to backup configurations outside of the annual review. In practice, backup configurations change (new systems are onboarded, retention is adjusted, schedules are modified) and without an exception management process, those changes may not be formally authorized or documented. This creates a gap in the \"authorizes\" element of A1.2.\n\n**What's Missing:**\n- A formal exception request and approval process\n- Change management integration for backup configuration changes\n- A mechanism to track and review policy deviations\n\n---\n\n## Summary Table\n\n| # | Finding | Section | Severity |\n|---|---|---|---|\n| 1 | No RTO/RPO Defined | Policy-wide | \ud83d\udd34 Critical |\n| 2 | No Recovery Procedures Documented | Policy-wide | \ud83d\udd34 Critical |\n| 3 | No Backup Testing or Restoration Validation | Policy-wide | \ud83d\udd34 Critical |\n| 4 | No Backup Monitoring or Alerting Controls | Policy-wide | \ud83d\udd34 Critical |\n| 5 | Incomplete Scope / Application Server Gap | Section 2 & 3 | \ud83d\udfe0 High |\n| 6 | No Incremental Backups for High-Criticality Data | Section 3 | \ud83d\udfe0 High |\n| 7 | No Roles Assigned for Recovery Execution | Section 7 | \ud83d\udfe0 High |\n| 8 | Retention Periods Lack Documented Justification | Section 5 | \ud83d\udfe1 Medium |\n| 9 | No Immutability / Ransomware Protection | Section 6 | \ud83d\udfe1 Medium |\n| 10 | No Exception or Deviation Management Process | Section 8 | \ud83d\udfe1 Medium |\n\n---\n\n## Overall Readiness Conclusion\n\n> **Not Ready for Audit** \u2014 This policy is insufficient to support a SOC 2 A1.2 opinion in its current state.\n\nThe policy demonstrates basic intent and some sound technical choices (encrypted backups, cross-account storage, cross-region replication), but it addresses only the *creation* of backups. The control criterion requires demonstrated capability to *recover* \u2014 including documented procedures, defined objectives, tested restoration, and active monitoring. Four Critical findings represent fundamental control gaps that would result in an exception if examined during a Type I or Type II audit. Remediation should prioritize Findings 1\u20134 before any audit window opens, as these cannot be remediated retroactively during a Type II audit period."
+}

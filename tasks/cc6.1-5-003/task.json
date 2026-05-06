@@ -1,0 +1,103 @@
+{
+  "id": "cc6.1-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.1",
+  "control_description": "The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events to meet the entity's objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/access-control-policy.md",
+      "type": "policy",
+      "description": "Cascade Analytics access control policy defining access review requirements and reviewer responsibilities"
+    },
+    {
+      "path": "evidence/access-review-q4-detail.csv",
+      "type": "spreadsheet",
+      "description": "Q4 2025 access review completion records with per-system reviewer details, timestamps, findings, and reviewer notes"
+    },
+    {
+      "path": "evidence/okta-user-export.csv",
+      "type": "report",
+      "description": "Okta user export as of December 31, 2025 showing 210 accounts with roles, departments, last login dates, and account status"
+    },
+    {
+      "path": "evidence/hr-roster-q4.csv",
+      "type": "spreadsheet",
+      "description": "HR active employee roster as of December 31, 2025 showing 195 employees and 12 active contractors"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Cascade Analytics' quarterly access review process under CC6.1. Cascade is a data analytics company handling customer PII for enterprise clients. All Q4 2025 access reviews were completed on time and signed off. Your task is to evaluate the quality and effectiveness of the reviews, not just their completion. Cross-reference the access review results with the actual Okta user data and HR roster to determine whether the reviews achieved their intended control objective. Several issues require professional judgment about whether the reviews were genuinely effective or merely procedural.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Access reviewer Victor Reeves certified 6 systems in 4 hours on October 14 with zero findings across 340 accounts",
+      "description": "The access review detail log shows that Victor Reeves (IT Operations Manager) completed reviews for 6 of 14 systems on a single day — October 14, 2025 — between 8:00 AM and 12:00 PM. Across these 6 systems (Jira Cloud, Confluence, Slack, Datadog, PagerDuty, and Zoom), Victor reviewed a combined 340 access grants and reported zero findings and zero revocations for all 6. That averages 4.2 minutes per system or approximately 42 seconds per access grant. The Okta user export reveals at least 3 accounts in Jira (USR-0142, USR-0156, USR-0178) with no login in over 90 days — accounts Victor should have flagged as dormant per Section 5.2 of the policy. The auditor must determine whether this speed and zero-finding rate indicates rubber-stamping.",
+      "evidence_sources": ["evidence/access-review-q4-detail.csv", "evidence/okta-user-export.csv", "evidence/access-control-policy.md"],
+      "expected_reasoning": "The auditor must evaluate: (1) 6 reviews in 4 hours is physically possible but suggests minimal scrutiny, (2) zero findings across 340 accounts is statistically unlikely given the 90-day dormancy threshold, (3) the Okta export reveals dormant accounts that should have been flagged, (4) the policy (Section 5.2) requires verifying each user's continued need — 42 seconds per account does not allow for meaningful verification. However, the auditor must also consider that some of these systems may be low-risk and have well-managed user populations. The key question is whether the reviewer fulfilled the intent of the control or merely the form.",
+      "detection_criteria": {
+        "required_keywords": ["Victor Reeves", "October 14", "6 systems", "340", "zero findings", "dormant", "rubber-stamp", "USR-0142", "42 seconds"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Okta user count (210) exceeds HR roster (207) by 3 accounts not flagged in any access review",
+      "description": "The HR roster shows 195 employees and 12 active contractors (207 total). The Okta user export shows 210 active accounts. Three accounts are unmatched: USR-0198 (svc-demo-portal, Service account, last login December 20), USR-0205 (temp-audit-access, created November 10 with no department), and USR-0209 (partner-api-sync, Integration account, last login December 28). None of these three accounts appear as findings in any of the 14 Q4 access reviews. The Q4 Okta review (AR-Q4-001) was completed by Nathan Cole on October 12 and reported 210 accounts reviewed with 1 finding (a role change). The reviewer either did not notice the HR headcount discrepancy or did not investigate it.",
+      "evidence_sources": ["evidence/okta-user-export.csv", "evidence/hr-roster-q4.csv", "evidence/access-review-q4-detail.csv"],
+      "expected_reasoning": "The auditor must consider: (1) 210 Okta accounts vs 207 HR records = 3 unexplained accounts, (2) the access review for Okta did not flag this discrepancy, (3) USR-0205 (temp-audit-access) has no department and no matching HR record — this could be an ungoverned account, (4) partner-api-sync and svc-demo-portal may be legitimate service accounts but should have been identified and validated during the review. The fact that the reviewer reported 210 accounts but only found 1 issue despite a 3-account discrepancy with HR suggests the review did not include headcount reconciliation.",
+      "detection_criteria": {
+        "required_keywords": ["210", "207", "3 accounts", "USR-0198", "USR-0205", "USR-0209", "headcount", "discrepancy", "not flagged"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "AWS Console access review completed by Nathan Cole who also manages IAM policies",
+      "description": "The Q4 access review for AWS Console (AR-Q4-002) was completed by Nathan Cole, Cloud Infrastructure Manager. Nathan is responsible for creating and managing AWS IAM users and policies — he is effectively the access administrator for AWS. Policy Section 5.1 states reviews should be performed by 'system owners or designated independent reviewers.' The policy does not explicitly define 'independent' but the AICPA Trust Services Criteria guidance notes that access reviews should provide an independent check on access appropriateness. Nathan found 2 issues (revoked access for 2 departed contractors), which demonstrates some effectiveness, but the inherent conflict of self-review remains. The auditor must weigh the demonstrated effectiveness against the independence concern.",
+      "evidence_sources": ["evidence/access-review-q4-detail.csv", "evidence/access-control-policy.md"],
+      "expected_reasoning": "The auditor must weigh: (1) Nathan manages IAM and reviewed IAM access — self-review, (2) he did find and remediate 2 issues, showing the review had some value, (3) the policy does not explicitly require independence but best practice does, (4) AWS is the most critical system — highest impact if access is inappropriate, (5) an independent reviewer might have found additional issues. The finding revolves around whether demonstrated partial effectiveness outweighs the independence gap.",
+      "detection_criteria": {
+        "required_keywords": ["Nathan Cole", "AWS", "AR-Q4-002", "self-review", "IAM", "administrator", "independence", "manages"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Contractor USR-0178 (Kenji Matsuda) last login 95 days ago but not flagged in Jira review",
+      "description": "The Okta user export shows USR-0178 (Kenji Matsuda, contractor from DevBridge Solutions) with last_login of September 27, 2025 — 95 days before the December 31 export date. Policy Section 5.2 requires reviewers to flag accounts with no activity exceeding 90 days as dormant. The Jira Cloud access review (AR-Q4-005) was completed by Victor Reeves on October 14 with zero findings. USR-0178 should have been flagged. Additionally, the HR roster shows Kenji Matsuda's contract_end_date as November 30, 2025 — meaning his account should have been deprovisioned by December 1 but remains active 30 days after contract end.",
+      "evidence_sources": ["evidence/okta-user-export.csv", "evidence/access-review-q4-detail.csv", "evidence/hr-roster-q4.csv"],
+      "expected_reasoning": "This finding combines the rubber-stamping concern (Victor's review missed this) with a contractor offboarding failure. The account is both dormant (95 days) and post-contract (30 days past contract end). Either issue alone would warrant flagging; together they suggest the access review did not include contractor lifecycle checks.",
+      "detection_criteria": {
+        "required_keywords": ["USR-0178", "Kenji Matsuda", "95 days", "September 27", "November 30", "dormant", "contract end", "DevBridge"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["access_review", "rubber_stamp", "review_quality", "headcount_reconciliation", "dormant_accounts", "contractor_lifecycle", "self_review", "judgment"]
+  }
+}

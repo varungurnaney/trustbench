@@ -1,0 +1,85 @@
+{
+  "task_id": "cc6.3-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T18:07:41.529982",
+  "score": {
+    "task_id": "cc6.3-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "PCI",
+          "masking"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "j.crawford",
+          "ACCOUNTADMIN",
+          "Risk Analytics",
+          "DBA team",
+          "no exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "MARKETING_ANALYTICS",
+          "cardholder_data",
+          "masking",
+          "PCI",
+          "h.park",
+          "s.mehta",
+          "b.chen",
+          "no exception"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SVC_DATA_PIPELINE",
+          "SYSADMIN",
+          "minimum",
+          "least privilege"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3632,
+    "output_tokens": 1707
+  },
+  "raw_response": "## Findings for CC6.3 \u2014 Data Access Authorization\n\n### 1. Marketing users have unapproved and unmasked access to PCI cardholder data\n\n**Related document section(s):**  \n- POL-DAP-2025-011 \u00a73.1 \u2014 RBAC Requirements: `MARKETING_ANALYTICS` has \u201cNo PCI data access\u201d  \n- POL-DAP-2025-011 \u00a73.3 \u2014 Segregation of Duties: \u201cMarketing personnel must not access raw PCI data\u201d  \n- POL-DAP-2025-011 \u00a74.1 \u2014 Cardholder Data Access approval requirements  \n- POL-DAP-2025-011 \u00a74.2 \u2014 Data Masking requirements  \n\n**Why this is a gap:**  \nThe Snowflake grant export shows three Marketing users with `SELECT` access to `VERTEX_PROD.PAYMENTS.cardholder_data`:\n\n- `h.park`\n- `s.mehta`\n- `b.chen`\n\nEach is assigned under the `MARKETING_ANALYTICS` role, which the policy explicitly states must not have PCI data access. The grants also show no masking policy applied, with the note: \u201cCustomer payment analysis \u2014 no masking policy applied.\u201d\n\nThis violates the RBAC model, segregation of duties requirements, PCI cardholder data access requirements, and masking requirements for non-DBA roles. No approved exception for these users or this access was identified in the exception register.\n\n**Severity:** Critical\n\n\n\n### 2. Risk Analytics user has unauthorized `ACCOUNTADMIN` privileges\n\n**Related document section(s):**  \n- POL-DAP-2025-011 \u00a73.1 \u2014 RBAC Requirements for `ACCOUNTADMIN`  \n- POL-DAP-2025-011 \u00a73.3 \u2014 Segregation of Duties  \n- POL-DAP-2025-011 \u00a73.2 \u2014 Least Privilege  \n\n**Why this is a gap:**  \nThe Snowflake grant export shows `j.crawford` from Risk Analytics has been granted `ACCOUNTADMIN` with `ALL SYSTEM PRIVILEGES`.\n\nThe policy states that `ACCOUNTADMIN` access requires CISO, CTO, and Board approval and is restricted to the DBA team only. The grant export note states: \u201cGranted for report debugging \u2014 no formal request.\u201d This also violates the segregation of duties requirement that Risk team personnel must not have administrative database privileges.\n\nNo exception was identified for this access.\n\n**Severity:** High\n\n\n\n### 3. Service account has prohibited broad administrative privileges\n\n**Related document section(s):**  \n- POL-DAP-2025-011 \u00a75.1 \u2014 Service Account Governance  \n- POL-DAP-2025-011 \u00a73.2 \u2014 Least Privilege  \n\n**Why this is a gap:**  \nThe Snowflake grant export shows the `SVC_DATA_PIPELINE` service account has `SYSADMIN` privileges across `ALL` databases, schemas, and objects.\n\nThe policy explicitly prohibits broad roles such as `SYSADMIN` and `ACCOUNTADMIN` for service accounts. Service accounts must be scoped to the minimum privileges required for the automated workflow. Although the service account has a documented human owner, the level of privilege granted is not consistent with least privilege and is specifically prohibited by policy.\n\nNo approved exception was identified for this service account.\n\n**Severity:** High"
+}

@@ -1,0 +1,58 @@
+{
+  "id": "cc6.6-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.6",
+  "control_description": "The entity implements logical access security measures to protect against threats from sources outside its system boundaries.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/firewall-rules.csv",
+      "type": "config",
+      "description": "Production AWS security group rules export showing 23 firewall rules across all production security groups"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the production firewall rules for compliance with SOC 2 CC6.6 system boundary protection requirements. Examine each rule for least privilege, appropriate source/destination restrictions, and adherence to security best practices. Identify any overly permissive or misconfigured rules.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Outbound rule FW-018 allows 0.0.0.0/0 on Elasticsearch transport port 9300",
+      "description": "Rule FW-018 in security group sg-prod-analytics allows outbound TCP traffic on port 9300 to 0.0.0.0/0, described as 'Elasticsearch cluster transport — data export pipeline.' Port 9300 is the Elasticsearch inter-node transport port and should never be open to the entire internet. The destination should be restricted to the specific Elasticsearch cluster IP range or security group. An outbound rule allowing 0.0.0.0/0 on a non-standard port creates a potential data exfiltration path — a compromised analytics instance could connect to any Elasticsearch endpoint on the internet. This rule was last modified on 2025-04-22, suggesting it was added or changed outside the regular June 2025 rule review cycle.",
+      "evidence_sources": ["evidence/firewall-rules.csv"],
+      "expected_reasoning": "Most rules in the table use security group references or specific CIDR ranges as destinations. FW-018 stands out because it allows 0.0.0.0/0 on port 9300, a non-standard service port. Legitimate Elasticsearch cluster access should target a specific cluster endpoint, not the entire internet. The auditor should also note that FW-017 (same security group, outbound HTTPS on 443) was modified in September 2025, while FW-018 was modified in April 2025, suggesting different change contexts.",
+      "detection_criteria": {
+        "required_keywords": ["FW-018", "9300", "0.0.0.0/0", "Elasticsearch", "sg-prod-analytics", "outbound", "data exfiltration", "non-standard port"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Webhook receiver FW-019 accepts internet traffic without WAF or IP restriction",
+      "description": "Rule FW-019 allows inbound HTTPS from 0.0.0.0/0 to the webhook receiver security group. While inbound 443 from 0.0.0.0/0 is standard for public endpoints, webhook receivers typically receive traffic only from known partners (e.g., Stripe, GitHub) whose IP ranges are published. The rule description says 'Inbound HTTPS webhooks from partners' but the source is the entire internet rather than partner IP ranges. Without IP allowlisting or WAF protection (not evidenced in the firewall rules), any actor can send requests to the webhook endpoint.",
+      "evidence_sources": ["evidence/firewall-rules.csv"],
+      "expected_reasoning": "FW-019 allows 0.0.0.0/0 inbound but is described as accepting traffic from partners. Partner webhook traffic should ideally be restricted to known partner IP ranges. The ALB rule (FW-001) has the same 0.0.0.0/0 source, but the ALB serves the public web application which legitimately needs internet access. The webhook receiver is a more specialized endpoint.",
+      "detection_criteria": {
+        "required_keywords": ["FW-019", "webhook", "0.0.0.0/0", "partner", "IP restriction", "allowlist", "inbound"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "10 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["firewall_rules", "security_groups", "overly_permissive", "system_boundary", "single_document"]
+  }
+}

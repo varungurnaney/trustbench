@@ -1,0 +1,79 @@
+{
+  "task_id": "pi1.1-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T13:03:09.927198",
+  "score": {
+    "task_id": "pi1.1-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Partner Gamma",
+          "loyalty_tier",
+          "preferred_language",
+          "silently dropped",
+          "schema evolution",
+          "44 days",
+          "record count",
+          "field-level",
+          "DIC-6028",
+          "business team",
+          "not available"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-9112",
+          "BigDecimal",
+          "reconciliation",
+          "integrity control"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-9101",
+          "SchemaEvolutionHandler",
+          "null pointer",
+          "partner-feed-gamma",
+          "loyalty_tier=null",
+          "DIC-6028",
+          "schema evolution",
+          "147 records"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6720,
+    "output_tokens": 3059
+  },
+  "raw_response": "## Overall Assessment\n\n**PI1.1 is not fully met for Q4 2025.** Atlas has documented processing integrity objectives in the SDLC policy, including record count reconciliation, schema conformance, DLQ monitoring, and validation requirements. However, the evidence shows that the objectives are **not sufficient or consistently operating to ensure complete and accurate processing**, especially when partner schemas change.\n\nThe key issue is that reconciliation checks can show \u201cPass\u201d because record counts match, while **data elements are still being silently dropped**. This means the control design and operation do not adequately define or enforce what \u201ccomplete\u201d processing means beyond record-level throughput.\n\n---\n\n## Findings\n\n| # | Short Title | Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Partner Gamma fields silently dropped despite successful reconciliations | Data integrity logs: DIC-6028, DIC-6032, DIC-6035, DIC-6038, DIC-6041, DIC-6045, DIC-6047, DIC-6049; SDLC \u00a76.1 Input Validation, \u00a76.2 Data Reconciliation | Partner Gamma added `loyalty_tier` and `preferred_language` fields on Nov. 15. The pipeline continued to process records, but the new fields were silently dropped for 44 days. Record counts matched, so checks passed, but data available in the feed was not retained. This demonstrates that the processing objective for \u201ccomplete\u201d processing is insufficient because it focuses on record counts, not completeness of data attributes. | **High** |\n| 2 | Record count reconciliation is treated as completeness, but does not detect data loss | SDLC \u00a76.2 Data Reconciliation; data integrity logs Q4 2025 | The reconciliation objective requires source and destination record counts to match within 0.01%. The logs show repeated \u201cPass\u201d results even while Gamma fields were being dropped. This shows that record count accuracy does not equal data completeness. The control does not sufficiently define completeness at the field, schema, or business-data level. | **High** |\n| 3 | Schema evolution process does not require timely review or schema update | SDLC \u00a73.2 Data Pipeline Review, \u00a75.2 Staging Validation, \u00a76.1 Input Validation; data integrity logs DIC-6028 through DIC-6049 | The policy requires review for schema mappings and validation of schema conformance, but the operating evidence shows no schema update, data engineering review, or business impact assessment after Gamma changed its feed. The change was known on Nov. 15, but no action was planned by Dec. 29. This is a gap in defining and enforcing processing objectives when partner schemas evolve. | **High** |\n| 4 | Unknown or optional fields are dropped without assessing business relevance | SDLC \u00a76.1 Input Validation; data integrity logs DIC-6028, DIC-6035, DIC-6049 | The pipeline treats unknown optional fields as acceptable and drops them. There is no evidence of a requirement to determine whether newly received fields should be captured, mapped, rejected, or escalated. The business team was later told the loyalty data was \u201cnot available in feed,\u201d although it was present. This indicates incomplete processing and insufficient communication of data availability. | **High** |\n| 5 | DLQ monitoring did not result in required resolution or escalation | SDLC \u00a76.3 Dead Letter Queue; data integrity log DIC-6028 | DIC-6028 shows a DLQ alert threshold was triggered with 147 records, but records were not quarantined because schema validation passed. Data Ops acknowledged the alert but took no action. The policy requires DLQ records to be reviewed and resolved within 48 hours. The evidence shows the alert did not drive remediation or escalation. | **Medium** |\n| 6 | SAST finding indicates known schema evolution defect affecting processing integrity | SonarQube finding SQ-9101; SDLC \u00a74.1 Static Analysis, \u00a75.2 Staging Validation, \u00a76.1 Input Validation | SQ-9101 is a High severity bug for a null pointer dereference in `SchemaEvolutionHandler.java`, specifically affecting partner-feed-gamma processing when new fields are present but null. This directly relates to the Gamma schema change noted in the logs. The issue remained open as of Dec. 29, creating risk that schema changes or null values could cause failed or inaccurate processing. | **High** |\n| 7 | Null handling objectives are not adequately implemented | SDLC \u00a75.2 Staging Validation; SonarQube findings SQ-9101, SQ-9109, SQ-9116; data integrity log DIC-6028 | The policy requires null handling to be validated according to specification. However, the evidence shows open issues related to null handling: a null pointer risk in schema evolution, a TODO in schema validation for optional fields, and a non-null field being set to null in feed metadata. Gamma\u2019s new field included `loyalty_tier=null`, but the pipeline ignored null and absent cases the same way. This weakens accuracy and completeness objectives. | **Medium** |\n| 8 | Amount reconciliation logic has an accuracy defect | SonarQube finding SQ-9112; SDLC \u00a76.2 Data Reconciliation | SQ-9112 identifies use of floating-point equality comparison in amount reconciliation instead of `BigDecimal.compareTo`. This can cause inaccurate reconciliation outcomes due to precision issues. Because reconciliation is a key processing integrity control, defects in reconciliation logic undermine the accuracy objective. | **Medium** |\n| 9 | Required checksum and expected-feed completeness checks are not evidenced | SDLC \u00a76.2 Data Reconciliation; Q4 data integrity logs | The SDLC requires daily reconciliation checks for record count, SHA-256 checksum on key fields, and confirmation that all expected files or feeds are received before processing begins. The provided logs primarily show record count checks and one schema conformance warning. There is no evidence of checksum validation or expected-feed completeness checks operating during Q4. | **Medium** |\n| 10 | Daily reconciliation is required by policy but not evidenced in the Q4 logs | SDLC \u00a76.2 Data Reconciliation; Q4 data integrity logs | The policy states that all production pipelines implement daily reconciliation checks. The provided Q4 evidence contains 49 entries, mostly weekly partner-feed checks, not daily checks for each production pipeline. If this is the complete population of Q4 checks, the control did not operate at the required frequency. | **Medium** |\n| 11 | Processing objectives are not defined at a sufficient business-data level | PI1.1; SDLC \u00a76 Processing Integrity | The policy defines general processing objectives such as record count preservation, schema conformance, transformation accuracy, and DLQ monitoring. However, it does not define completeness and accuracy for specific business data elements, such as newly introduced partner attributes. As a result, the system can meet technical checks while failing to preserve data that is meaningful to users. | **Medium** |\n| 12 | SAST quality gate passed despite open processing-integrity defects | SonarQube scan summary; SDLC \u00a74.1 Static Analysis | The SonarQube quality gate passed even though several open findings directly affect processing integrity, including schema evolution handling, reconciliation comparison, feed routing logic, null handling, and metadata nullability. While the policy permits remediation windows, there is no evidence of compensating controls or risk acceptance for defects that affect completeness and accuracy of production processing. | **Medium** |\n\n---\n\n## Conclusion\n\nAtlas has a documented processing integrity framework, but the Q4 evidence shows that the control is **not operating effectively for complete and accurate processing**.\n\nThe most significant gap is that **record-level reconciliation passed while field-level data was lost**. Partner Gamma\u2019s new fields were present in source feeds but silently dropped for 44 days, with no schema update, business notification, or remediation plan. This demonstrates that the current processing objectives are too narrow and do not adequately define completeness, accuracy, or timely handling of schema changes.\n\n**Audit result for PI1.1: Not fully effective / exception noted.**"
+}

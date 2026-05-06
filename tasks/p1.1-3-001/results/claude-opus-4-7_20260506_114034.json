@@ -1,0 +1,75 @@
+{
+  "task_id": "p1.1-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:40:34.808310",
+  "score": {
+    "task_id": "p1.1-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "Amplitude",
+          "SendGrid",
+          "Salesforce",
+          "contradiction",
+          "ROPA",
+          "third-party",
+          "processors"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Amplitude",
+          "United States",
+          "EEA",
+          "transfer",
+          "PROC-008",
+          "international"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Salesforce",
+          "usage_metrics",
+          "PROC-010",
+          "CRM",
+          "not disclosed",
+          "collection"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3742,
+    "output_tokens": 3008
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 Control P1.1\n## Privacy Notice vs. Actual Processing Activities\n\nAfter cross-referencing the Privacy Policy (v3.2) against the GDPR Article 30 ROPA, I have identified multiple material discrepancies. The privacy notice does **not** accurately reflect the entity's actual processing and sharing practices, which is a direct failure of P1.1.\n\n---\n\n### Finding 1: Undisclosed Transfer of Personal Data to the United States\n\n**Section Affected:** Privacy Policy \u00a76 (\"Data Location\")\n\n**Gap:** The policy explicitly states: *\"All personal data is processed and stored within the European Economic Area... We do not transfer personal data outside the EEA.\"* However, ROPA entry **PROC-008 (Amplitude Inc.)** documents an active transfer of personal data (User ID, IP address, device fingerprint, behavioral events) to the United States (us-east-1) under Standard Contractual Clauses. This is a direct factual contradiction. Data subjects are being told no transfer occurs when one demonstrably does.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Undisclosed Sharing with Third-Party Processors\n\n**Section Affected:** Privacy Policy \u00a74 (\"Data Sharing\")\n\n**Gap:** The policy states: *\"Your data remains exclusively within the Helix Software environment\"* and lists only three narrow disclosure scenarios (legal process, safety, M&A). The ROPA, however, identifies **seven third-party processors**: Stripe, OneTrust, Amplitude, SendGrid (Twilio), Salesforce, and Personio. Only Stripe is referenced (parenthetically) in \u00a72. Disclosing data to processors is \"sharing\" under GDPR transparency requirements (Art. 13/14), regardless of whether it is for the processor's own purposes. The blanket statement is misleading.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 3: Undisclosed Behavioral Tracking and Product Analytics\n\n**Section Affected:** Privacy Policy \u00a72 (\"Information We Collect\") and \u00a73 (\"How We Use Your Information\")\n\n**Gap:** PROC-008 documents collection of **device fingerprints, session IDs, click paths, time-on-page, and feature usage events** by Amplitude. The policy mentions only generic \"features accessed\" and \"project activity logs\" and characterizes product improvement as analysis of *\"aggregated usage patterns.\"* The actual processing is at the **individual user level** (User IDs, device fingerprinting), not aggregated. Device fingerprinting in particular requires explicit disclosure and likely consent under ePrivacy/GDPR.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Misrepresented Retention Period \u2014 Indefinite Retention by Amplitude\n\n**Section Affected:** Privacy Policy \u00a75 (\"Data Retention\")\n\n**Gap:** The policy promises retention of *\"active account + 24 months\"* with a 90-day backup tail and *\"permanent deletion using industry-standard secure deletion methods.\"* PROC-008 states retention in Amplitude is **\"Indefinite (no deletion policy configured).\"** This contradicts the stated retention commitment and violates GDPR storage-limitation principles (Art. 5(1)(e)).\n\n**Severity:** **Critical**\n\n---\n\n### Finding 5: Undisclosed Retention Periods Inconsistent with Policy\n\n**Section Affected:** Privacy Policy \u00a75 (\"Data Retention\")\n\n**Gap:** Several ROPA retention periods exceed or differ from the \u00a75 commitment:\n- PROC-002 (Stripe): \"Active subscription + 7 years\" (tax law)\n- PROC-010 (Salesforce CRM): \"Active customer + 36 months\"\n- PROC-011 (Personio HR): \"Employment + 10 years\"\n\nWhile these may be legally justified, none are disclosed to data subjects. The policy presents a single, uniform 24-month post-closure retention, which is materially inaccurate.\n\n**Severity:** **High**\n\n---\n\n### Finding 6: Undisclosed Processing of CRM Data Including NPS and Usage Metrics\n\n**Section Affected:** Privacy Policy \u00a72 and \u00a73\n\n**Gap:** PROC-010 (Salesforce) processes *\"subscription tier, usage_metrics, support_history, renewal dates, NPS scores\"* under legitimate interest for sales pipeline management. None of these data categories or this purpose (sales/customer success tracking) are disclosed in the privacy policy. Data subjects have a right (Art. 21) to object to legitimate-interest processing \u2014 a right they cannot exercise if the processing is not disclosed.\n\n**Severity:** **High**\n\n---\n\n### Finding 7: Cookies and Consent Mechanism Not Disclosed\n\n**Section Affected:** Privacy Policy (entire \u2014 no cookie section exists)\n\n**Gap:** PROC-007 documents an active cookie consent management platform (OneTrust) processing consent preferences, truncated IPs, and consent timestamps. The privacy policy contains **no cookie notice, no cookie table, and no reference to OneTrust or consent management**. This is a notable omission for any web-facing service and is required under ePrivacy Directive and GDPR Art. 13.\n\n**Severity:** **High**\n\n---\n\n### Finding 8: Email Content Processed by Third Party Not Disclosed\n\n**Section Affected:** Privacy Policy \u00a74\n\n**Gap:** PROC-009 (SendGrid/Twilio) processes *\"email subject lines, email body content\"* in addition to addresses. Users are not informed that the content of transactional emails passes through a third-party processor, even though it remains within the EEA.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 9: Legal Basis Disclosure Is Generic and Not Activity-Specific\n\n**Section Affected:** Privacy Policy \u00a73\n\n**Gap:** The policy lists the four legal bases generically (\"consent, contractual necessity, legitimate interest, or legal obligation\") without mapping them to specific processing activities. GDPR Art. 13(1)(c)\u2013(d) requires the legal basis (and the specific legitimate interests pursued, where applicable) to be disclosed **per processing purpose**. The ROPA contains this mapping internally but it is not exposed to data subjects.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 10: Categories of Recipients Not Disclosed\n\n**Section Affected:** Privacy Policy \u00a74\n\n**Gap:** GDPR Art. 13(1)(e) requires disclosure of *\"the recipients or categories of recipients of the personal data.\"* The policy fails to identify any processor or processor category (e.g., \"payment processors,\" \"analytics providers,\" \"CRM providers\"). This is a baseline transparency requirement.\n\n**Severity:** **High**\n\n---\n\n### Finding 11: International Transfer Safeguards Not Disclosed\n\n**Section Affected:** Privacy Policy \u00a76\n\n**Gap:** Because the policy denies any extra-EEA transfers, it does not disclose the SCCs used for the Amplitude transfer (PROC-008). GDPR Art. 13(1)(f) requires disclosure of the transfer mechanism and reference to (or means to obtain a copy of) the appropriate safeguards. This is a derivative gap from Finding 1 but is independently reportable.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 12: Stale Review Date on Amplitude Processing Record\n\n**Section Affected:** ROPA (PROC-008) \u2014 control hygiene\n\n**Gap:** PROC-008 was last reviewed on 2024-03-15, while all other records were reviewed 2025-01-15. The one record with the most significant compliance issues (US transfer, indefinite retention, behavioral tracking) has not been re-reviewed in nearly a year. This indicates a weakness in the periodic ROPA review control supporting P1.1.\n\n**Severity:** **Medium**\n\n---\n\n## Overall Conclusion\n\nControl **P1.1 is NOT operating effectively.** The privacy notice systematically understates the scope of processing, omits all third-party processors, denies an international transfer that is actively occurring, and misstates retention. There are at least **four Critical findings** that should block a SOC 2 Type 2 attestation until remediated. Recommended remediation:\n\n1. Rewrite \u00a74 (Data Sharing) to enumerate processor categories and identifiable third parties.\n2. Correct \u00a76 (Data Location) to reflect the US transfer and SCC safeguard, or terminate the Amplitude transfer.\n3. Configure deletion policy in Amplitude and align \u00a75 retention disclosures with the ROPA.\n4. Add a cookie/consent disclosure section.\n5. Map legal bases to specific processing purposes (Art. 13 conformance).\n6. Re-baseline the ROPA review cadence to ensure all records are reviewed at least annually."
+}

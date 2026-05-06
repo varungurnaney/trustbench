@@ -1,0 +1,89 @@
+{
+  "id": "cc6.3-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.3",
+  "control_description": "The entity authorizes, modifies, or removes access to data, software functions, and other protected information assets based on roles and responsibilities, segregation of duties, and least privilege principles.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/data-access-policy.md",
+      "type": "policy",
+      "description": "Prism Analytics data access and data masking policy covering production and non-production environments"
+    },
+    {
+      "path": "evidence/data-masking-config.json",
+      "type": "config",
+      "description": "Data masking pipeline configuration showing masking rules for non-production environments"
+    },
+    {
+      "path": "evidence/staging-dataset-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Inventory of datasets in the staging environment with source, masking status, and refresh schedule"
+    },
+    {
+      "path": "evidence/access-grants-staging.csv",
+      "type": "config",
+      "description": "Staging environment database access grants showing all users and roles"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Prism Analytics' data access and data masking controls under CC6.3. Prism handles customer PII for enterprise analytics clients. The company maintains a staging environment that receives data from production for testing purposes. Review all evidence to assess whether data masking controls are effective and whether data access in non-production environments is appropriately governed. Several issues require professional judgment about the adequacy of masking controls and whether 'test data' designations are substantive or cosmetic.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Dataset DS-STG-007 labeled 'test data' is actually a full production clone refreshed weekly with no masking applied",
+      "description": "The staging dataset inventory shows DS-STG-007 (customer_profiles_qa) with source listed as 'Production Clone' and masking_status as 'Not Required — Test Data.' However, the data masking configuration reveals that this dataset is excluded from the masking pipeline (masking_enabled: false) with the note: 'QA team requires realistic data for integration testing — classified as test data per QA lead approval.' The dataset contains 47,000 records refreshed weekly from the production customer_profiles table. The data access policy Section 4.2 states: 'All production data replicated to non-production environments must have PII masking applied at the replication layer before data is written to non-production storage.' Labeling a production clone as 'test data' does not change the nature of the data — it is still customer PII. The auditor must determine whether the 'test data' classification is a legitimate reclassification or an evasion of masking requirements.",
+      "evidence_sources": ["evidence/staging-dataset-inventory.csv", "evidence/data-masking-config.json", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor must evaluate: (1) DS-STG-007 is sourced from production (Production Clone), (2) it contains 47,000 customer records refreshed weekly, (3) the 'test data' label does not change the data's nature — it still contains real customer PII, (4) the policy requires masking 'at the replication layer before data is written to non-production storage' — there is no exception for data labeled as 'test data', (5) the QA lead's approval is not sufficient — the policy's exception process requires CISO approval, (6) 14 users have access to staging per the access grants, meaning 14 people potentially have access to unmasked production PII.",
+      "detection_criteria": {
+        "required_keywords": ["DS-STG-007", "customer_profiles_qa", "test data", "Production Clone", "47,000", "masking", "not required", "PII", "weekly"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Data masking pipeline excludes email_address field from masking rules despite being PII",
+      "description": "The data masking configuration shows masking rules for SSN (format-preserving encryption), credit_card (tokenization), phone_number (partial redaction), and date_of_birth (generalization to year). However, the email_address field is not included in the masking rules for any dataset. The data access policy Section 4.3 defines PII as including 'names, email addresses, phone numbers, social security numbers, and financial account numbers.' Email addresses are PII per the policy definition, but the masking pipeline does not mask them. Across the 5 masked datasets, email addresses in staging are identical to production email addresses, providing a direct link to real customer identities even where other PII is masked.",
+      "evidence_sources": ["evidence/data-masking-config.json", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor must assess: (1) the policy explicitly defines email addresses as PII, (2) the masking pipeline does not mask email addresses, (3) unmasked email addresses undermine the effectiveness of other masking — a user could re-identify records using email even if SSN and credit card are masked, (4) this may be an oversight or a deliberate choice for testing purposes (e.g., email-based test workflows), (5) the auditor should consider whether partial masking provides a false sense of security.",
+      "detection_criteria": {
+        "required_keywords": ["email_address", "masking rules", "not included", "PII", "Section 4.3", "re-identify", "email", "unmasked"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Contractor d.okonkwo has access to staging with no contract end date configured on the account",
+      "description": "The staging access grants show d.okonkwo (Dayo Okonkwo, contractor from TechBridge Solutions, SOW PRA-2025-041) with readwrite access to the staging database including all datasets. The data access policy Section 6.2 requires contractor accounts to 'have a defined expiration date not exceeding the contract end date.' The access grant shows d.okonkwo's expiration_date as null. Given that the staging environment contains a mix of masked and unmasked production data (including DS-STG-007 with unmasked PII), a contractor with indefinite access to staging has persistent access to real customer PII. The auditor must weigh whether the staging environment's perceived lower risk justifies less rigorous contractor lifecycle management.",
+      "evidence_sources": ["evidence/access-grants-staging.csv", "evidence/data-access-policy.md", "evidence/staging-dataset-inventory.csv"],
+      "expected_reasoning": "The auditor must consider: (1) d.okonkwo is a contractor with no account expiration, (2) staging contains unmasked production PII (DS-STG-007), (3) contractor access to real PII without time limits creates ongoing risk, (4) the policy Section 6.2 requires expiration dates regardless of environment, (5) staging environments are often less strictly governed but the presence of production data means they should have production-level access controls.",
+      "detection_criteria": {
+        "required_keywords": ["d.okonkwo", "TechBridge", "PRA-2025-041", "expiration", "null", "contractor", "staging", "unmasked"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 3
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["data_masking", "PII", "production_clone", "test_data", "staging_environment", "contractor_access", "judgment", "email_masking"]
+  }
+}

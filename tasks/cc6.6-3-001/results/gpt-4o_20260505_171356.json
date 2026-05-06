@@ -1,0 +1,62 @@
+{
+  "task_id": "cc6.6-3-001",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-05T17:13:56.516169",
+  "score": {
+    "task_id": "cc6.6-3-001",
+    "model": "gpt-4o",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.3333333333333333,
+    "precision": 0.5,
+    "f1": 0.4,
+    "score": 0.3333333333333333,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 2,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "schema-registry",
+          "PERMISSIVE",
+          "STRICT",
+          "mTLS",
+          "plaintext"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "metrics-exporter",
+          "self-signed"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1814,
+    "output_tokens": 221
+  },
+  "raw_response": "### Finding 1: Schema Registry Non-compliance with mTLS Requirements\n- **Related Document Section:** 3.1 mTLS Requirement\n- **Gap Explanation:** The schema-registry service has PeerAuthentication set to PERMISSIVE, allowing both mTLS and plaintext communication. This does not align with the policy that mandates STRONG mode, meaning all communications must use mTLS without fallback to plaintext.\n- **Severity:** High\n\n### Finding 2: Metrics Exporter Lacks Istio Sidecar and mTLS\n- **Related Document Section:** 3.1 mTLS Requirement\n- **Gap Explanation:** The metrics-exporter service does not have an Istio sidecar injected and uses a self-signed TLS certificate. As a result, mTLS is not enforced, violating the policy requirement that all services use mTLS for service-to-service communication.\n- **Severity:** Critical\n\nThese findings highlight where the current service configurations do not comply with the policy's requirements to implement strict mTLS for all service communications, which is critical for ensuring secured boundaries as outlined in Nimbus Analytics' security policy."
+}

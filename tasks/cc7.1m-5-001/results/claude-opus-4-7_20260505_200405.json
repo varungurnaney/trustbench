@@ -1,0 +1,79 @@
+{
+  "task_id": "cc7.1m-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T20:04:05.299558",
+  "score": {
+    "task_id": "cc7.1m-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PDU-DC-A1",
+          "PDU-DC-B1",
+          "GEN-DC-02",
+          "86 days",
+          "overdue",
+          "Section 5.3",
+          "does NOT exempt",
+          "thermal imaging",
+          "preventive maintenance"
+        ],
+        "total_keywords": 12,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "HVAC-DC-A1",
+          "refrigerant pressure",
+          "225",
+          "222",
+          "218",
+          "trending down",
+          "Section 5.3",
+          "degradation"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "UPS-DC-B1",
+          "B3-12",
+          "12.2V",
+          "replacement",
+          "January 2026",
+          "degraded"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5603,
+    "output_tokens": 3219
+  },
+  "raw_response": "# CC7.1 Compliance Assessment \u2014 Sentinel Infrastructure Corp Q4 2025\n\n## Executive Summary\n\n**Overall Conclusion: CONTROL DEFICIENCY \u2014 CC7.1 NOT MET for Q4 2025**\n\nWhile 100% uptime was achieved across all physical infrastructure during Q4 2025, **operational availability is not equivalent to maintenance compliance**. The entity's own policy (POL-MAINT-013, Section 5.3) explicitly states that normal operation does NOT exempt equipment from preventive maintenance. Three pieces of critical infrastructure are 86 days overdue on quarterly preventive maintenance, and required escalations under Section 5.2 have not been performed. The 100% uptime metric, while favorable, masks underlying maintenance gaps and cannot be used as primary evidence to demonstrate CC7.1 adequacy.\n\n---\n\n## Findings\n\n### Finding 1: Quarterly Preventive Maintenance Overdue on Critical Infrastructure (3 Assets)\n\n- **Related Document/Section:** Equipment Maintenance Logs EML-712, EML-713, EML-714; Policy POL-MAINT-013, Section 5.1\n- **Gap Description:** Three pieces of critical physical infrastructure (PDU-DC-A1, PDU-DC-B1, GEN-DC-02) are 86 days overdue on quarterly preventive maintenance. Last maintenance was October 4, 2025; required interval is 90 days. Specific deficiencies:\n  - **GEN-DC-02:** No oil change, no fuel contamination sample, no 30-min load test at 75% (only 5-min weekly self-test). Fuel contamination is a leading cause of generator failure during actual outages.\n  - **PDU-DC-A1 & PDU-DC-B1:** No thermal imaging performed for 86 days \u2014 hot spots that precede electrical failures cannot be detected through alarm monitoring alone. Load balance verification and firmware checks also not performed.\n- **Severity:** **High**\n\n---\n\n### Finding 2: Required Escalations Not Performed for Overdue Maintenance\n\n- **Related Document/Section:** Policy POL-MAINT-013, Section 5.2 (Overdue Maintenance Thresholds)\n- **Gap Description:** The policy mandates a tiered escalation:\n  - 31\u201360 days overdue \u2192 Escalate to IT Director with written justification\n  - 61\u201390 days overdue \u2192 Escalate to CTO; operational risk assessment required\n  \n  At 86 days overdue, both the IT Director escalation AND the CTO escalation/risk assessment should have been completed for GEN-DC-02, PDU-DC-A1, and PDU-DC-B1. Maintenance log notes explicitly state \"No escalation per Section 5.2 thresholds\" and \"No escalation filed.\" This is a direct policy violation and indicates a breakdown in the governance process around maintenance deferrals.\n- **Severity:** **High**\n\n---\n\n### Finding 3: Maintenance Window Capacity Planning Failure\n\n- **Related Document/Section:** Policy POL-MAINT-013, Section 3 (MW-EQUIP); EML-712, EML-713, EML-714\n- **Gap Description:** Three quarterly preventive maintenance tasks were skipped because \"the December MW-EQUIP window was fully consumed by generator and HVAC work.\" This indicates the single 6-hour monthly window (first Saturday, 08:00\u201314:00 UTC) is insufficient to accommodate scheduled quarterly work for all in-scope physical equipment. There is no evidence of:\n  - A backup/overflow window being scheduled\n  - Prioritization criteria when window capacity is exceeded\n  - Management notification when scope cannot be completed\n- **Severity:** **Medium**\n\n---\n\n### Finding 4: Misleading Uptime Reporting \u2014 Operational Status Conflated with Maintenance Compliance\n\n- **Related Document/Section:** Q4 2025 Uptime Reports; Policy POL-MAINT-013, Section 5.3\n- **Gap Description:** The uptime reports show 100% availability and \"SLA Met = Yes\" across all systems, but do not flag the maintenance non-compliance status of GEN-DC-02, PDU-DC-A1, and PDU-DC-B1. While some December notes mention \"OVERDUE,\" the report's structure presents these systems as fully compliant. Section 5.3 of the policy explicitly warns that equipment \"may test normally while developing latent issues.\" Uptime reports presented to management/auditors should clearly distinguish operational availability from maintenance compliance to avoid creating a false assurance signal.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: Known Degradation Trends Not Triggering Action (UPS-DC-B1 Battery Cells)\n\n- **Related Document/Section:** EML-703 (October 4, 2025)\n- **Gap Description:** UPS-DC-B1 has 5 battery cells (B3-12 through B3-16) reading 12.2V \u2014 above absolute minimum (11.8V) but below recommended minimum (12.5V), with estimated remaining life of 6\u20138 months. Replacement parts were ordered in October with delivery \"expected January 2026.\" There is no evidence of:\n  - A risk acceptance document for operating with degraded cells\n  - Interim mitigation (e.g., increased monitoring frequency, runtime testing)\n  - A confirmed installation date for replacement cells\n  \n  This represents a known, documented degradation operating without formal risk acceptance.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: HVAC-DC-A1 Refrigerant Pressure Trending Downward \u2014 No Investigation\n\n- **Related Document/Section:** EML-706, EML-708, EML-710\n- **Gap Description:** HVAC-DC-A1 refrigerant pressure has declined consistently over three consecutive months: 225 PSI (Oct) \u2192 222 PSI (Nov) \u2192 218 PSI (Dec). While still within the 200\u2013250 PSI specification, a 7 PSI monotonic decline over 90 days is a classic indicator of a slow refrigerant leak. Per Policy Section 5.3, this is precisely the type of \"latent issue\" preventive maintenance is designed to catch. The maintenance logs note the trend but no leak detection test, system pressure test, or work order to investigate has been initiated. At current rate of decline, the unit will breach spec within ~7 months.\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: Policy Gap \u2014 No Defined Threshold for Trend-Based Maintenance Triggers\n\n- **Related Document/Section:** Policy POL-MAINT-013, Section 5\n- **Gap Description:** The policy defines preventive maintenance intervals and overdue escalation thresholds but does not define **condition-based** triggers \u2014 e.g., when degradation trends within spec should generate proactive corrective work orders. Findings 5 and 6 (UPS battery cells, HVAC refrigerant) demonstrate that \"within spec\" technically passes preventive maintenance while latent failures develop. The policy should be enhanced to require investigation when measurements trend toward limits across consecutive maintenance cycles.\n- **Severity:** **Low**\n\n---\n\n### Finding 8: Maintenance Performed Without Change Tickets for Overdue Items\n\n- **Related Document/Section:** Policy POL-MAINT-013, Section 6; EML-712, EML-713, EML-714\n- **Gap Description:** The policy states \"All maintenance requires a change ticket.\" The three overdue items (EML-712/713/714) show \"Change Ticket: N/A\" because the maintenance was not performed. However, the *deferral decision itself* \u2014 to skip critical maintenance and continue operation past policy thresholds \u2014 is a control-relevant change that should be documented through change management with appropriate approvals (per Section 5.2, CTO approval is required at 90+ days; the team is approaching that threshold without record).\n- **Severity:** **Low**\n\n---\n\n## Recommendations Summary\n\n1. **Immediate:** Complete overdue maintenance on GEN-DC-02, PDU-DC-A1, PDU-DC-B1 before Q1 2026.\n2. **Immediate:** File retroactive escalation memos and risk acceptance documents to CTO for the three overdue assets.\n3. **30 days:** Establish overflow/contingency MW-EQUIP windows and a prioritization framework.\n4. **30 days:** Modify uptime reporting to include a \"Maintenance Compliance Status\" column distinct from availability.\n5. **60 days:** Schedule UPS-DC-B1 battery cell replacement with confirmed date; document interim risk acceptance.\n6. **60 days:** Initiate refrigerant leak investigation on HVAC-DC-A1.\n7. **90 days:** Update POL-MAINT-013 to add condition-based/trend-based maintenance triggers (Section 5.4).\n\n## Auditor's Note on CC7.1\n\nThe 100% uptime metric in isolation does not satisfy CC7.1. SOC 2 CC7.1 requires the entity to *maintain* system components \u2014 meaning evidence of preventive activity per defined standards, not merely evidence of operational availability. Sentinel's own policy correctly recognizes this in Section 5.3, but operational practice in Q4 2025 deviated from that policy. **A qualified opinion or exception is warranted unless overdue items are remediated and escalations documented before the audit period closes.**"
+}

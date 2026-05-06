@@ -1,0 +1,87 @@
+{
+  "task_id": "cc6.3-4-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:21:53.648328",
+  "score": {
+    "task_id": "cc6.3-4-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-088",
+          "PCI",
+          "masking"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "j.crawford",
+          "ACCOUNTADMIN",
+          "Risk Analytics",
+          "DBA team",
+          "no exception",
+          "unrestricted"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "MARKETING_ANALYTICS",
+          "cardholder_data",
+          "masking",
+          "PCI",
+          "h.park",
+          "s.mehta",
+          "b.chen",
+          "no exception"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SVC_DATA_PIPELINE",
+          "SYSADMIN",
+          "minimum",
+          "ETL"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3633,
+    "output_tokens": 1565
+  },
+  "raw_response": "Below are findings from a readiness assessment of Vertex Financial\u2019s data access authorization (SOC 2 CC6.3), based on the provided policy, Snowflake role/grant export, and exception register. Irrelevant documents are excluded. Only genuine control-relevant findings are included \u2014 \u201capparent\u201d issues with valid exceptions are noted as not gaps.\n\n---\n\n---\n\n### 1. **Marketing Analytics Role Granted Access to Unmasked PCI Cardholder Data**\n\n**Section:**  \n- Data Access Authorization Policy, 3.1 (RBAC Requirements), 3.3 (Segregation of Duties), and 4.2 (Data Masking)  \n- Snowflake Role & Grant Export  \n- Exception Register (no matching exception for this role/access)\n\n**Gap Explanation:**  \n- The policy (Section 3.1 & 3.3) explicitly prohibits Marketing personnel from accessing raw PCI data; per 3.3: \u201cMarketing personnel must not access raw PCI data.\u201d\n- Multiple users with the MARKETING_ANALYTICS role (h.park, s.mehta, b.chen) are granted `SELECT` privileges on `VERTEX_PROD.PAYMENTS.cardholder_data`, noted as \u201cCustomer payment analysis \u2014 no masking policy applied\u201d.\n- Section 4.2 requires dynamic masking for all non-DBA access to PCI data; here, the evidence notes masking policy is specifically *not* applied.\n- No approved exception in the exception register allows MARKETING_ANALYTICS role members unmasked PCI access.\n\n**Severity:** **High**\n\n---\n\n### 2. **Snowflake ACCOUNTADMIN Privileges Granted to Non-DBA User Without Formal Request**\n\n**Section:**  \n- Data Access Policy, Section 3.1 (RBAC Requirements), 3.3 (Segregation of Duties), and 7 (Exceptions)  \n- Snowflake Role & Grant Export  \n- Exception Register\n\n**Gap Explanation:**  \n- The policy restricts ACCOUNTADMIN/Snowflake admin privileges: \u201cRestricted to DBA team only\u201d, \u201cDBA team = DBA_ADMIN roles, maximum 2 named individuals\u201d.\n- j.crawford (Risk Analytics department) was granted ACCOUNTADMIN access on 2025-11-18, with Notes: \u201cGranted for report debugging \u2014 no formal request\u201d.\n- No matching CISO-approved exception for this grant.\n- Section 3.3 says Risk team personnel must not have admin database privileges.\n- Granting elevated admin access for debugging, especially absent a formal request or compensating controls, is a clear policy violation.\n\n**Severity:** **High**\n\n---\n\n### 3. **Service Account (SVC_DATA_PIPELINE) Granted Unrestricted SYSADMIN Privileges**\n\n**Section:**  \n- Data Access Policy, 5.1 (Service Accounts Governance)  \n- Snowflake Role & Grant Export\n\n**Gap Explanation:**  \n- Policy 5.1: \"Broad roles (SYSADMIN, ACCOUNTADMIN) are prohibited for service accounts.\"\n- SVC_DATA_PIPELINE is listed with role: SYSADMIN (i.e., \"ALL\" privileges at schema/table, SYSADMIN), which contradicts this requirement.\n- No exception for this service account/role in the register.\n- Service accounts are to be scoped to minimum privileges, owner documented: here, the role clearly exceeds what's needed for ETL workflow.\n\n**Severity:** **Medium**\n\n---\n\n### 4. **No Masking Policy Applied for Marketing Access to Cardholder Data**\n\n**Section:**  \n- Data Access Policy, 4.2 (Data Masking)  \n- Snowflake Role & Grant Export\n\n**Gap Explanation:**  \n- All non-DBA (including auditors) access to PCI-scoped tables (e.g., `cardholder_data`) must use dynamic masking. Notes in Snowflake grants show \u201cno masking policy applied\u201d for MARKETING_ANALYTICS users on `cardholder_data`.\n- This is a direct technical control omission, worsening the risk of inappropriate data exposure.\n\n**Note:**  \n- This may be the same root cause as Finding 1, but if considered from the technical enforcement perspective (masking missing as required by policy), it's justifiable to cite it distinctly.\n\n**Severity:** **High**\n\n---\n\n### 5. **No Documented Business Justification or Approval for Risk Analytics Exception Extension**\n\n**Section:**  \n- Data Access Policy, 7 (Exceptions)  \n- Exception Register \u2014 EXC-2025-082\n\n**Gap Explanation:**  \n- Policy requires that exceptions are approved and \u201cjustified business need documented\u201d. EXC-2025-082 was extended (\u201cRenewed \u2014 no PCI data accessed. Model outputs validated. Extended to 2026-06-05\u201d).  \n- While renewal was noted as \u201cModel outputs validated\u201d, the actual business justification and re-approval (by CISO and Data Owner) are not clearly documented in register evidence.  \n- This could constitute a documentation gap, but evidence does note \u201cmodel outputs validated\u201d and CISO extension is indicated.\n\n**Severity:** **Low**  \n(*This is a documentation observation, not an operational failure \u2014 CISO has at least implied renewal.*)\n\n---\n\n### 6. **Proper Compensating Controls and Logging for Auditor Exception**\n\n**Section:**  \n- Exception Register \u2014 EXC-2025-088  \n- Data Access Policy 7 (Exceptions), 4.2 (Data Masking)\n\n**Assessment:**  \n- The auditor and internal audit users' broad SELECT access is *permitted* under the policy by exception, which is properly logged in EXC-2025-088 with time-limited, masking applied, audit logging, limited users, and review dates.\n- No finding: **properly controlled exception.**\n\n---\n\n### 7. **Quarterly Access Reviews and PCI Monthly Reviews**\n\n**Section:**  \n- Data Access Policy, section 6 (Access Reviews)\n\n**Assessment:**  \n- No contradictory evidence observed \u2014 while grant dates are consistent with policy process, there is no direct evidence of review logs here. However, as this is not a gap in the evidence provided (rather, it points to additional artifacts needed for a full audit), **no finding based on available evidence**.\n\n---\n\n---\n\n## **Summary Table**\n\n| # | Finding Title | Section(s) | Gap | Severity |\n|---|---------------|------------|-----|----------|\n| 1 | Marketing Analytics Role Granted Access to Unmasked PCI Cardholder Data | Policy 3.1, 3.3, 4.2; Role Export; Exception Register | Policy prohibits marketing access to PCI data; role is granted access with no masking and no exception | High |\n| 2 | Snowflake ACCOUNTADMIN Privileges Granted to Non-DBA User Without Formal Request | Policy 3.1, 3.3, 7; Role Export; Exception Register | Non-DBA on Risk team has admin access, in breach of policy, no exception | High |\n| 3 | Service Account Granted SYSADMIN Privileges | Policy 5.1; Role Export | Service account SVC_DATA_PIPELINE assigned SYSADMIN against policy; no exception | Medium |\n| 4 | No Masking Policy Applied for Marketing Access to Cardholder Data | Policy 4.2; Role Export | PCI data not masked for marketing role as required; technical control gap | High |\n| 5 | Exception Extension for Risk Analytics Lacks Explicit Documentation | Policy 7; Exception Register | Exception for disaggregated data extended without explicit documented business need | Low |\n\n---\n\n**Note:** The penetration test summary and the data retention/archival policy are not relevant for CC6.3 (access authorization) and have not been cited in findings.\n\n---\n\n**End of findings.**"
+}

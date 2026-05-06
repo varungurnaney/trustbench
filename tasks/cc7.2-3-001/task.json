@@ -1,0 +1,81 @@
+{
+  "id": "cc7.2-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.2",
+  "control_description": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/monitoring-policy.md",
+      "type": "policy",
+      "description": "Cascade Systems security monitoring policy defining SIEM integration SLA, log retention, and alert requirements"
+    },
+    {
+      "path": "evidence/siem-coverage-tracker.csv",
+      "type": "report",
+      "description": "SIEM coverage tracker showing 13 of 14 production services with integration status and one pending service"
+    },
+    {
+      "path": "evidence/deployment-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 deployment log showing 12 deployments including one new service deployment"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Cascade Systems' monitoring controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the monitoring policy, SIEM coverage tracker, and deployment log. Cross-reference the coverage data against the deployment log and policy requirements to identify any monitoring gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Customer identity resolution service deployed 72+ days without SIEM integration",
+      "description": "The customer-identity-resolution service (CAS-SVC-013) was deployed to production on October 20, 2025 (deployment DEP-Q4-003 in the deployment log, CHG-2025-4438). The SIEM coverage tracker shows the service status is 'Pending' with 'Not Integrated' and zero alert rules. The monitoring policy Section 3.1 requires SIEM integration within 7 business days of production deployment. As of December 31, 2025 — 72 calendar days (approximately 51 business days) — the service remains unintegrated. The integration ticket SEC-5892 was created October 21 but is blocked by a custom Fluent Bit parser requirement. The service processes approximately 1.2 million events per day handling cross-device customer identity matching and profile unification, including customer behavioral data and device fingerprints. This sensitive data processing is occurring with no SIEM visibility, no security alerting, and no anomaly detection for over 10 weeks.",
+      "evidence_sources": ["evidence/siem-coverage-tracker.csv", "evidence/deployment-log-q4.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "The auditor should cross-reference the deployment log (DEP-Q4-003, deployed October 20) with the SIEM coverage tracker (CAS-SVC-013, Not Integrated) and the policy (7 business days SLA). At 51 business days, this is approximately 7x past the SLA. The service handles sensitive customer data (behavioral data, device fingerprints, identity matching) at high volume (1.2M events/day). The technical blocker (custom Fluent Bit parser) does not constitute a valid exception — no exception is documented in the evidence.",
+      "detection_criteria": {
+        "required_keywords": ["customer-identity-resolution", "CAS-SVC-013", "October 20", "72 days", "7 business days", "SEC-5892", "not integrated", "1.2M events", "Fluent Bit"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No alert rules configured for unintegrated service processing customer data",
+      "description": "The SIEM coverage tracker shows CAS-SVC-013 has zero alert rules configured. Policy Section 4.1 requires every production service to have alerts for error rate anomalies, authentication failures, data access anomalies (for data-handling services), and availability monitoring. The customer identity resolution service handles customer behavioral data and device fingerprints, making it a data-handling service that requires data access anomaly alerting. With zero alert rules, any anomalous behavior — unauthorized data access, bulk data extraction, authentication bypass — would go undetected. The service currently logs to CloudWatch only, with no security monitoring.",
+      "evidence_sources": ["evidence/siem-coverage-tracker.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "Beyond the SIEM integration gap, the auditor should specifically note the absence of alert rules as a distinct CC7.2 concern. The policy requires data access anomaly alerts for data-handling services. The identity resolution service handles sensitive customer data, making the absence of security alerting particularly risky.",
+      "detection_criteria": {
+        "required_keywords": ["zero alert rules", "CAS-SVC-013", "Section 4.1", "data access anomaly", "authentication failures", "CloudWatch only", "no security monitoring"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "SIEM coverage at 92.9% — below 100% policy requirement",
+      "description": "The SIEM coverage tracker shows 13 of 14 production services integrated (92.9%). Policy Section 3.1 requires all production services to be integrated. While 92.9% appears strong, the single unintegrated service handles 1.2M events daily of sensitive customer data. Coverage metrics based on service count do not reflect the risk concentration in the unintegrated service. The quarterly monitoring coverage audit (Section 5) should have identified this gap, but no evidence of a Q4 audit is provided.",
+      "evidence_sources": ["evidence/siem-coverage-tracker.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "The auditor should note the overall coverage gap and that no quarterly coverage audit evidence exists for Q4. The policy requires quarterly reconciliation of SIEM inventory against the CMDB. If the Q4 audit occurred, it should have escalated the CAS-SVC-013 gap.",
+      "detection_criteria": {
+        "required_keywords": ["92.9%", "13 of 14", "100%", "quarterly audit", "Section 5", "coverage gap", "reconciliation"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "20 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["SIEM_coverage", "monitoring_gap", "deployment_reconciliation", "cross_reference", "SLA_breach", "customer_data"]
+  }
+}

@@ -1,0 +1,88 @@
+{
+  "id": "a1.2-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "A1.2",
+  "control_description": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup and recovery infrastructure, and recovery plan procedures to meet its objectives. Backup and recovery processes include procedures for recovery of data, systems, and infrastructure to meet the entity's availability commitments and system requirements.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/backup-policy.md",
+      "type": "policy",
+      "description": "Orion Cloud backup and recovery policy defining RPO/RTO targets, backup schedules, and failure response procedures"
+    },
+    {
+      "path": "evidence/backup-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 backup execution log showing 92 days of operations including 3 failure events"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Exception register with CISO-approved exceptions for backup failures including compensating controls"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/cloud-infrastructure-summary.md",
+      "type": "documentation",
+      "description": "Cloud infrastructure overview covering AWS architecture and redundancy design"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Orion Cloud's backup and recovery controls under A1.2 for the Q4 2025 observation period (October 1 - December 31, 2025). Review the backup policy, backup execution log, and exception register. Identify genuine control gaps while distinguishing between failures that have been properly mitigated through compensating controls and those that represent unaddressed risks. Not all documents may be relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "October 22 backup failure with no re-run — but WAL compensating control and CISO exception documented",
+      "description": "The October 22 daily backup (BKP-2025-1022) failed due to a storage controller firmware issue and no re-run was executed. This appears to create a 48-hour gap between full backups (October 21 to October 23). However, exception EXC-2025-051 documents CISO review and approval: WAL archiving was confirmed continuously operational throughout the incident, archiving segments every 10-12 minutes, maintaining an effective RPO of approximately 12 minutes. The firmware issue was resolved by the vendor within 8 hours, and the next day's scheduled backup succeeded. The exception includes a remediation plan to implement firmware auto-update for backup storage controllers.",
+      "evidence_sources": ["evidence/backup-log-q4.csv", "evidence/exception-register.csv"],
+      "expected_reasoning": "October 22 backup failed with no re-run → check exception register → EXC-2025-051 active → CISO approved → WAL archiving maintained RPO → properly managed exception → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["October 22", "WAL", "CISO", "EXC-2025-051", "compensating", "firmware"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["approved", "mitigated", "compensating control", "not a finding"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "December 14 backup failure — 7.5-hour re-run delay with no exception and no WAL confirmation",
+      "description": "The December 14 daily backup (BKP-2025-1214) failed at 02:47 UTC due to a TLS certificate expiration on the backup target. The re-run did not begin until 10:18 UTC — a 7.5-hour gap between failure and re-run, violating the policy's 2-hour re-run SLA (Section 6.1). The backup log note states 'Delayed re-run — on-call engineer did not have access to certificate renewal process. Required escalation to security team.' Unlike the October 22 event, no exception was filed (the exception register has no entry for this incident), and there is no documentation confirming whether WAL archiving was operational during this window. The gap between the last successful backup (December 13 at 04:28 UTC) and the successful re-run (December 14 at 12:05 UTC) is approximately 31.5 hours.",
+      "evidence_sources": ["evidence/backup-log-q4.csv", "evidence/backup-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "Two backup failures in Q4: October 22 and December 14. October 22 has a proper exception with WAL compensating control. December 14 has no exception, no documented compensating control, and a 7.5-hour re-run delay (policy says 2 hours). The TLS certificate expiration suggests a process gap (certificate management not integrated with backup monitoring). The on-call engineer lacked access to fix the issue, indicating a runbook gap.",
+      "detection_criteria": {
+        "required_keywords": ["December 14", "TLS certificate", "7.5 hours", "re-run delay", "no exception", "2-hour SLA", "Section 6.1", "no WAL confirmation"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "November 28 backup failure re-run succeeded but checksum verification skipped",
+      "description": "The November 28 backup (BKP-2025-1128) failed at 02:35 UTC due to a network timeout. The re-run was initiated at 04:10 UTC (within the 2-hour SLA) and completed at 05:52 UTC. However, the checksum_verified column shows 'false' for the re-run with a note: 'Checksum verification skipped to meet maintenance window deadline.' Policy Section 3.5 requires checksum verification on all backups. A backup without checksum verification has unverified data integrity — it may be corrupt and unusable for restoration. No exception was filed for skipping the verification.",
+      "evidence_sources": ["evidence/backup-log-q4.csv", "evidence/backup-policy.md"],
+      "expected_reasoning": "The November 28 re-run was timely but skipped checksum verification. The operator prioritized completing within the maintenance window over data integrity verification. Policy requires checksum verification on all backups. This backup may be corrupt. While subsequent backups on Nov 29 and 30 have verified checksums, the Nov 28 backup would still be used if a point-in-time recovery to that date was needed.",
+      "detection_criteria": {
+        "required_keywords": ["November 28", "checksum", "skipped", "false", "verification", "data integrity", "Section 3.5", "no exception"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["backup", "recovery", "red_herring", "exception_register", "WAL", "compensating_controls", "TLS_certificate", "checksum"]
+  }
+}

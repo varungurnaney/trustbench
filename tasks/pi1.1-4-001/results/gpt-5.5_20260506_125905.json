@@ -1,0 +1,57 @@
+{
+  "task_id": "pi1.1-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T12:59:05.550112",
+  "score": {
+    "task_id": "pi1.1-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 0.33333333333333337,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-7203",
+          "EXC-SAST-2025-044",
+          "excluded from SLA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-7207",
+          "XXE",
+          "XmlDataIngester",
+          "data-pipeline",
+          "30-day SLA",
+          "unassigned",
+          "no action taken",
+          "escalation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4141,
+    "output_tokens": 3828
+  },
+  "raw_response": "## Overall Assessment\n\n**PI1.1 is not fully met for Q4 2025.** Vantage has some relevant SDLC controls for processing integrity, including input validation, record count reconciliation, checksum verification, peer review, and SAST scanning. However, the evidence does **not sufficiently define processing objectives** for what constitutes complete, accurate, and timely processing, and there is at least one genuine unresolved High-severity SAST issue that exceeded the documented remediation SLA.\n\nThe High-severity finding **SQ-7203** appears to have a valid AppSec-approved false-positive exception and should not be treated as a gap. The High-severity finding **SQ-7207** does not have an exception and is materially overdue.\n\n---\n\n## Findings\n\n| # | Short Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Processing objectives are not sufficiently defined | **PI1.1**; SDLC Policy \u00a76.1 Input Validation, \u00a76.2 Data Integrity | The policy describes integrity-related controls, such as rejecting malformed inputs, record count reconciliation, and checksum verification. However, it does not clearly define measurable processing objectives for **complete, accurate, and timely processing**. For example, there is no documented definition of expected completeness thresholds, acceptable error tolerances, reconciliation pass/fail criteria, timeliness targets for data pipelines, or escalation procedures when processing objectives are not met. This limits the ability to determine whether processing is complete, accurate, and timely in practice. | **Medium** |\n| 2 | High-severity XXE finding exceeded the 30-day SLA without remediation or exception | SDLC Policy \u00a74.1 SAST Integration; SonarQube finding **SQ-7207** | The SDLC policy requires High-severity SAST findings to be resolved within **30 calendar days** unless an approved false-positive determination exists. Finding **SQ-7207**, an XXE vulnerability in `XmlDataIngester.java` within the `data-pipeline` project, was first detected on **2025-09-10** and remained **Open** as of **2025-12-29**. It is unassigned, has no documented remediation, and has no approved exception in the SAST Exception Register. This exceeds the SLA by approximately 80 days and represents a genuine control gap. Because the affected component processes partner data feeds, the issue could impact the completeness and accuracy of data processing. | **High** |\n| 3 | Required escalation for overdue High-severity finding is not evidenced | SDLC Policy \u00a74.3 Escalation; SonarQube finding **SQ-7207** | The SDLC policy requires High-severity findings not resolved within SLA and without an approved false-positive determination to be escalated to the Engineering VP. For **SQ-7207**, the record states \u201cNo action taken\u201d and the finding is unassigned. No evidence was provided showing escalation to the Engineering VP after the 30-day SLA was missed. This indicates the escalation control is not operating effectively. | **High** |\n| 4 | SAST remediation tracking is inconsistent with merge request evidence | SDLC Policy \u00a74.1 SAST Integration; \u00a75.1 Pipeline Stages; SonarQube findings and MR records | Several SonarQube records appear inconsistent with the merge request records. For example, **SQ-7211** remains Open as of 2025-12-29 even though MR-3860 states SQL injection remediation was merged on 2025-12-19. **SQ-7225** remains Open even though MR-3840 states path traversal prevention was merged on 2025-12-02. **SQ-7223** remains Open even though MR-3855 states null safety checks were merged on 2025-12-16. These inconsistencies make it difficult to determine whether findings were actually remediated, whether SonarQube rescans confirmed remediation, or whether tracking records are stale. Accurate tracking is important to demonstrate timely and complete remediation of defects affecting processing integrity. | **Medium** |\n| 5 | Timely processing objectives are not defined for data pipelines | **PI1.1**; SDLC Policy \u00a76 Processing Integrity | The policy addresses input validation and data integrity checks but does not define what constitutes **timely processing** for critical pipelines or business processes. There are no documented processing windows, latency targets, batch completion deadlines, reporting delivery timelines, or exception thresholds. Without these objectives, the entity cannot consistently determine whether processing was timely. | **Medium** |\n\n---\n\n## Items Reviewed That Are Not Gaps\n\n| Item | Assessment |\n|---|---|\n| **SQ-7203 \u2013 High SSRF finding** | Not a gap. The finding has an approved false-positive exception, **EXC-SAST-2025-044**, reviewed by the Application Security Lead on 2025-09-20. The exception includes technical justification, AppSec confirmation, finding ID, and active status, satisfying the SDLC policy\u2019s false-positive management requirements. It is therefore excluded from SLA tracking. |\n| Open Medium findings | Most open Medium findings were first detected in November or December 2025 and were still within the 90-day SLA as of 2025-12-29. They should be monitored, but they do not currently represent SLA violations based on the evidence provided. |\n| Low findings | Low findings are subject to \u201cbest effort\u201d remediation under the policy and do not indicate a gap by themselves. |\n\n---\n\n## Conclusion\n\nVantage has elements of a processing integrity framework, but **PI1.1 is only partially satisfied**. The main issues are the lack of clearly documented processing objectives for completeness, accuracy, and timeliness, and the unresolved overdue High-severity XXE finding in the data pipeline. The false-positive exception process appears to be operating properly for **SQ-7203**, but **SQ-7207** is a genuine exception-free gap requiring remediation and escalation."
+}

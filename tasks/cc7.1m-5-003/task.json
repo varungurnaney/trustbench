@@ -1,0 +1,111 @@
+{
+  "id": "cc7.1m-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "The entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/maintenance-policy.md",
+      "type": "policy",
+      "description": "Apex Infrastructure Group maintenance policy defining maintenance windows, stakeholder notification requirements, vendor agreement management, and vendor SLA breach escalation procedures"
+    },
+    {
+      "path": "evidence/patching-records-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "Patching records for Q4 2025 with 17 successful patch deployments"
+    },
+    {
+      "path": "evidence/maintenance-window-schedule-q4-2025.csv",
+      "type": "log",
+      "description": "Maintenance window schedule and execution log for Q4 2025 with 12 entries including 2 emergency events and notification tracking"
+    },
+    {
+      "path": "evidence/vendor-maintenance-agreements.csv",
+      "type": "spreadsheet",
+      "description": "Vendor maintenance agreement tracking with 6 vendors showing agreement status, SLAs, breach tracking, and renewal status"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II audit of Apex Infrastructure Group for Q4 2025 (October 1 - December 31, 2025). Review all evidence related to the maintenance program. Assess whether CC7.1 requirements are met across patching, maintenance window management, vendor agreement currency, and vendor SLA management. Some findings may seem minor in isolation but represent process gaps. Look for patterns across documents and consider the interplay between vendor agreements, vendor SLA performance, and maintenance operations.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "VMware (Broadcom) maintenance agreement expiring December 31 with no confirmed renewal — vendor support lapses January 1",
+      "description": "VMA-2025-104 shows the VMware (Broadcom) maintenance agreement expires December 31, 2025 with status 'Expiring.' The notes state 'Renewal negotiations with Broadcom ongoing — pricing dispute over new Broadcom licensing model.' If not renewed by January 1, 2026, the organization loses VMware support coverage for all ESXi hosts and vCenter. This means: no access to VMware patches and security updates, no TAC support for vSphere issues, no emergency support for hypervisor failures, and no guaranteed SLA for VMware-related incidents. Policy Section 6.3 requires 'Agreements must be current and reviewed annually before renewal.' The agreement was reviewed January 20, 2025 but renewal has not been completed with only 2 days remaining (as of December 29). The hypervisor platform is foundational infrastructure — a support lapse during a critical incident could result in extended downtime. This is a judgment call: should the organization accept Broadcom's new pricing to maintain coverage, or is the pricing dispute a valid reason to let coverage lapse? Regardless of the business justification, the lapse represents a maintenance program gap.",
+      "evidence_sources": [
+        "evidence/vendor-maintenance-agreements.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should review all vendor agreements for currency. VMA-2025-104 expires December 31 — during the observation period — with no confirmed renewal. The pricing dispute is understandable but the consequence (loss of VMware support) directly impacts the organization's ability to maintain its hypervisor infrastructure. Section 6.3 requires current agreements. The auditor should also note the interdependency: VMware hosts run production workloads, and without support, patching and emergency support are unavailable.",
+      "detection_criteria": {
+        "required_keywords": ["VMA-2025-104", "VMware", "Broadcom", "December 31", "expiring", "renewal", "pricing dispute", "Section 6.3", "support lapse", "ESXi", "vCenter"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "VMware vendor SLA breach not escalated to account manager per policy Section 6.4",
+      "description": "VMA-2025-104 documents one vendor SLA breach in Q4: a vCenter patch support ticket (KB95823) was opened November 5 with a 4-hour response SLA, but the response was not received until November 8 — 72 hours later. The agreement notes state 'Breach documented but not escalated to vendor account manager per Section 6.4.' Policy Section 6.4 requires that 'Vendor SLA breaches must be documented and escalated to the vendor account manager.' The breach was documented but escalation did not occur. This is particularly relevant given the ongoing pricing dispute — vendor SLA breaches during renewal negotiations should be documented and escalated as they provide leverage and establish a record of service quality issues. The 72-hour response time for a vCenter patch ticket (18x the 4-hour SLA) indicates either degraded service or deprioritization by the vendor.",
+      "evidence_sources": [
+        "evidence/vendor-maintenance-agreements.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note the vendor SLA breach: 72 hours vs 4-hour SLA. The breach was documented but not escalated per Section 6.4. The context of the pricing dispute makes this more significant — the vendor may be deprioritizing support during renewal negotiations, and the lack of escalation means there is no formal record of service degradation.",
+      "detection_criteria": {
+        "required_keywords": ["KB95823", "72 hours", "4-hour SLA", "not escalated", "Section 6.4", "vendor account manager", "breach", "documented", "VMware"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "MW-Q4-012 maintenance performed with only 24-hour notice and no email notification — policy requires 48-hour notice via email",
+      "description": "MW-Q4-012 (December 20) shows a maintenance window executed with only 24-hour advance notice via Slack only. Policy Section 3.1 requires 48-hour advance notice for MW-PROD windows. The maintenance window schedule notes state: 'Only 24-hour notice given via Slack. Email notification to ops-all distribution list was not sent. Policy requires 48-hour advance notice. Maintenance was planned on Dec 19 for Dec 20 — insufficient notice. No stakeholder objections received (Saturday window) but notification requirements were not met.' While no stakeholders objected (it was a Saturday window with presumably low impact), the notification policy exists to give teams time to prepare for potential disruption, coordinate dependent activities, and raise concerns. The absence of objections does not validate the process — it may simply mean the notification gap was not noticed. Compare with all other MW-PROD windows (MW-Q4-001, MW-Q4-004, MW-Q4-008) which provided 48-hour notice via both email and Slack.",
+      "evidence_sources": [
+        "evidence/maintenance-window-schedule-q4-2025.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should compare the notification practices across all maintenance windows. MW-Q4-001, MW-Q4-004, and MW-Q4-008 all used email + Slack with 48-hour notice. MW-Q4-012 used Slack only with 24-hour notice. The policy explicitly requires 48-hour notice. While the impact was minimal (Saturday window, no objections), this is a process compliance gap that could have more significant consequences for a weekday window.",
+      "detection_criteria": {
+        "required_keywords": ["MW-Q4-012", "24-hour notice", "48-hour", "email not sent", "Slack only", "Section 3.1", "notification", "December 20", "ops-all"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "SSL certificate emergency caused by monitoring gap for short-lived certificates — systemic monitoring weakness",
+      "description": "MW-Q4-011 (December 18) documents an emergency SSL certificate renewal. The post-incident review (PIR-2025-0098) identified the root cause: 'monitoring alert was set for 30-day expiry warning but certificate was issued with 90-day validity (usually 1-year). Monitoring gap — short-lived certificates not detected.' While the emergency was handled properly (CTO approval, quick resolution, PIR completed), the root cause reveals a monitoring configuration gap. Certificate monitoring assumes 1-year validity and alerts at 30 days. With the industry trend toward shorter certificate lifetimes (90-day or even 30-day certificates via Let's Encrypt), the monitoring system would consistently miss short-lived certificate expirations. This is a preventive maintenance gap — the monitoring configuration has not been updated to reflect current certificate practices.",
+      "evidence_sources": [
+        "evidence/maintenance-window-schedule-q4-2025.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should look beyond the immediate incident (properly handled) to the systemic cause. Certificate monitoring assumes 1-year validity, but the industry is moving to shorter certificates. A monitoring system that only alerts at 30 days will miss any certificate with less than 30-day validity. This is a maintenance program gap because certificate renewal is a defined preventive maintenance activity (Section 5.1 mentions certificate management) and the monitoring system is not configured to support it.",
+      "detection_criteria": {
+        "required_keywords": ["SSL certificate", "90-day validity", "30-day warning", "monitoring gap", "short-lived", "PIR-2025-0098", "preventive", "certificate monitoring"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 10
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["system_maintenance", "vendor_agreement", "vendor_SLA", "notification", "certificate_management", "judgment", "VMware", "Broadcom", "pricing_dispute", "monitoring_gap"]
+  }
+}

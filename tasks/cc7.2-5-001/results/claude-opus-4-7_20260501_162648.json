@@ -1,0 +1,108 @@
+{
+  "task_id": "cc7.2-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T16:26:48.194968",
+  "score": {
+    "task_id": "cc7.2-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.8333333333333334,
+    "f1": 0.9090909090909091,
+    "score": 0.9090909090909091,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "helix-ml-inference",
+          "helix-data-lake",
+          "5 business days",
+          "monitoring",
+          "coverage gap",
+          "deployed",
+          "SLA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "S3 bulk access",
+          "false positive",
+          "30%",
+          "tuning",
+          "TUNE-202",
+          "alert fatigue"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "brute force",
+          "SLA",
+          "acknowledged",
+          "missed",
+          "December",
+          "observation"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQL injection",
+          "disabled",
+          "TUNE-203",
+          "compensating",
+          "WAF",
+          "CISO"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "impossible travel",
+          "5",
+          "unresolved",
+          "investigation",
+          "December",
+          "SLA",
+          "triage"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4050,
+    "output_tokens": 3174
+  },
+  "raw_response": "# CC7.2 Readiness Assessment \u2014 Helix Data Systems\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Control:** CC7.2 \u2014 Monitoring and Anomaly Detection\n\n---\n\n## Summary Opinion\n\nThe control is **partially effective** with several deficiencies that warrant remediation before a SOC 2 Type II audit. The policy framework (POL-MON-003) is well-designed and the organization demonstrates monitoring activity, triage discipline, and CISO oversight. However, evidence shows **coverage gaps on production services**, **policy SLA violations**, **persistent high false-positive rates**, and at least one **incident (INC-310) that signals real anomalies are being detected**, which is positive \u2014 but adjacent gaps raise concerns about whether similar anomalies could be missed elsewhere.\n\nI have identified **6 findings** below.\n\n---\n\n## Finding 1: Production Services Deployed Without Monitoring Coverage\n\n**Severity:** **High**\n\n**Related Evidence:** Quarterly monitoring coverage review \u2014 `coverage_gaps` and `new_services_deployed_q4`; Policy POL-MON-003 \u00a75.\n\n**Gap:**\nTwo production services are operating without required security monitoring:\n- `helix-ml-inference` (deployed Nov 20) \u2014 no SIEM integration, no custom alerts; remediation target Jan 15, 2026 (~56 days late)\n- `helix-data-lake-ingestion` (deployed Oct 5) \u2014 CloudWatch basic metrics only, in a separate AWS account not integrated with central monitoring; ~100+ days without monitoring as of review date\n\nBoth materially violate Policy \u00a75 (\"monitoring configured within 5 business days of deployment\"). The data lake ingestion service is particularly concerning because it processes data and resides in an unintegrated AWS account, which represents a **systemic monitoring blind spot**, not a one-off oversight. The fact that ML team \"deployed without notifying Security\" indicates a process failure in the change management \u2192 monitoring handoff.\n\nFor CC7.2, the entity cannot claim it monitors \"system components\" when 2 of 24 (~8%) production services lack the required telemetry. An auditor will likely flag this as a control deficiency for Type II.\n\n**Recommendation:** Accelerate MON-445 and MON-446; implement a deployment gate (CI/CD check) requiring monitoring registration; perform retroactive log review for the gap window.\n\n---\n\n## Finding 2: Sustained False Positive Rates Exceeding Policy Threshold\n\n**Severity:** **Medium**\n\n**Related Evidence:** Monthly alert summary (Oct\u2013Dec); Policy POL-MON-003 \u00a73.3.\n\n**Gap:**\nPolicy \u00a73.3 requires tuning within 2 weeks of any alert rule exceeding 30% false-positive rate. Multiple rules have remained out of compliance throughout Q4:\n\n| Rule | Oct FP% | Nov FP% | Dec FP% |\n|------|---------|---------|---------|\n| Failed login brute force | 98.1% | 96.5% | 93.3% |\n| Impossible travel | 78.3% | 78.9% | 71.0% |\n| S3 bulk access | 97.4% | 96.6% | 95.1% |\n| Large outbound transfer | n/a | 66.7% | 60.0% |\n\nAlthough tuning tickets exist (TUNE-201, TUNE-202), S3 bulk access tuning **regressed in December** after CHG-411 with no documented re-tuning action. Brute force tuning was applied but FP rate remains >90%. High FP rates create alert fatigue, which directly threatens detection of the kind of true positives observed (e.g., the Dec 14\u201316 brute force spike, INC-310).\n\n**Recommendation:** Re-open TUNE-202 and address the regression; consider behavior-based detections (e.g., baseline ETL fingerprints) rather than threshold-only rules.\n\n---\n\n## Finding 3: SLA Misses on Acknowledgement and Triage Time\n\n**Severity:** **Medium**\n\n**Related Evidence:** Monthly alert summary; Policy POL-MON-003 \u00a73.1, \u00a74.1, \u00a74.2.\n\n**Gap:**\n- **SQL injection pattern (October):** 1,203 alerts, only 891 acknowledged within SLA (~26% miss rate) before the rule was disabled.\n- **S3 bulk access:** Across Oct\u2013Dec, 12 of 387 alerts missed acknowledgement SLA; 4 alerts in Dec marked \"requires investigation\" \u2014 unclear if Critical/High 1-hour triage note requirement (\u00a74.2) was met.\n- **Impossible travel (December):** 5 unresolved investigations and increasing trend, with avg triage 15 minutes \u2014 but only 28/31 acknowledged within SLA. The CISO's own note flags an \"increase in unresolved investigations\" with no documented follow-up.\n- **Security group changes:** Avg triage time 45\u201352 minutes for Medium severity \u2014 within SLA, but volume + manual handling suggests opportunity for automation.\n\n**Recommendation:** Establish a quarterly SLA-attainment metric in monthly reports; produce closure evidence for unresolved impossible-travel investigations.\n\n---\n\n## Finding 4: Disabled Alert Rule \u2014 Compensating Control Insufficiently Documented\n\n**Severity:** **Low**\n\n**Related Evidence:** Coverage review `disabled_alerts`; Policy \u00a73.3.\n\n**Gap:**\nThe SQL injection alert was disabled with CISO approval (TUNE-203), satisfying the procedural requirement. However:\n- The compensating control statement (\"CloudTrail monitors for any requests that bypass WAF\") is vague \u2014 there is no specific named alert rule, threshold, or routing for \"WAF bypass\" detection in the alert summary.\n- No evidence the compensating control has been tested or validated.\n\nThis is a documentation deficiency more than a control failure, but auditors will probe it. Compensating controls should be explicit detection rules with testing evidence.\n\n**Recommendation:** Document the specific CloudTrail/WAF-bypass detection logic, add it to the alert inventory, and include a test result.\n\n---\n\n## Finding 5: Pre-Approved \"True Positives\" Risk Masking Real Events\n\n**Severity:** **Low**\n\n**Related Evidence:** Monthly alert summary \u2014 Large outbound transfer (Nov, Dec); Root account usage (Nov 2).\n\n**Gap:**\nLarge outbound transfers and root account use are being labeled true positives but dismissed as \"pre-approved\" / \"authorized infra change.\" This is acceptable if there is a documented allowlisting process tied to change tickets, but the evidence does not show such a linkage (no CHG references in those notes, unlike Security Group changes which do reference CHG tickets).\n\nThe Dec 14 detection of the **unauthorized** outbound transfer (INC-310) demonstrates the rule works \u2014 but the proximity to \"pre-approved\" exceptions creates risk that future malicious activity could be misclassified as routine.\n\n**Recommendation:** Require all \"pre-approved\" classifications on Critical/High alerts to reference a specific change ticket or allowlist entry; add a periodic review of allowlist entries.\n\n---\n\n## Finding 6: Penetration Test Scope Gap \u2014 Internal Network Not Tested\n\n**Severity:** **Low** (informational for CC7.2; more relevant to CC4.1 / CC7.1)\n\n**Related Evidence:** Penetration test executive summary; scope = \"External network, web application, API endpoints.\"\n\n**Gap:**\nThe 2025 penetration test did not include internal network testing or assumed-breach scenarios, which would validate whether monitoring detects post-compromise lateral movement \u2014 a core CC7.2 concern. Findings remediated promptly (H-1 in 10 days) is a positive indicator. The accepted risks (TLS 1.0, verbose staging errors, missing HSTS) appear reasonable.\n\nThis is a minor finding for CC7.2 but worth noting in the broader assessment.\n\n**Recommendation:** Consider adding an internal/assumed-breach component to the 2026 test to validate detection rules against simulated attacker activity.\n\n---\n\n## Items Reviewed and Deemed Acceptable\n\n- Policy POL-MON-003 is current, approved, and comprehensive.\n- CISO performs and documents quarterly coverage reviews.\n- Critical alerts (IAM policy change, root account usage) show 0% FP rate and consistent fast triage (3\u20135 min) \u2014 strong evidence of effective high-severity monitoring.\n- Real-world detection efficacy demonstrated by INC-310 and the Dec 14\u201316 brute force response.\n\n---\n\n## Auditor's Bottom-Line Assessment\n\n| Area | Status |\n|---|---|\n| Policy design | \u2705 Effective |\n| High/Critical alert response | \u2705 Effective |\n| Coverage completeness | \u26a0\ufe0f Deficient (Finding 1) |\n| Alert tuning discipline | \u26a0\ufe0f Deficient (Finding 2) |\n| SLA attainment & documentation | \u26a0\ufe0f Minor gaps (Findings 3\u20135) |\n\n**Recommendation:** Remediate Finding 1 before the Type II observation period closes, or be prepared to disclose it as a known deficiency with a remediation plan. Findings 2\u20136 should be addressed as part of normal operations."
+}

@@ -1,0 +1,64 @@
+{
+  "task_id": "pi1.1-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:51:32.645283",
+  "score": {
+    "task_id": "pi1.1-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "PR-7813",
+          "rounding",
+          "HALF_UP",
+          "HALF_EVEN",
+          "SettlementAggregator",
+          "no post-deploy review",
+          "24 hours",
+          "Tier 1",
+          "VP Engineering",
+          "financial"
+        ],
+        "total_keywords": 12,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "$3.17",
+          "REC-9034",
+          "bank reconciliation",
+          "rounding error",
+          "HALF_UP",
+          "HALF_EVEN",
+          "internal reconciliation",
+          "Nov 27"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7644,
+    "output_tokens": 2842
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 PI1.1\n## Quantum Data Solutions, Q4 2025 (Oct 1 \u2013 Dec 31, 2025)\n\n## Executive Summary\n\nThe organization has a well-documented SDLC policy with appropriate processing integrity controls (input validation, reconciliation, audit trails) and Tier 1 enhancements. Daily settlement reconciliation was executed consistently with two failures appropriately identified. However, **the emergency change process \u2014 a critical compensating control for bypassed pre-merge review \u2014 was not fully executed for PR-7813**, which is particularly concerning because that emergency change directly addressed a processing integrity defect (rounding error producing inaccurate settlement totals). Additional concerns exist regarding undetected processing inaccuracy and weaknesses in reconciliation design.\n\n---\n\n## Findings\n\n### Finding 1: Emergency Post-Deploy Review Not Completed for PR-7813\n**Related to:** SDLC Policy \u00a73.2 (Emergency Change Process), items 3 & 4; PI1.1 (accurate processing)\n\n**Gap:** PR-7813 (\"EMERGENCY: Fix transaction rounding error in settlement totals\") was deployed to a Tier 1 payment processor on November 28, 2025. Per policy \u00a73.2.3, a comprehensive post-deploy review must be completed within 24 hours of deployment. The PR record explicitly states: *\"No post-deploy review performed as of Dec 29.\"* This is more than 30 days past the 24-hour SLA. The required correctness verification, regression risk assessment, test coverage analysis, follow-up identification, and independent Senior Engineer sign-off are entirely absent. The approval_status field reads \"N/A,\" indicating the change remains unreviewed in production.\n\nThis is especially material because the change altered financial rounding logic (HALF_UP \u2192 HALF_EVEN) on a Tier 1 settlement aggregator \u2014 a direct processing-integrity-relevant change. By contrast, PR-7808 followed the emergency process correctly (post-deploy review by Bob Chen, follow-up PR-7812 created, post-mortem filed), demonstrating the control can operate effectively when followed.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Escalation Control for Incomplete Emergency Reviews Did Not Operate\n**Related to:** SDLC Policy \u00a73.3 (Consequences)\n\n**Gap:** Policy \u00a73.3 requires emergency changes without completed post-deploy reviews to be escalated to the VP Engineering weekly. PR-7813 has been outstanding since November 28, 2025 \u2014 meaning at least 4\u20135 weekly escalation cycles should have occurred by Dec 29. There is no evidence in the provided record of any such escalation, nor of any corrective action plan being initiated. The detective/escalation control over the emergency-change process is therefore not operating, suggesting a process design or monitoring gap, not merely a one-off lapse.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Processing Integrity Defect Reached Production and Persisted Undetected for \u22651 Settlement Cycle\n**Related to:** PI1.1 (complete and accurate processing); SDLC Policy \u00a76.2 (Data Reconciliation)\n\n**Gap:** Per REC-9034, a $3.17 rounding discrepancy across 46,230 transactions on Nov 27 was **not detected by the daily source-to-destination reconciliation** (which passed because source and destination internal totals matched). The defect was only discovered when the external bank reconciliation file arrived on Nov 28. This indicates a design weakness in the reconciliation control: the existing source-to-destination check cannot detect rounding errors that affect both sides identically. Inaccurate settlement totals were transmitted externally before detection \u2014 a direct PI1.1 (accuracy) failure. No evidence is provided that an external/bank-file reconciliation has been formalized as a recurring control to close this gap.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: PR-7813 Post-Mortem Timing \u2014 Likely Compliant but Ambiguous\n**Related to:** SDLC Policy \u00a73.2.5 (72-hour post-mortem)\n\n**Gap:** PM-2025-0912 was filed Dec 1 for an incident that began Nov 28 at 02:45 UTC. Depending on the exact filing time on Dec 1, this is at the edge of the 72-hour window (deadline \u2248 Dec 1 02:45 UTC). The evidence does not include a timestamp to confirm compliance. While likely compliant, auditors should obtain the exact filing time to confirm. Additionally, the post-mortem evidently did not surface that the post-deploy review remained outstanding, which represents a quality issue with the post-mortem process itself.\n\n**Severity:** **Low**\n\n---\n\n### Finding 5: PR-7813 Lacks Evidence of Scope Limitation Verification\n**Related to:** SDLC Policy \u00a73.2.2 (Scope limitation)\n\n**Gap:** Policy \u00a73.2.2 requires emergency changes to be limited to the minimum necessary to resolve the incident. Because no post-deploy review was completed for PR-7813, there is no independent verification that the change (SettlementAggregator.java lines 145\u2013152) was appropriately scoped. While the change description suggests narrow scope, the compensating verification control did not run.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: REC-9026 Status Inconsistency\n**Related to:** SDLC Policy \u00a76.2 (Data Reconciliation)\n\n**Gap:** Reconciliation entry REC-9026 (Nov 5) is marked status=Fail with discrepancy_amount=0.00 and source/destination counts and totals matching exactly. The \"Fail\" status appears to reflect the underlying batch deadlock incident (INC-2025-0847) rather than a reconciliation discrepancy. This conflates \"reconciliation outcome\" with \"underlying pipeline health\" and could mask true reconciliation discrepancies in trend analysis. The data-quality policy and reconciliation log schema should distinguish between (a) reconciliation passed/failed and (b) upstream pipeline incident status.\n\n**Severity:** **Low**\n\n---\n\n### Finding 7: Reconciliation Materiality Threshold May Be Below Detection Capability\n**Related to:** SDLC Policy \u00a76.2\n\n**Gap:** Policy \u00a76.2 states discrepancies over $0.01 trigger investigation. However, the Nov 27 incident demonstrates the daily internal reconciliation cannot detect sub-cent-per-transaction errors that aggregate to material amounts because it compares already-aggregated totals on both sides of the same logic. The control as documented is theoretically rigorous but operationally insufficient to meet its own threshold for the class of defect actually observed. Recommend formalizing the bank-file reconciliation as the authoritative external check and documenting expected detection latency.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 8: PR-7813 review_date and review_type Fields Blank\n**Related to:** SDLC Policy \u00a73.2 (documentation requirements)\n\n**Gap:** The pull request record for PR-7813 has empty review_date and review_type fields and approval_status of \"N/A.\" Even for emergency changes, the record should be completed once the post-deploy review occurs. The blank fields are themselves a documentation control deficiency and an audit-trail gap (PI1.1 audit trail completeness, \u00a76.3).\n\n**Severity:** **Medium**\n\n---\n\n## Summary of Severity Counts\n\n| Severity | Count |\n|---|---|\n| Critical | 1 |\n| High | 2 |\n| Medium | 3 |\n| Low | 2 |\n\n## Overall Conclusion\n\nPI1.1 is **not met for Q4 2025**. The combination of (a) an unreviewed emergency change to financial rounding logic on a Tier 1 system, (b) failure of the weekly escalation control that should have surfaced this gap, and (c) a demonstrated reconciliation design weakness that allowed inaccurate settlement totals to be transmitted externally constitutes a material exception to processing integrity. Recommend immediate completion of the PR-7813 post-deploy review by an independent Senior Engineer, formalization of the bank-file external reconciliation, and remediation testing of the \u00a73.3 escalation mechanism before SOC 2 Type II reporting."
+}

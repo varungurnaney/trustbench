@@ -1,0 +1,63 @@
+{
+  "task_id": "cc7.3-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:33:27.988916",
+  "score": {
+    "task_id": "cc7.3-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 0.6666666666666666,
+    "precision": 0.14285714285714285,
+    "f1": 0.23529411764705882,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 14,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "P2",
+          "after-hours",
+          "next business day",
+          "unauthorized access",
+          "queued"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "severity escalation",
+          "after-hours",
+          "correlation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2236,
+    "output_tokens": 2081
+  },
+  "raw_response": "Overall, the Incident Response Plan addresses many CC7.3 expectations: it defines incident severity levels, assigns incident response roles, includes containment/eradication/recovery steps, addresses communications, preserves evidence, and requires post-incident reviews. However, several operational gaps could prevent timely execution, especially around severity classification and alert routing.\n\n| # | Finding | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | P2 after-hours alert handling is insufficient | **5.2 Alert Routing and On-Call** | P2 incidents include unauthorized access to production systems, suspected data exposure, suspicious bulk API export, and service degradation affecting more than 25% of customers. However, after-hours P2 alerts are queued until the next business day. This conflicts with the defined P2 risk level and the 4-hour containment SLA in Section 6.2. A suspected data exposure or compromised production credential should receive 24/7 triage, not next-business-day review. | **High** |\n| 2 | Severity definitions are not sufficiently objective or complete | **3. Severity Levels** | The severity matrix provides examples but lacks clear decision criteria such as number of affected customers, data classification, regulatory impact, production privilege level, confirmed vs. suspected compromise, integrity impact, or duration of outage. This may lead to inconsistent classification and delayed escalation. For example, \u201csuspicious bulk API data export\u201d is P2, but depending on data type and volume it may warrant P1 treatment. | **Medium** |\n| 3 | P1 and P2 escalation criteria for data exposure are ambiguous | **3. Severity Levels; 7.2 Customer Communication; 7.3 Regulatory Notification** | P1 includes \u201cconfirmed breach with customer PII exposed,\u201d while P2 includes \u201csuspected data exposure\u201d and \u201csuspicious bulk API data export.\u201d The plan does not define when suspected exposure should be escalated to confirmed breach status, who makes that determination, or what evidence is required. This ambiguity could delay customer or regulatory notification. | **High** |\n| 4 | P3 alert handling may delay investigation of potentially serious activity | **5.2 Alert Routing and On-Call** | P3 alerts are reviewed only during the daily weekday security standup. P3 includes \u201cunusual CloudTrail activity from known IP,\u201d which could indicate early-stage account compromise or cloud abuse. Waiting until the next business day may delay containment if the event is later determined to be more severe. The plan should define escalation triggers or continuous review criteria for high-risk P3 alerts. | **Medium** |\n| 5 | P4 treatment may understate external scanning or repeated attack activity | **3. Severity Levels; 5.2 Alert Routing and On-Call** | P4 includes vulnerability scans from external IPs and blocked attacks, which are only reviewed weekly. While single low-risk events may be appropriate for weekly review, the plan does not specify correlation rules, thresholds, or escalation criteria for repeated scans, targeted reconnaissance, or coordinated blocked attacks. | **Low** |\n| 6 | Communication requirements do not fully cover all incident types | **7.2 Customer Communication** | Customer communication is clearly defined for P1 confirmed breaches and P2 service degradation, but not for P2 unauthorized production access, suspected data exposure, compromised API keys, or suspicious bulk export. These events may require customer notification even if there is no service degradation. The plan should define customer communication criteria for confidentiality and integrity incidents, not only availability incidents. | **High** |\n| 7 | Notification timelines may not align with contractual or regulatory triggers | **7.2 Customer Communication; 7.3 Regulatory Notification** | The plan states that customers are notified within 72 hours of breach confirmation and that contracts are reviewed for specific SLAs. However, some contracts or laws may require notification within a defined time after discovery, detection, or reasonable belief, not after internal confirmation. The plan does not define how contractual notification obligations are identified during an incident or tracked against incident timelines. | **Medium** |\n| 8 | No detailed playbooks for common incident scenarios | **6. Response Procedures** | The plan provides general containment, eradication, and recovery steps but does not include scenario-specific procedures for ransomware, cloud credential compromise, production database access, insider threat, phishing with credential compromise, third-party breach, or customer data exfiltration. Without playbooks, responders may lack consistent steps for evidence preservation, containment sequencing, customer impact analysis, and recovery validation. | **Medium** |\n| 9 | Containment SLAs may not be achievable given alert routing | **5.2 Alert Routing and On-Call; 6.2 Containment** | The plan defines P2 containment within 4 hours, but P2 after-hours alerts are queued until the next business day. This creates an internal inconsistency and makes the stated containment objective unachievable for after-hours P2 incidents. | **High** |\n| 10 | Incident declaration process does not define escalation or reclassification criteria | **6.1 Incident Declaration; 3. Severity Levels** | The plan states that the Incident Commander declares severity but does not define how incidents are escalated or downgraded as facts change. For example, a P3 anomalous CloudTrail event may become a P2 unauthorized access incident or P1 breach. The absence of reclassification criteria could delay containment and communication. | **Medium** |\n| 11 | Post-mortems are optional for P3 incidents | **9.1 Post-Mortem Requirements** | P3 incidents can involve anomalous activity under active investigation. Making post-mortems optional may result in missed lessons learned, especially where a P3 reflects a near miss, detection gap, or attempted compromise. At minimum, the plan should require documented closure rationale and action tracking for significant P3 events. | **Low** |\n| 12 | Limited evidence that legal, privacy, and data protection roles are formally embedded in response decisions | **4. Roles and Responsibilities; 7.3 Regulatory Notification; 8. Evidence Preservation** | The Head of Legal is listed as backup Communications Lead and DPO, but the RACI does not clearly assign Legal/Privacy responsibilities for breach determination, privilege, regulatory analysis, data subject impact analysis, or contractual notification review. This may create uncertainty during incidents involving customer or personal data. | **Medium** |\n| 13 | Recovery validation is defined generally but lacks security-specific exit criteria | **6.4 Recovery** | The recovery section requires smoke tests, integrity checks, and customer-facing functionality verification, but it does not define security-specific return-to-service criteria such as credential rotation completion, vulnerability remediation validation, IOC sweep completion, monitoring rule deployment, or approval from forensics/security. | **Medium** |\n| 14 | Third-party incident handling is not sufficiently addressed | **2. Scope; 6. Response Procedures; 7 Communication** | The scope includes third-party integrations, but the response procedures do not describe how Crestfield handles incidents originating from or affecting third-party providers. There are no defined steps for vendor escalation, evidence requests, impact assessment, contractual notification, or compensating controls. | **Medium** |\n\n**Summary assessment:** The plan is directionally aligned with SOC 2 CC7.3, but the most significant readiness concerns are the **after-hours P2 alert routing**, **ambiguous severity escalation criteria**, and **incomplete customer/regulatory communication triggers for suspected data exposure or unauthorized production access**. These gaps could impair Crestfield\u2019s ability to respond timely and consistently to security incidents."
+}

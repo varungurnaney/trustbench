@@ -1,0 +1,57 @@
+{
+  "task_id": "cc9.1-3-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:50:59.207428",
+  "score": {
+    "task_id": "cc9.1-3-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.5,
+    "precision": 0.2,
+    "f1": 0.28571428571428575,
+    "score": 0.5,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Amplitude",
+          "Intercom",
+          "FullStory",
+          "DPA",
+          "missing",
+          "16 vendors",
+          "13",
+          "personal data",
+          "Section 3.1"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "DPA tracker",
+          "scope"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1664,
+    "output_tokens": 4227
+  },
+  "raw_response": "## Overall Assessment for CC9.1\n\n**Conclusion: Not fully met / partially effective for Q4 2025.**\n\nArctura has a defined vendor risk management policy with vendor tiers, DPA requirements, SOC 2 review requirements, business review expectations, contractual requirements, and offboarding procedures. The vendor inventory is structured and includes tiering and data classification. However, cross-referencing the active vendor inventory to the DPA tracker identified material data protection coverage gaps for several active High-tier vendors processing customer data.\n\nThe most significant issue is that **3 of 16 active vendors are absent from the DPA tracker**, and all three are **High-tier vendors processing customer data or potential PII**.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Missing DPAs for High-Risk Vendors Processing Customer Data | **Vendor Risk Management Policy, Section 3.1 \u2013 DPA Requirement**; Vendor Inventory rows **ARC-V-009, ARC-V-012, ARC-V-014**; DPA Tracker | The policy requires a DPA to be executed before granting access to personal data for all Critical and High-tier vendors. The following active High-tier vendors are not listed in the DPA tracker: **Amplitude Analytics** \u2014 customer behavioral data including pseudonymized user IDs and IP addresses; **Intercom Inc.** \u2014 customer PII including names and email addresses; **FullStory Inc.** \u2014 customer session data that may include PII in form fields. Because these vendors are active and process customer data, Arctura cannot demonstrate that required contractual privacy protections are in place. | **High** |\n| 2 | DPA Tracker Does Not Fully Reconcile to Active Vendor Inventory | **Vendor Risk Management Policy, Section 3.3 \u2013 DPA Tracking** | The policy states that Security & Compliance maintains a DPA tracker documenting executed agreements, renewal dates, and amendment history. The tracker includes 13 vendors, while the active vendor inventory lists 16 vendors. The tracker does not contain vendor IDs, tier, or data classification, making it difficult to systematically confirm that every in-scope vendor requiring a DPA is covered. The missing vendors are not low-risk omissions; they are High-tier vendors with customer data access. | **Medium** |\n| 3 | DPA Renewal Tracking Is Ambiguous for Several Vendors | **Vendor Risk Management Policy, Section 3.3 \u2013 DPA Tracking** | Several vendors have DPA renewal dates that occurred before or during 2025, but the tracker still lists them as \u201cActive\u201d without clearly showing the next renewal or expiration date. Examples include **Stripe \u2014 2024-07-10**, **PagerDuty \u2014 2024-11-10**, **Okta \u2014 2025-01-15**, **Snowflake \u2014 2025-03-20**, **Zendesk \u2014 2025-04-15**, **Datadog \u2014 2025-05-25**, and **CrowdStrike \u2014 2025-08-20**. The notes indicate some were renewed, but the tracker does not clearly evidence the current effective term or next renewal date during the Q4 2025 observation period. This weakens Arctura\u2019s ability to demonstrate ongoing DPA coverage. | **Medium** |\n| 4 | Ongoing Vendor Monitoring Evidence Is Not Demonstrated in the Provided Materials | **Vendor Risk Management Policy, Sections 2 and 4 \u2013 Vendor Classification and Ongoing Monitoring** | The policy requires annual SOC 2 reviews, security questionnaires, and business reviews depending on vendor tier. The inventory shows a general SOC 2 status of \u201cCurrent,\u201d but the provided evidence does not include review dates, reviewer sign-offs, SOC 2 exception evaluations, questionnaire results, or quarterly/semi-annual business review records. As a result, Arctura has defined monitoring activities but has not provided sufficient evidence that those activities operated during the Q4 2025 observation period. | **Medium** |\n| 5 | Business Disruption Risk Mitigation Is Not Explicitly Evidenced for Critical Vendors | **CC9.1 Requirement; Vendor Risk Management Policy, Sections 2, 4, and 5** | CC9.1 includes risks arising from potential business disruptions. The policy addresses vendor security, privacy, contracts, SOC 2 reviews, and offboarding, but the provided evidence does not explicitly show business continuity-related mitigation for Critical vendors, such as vendor BCP/DR review, resilience assessments, uptime/SLA monitoring, exit strategies, or contingency plans for core service providers like AWS, Snowflake, Stripe, and Okta. This is a readiness gap for demonstrating full coverage of disruption-related vendor risks. | **Medium** |\n\n---\n\n## DPA Coverage Gaps Identified\n\n| Vendor | Tier | Data Classification | DPA Tracker Status | Gap |\n|---|---:|---|---|---|\n| Amplitude Analytics | High | Customer behavioral data, pseudonymized user IDs, IP addresses | **Missing** | DPA required but not evidenced |\n| Intercom Inc. | High | Customer PII, names and email addresses | **Missing** | DPA required but not evidenced |\n| FullStory Inc. | High | Customer session data, may include PII in form fields | **Missing** | DPA required but not evidenced |\n\n---\n\n## Auditor Readiness Conclusion\n\nArctura has a reasonable vendor risk management framework in place, but **CC9.1 should not be considered fully ready** based on the evidence provided. The absence of DPAs for active High-tier vendors processing customer data is the primary issue and should be remediated before audit reliance.\n\nRecommended remediation includes:\n\n1. Execute DPAs for Amplitude, Intercom, and FullStory or formally document why a DPA is not required.\n2. Update the DPA tracker to include all active vendors, vendor IDs, tier, data classification, DPA effective date, renewal/expiration date, and amendment history.\n3. Clarify whether renewal dates represent last renewal date or next renewal due date.\n4. Retain evidence of SOC 2 reviews, security questionnaires, and business reviews for Critical and High vendors.\n5. Add or evidence vendor business continuity and disruption risk mitigation procedures for Critical service providers."
+}

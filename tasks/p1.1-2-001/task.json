@@ -1,0 +1,63 @@
+{
+  "id": "p1.1-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "P1.1",
+  "control_description": "The entity provides notice to data subjects about its privacy practices to meet the entity's objectives related to privacy.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/data-retention-schedule.csv",
+      "type": "spreadsheet",
+      "description": "Crestline SaaS data retention schedule defining retention periods by data category"
+    },
+    {
+      "path": "evidence/cookie-consent-config.json",
+      "type": "config",
+      "description": "Cookie consent management platform (OneTrust) configuration for Crestline SaaS website"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the provided data retention schedule and cookie consent configuration for Crestline SaaS. Assess whether these privacy controls adequately support the requirements of SOC 2 Trust Service Criteria P1.1 (Privacy Notice). Identify any gaps or misconfigurations that could result in data being retained without a defined period or cookies being categorized incorrectly.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Analytics data exempted from retention schedule with no defined retention period",
+      "description": "The data retention schedule specifies a 2-year retention period for most data categories. However, footnote 3 states: 'Analytics and product telemetry data is exempt from standard retention periods and is retained indefinitely for longitudinal trend analysis.' This creates an open-ended retention of potentially personal data (IP addresses, session identifiers, behavioral data) with no defined deletion timeline. The exemption undermines the stated 2-year retention policy and means the privacy notice cannot accurately inform data subjects how long their analytics data is kept.",
+      "evidence_sources": ["evidence/data-retention-schedule.csv"],
+      "expected_reasoning": "The main schedule shows a clear 2-year retention period, but footnote 3 carves out an indefinite exemption for analytics data. This analytics data includes IP addresses and session IDs (row 7), which are personal data. An indefinite retention with no criteria for deletion violates the principle of storage limitation and makes the privacy notice incomplete regarding retention periods.",
+      "detection_criteria": {
+        "required_keywords": ["footnote", "analytics", "exempt", "indefinitely", "no defined", "retention", "longitudinal", "open-ended"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Analytics cookies miscategorized as 'strictly necessary' in consent configuration",
+      "description": "The cookie consent configuration classifies Google Analytics (_ga, _ga_*, _gid) and Mixpanel (mp_*) cookies under the 'strictly_necessary' category with consent_required set to false. These are analytics/measurement cookies that track user behavior and should be categorized as 'performance' or 'analytics' with consent required. By placing them in 'strictly_necessary,' they are loaded without user consent, bypassing the consent mechanism entirely. This means users are tracked by analytics tools before they have an opportunity to opt out, violating the privacy notice's claim that 'performance cookies' require consent.",
+      "evidence_sources": ["evidence/cookie-consent-config.json"],
+      "expected_reasoning": "The 'strictly_necessary' category has consent_required=false, which means cookies in this category load automatically. Google Analytics and Mixpanel cookies are tracking/analytics cookies, not strictly necessary for website functionality. Their placement in this category means analytics tracking occurs without consent, contradicting the consent banner's stated categories.",
+      "detection_criteria": {
+        "required_keywords": ["_ga", "Mixpanel", "mp_", "strictly_necessary", "consent_required", "false", "analytics", "miscategorized", "without consent"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "10 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["retention_schedule", "cookie_consent", "analytics_tracking", "miscategorization", "consent_bypass"]
+  }
+}

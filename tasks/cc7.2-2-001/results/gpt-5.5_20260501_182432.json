@@ -1,0 +1,80 @@
+{
+  "task_id": "cc7.2-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:24:32.880044",
+  "score": {
+    "task_id": "cc7.2-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 0.75,
+    "precision": 0.3333333333333333,
+    "f1": 0.46153846153846156,
+    "score": 0.75,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "P2",
+          "business hours",
+          "24/7",
+          "coverage gap",
+          "on-call"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Qualys",
+          "weekly",
+          "vulnerability",
+          "critical",
+          "timely"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "database",
+          "data access",
+          "monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "insufficient"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1062,
+    "output_tokens": 1964
+  },
+  "raw_response": "## Readiness Assessment Summary\n\nThe Incident Response Plan partially supports CC7.2 because it identifies several monitoring sources, alert channels, and response timelines. However, it is primarily an incident response document and does not fully define the monitoring and anomaly detection program needed to demonstrate that Pinnacle SaaS monitors system components, detects anomalies, and analyzes them to determine whether they represent security events.\n\n## Findings\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Monitoring coverage is not mapped to all system components | Section 3.1 \u2014 Monitoring Sources | The plan lists several monitoring sources, such as Datadog, CloudTrail, CrowdStrike, Proofpoint, and Qualys, but it does not define the full population of system components that must be monitored. There is no mapping to production systems, databases, identity providers, network devices, containers, APIs, backups, third-party services, or critical business applications. Without a defined scope, Pinnacle cannot demonstrate that all relevant system components are monitored for anomalies. | High |\n| 2 | Anomaly detection criteria are not defined | Section 3 \u2014 Detection; Section 3.1 \u2014 Monitoring Sources | The document identifies monitoring tools but does not specify what types of anomalies are monitored, such as unusual authentication activity, privilege escalation, abnormal data access, suspicious network traffic, malware behavior, excessive error rates, configuration changes, or data exfiltration indicators. It also does not define baselines, thresholds, alert logic, or correlation rules. CC7.2 expects monitoring for anomalies indicative of malicious acts, errors, or disruptions. | High |\n| 3 | Analysis process for determining security events is insufficient | Section 3.2 \u2014 Alert Triage | The plan provides triage timeframes, but it does not describe how alerts are analyzed to determine whether they are security events or incidents. There are no documented triage steps, required evidence review, enrichment procedures, correlation with other logs, decision criteria, or documentation requirements. This is a direct gap against CC7.2, which requires anomalies to be analyzed to determine whether they represent security events. | High |\n| 4 | Limited monitoring for natural disasters and operational errors | Section 3.1 \u2014 Monitoring Sources; Section 4.2 \u2014 Response Timeline | The plan references complete system outages as P1 incidents, but it does not describe monitoring for conditions related to natural disasters or operational failures, such as cloud region availability, capacity exhaustion, backup failures, replication failures, environmental conditions, failed deployments, configuration errors, or degraded service health. CC7.2 explicitly includes anomalies indicative of natural disasters and errors affecting the entity\u2019s objectives. | Medium |\n| 5 | 24/7 alerting coverage is incomplete | Section 3.2 \u2014 Alert Triage | The plan states that P1/P2 alerts are triaged within 15 minutes during business hours and that the on-call SRE responds to P1 alerts 24/7 within 30 minutes. However, it is unclear whether security alerts, CloudTrail alerts, endpoint alerts, or P2 events are monitored and escalated after hours. Security-relevant anomalies could remain unreviewed until the next business day unless they are categorized as P1 infrastructure alerts. | High |\n| 6 | Alert routing lacks formal acknowledgement and tracking requirements | Section 3.1 \u2014 Monitoring Sources; Section 3.2 \u2014 Alert Triage | Alerts are routed to Slack channels or email, but the plan does not require alert acknowledgement, ticket creation, ownership assignment, escalation if unacknowledged, or closure documentation. Without a formal tracking mechanism, Pinnacle may not be able to demonstrate that anomalies were reviewed, analyzed, and dispositioned. | Medium |\n| 7 | No periodic review or tuning of monitoring rules | Section 5.2 \u2014 Lessons Learned | The plan states that detection rules are updated based on incident learnings, but it does not require periodic review of alert rules, thresholds, false positives, false negatives, coverage gaps, or tool health. Monitoring rules should be reviewed regularly to ensure they remain effective as systems, threats, and business processes change. | Medium |\n| 8 | Log retention and integrity requirements are not defined for monitoring | Section 4.4 \u2014 Evidence Preservation | The plan requires logs relevant to an incident to be exported and preserved, but it does not define routine log retention periods, tamper protection, time synchronization, centralized log storage, or access controls over monitoring logs. These requirements are important to support anomaly investigation and security event analysis. | Medium |\n| 9 | Vulnerability scans are included but not tied to anomaly detection or triage | Section 3.1 \u2014 Monitoring Sources | Qualys vulnerability scans are listed as a monitoring source with weekly reports to the Security Lead, but the plan does not explain how vulnerability findings are prioritized, escalated, or analyzed as potential security events. Vulnerability management is relevant, but weekly reporting alone does not demonstrate anomaly detection or timely analysis under CC7.2. | Low |\n\n## Overall Assessment\n\nThe plan provides a foundation for incident response and includes several monitoring inputs, but it does not fully satisfy CC7.2 readiness expectations. The most significant gaps are the lack of defined anomaly detection criteria, incomplete monitoring coverage, insufficient event analysis procedures, and unclear 24/7 security alert handling. Pinnacle should supplement the Incident Response Plan with a dedicated monitoring and alerting standard or runbook that defines monitored components, alert rules, triage procedures, escalation paths, documentation requirements, and periodic monitoring effectiveness reviews."
+}

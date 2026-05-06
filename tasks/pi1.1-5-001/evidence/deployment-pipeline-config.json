@@ -1,0 +1,80 @@
+{
+  "pipeline": {
+    "name": "nexus-platform",
+    "version": "3.1.0",
+    "last_modified": "2025-09-20T10:15:00Z",
+    "modified_by": "platform-eng@nexuscloud.io",
+    "repository": "github.com/nexus-cloud/platform"
+  },
+  "stages": [
+    {
+      "name": "build",
+      "order": 1,
+      "type": "build",
+      "enabled": true,
+      "steps": [
+        {"name": "checkout", "action": "actions/checkout@v4"},
+        {"name": "compile", "command": "mvn clean compile", "timeout_minutes": 10},
+        {"name": "unit-tests", "command": "mvn test -Pcoverage", "fail_on": {"test_failure": true, "coverage_below": 80}},
+        {"name": "sast-scan", "action": "sonarqube-scan", "config": {"quality_gate": "strict", "fail_on_critical": true}}
+      ],
+      "on_failure": "abort_pipeline"
+    },
+    {
+      "name": "staging-deploy",
+      "order": 2,
+      "type": "deploy",
+      "enabled": true,
+      "environment": "staging",
+      "steps": [
+        {"name": "deploy-ecs", "command": "aws ecs update-service --cluster staging --service nexus-platform --force-new-deployment"},
+        {"name": "wait-stable", "command": "aws ecs wait services-stable --cluster staging --service nexus-platform"}
+      ]
+    },
+    {
+      "name": "staging-validation",
+      "order": 3,
+      "type": "test",
+      "enabled": true,
+      "minimum_wait_hours": 24,
+      "steps": [
+        {"name": "integration-tests", "command": "npm run integration-tests -- --env staging"},
+        {"name": "performance-tests", "command": "npm run perf-tests -- --env staging --baseline production"},
+        {"name": "qa-signoff", "action": "manual-approval", "required_approvers": ["qa-team"]}
+      ]
+    },
+    {
+      "name": "production-approval",
+      "order": 4,
+      "type": "approval",
+      "enabled": true,
+      "config": {
+        "required_approvers": ["release-managers"],
+        "minimum_approvals": 1
+      }
+    },
+    {
+      "name": "production-deploy",
+      "order": 5,
+      "type": "deploy",
+      "enabled": true,
+      "environment": "production",
+      "steps": [
+        {"name": "deploy-ecs", "command": "aws ecs update-service --cluster prod --service nexus-platform --force-new-deployment"},
+        {"name": "wait-stable", "command": "aws ecs wait services-stable --cluster prod --service nexus-platform"}
+      ],
+      "rollback": {"enabled": true, "strategy": "previous_task_definition"}
+    },
+    {
+      "name": "post-deploy-verification",
+      "order": 6,
+      "type": "test",
+      "enabled": true,
+      "steps": [
+        {"name": "smoke-tests", "command": "npm run smoke-tests -- --env production"},
+        {"name": "health-check", "command": "curl -sf https://api.nexuscloud.io/health || exit 1"}
+      ],
+      "on_failure": "trigger_rollback"
+    }
+  ]
+}

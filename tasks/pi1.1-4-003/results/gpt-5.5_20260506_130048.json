@@ -1,0 +1,75 @@
+{
+  "task_id": "pi1.1-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T13:00:48.421688",
+  "score": {
+    "task_id": "pi1.1-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PR-5610",
+          "emergency",
+          "post-deploy review",
+          "48 hours",
+          "PR-5615",
+          "follow-up"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PR-5614",
+          "no post-deploy review",
+          "48 hours",
+          "35 days"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "ORDER_TIMEOUT_MS",
+          "configuration drift",
+          "staging",
+          "production",
+          "35 days",
+          "48 hours",
+          "CDR-309",
+          "CDR-314",
+          "Under Review"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2963,
+    "output_tokens": 2422
+  },
+  "raw_response": "## Overall Assessment\n\nCascade Systems **does not fully meet PI1.1 readiness expectations for Q4 2025**. The SDLC policy includes some processing-integrity concepts, such as input validation and record-count reconciliation, and most standard code changes had appropriate pre-merge review. However, there are gaps in how processing objectives are formally defined and how emergency changes and configuration drift are controlled.\n\nNotably, **PR-5610 followed the emergency compensating control process**: it was authorized, received a documented post-deploy review within the required period, and had a follow-up test PR. In contrast, **PR-5614 did not follow the required post-deploy review process** and resulted in persistent configuration drift.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Section / Evidence | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Processing objectives are not fully defined for complete, accurate, and timely processing | SDLC Policy \u00a76 \u201cProcessing Integrity\u201d, \u00a76.1 \u201cInput Validation\u201d, \u00a76.2 \u201cData Integrity\u201d | The policy includes general controls such as schema validation and record-count reconciliation, but it does not define specific processing objectives for completeness, accuracy, and timeliness by system, pipeline, or transaction type. For example, it does not define expected processing outcomes, reconciliation tolerances, timeliness SLAs, exception-handling requirements, or ownership for monitoring processing failures. PI1.1 expects the entity to define what complete, accurate, and timely processing means in measurable terms. | Medium |\n| 2 | Emergency change lacked required post-deploy review | SDLC Policy \u00a73.2 \u201cEmergency Changes\u201d; PR-5614 | The policy requires emergency changes deployed without pre-merge review to receive a documented post-deploy review within 48 hours, including findings and follow-up actions. PR-5614 was an emergency order-processing fix authorized by the CTO, but the record states: \u201cNo post-deploy review performed.\u201d There is no reviewer, review date, approval status, or documented findings. This is a direct operating failure of the emergency change compensating control. | High |\n| 3 | Emergency change caused unresolved production-to-staging configuration drift | SDLC Policy \u00a75.2 \u201cConfiguration Management\u201d; Drift Reports CDR-309 through CDR-314; PR-5614 | Following PR-5614, production configuration values for `ORDER_TIMEOUT_MS` and `ORDER_RETRY_MAX` differed from staging. `ORDER_RETRY_MAX` was later synchronized, but `ORDER_TIMEOUT_MS` remained drifted through the end of Q4, persisting for 35 days. This undermines the reliability of staging validation and may affect timely and accurate order processing. The drift appears to have originated from an emergency production change that was not fully reconciled back into the managed configuration baseline. | Medium |\n| 4 | Configuration drift control is not sufficiently risk-based for processing integrity | SDLC Policy \u00a75.2 \u201cConfiguration Management\u201d; Drift Reports CDR-309 through CDR-314 | The policy allows drift up to 5% of configuration parameters before immediate remediation is required. However, a single critical processing parameter, such as an order timeout or retry setting, can materially affect processing timeliness or accuracy even if aggregate drift is below 5%. The Q4 drift remained below 1%, so it did not trigger the stated remediation threshold, yet it affected order-processing configuration and remained unresolved. The control should distinguish critical processing parameters from low-risk expected differences, such as staging debug logging. | Medium |\n| 5 | Persistent \u201cUnder Review\u201d drift lacks documented disposition or remediation plan | Drift Reports CDR-309 through CDR-314 | The recurring `ORDER_TIMEOUT_MS` drift was repeatedly marked \u201cUnder Review\u201d from November 26 through December 29 without documented approval, risk acceptance, remediation owner, target date, or explanation of why the difference was acceptable. For PI1.1, unresolved processing-related differences should be evaluated and dispositioned to ensure they do not impair complete, accurate, or timely processing. | Low |\n\n---\n\n## Additional Observation\n\nThe standard code review process appears generally effective for non-emergency changes in the sample: all non-emergency PRs had a named reviewer, pre-merge review, approval, and merge record. Also, **PR-5610 is an example of an emergency change that followed the compensating control process**, including post-deploy review and documented follow-up testing via PR-5615."
+}

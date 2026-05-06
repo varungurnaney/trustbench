@@ -1,0 +1,81 @@
+{
+  "task_id": "c1.1-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:17:34.802937",
+  "score": {
+    "task_id": "c1.1-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "approved"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "pag_prod_support",
+          "requester_email",
+          "requester_name",
+          "plaintext",
+          "Restricted",
+          "field-level encryption"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "description",
+          "May contain PII",
+          "Confidential",
+          "ticket",
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Data Asset Inventory",
+          "quarterly review",
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3680,
+    "output_tokens": 3656
+  },
+  "raw_response": "## C1.1 Readiness Assessment Result: Not Fully Ready\n\nThe staging database waiver and report cache deviation appear properly approved, active, reviewed during Q4, and supported by compensating controls, so they are **not findings**. The Q4 security awareness training evidence is not directly relevant to this encryption/classification control.\n\n### Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Production support PII stored without field-level encryption | **Database encryption status report**: `pag_prod_support.tickets.requester_email`, `requester_name`; **Policy Section 5.2 \u2013 Data at Rest** | The support database contains columns explicitly marked as PII and classified as **Restricted**, but both are stored in plaintext with `field_encryption = No`. Policy requires field-level encryption for Restricted PII columns. No approved exception was provided for these columns. | **High** |\n| 2 | Support ticket description field may contain PII but is not classified as PII/Restricted | **Database encryption status report**: `pag_prod_support.tickets.description`; **Policy Sections 3, 4.1, and 5.2** | The `description` field is classified as **Confidential** and `pii_flag = No`, but the notes state it \u201cmay contain PII submitted by user.\u201d This indicates PII may not be consistently identified or maintained in the data inventory/classification scheme. As a result, Restricted handling requirements such as field-level encryption, DLP monitoring, or redaction may not be applied. | **Medium** |\n| 3 | Financial data classification appears inconsistent with policy | **Database encryption status report**: `pag_prod_core.orders.total_amount`; **Policy Section 3 \u2013 Classification Levels** | The `orders.total_amount` field is noted as \u201cFinancial data\u201d but classified only as **Confidential**. The policy defines **Restricted** data as including financial data and requires stronger handling, including field-level encryption per the Restricted classification requirements. The classification rationale or an approved exception is not documented. | **Medium** |\n| 4 | Data inventory evidence does not show all required attributes or quarterly review | **Policy Sections 4.1 and 4.2 \u2013 Data Inventory** | The database encryption report includes useful classification and encryption details, but it does not evidence all required Data Asset Inventory attributes, specifically retention period and access control mechanism. Additionally, no Q4 Data Governance Office quarterly review of the full Data Asset Inventory was provided. This weakens evidence that confidential information is fully identified and maintained. | **Low** |"
+}

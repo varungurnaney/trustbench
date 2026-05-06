@@ -1,0 +1,48 @@
+---
+layout: default
+title: "cc6.3-4-002"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>cc6.3-4-002</h2>
+    <p class="section-subtitle">CC6.3 · D4 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D4</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">1</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">42%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are auditing Orion Health Systems' SOC 2 Type II compliance for control CC6.3 (Data Access Authorization). Orion is a healthcare technology company handling PHI. Review all evidence to assess whether data access is authorized based on roles, least privilege, and segregation of duties. Cross-reference the database permissions against the policy, exception register, and access request log. Some apparent issues may have valid exceptions — evaluate each carefully.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/data-access-policy.md</code> — Orion Health Systems data access authorization policy with least-privilege and data classification requirements</li>
+<li><code>evidence/database-permissions.json</code> — PostgreSQL production database role and grant export as of December 20, 2025</li>
+<li><code>evidence/exception-register.csv</code> — CISO-approved exception register with compensating controls for policy deviations</li>
+<li><code>evidence/access-request-log-q4.csv</code> — Q4 2025 data access request tickets with approval chains and justifications</li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="difficulty d4">red_herring</span></td><td>low</td><td><strong>bi-reporting role has broad read access across 12 production tables but is covered by valid exception EXC-2025-070</strong><br><span style="font-size:13px;color:var(--text-dim)">The database permissions show the bi-reporting role has SELECT access to 12 production tables including patient_records, billing, and prescriptions. This initially appears to violate least-privilege (...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>critical</td><td><strong>User t.brooks (clinical-ops-write role) has INSERT and UPDATE on patient_records with no access request ticket</strong><br><span style="font-size:13px;color:var(--text-dim)">The database permissions show user t.brooks (Tyler Brooks, Clinical Operations) assigned the clinical-ops-write role, which grants INSERT and UPDATE on patient_records, appointments, and treatment_pla...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>Access request DAR-Q4-2025-017 approved by Manager only — missing Data Owner and Privacy Officer approval for PHI access</strong><br><span style="font-size:13px;color:var(--text-dim)">Access request DAR-Q4-2025-017 granted user k.shah (Karen Shah, Data Science) SELECT access to patient_records and prescriptions. The access request log shows this was approved by Manager only (Dr. Mi...</span></td></tr>
+<tr><td><strong>F-004</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Exception EXC-2025-065 for svc-legacy-sync expired October 31 but write access remains active</strong><br><span style="font-size:13px;color:var(--text-dim)">The exception register shows EXC-2025-065 (temporary write access for legacy system data synchronization) expired on October 31, 2025 with status 'Expired.' The database permissions show svc-legacy-sy...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-bad">23%</td><td>100%</td><td>13%</td><td>23%</td><td>3/3</td><td>22</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-low">55%</td><td>100%</td><td>38%</td><td>55%</td><td>3/3</td><td>7</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-low">46%</td><td>100%</td><td>30%</td><td>46%</td><td>3/3</td><td>9</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-low">50%</td><td>100%</td><td>33%</td><td>50%</td><td>3/3</td><td>8</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-low">50%</td><td>100%</td><td>33%</td><td>50%</td><td>3/3</td><td>8</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-bad">26%</td><td>100%</td><td>15%</td><td>26%</td><td>3/3</td><td>20</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.3-4-002">GitHub</a></p></footer>
+</div>

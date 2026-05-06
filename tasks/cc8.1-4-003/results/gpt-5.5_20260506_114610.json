@@ -1,0 +1,86 @@
+{
+  "task_id": "cc8.1-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:46:10.509017",
+  "score": {
+    "task_id": "cc8.1-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-706",
+          "maintenance window",
+          "outside",
+          "Saturday"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "CISO",
+          "NOT OBTAINED",
+          "dual approval",
+          "unreachable",
+          "emergency"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-708",
+          "developer",
+          "segregation",
+          "SRE"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CISO",
+          "delegate",
+          "after-hours",
+          "unreachable",
+          "delegation",
+          "emergency"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2616,
+    "output_tokens": 3987
+  },
+  "raw_response": "## Overall Assessment\n\nMeridian Analytics is **not fully compliant with CC8.1 for Q4 2025**. Most normal changes were appropriately CAB-approved, tested, security-reviewed where required, deployed by SRE, and implemented during approved windows or with documented CAB exception. However, **CHG-708** represents a significant breakdown in emergency change authorization and segregation-of-duties controls. There are also evidence/design gaps around emergency coverage and rollback documentation.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Emergency change deployed without required CISO approval | **Change Management Policy \u00a72, \u00a74**; **Change Log CHG-708**; **CAB Minutes Dec. 9, 2025** | The policy requires emergency changes to receive **dual approval from VP Engineering and CISO** before implementation. CHG-708 was a Critical emergency change affecting authentication, but CISO approval was **not obtained**. The CAB minutes confirm Nathan Cole approved alone because Yuki Tanaka was unreachable. Retrospective CAB review does not replace the required pre-implementation emergency authorization. | **Critical** |\n| 2 | Developer deployed own production emergency change | **Change Management Policy \u00a73.4 Segregation of Duties**; **Change Log CHG-708**; **CAB Minutes Dec. 9, 2025** | Policy requires that developers must not deploy their own changes and that production deployments are performed by the SRE team only. For CHG-708, the developer, **Anika Patel**, deployed the change because the SRE on-call engineer did not respond. This violates segregation of duties and production deployment control requirements. | **High** |\n| 3 | Emergency change process lacks effective after-hours coverage / delegation | **Change Management Policy \u00a74 Emergency Changes**; **Policy \u00a73.4 Segregation of Duties**; **CAB Minutes Dec. 9, 2025** | The emergency process depends on availability of the CISO and SRE on-call resources, but CHG-708 shows the process was not operationally resilient after hours. The CISO was unreachable and the SRE on-call did not respond, causing management to bypass approval and deployment controls. CAB itself recommended adding a secondary CISO delegate and SRE backup coverage, indicating a design weakness in the current process. | **Medium** |\n| 4 | Rollback plan evidence not provided for changes | **Change Management Policy \u00a73.1 Submission**; **Q4 Change Log** | The policy requires all changes to include a Jira ticket with a rollback plan. The provided change log includes testing evidence, approvals, deployment window, and post-implementation verification, but it does not show whether rollback plans existed for the 10 Q4 changes. Without Jira ticket detail or rollback plan references, the auditor cannot verify this required element of the change request process. | **Medium** |\n| 5 | Standard change pre-approval catalog not evidenced | **Change Management Policy \u00a72 Change Categories**; **Change Log CHG-707 and CHG-710** | Standard changes are described as \u201cpre-approved per catalog,\u201d but the standard change catalog was not provided. CHG-707 and CHG-710 were processed without CAB approval, which is appropriate only if they are covered by an approved standard change catalog. The evidence does not allow validation that these changes were formally pre-authorized. | **Low** |\n\n---\n\n## Items Reviewed With No Finding\n\n- **CHG-706 outside Saturday window:** No finding. Although deployed outside the standard Saturday maintenance window, the policy allows CAB-approved business justification exceptions. CAB minutes document approval of the exception due to customer contract deadline.\n- **Emergency retrospective timing:** No finding. CHG-704 and CHG-708 retrospectives occurred within 5 business days.\n- **High-risk normal changes:** CHG-702, CHG-705, CHG-706, and CHG-709 had CAB approval and documented security review.\n- **SLA dashboard:** Useful context, but the availability misses do not by themselves indicate a CC8.1 change management gap, especially since the dashboard reports 0 failed deployments and 0 rollbacks."
+}

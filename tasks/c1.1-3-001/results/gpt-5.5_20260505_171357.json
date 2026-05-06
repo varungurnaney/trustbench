@@ -1,0 +1,89 @@
+{
+  "task_id": "c1.1-3-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:13:57.756237",
+  "score": {
+    "task_id": "c1.1-3-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "crestline_analytics",
+          "customer_profiles",
+          "plaintext",
+          "email",
+          "phone",
+          "field-level encryption",
+          "ETL",
+          "nightly"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "GraphQL",
+          "DLP",
+          "bulk",
+          "pagination",
+          "October 2025",
+          "REST",
+          "known_gaps"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "crestline_analytics",
+          "customer_profiles",
+          "engagement_events",
+          "plaintext"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "GraphQL",
+          "October 2025",
+          "DPIA",
+          "DLP rules"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4717,
+    "output_tokens": 4047
+  },
+  "raw_response": "## SOC 2 Type II Readiness Findings \u2014 Control C1.1\n\nNo Critical findings were identified. However, several High and Medium gaps indicate that Crestline\u2019s actual implementation does not fully align with its stated data classification and protection requirements for Restricted / confidential data during Q4 2025.\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Restricted PII Stored in Plaintext in Analytics Database | **Data Classification and Protection Policy** \u00a7\u00a7 3.1, 3.2, 4.1; **Database Encryption Status Report** rows for `crestline_analytics.customer_profiles` and `crestline_analytics.engagement_events`; **Data Flow Diagram** \u00a7 3.1 | The policy classifies email addresses and phone numbers as **Restricted** and requires field-level encryption using AES-256 for all Restricted data columns. However, the database report shows the analytics database stores `customer_profiles.email`, `customer_profiles.phone`, and `engagement_events.user_email` in plaintext with `field_level_encryption = No`. Notes state these fields are copied from production via nightly ETL or denormalized for query performance. This is a direct conflict with the policy and exposes Restricted data to the Analytics Team without field-level protection. | **High** |\n| 2 | Analytics ETL Replicates Restricted Data Without Preserving Required Protections | **Policy** \u00a7\u00a7 3.1, 3.2, 4.1; **Data Flow Diagram** \u00a7 3.1; **Database Encryption Status Report** | The data flow diagram confirms that the nightly ETL copies email and phone data from `crestline_prod.users` into `crestline_analytics`. The source production fields are encrypted, but the destination analytics fields are plaintext. Restricted data retains its classification regardless of system or use case; copying it for analytics performance does not remove the field-level encryption requirement. The ETL process is therefore not maintaining required confidentiality controls across downstream data flows. | **High** |\n| 3 | GraphQL API Allows Bulk Restricted Data Extraction Without DLP Coverage | **Policy** \u00a7 5.1; **DLP Configuration** `api_gateway.known_gaps`; **Data Flow Diagram** \u00a7 4.2 | The policy requires DLP coverage for API data exports. The DLP configuration states API DLP coverage is only partial and only applies to selected v2 REST endpoints. The GraphQL API launched in October 2025 is explicitly not integrated with DLP rules. The data flow diagram states GraphQL can query user email, phone, and address data and supports pagination and aliases, allowing bulk PII extraction within rate limits. This creates an unmonitored export path for Restricted data during the audit period. | **High** |\n| 4 | GraphQL Rate Limiting Is Not Designed to Prevent Bulk PII Export | **Policy** \u00a7\u00a7 4.3, 5.1, 5.2; **Data Flow Diagram** \u00a7 4.2 | The GraphQL API is rate-limited per query rather than per record. The DFD states a single query can retrieve all user PII through pagination, and batch queries using aliases are supported. While data is transmitted over TLS, the policy also requires controls to detect or prevent unauthorized transmission of Restricted data. Current controls do not adequately limit or detect record-volume-based extraction through GraphQL. | **High** |\n| 5 | Database Activity Monitoring Does Not Cover All Restricted Data Stores | **Policy** \u00a7 5.1; **DLP Configuration** `database_activity_monitoring`; **Database Encryption Status Report**; **Data Flow Diagram** \u00a7\u00a7 2.3, 3.1 | The policy requires DLP / database monitoring for database query result sets exceeding thresholds. Current DAM coverage monitors only the `users` and `payment_methods` tables. It does not monitor analytics tables containing PII, including `crestline_analytics.customer_profiles` and `crestline_analytics.engagement_events`, even though those tables contain plaintext email and phone data. The DFD also references `partner_data` as a Restricted data store, but it is not listed in the DAM-monitored tables. | **Medium** |\n| 6 | Encryption Status Inventory Appears Incomplete for Restricted Data Flows | **Policy** \u00a7\u00a7 3.3, 4.1, 6; **Database Encryption Status Report**; **Data Flow Diagram** \u00a7\u00a7 2.2, 2.3 | The database encryption report is described as covering all PII columns across production databases, but it omits data stores referenced in the Restricted data flow diagram, including `crestline_prod.partner_data` and `crestline_prod.payment_methods`. The DFD states partner-imported Restricted data is written to `partner_data` with field-level encryption, but this cannot be validated from the encryption report. This indicates the data inventory / encryption validation may not be complete, which weakens evidence that Crestline identifies and maintains all confidential information. | **Medium** |\n| 7 | DLP Data-Type Coverage Does Not Fully Align With Restricted Data Definition | **Policy** \u00a7\u00a7 3.2, 5.1; **DLP Configuration** email, CASB, endpoint, API sections | The policy defines Restricted data to include SSNs, DOB, email addresses, phone numbers, physical addresses, financial account numbers, and government-issued IDs. DLP rules primarily detect SSNs, credit cards, bulk email addresses, and some phone-number patterns. There is limited or no explicit detection for DOB, physical address, financial account numbers, government-issued IDs, or individual email / phone values across all channels. This creates inconsistent protection for data elements classified as Restricted by policy. | **Medium** |\n| 8 | Endpoint DLP Does Not Evidence Required Web Upload and Paste Operation Coverage | **Policy** \u00a7 5.1; **DLP Configuration** `endpoint` section | The policy requires Endpoint DLP coverage for \u201cweb uploads and paste operations.\u201d The endpoint DLP configuration provided includes rules for USB copy of sensitive files and printing Restricted documents, but does not show controls for browser uploads, web form submissions, clipboard paste, or paste operations into web applications. CASB rules address certain cloud storage uploads, but they do not fully evidence endpoint-level web/paste controls required by policy. | **Medium** |\n| 9 | New GraphQL Restricted Data Flow Lacks Evidence of DPIA Approval Before Launch | **Policy** \u00a7 6; **Data Flow Diagram** \u00a7 4.2; **DLP Configuration** `api_gateway.known_gaps` | The policy requires new Restricted data flows to receive DPIA approval. The GraphQL API launched in October 2025 and is documented in the November 2025 DFD, but the evidence does not include formal DPIA approval before go-live. The fact that the GraphQL API launched with a known DLP gap suggests the DPIA / change review process did not ensure confidentiality controls were implemented before production use. | **Medium** |\n| 10 | SSN Hashing Is Reported as Field-Level Encryption Though It Is Not AES-256 Encryption | **Policy** \u00a7\u00a7 3.2, 4.1; **Database Encryption Status Report** row for `users.ssn_hash` | The policy requires Restricted columns, including SSNs, to use AES-256 field-level encryption. The database report marks `users.ssn_hash` as field-level encrypted, but the method is listed as `SHA-256 + HMAC`. Hashing is not encryption and is not reversible. If Crestline only stores a non-reversible SSN hash, the design may be acceptable, but the report inaccurately represents hashing as field-level encryption and does not clearly document whether raw SSNs are never stored. | **Low** |"
+}

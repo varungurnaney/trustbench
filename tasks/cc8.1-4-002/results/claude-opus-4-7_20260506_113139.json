@@ -1,0 +1,82 @@
+{
+  "task_id": "cc8.1-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:31:39.464690",
+  "score": {
+    "task_id": "cc8.1-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "rollback",
+          "control failure"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-510",
+          "rollback"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-506",
+          "SCIM",
+          "testing evidence",
+          "empty",
+          "N/A",
+          "Section 3.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "CHANGE-510",
+          "staging",
+          "production",
+          "parity"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5618,
+    "output_tokens": 2514
+  },
+  "raw_response": "# CC8.1 Change Management Readiness Assessment - Q4 2025\n\n## Executive Summary\n\nCrestline SaaS demonstrates a generally mature change management program with documented policy, consistent CAB cadence, defined testing requirements, and effective rollback execution. The two rollbacks (CHANGE-503, CHANGE-510) were handled per policy and represent operational events, not control failures. The emergency change (CHANGE-507) followed the documented emergency process with retrospective CAB approval within the 72-hour SLA. However, several genuine control gaps exist, primarily concerning testing evidence, segregation of duties, and CAB quorum composition.\n\n---\n\n## Findings\n\n### Finding 1: CHANGE-506 Approved Without Required Testing Evidence\n**Related to:** Policy Section 3.2 (Testing Requirements); CAB Minutes Nov 10, 2025; Change Log CHANGE-506\n\n**Gap:** Policy Section 3.2 requires that \"All Normal and Emergency changes must include testing evidence prior to production deployment\" with test results \"attached to the Jira ticket,\" and that High-risk changes additionally require load testing results. CHANGE-506 (SCIM provisioning endpoint, High risk) was approved by the CAB on November 10 without testing evidence attached to the ticket \u2014 the minutes explicitly note \"formal testing evidence not yet attached to Jira ticket at time of approval.\" The change log confirms the testing_evidence field is **empty** and test_pass_rate is **N/A**, yet the change was deployed to production on November 11. There is no record that load testing (required for High-risk changes) was ever performed, and no record that the verbal commitment to upload test results before deployment was actually fulfilled. This is a direct violation of the testing control and represents the most significant gap in the sample.\n\n**Severity:** **High**\n\n---\n\n### Finding 2: CAB Quorum Composition Concern \u2014 Recurrent Absence of Security Lead/QA Lead on High-Risk Changes\n**Related to:** Policy Section 3.3 (CAB Approval); CAB Minutes Nov 3, Nov 24, Dec 8, 2025\n\n**Gap:** While the policy defines quorum as 3 of 4 members including the VP Engineering \u2014 and all meetings technically met this threshold \u2014 several CAB meetings approving changes occurred without the Security Lead present (Nov 3, Nov 24) or without the QA Lead present (Oct 20, Nov 10, Dec 8). Notably, CHANGE-506 (a High-risk security-relevant SCIM provisioning endpoint) was approved at a meeting where the QA Lead was absent, immediately before being deployed without testing evidence. While not a strict policy violation, the policy does not require the Security Lead's review for security-relevant changes or the QA Lead's review when testing evidence is incomplete. This creates a structural weakness where a key reviewer for risk type can be systematically bypassed while still meeting numerical quorum.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 3: Staging Environment Parity Gap \u2014 Corrective Action Not Tracked to Closure\n**Related to:** Incident Report INC-2025-0891 (Corrective Action #2); CAB Minutes Oct 27, Dec 15, 2025\n\n**Gap:** The CHANGE-503 incident report identified Corrective Action #2: \"Engineering to evaluate staging environment parity for WebSocket workloads.\" There is no evidence in subsequent CAB minutes or change log that this evaluation was performed, assigned an owner with a due date, or closed. The same root cause pattern (issue not reproducible in staging / configuration not caught in pre-prod) recurred with CHANGE-510 in December, suggesting the systemic gap was not remediated. CC8.1 requires the entity to design and test changes to meet objectives; failure to track corrective actions from a prior change failure undermines the design effectiveness of the testing control.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 4: Inconsistent Approver Identity in Change Log \u2014 Single Point of Approval\n**Related to:** Policy Section 3.3; Change Log \"approver\" column\n\n**Gap:** Every Normal change in the Q4 log lists \"Andrea Ruiz (CAB)\" as the sole approver, with no record of the other CAB members' individual approvals or dissents. While the CAB minutes show attendance, the change log does not capture the multi-party approval evidence; it records only the chair. For SOC 2 Type II purposes, this weakens the auditable trail of CAB approval and could be interpreted as VP-Engineering-only approval rather than committee approval. Additionally, this concentrates approval authority and provides no evidence that other members substantively reviewed each change.\n\n**Severity:** **Low**\n\n---\n\n### Finding 5: CHANGE-507 Emergency Approval Documentation\n**Related to:** Policy Section 2 (Emergency Approval); Change Log CHANGE-507\n\n**Gap:** The emergency change for the curl CVE patch lists the deployer as \"sre-team\" and the developer as \"sre-team\" \u2014 the same group. Policy Section 3.4 requires segregation of duties: \"Developers must not deploy their own changes to production.\" While emergency CVE patches are often handled by SRE and the retrospective CAB approved the process, the change log does not identify a specific individual developer or document a compensating control (e.g., peer review by a second SRE) demonstrating segregation. Approval is also recorded as \"Andrea Ruiz (verbal)\" with no written confirmation timestamped before deployment beyond the change log entry itself.\n\n**Severity:** **Low**\n\n---\n\n### Finding 6: Standard Change CHANGE-512 \u2014 Limited Independent Verification\n**Related to:** Policy Section 3.4 (Segregation of Duties); Change Log CHANGE-512\n\n**Gap:** CHANGE-512 (SSL certificate batch renewal) lists both developer and deployer as \"sre-team,\" with post-implementation verification also performed within 15 minutes by the same group. While this is permitted under the Standard change catalog (SC-002, automated via cert-manager), the change log lacks identification of the specific individual performing post-implementation verification, making it impossible to confirm whether it was performed by someone other than the deployer.\n\n**Severity:** **Low**\n\n---\n\n## Items Reviewed and Determined NOT to Be Findings\n\n- **CHANGE-503 and CHANGE-510 rollbacks:** Both were operational events handled per Section 3.6 \u2014 rollback initiated within the 15-minute SLA (8 min and 6 min), root cause documented, follow-up fix changes (504, 511) created with enhanced testing. Controls operated as designed.\n- **CHANGE-507 emergency process:** Followed Section 2 emergency procedure; retrospective CAB occurred Nov 17 (within 72 hours of Nov 15 deployment).\n- **3-of-4 quorum meetings:** Numerically compliant with policy as written (see Finding 2 for related structural concern).\n- **Test pass rates:** All documented changes met the 95% minimum threshold.\n\n---\n\n## Overall Readiness Opinion\n\n**Conditionally Ready** \u2014 with remediation of Finding 1 (CHANGE-506 testing evidence) being prerequisite for a clean Type II opinion. Findings 2 and 3 should be remediated through policy enhancement and corrective action tracking before the next audit period. Findings 4\u20136 are documentation hygiene improvements."
+}

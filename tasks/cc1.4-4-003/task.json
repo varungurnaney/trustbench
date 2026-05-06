@@ -1,0 +1,102 @@
+{
+  "id": "cc1.4-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.4",
+  "control_description": "The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/hr-security-policy.md",
+      "type": "policy",
+      "description": "Stratus Health Technologies HR security policy defining background check requirements, HIPAA-specific screening, training deadlines, and PHI access controls"
+    },
+    {
+      "path": "evidence/background-check-records-2025.csv",
+      "type": "spreadsheet",
+      "description": "Background check records for 15 employees hired in 2025 with OIG screening dates and PHI access flags"
+    },
+    {
+      "path": "evidence/oig-annual-rescreening-2025.csv",
+      "type": "log",
+      "description": "OIG Exclusion List annual rescreening tracker for all PHI-access employees showing due dates and completion status"
+    },
+    {
+      "path": "evidence/aup-acknowledgment-tracker.csv",
+      "type": "spreadsheet",
+      "description": "AUP acknowledgment tracker showing initial signing and annual re-acknowledgment dates for all personnel"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/hipaa-training-compliance-dashboard.md",
+      "type": "report",
+      "description": "HIPAA and security awareness training compliance dashboard for Q1 2025 — shows 100% completion but contains a subtle note about training content versioning"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Stratus Health Technologies' personnel security controls for the 2025 observation period. Review the HR security policy, background check records, OIG rescreening tracker, AUP acknowledgment tracker, and training compliance dashboard. Assess whether CC1.4 requirements for personnel competency and trustworthiness are being met. This is a healthcare technology company with PHI access requirements. Be careful to distinguish between genuine compliance gaps and situations where apparent issues have valid explanations.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "OIG rescreening entries OIG-RS-2025-013 through OIG-RS-2025-015 show Pending status but are not yet due",
+      "description": "Three OIG rescreening entries (OIG-RS-2025-013 for SHT-5001 Angela Freeman, OIG-RS-2025-014 for SHT-5003 Cynthia Morales, and OIG-RS-2025-015 for SHT-5005 Eva Johansson) show 'Pending' status. However, these are 2025 new hires whose initial OIG screenings were completed at hire and whose annual rescreenings are not due until January, February, and March 2026 respectively. The pending status simply indicates the next annual screening has not yet been conducted, which is expected since the due dates have not arrived. This is NOT a finding — the annual rescreening program is on track.",
+      "evidence_sources": [
+        "evidence/oig-annual-rescreening-2025.csv",
+        "evidence/background-check-records-2025.csv"
+      ],
+      "expected_reasoning": "The model should see Pending entries in the OIG rescreening log and verify the due dates. OIG-RS-2025-013 is due January 6, 2026, OIG-RS-2025-014 is due February 4, 2026, and OIG-RS-2025-015 is due March 10, 2026. Since the observation period ends December 31, 2025, these are not overdue. The model should cross-reference with the background check records to confirm the initial screenings were completed at hire.",
+      "detection_criteria": {
+        "required_keywords": ["OIG-RS-2025-013", "OIG-RS-2025-014", "OIG-RS-2025-015", "SHT-5001", "SHT-5003", "SHT-5005", "Pending", "not yet due", "2026", "annual rescreening"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": ["not a finding", "not overdue", "within window", "expected", "on track", "future due date"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Training content version v2023.2 used for both 2024 and 2025 cycles without update",
+      "description": "The training compliance dashboard (Section 5, Observations) states that 'Training content was last updated for the 2024 cycle. The 2025 modules used the same content version (v2023.2) as the 2024 cycle.' This means the security awareness and HIPAA training content has not been updated since 2023 — approximately 2 years. For a healthcare technology company processing PHI, training content must remain current with evolving threats, regulatory changes, and organizational policy updates. HIPAA requires training to be kept current with regulatory developments. The policy was updated to version 2.5 in May 2025, but the training content predates this policy version and therefore does not reflect the current policy requirements. While 100% completion was achieved, the training may not be covering current threats, recent HIPAA enforcement guidance, or the organization's current policies.",
+      "evidence_sources": [
+        "evidence/hipaa-training-compliance-dashboard.md",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The model should read the observations section of the training dashboard and identify that content version v2023.2 was used for both 2024 and 2025 training cycles. The HR security policy is version 2.5 dated May 2025, meaning the training content predates the current policy by approximately 2 years. For a healthcare company with PHI obligations, stale training content is a substantive gap even with 100% completion. The 100% completion rate becomes misleading if the content itself is outdated.",
+      "detection_criteria": {
+        "required_keywords": ["v2023.2", "2024 cycle", "2025 modules", "same content", "not updated", "2 years", "HIPAA", "PHI", "policy version 2.5", "May 2025", "outdated", "training content"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "15 employees hired after March 31 have no annual AUP re-acknowledgment scheduled",
+      "description": "Policy Section 5.2 requires annual AUP re-acknowledgment during the training cycle (January 1 - March 31). The AUP tracker shows that employees hired before March 31, 2025 (SHT-5001 through SHT-5004) completed their annual re-acknowledgment. However, employees hired after March 31 (SHT-5005 through SHT-5015, totaling 11 employees) only have initial AUP signatures from their hire dates with no annual re-acknowledgment. Since the re-acknowledgment window is January 1 - March 31 and these employees were hired after that window, they will not have their first annual re-acknowledgment until Q1 2026 — meaning employees like SHT-5005 (hired March 17, signed AUP March 17) and SHT-5006 (hired April 7) could go nearly a full year without re-acknowledging the AUP. The policy does not address a mid-year hire gap for annual re-acknowledgment.",
+      "evidence_sources": [
+        "evidence/aup-acknowledgment-tracker.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The model should review the AUP tracker and notice that employees hired after March 31 show N/A for annual_reack_2025. Policy Section 5.2 requires annual re-acknowledgment during January-March but does not address how employees hired after this window are handled. This is a process design gap — the annual cycle creates a situation where mid-year hires could go up to 12 months without re-acknowledging the AUP.",
+      "detection_criteria": {
+        "required_keywords": ["SHT-5005", "SHT-5006", "March 31", "annual re-acknowledgment", "AUP", "N/A", "Section 5.2", "Q1 2026", "hired after", "gap"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["hr_security", "red_herring", "healthcare", "HIPAA", "OIG_screening", "training_content", "AUP", "PHI", "annual_rescreening"]
+  }
+}

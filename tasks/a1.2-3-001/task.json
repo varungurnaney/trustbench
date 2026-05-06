@@ -1,0 +1,63 @@
+{
+  "id": "a1.2-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "A1.2",
+  "control_description": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup and recovery infrastructure, and recovery plan procedures to meet its objectives. Backup and recovery processes include procedures for recovery of data, systems, and infrastructure to meet the entity's availability commitments and system requirements.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/backup-policy.md",
+      "type": "policy",
+      "description": "Nexus Platforms backup and recovery policy defining daily full and 4-hour incremental backup schedule with RPO/RTO targets"
+    },
+    {
+      "path": "evidence/backup-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 backup execution log with 92 days of daily backup entries showing times, sizes, and status"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Nexus Platforms' backup controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the backup policy and backup execution log. Assess whether A1.2 requirements for backup infrastructure are met. Cross-reference the backup log against the policy's stated backup schedule to identify any gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No incremental backup entries in the backup log despite policy requiring 4-hour incremental backups",
+      "description": "The backup policy Section 3.2 states: 'Incremental file system backups run every 4 hours at 06:00, 10:00, 14:00, 18:00, and 22:00 UTC.' However, the backup log for Q4 2025 contains only daily full backup entries (type column shows 'full' for every row). There are zero entries with type 'incremental.' Over 92 days, this means approximately 460 expected incremental backups are missing from the log. Either incremental backups are not running, or they are not being logged. In either case, the auditor cannot verify that the 4-hour RPO is being met. The policy's RPO of 4 hours is predicated on incremental backups supplementing the daily full — without them, the effective RPO is 24 hours.",
+      "evidence_sources": ["evidence/backup-log-q4.csv", "evidence/backup-policy.md"],
+      "expected_reasoning": "The auditor should note the policy's backup schedule includes daily full + 4-hour incremental. The backup log only contains daily full entries. Cross-referencing these two documents reveals the gap. Without incremental backups, the stated 4-hour RPO cannot be achieved — the actual RPO is 24 hours (the gap between daily fulls).",
+      "detection_criteria": {
+        "required_keywords": ["incremental", "not present", "backup log", "Section 3.2", "4-hour", "RPO", "daily full only", "460", "missing"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No WAL archiving status logs provided — cannot verify continuous replication claim",
+      "description": "The backup policy Section 3.3 states that PostgreSQL WAL archiving runs continuously with segments archived every 10-15 minutes. However, the backup log contains no WAL-related entries. Without WAL archiving logs, the auditor cannot verify that point-in-time recovery capability is operational. The policy relies on WAL archiving as a key component of the RPO strategy — claiming sub-15-minute granularity — but no evidence supports this claim.",
+      "evidence_sources": ["evidence/backup-log-q4.csv", "evidence/backup-policy.md"],
+      "expected_reasoning": "The policy describes three backup mechanisms: daily full, 4-hour incremental, and continuous WAL. The log only evidences daily full. Both incremental and WAL are unverified. While WAL may be operational but logged in a different system, the absence of evidence in the provided backup log is a documentation gap.",
+      "detection_criteria": {
+        "required_keywords": ["WAL", "archiving", "no evidence", "not provided", "continuous", "point-in-time", "verify", "log"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "15 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["backup", "incremental", "WAL", "RPO", "cross_reference", "evidence_gap"]
+  }
+}

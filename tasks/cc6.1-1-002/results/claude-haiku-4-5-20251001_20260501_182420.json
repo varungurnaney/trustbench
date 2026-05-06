@@ -1,0 +1,82 @@
+{
+  "task_id": "cc6.1-1-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-01T18:24:20.707479",
+  "score": {
+    "task_id": "cc6.1-1-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely",
+          "timeframe",
+          "hours",
+          "immediate",
+          "revocation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "production",
+          "MFA",
+          "multi-factor",
+          "database",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "evidence",
+          "retention",
+          "format"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "role change",
+          "manager",
+          "creep"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1019,
+    "output_tokens": 2128
+  },
+  "raw_response": "# Compliance Assessment Report\n## Control CC6.1 - Logical Access Security\n\n---\n\n## FINDINGS\n\n### 1. **Insufficient MFA Implementation Scope**\n**Section:** 4.2 Multi-Factor Authentication  \n**Gap:** MFA is only required for VPN, AWS console, and email from non-corporate devices. Production database access, administrative functions, and internal applications lack explicit MFA requirements despite their criticality.  \n**Severity:** **HIGH**  \n*Rationale:* CC6.1 requires logical access security to protect against unauthorized access to critical assets. Limiting MFA to three categories leaves significant gaps for high-risk systems and privileged access.\n\n---\n\n### 2. **Vague Access Revocation Timeline for Terminations**\n**Section:** 6.1 Termination  \n**Gap:** The policy states access \"should be removed in a timely manner\" but provides no specific timeframe (e.g., same-day, 4 hours, end of business). Email-only notification to IT lacks accountability and tracking mechanisms.  \n**Severity:** **HIGH**  \n*Rationale:* Delayed access removal creates extended windows of unauthorized access risk. SOC 2 requires timely and complete removal of access upon termination.\n\n---\n\n### 3. **Weak Offboarding Process Controls**\n**Section:** 6.1 & 6.2 Termination & Role Changes  \n**Gap:** The policy relies on informal email notification and lacks:\n- Confirmation mechanism that access was actually removed\n- Centralized tracking/checklist of all systems requiring deprovisioning\n- Verification that privileged accounts, cloud access, and third-party tools are included\n- Documentation of completion\n\n**Severity:** **HIGH**  \n*Rationale:* No enforcement mechanism ensures access removal is complete. Policy depends on manual processes prone to human error.\n\n---\n\n### 4. **Inadequate Privileged Access Management Details**\n**Section:** 3.3 Privileged Access  \n**Gap:** While CyberArk PAM is mentioned, the policy lacks specifics on:\n- How sessions are monitored in real-time vs. post-review\n- What triggers alert mechanisms for suspicious activity\n- Session timeout requirements\n- Password rotation frequency for privileged accounts\n- Approval workflows for emergency access scenarios\n\n**Severity:** **HIGH**  \n*Rationale:* CC6.1 requires infrastructure and architectures designed to prevent unauthorized access. Privileged access requires detailed technical controls beyond logging.\n\n---\n\n### 5. **Missing Network and Infrastructure-Level Controls**\n**Section:** Entire document  \n**Gap:** The policy is purely access management-focused and does not address:\n- Firewalls and network segmentation\n- Intrusion detection/prevention systems (IDS/IPS)\n- Encryption for data in transit and at rest\n- Physical access controls to infrastructure\n- Database activity monitoring (DAM)\n- Application-layer access controls (API tokens, OAuth, etc.)\n\n**Severity:** **HIGH**  \n*Rationale:* CC6.1 explicitly requires \"logical access security software, infrastructure, and architectures.\" A complete implementation requires layered controls beyond identity management.\n\n---\n\n### 6. **Incomplete Role-Based Access Control (RBAC) Definition**\n**Section:** 3.2 Role Definitions  \n**Gap:** Role definitions lack:\n- Specific system/resource mappings for each role\n- Documented responsibilities and limitations for each role\n- Technical implementation details (e.g., which AWS IAM policies, GitHub teams, database schemas)\n- Process for creating custom roles outside the four defined categories\n- Documentation of which applications/systems are covered\n\n**Severity:** **MEDIUM**  \n*Rationale:* Without detailed RBAC documentation, enforcement and auditing of least privilege principle is difficult to verify.\n\n---\n\n### 7. **Insufficient Monitoring and Alerting**\n**Section:** 7. Monitoring  \n**Gap:** Current monitoring is passive/reactive:\n- Only failed login attempts are monitored\n- No mention of monitoring for privilege escalation, unusual access patterns, or successful access to sensitive data\n- Weekly review is infrequent for critical security logs\n- No alerting mechanism mentioned for suspicious activity\n- No system for detecting unauthorized access attempts to protected information assets\n\n**Severity:** **MEDIUM**  \n*Rationale:* CC6.1 requires protecting information assets from security events. Real-time alerting and proactive monitoring are essential to detect and respond to threats.\n\n---\n\n### 8. **Gaps in Third-Party Access Controls**\n**Section:** 2. Scope  \n**Gap:** Policy states it applies to \"third-party personnel\" but lacks:\n- Specific requirements for third-party access (contractors, vendors, consultants)\n- Requirement for signed agreements/NDAs before granting access\n- Audit rights to verify third-party compliance\n- Restrictions on what systems third-parties can access\n- Data handling requirements\n- Timeline for access removal post-engagement\n\n**Severity:** **MEDIUM**  \n*Rationale:* Third-party access represents a significant vulnerability vector and requires tailored controls per SOC 2 requirements.\n\n---\n\n### 9. **Insufficient Exception Management**\n**Section:** 8. Exceptions  \n**Gap:** Exception process lacks details:\n- No requirement for re-evaluation timelines (exceptions appear permanent)\n- No documented log of all active exceptions\n- Compensating controls undefined (who ensures they're implemented?)\n- No requirement for documented risk assessment specifics\n- CISO approval workflow not detailed\n\n**Severity:** **MEDIUM**  \n*Rationale:* Uncontrolled exceptions undermine the entire control framework. Exceptions require rigorous oversight to prevent scope creep.\n\n---\n\n### 10. **Inadequate Account Lifecycle Management Documentation**\n**Section:** 3.1 New User Access  \n**Gap:** Missing elements:\n- No requirement to remove test/temporary accounts automatically\n- No periodic review of active accounts to identify orphaned or abandoned accounts\n- No process for shared accounts (policy prohibits but doesn't explain discovery mechanism)\n- No documented approval trail for access provisioning\n- No requirement to disable vs. delete old accounts for audit trail preservation\n\n**Severity:** **MEDIUM**  \n*Rationale:* Orphaned accounts and inadequate deprovisioning create persistent access risks.\n\n---\n\n### 11. **Insufficient Password Control Mechanisms**\n**Section:** 4.1 Password Requirements  \n**Gap:** While password requirements exist, missing controls include:\n- No mention of password managers or vault systems for application passwords\n- No prohibition on password sharing or storage in spreadsheets\n- No secure password reset procedures documented\n- No controls preventing users from writing down passwords\n- 90-day expiration lacks research-based justification (some standards prefer event-driven vs. time-driven changes)\n\n**Severity:** **LOW**  \n*Rationale:* Technical password controls are documented, but operational compliance mechanisms are weak.\n\n---\n\n### 12. **Missing Audit Trail and Compliance Documentation**\n**Section:** Entire document  \n**Gap:** No explicit requirements for:\n- Centralized audit logging of all access changes\n- Retention policies for access control logs (12 months for privileged sessions mentioned, but not others)\n- Audit log integrity protection (immutability, tamper-evident logs)\n- Compliance reporting capabilities (who can access logs, format, timeliness)\n- Integration with SIEM for correlated analysis\n\n**Severity:** **MEDIUM**  \n*Rationale:* CC6.1 requires demonstrable evidence of implementation. Without comprehensive audit trails, compliance verification is not feasible.\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Severity | Category |\n|---------|----------|----------|\n| Insufficient MFA Scope | HIGH | Authentication |\n| Vague Termination Timeline | HIGH | Access Revocation |\n| Weak Offboarding Controls | HIGH | Access Revocation |\n| Inadequate PAM Details | HIGH | Privileged Access |\n| Missing Infrastructure Controls | HIGH | Architecture |\n| Incomplete RBAC Definition | MEDIUM | Access Management |\n| Insufficient Monitoring | MEDIUM | Detection |\n| Third-Party Access Gaps | MEDIUM | Vendor Management |\n| Weak Exception Management | MEDIUM | Governance |\n| Account Lifecycle Gaps | MEDIUM | Account Management |\n| Password Control Gaps | LOW | Authentication |\n| Missing Audit Trail Requirements | MEDIUM | Monitoring |\n\n---\n\n## OVERALL ASSESSMENT\n\n**Status:** **NOT READY FOR AUDIT**\n\nThe policy provides a foundational framework for logical access management but has significant gaps in implementation breadth, technical architecture, offboarding rigor, and monitoring/detection capabilities. To achieve CC6.1 compliance, NovaTech Solutions must:\n\n1. **Immediately address** (HIGH severity findings): MFA scope expansion, termination timeline specification, offboarding process formalization, and PAM implementation details\n2. **Develop complementary policies** for infrastructure security, encryption, network controls, and third-party management\n3. **Implement monitoring and alerting** infrastructure for real-time threat detection\n4. **Formalize and document** all audit trails, exception management, and compliance verification processes\n\n**Recommendation:** Schedule remediation plan with target completion before next SOC 2 audit."
+}

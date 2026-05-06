@@ -1,0 +1,86 @@
+{
+  "task_id": "cc7.3-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:33:59.738379",
+  "score": {
+    "task_id": "cc7.3-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.2,
+    "precision": 0.125,
+    "f1": 0.15384615384615385,
+    "score": 0.2,
+    "gaps_detected": 1,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-307",
+          "overnight",
+          "IAM role assumption"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "containment SLA"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-301",
+          "data breach"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-305",
+          "action items"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-307",
+          "SEV-2 post-mortem"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4902,
+    "output_tokens": 1924
+  },
+  "raw_response": "Here is a structured assessment of Meridian Analytics\u2019 incident response process for CC7.3 based on the provided policy, incident register, and post-mortems. Each finding notes the relevant policy section, impact, and severity.\n\n---\n\n### 1. **SLA Breach: SEV-2 Unauthorized IAM Role Assumption (INC-2025-307)**\n- **Related Policy Section:** 3.1 Initial Triage (SEV-2 = 30 min), 3.2 Containment SLA (SEV-2 = 4 hours)\n- **Gap:**  \n  - **Triage:** Detected 2025-12-09 22:14Z, triaged 2025-12-10 08:05Z (591 min / 9.85 hours vs. SLA 30 min)  \n  - **Containment:** Triaged at 08:05Z, contained at 10:30Z (2.4 hours, within containment SLA)  \n  Incident register confirms a significant triage delay (~10 hours overnight), with triage/containment outside the expected SEV-2 SLA.\n- **Severity:** **High**   \n  (Prolonged exposure risk; SEV-2 incidents must be triaged 24/7 within 30 min. This gap increases risk of escalation.)\n\n---\n\n### 2. **SLA Breaches: Delays in SEV-3 and SEV-4 Incident Triage**\n- **Related Policy Section:** 3.1 Initial Triage  \n- **Gap:**  \n  - **INC-2025-308:** SEV-3. Detected 06:10Z, triaged 10:30Z (260 min/4.3 hours vs. 4 hour business hours SLA; borderline breach if after hours).\n  - **INC-2025-306:** SEV-4. Detected 11:30Z, triaged 14:00Z (150 min/2.5 hours, within \"next business day\" but not specifically called out in register\u2014should be routinely checked for cumulative SLA drift).\n- **Severity:** **Low**  \n  (No severe user impact; timing is close to SLA threshold. Monitor for future drift; may hint at resource/capacity issues.)\n\n---\n\n### 3. **Policy-Practice Gap: Post-Mortem Action Item Closure Lag**\n- **Related Policy Section:** 4.3 Action Item Tracking  \n- **Gap:**  \n  - Action items must be created in Jira within 2 business days and are to be completed per assigned date. Items overdue by >14 days must escalate to CISO.\n  - **INC-2025-305:** 8 action items, 5 completed as of incident register (status depends on timing versus target date\u2014e.g., some targets as late as 2026-02-28, check for past due on earlier target [e.g., 2025-12-15, 2025-12-20]).\n  - **INC-2025-301:** 6 action items, only 4 completed; remaining 2 (SEC-PM-1849, SEC-PM-1850) are past due (target dates in 2025 \u2014 e.g., 2025-12-15, 2025-12-31). These are listed as \"In Progress,\" but at time of Q4 close (2025-12-31) they would be overdue, triggering escalation per policy.\n  - Escalation to CISO not documented in register or post-mortems.\n- **Severity:** **Medium**  \n  (Non-timely completion and lack of escalation can cause repeat issues. Pattern seen in serious incidents.)\n\n---\n\n### 4. **Gap: Incomplete Post-Mortem for Required SEV-2 Event (INC-2025-307)**\n- **Related Policy Section:** 4.1 Timelines (Post-Mortem due in 5 business days for SEV-2)  \n- **Gap:**  \n  - Register states post-mortem status: \"Complete\" for all required incidents **except** possibly INC-2025-307 (marked \"Complete\"), but due date for post-mortem is 2025-12-18 (incident resolved 2025-12-11). No specific post-mortem link, and not in sample provided.\n  - Lack of evidence: No post-mortem reviewed for this incident\u2014cannot confirm whether content, action tracking, and communication met policy.\n- **Severity:** **Medium**  \n  (SEV-2 post-mortems contain lessons learned and drive remediation. If not performed/documented, systemic risks may persist.)\n\n---\n\n### 5. **Customer Notification Records: Not Evidenced in Supporting Docs**\n- **Related Policy Section:** 5.2 Notification Records\n- **Gap:**  \n  - Policy requires detailed customer notification records (method, recipient, timestamp, content) to be logged in the incident ticket.\n  - Post-mortem for INC-2025-301 states notification took place (legal team, status page update), but there\u2019s no evidence provided for notification logs meeting full policy requirements.\n- **Severity:** **Low**  \n  (Lack of documentation could affect auditability and regulatory defense, especially for data breach/scenario requiring disclosure.)\n\n---\n\n### 6. **No Evidence of Incident Action Item Review/Escalation Process**\n- **Related Policy Section:** 4.3 Action Item Tracking  \n- **Gap:**  \n  - Policy: Weekly Security Operations review; >14-day-overdue items escalated to CISO.\n  - There\u2019s no evidence supplied of: (a) weekly review minutes, (b) overdue item escalation, or (c) CISO remediation actions.\n- **Severity:** **Low**  \n  (Administrative gap: Without evidence of oversight, action item closure risks being deprioritized.)\n\n---\n\n### 7. **No Evidence of Regulatory Notification for Data Breach**\n- **Related Policy Section:** 5.1 Customer Notification\u2014\"Regulatory notifications handled per applicable requirements\"  \n- **Gap:**  \n  - Post-mortem for SEV-1 data breach (INC-2025-301) references \"GDPR notification required\" but no evidence provided showing actual notification (documented template, confirmation, timestamp).\n- **Severity:** **Medium**  \n  (Regulatory risk; failure to evidence this could result in noncompliance assessment.)\n\n---\n\n### 8. **Gaps in Action Item Granularity for Less Severe Incidents**\n- **Related Policy Section:** 4.1 and 4.3 (Post-mortems optional/discretionary, but action items should still be created for meaningful lessons)\n- **Gap:**  \n  - INC-2025-303 and INC-2025-308 (SEV-3/WAF block) had lengthy intervention times (>4 hours). No action items, post-mortem \"Not Required.\" However, for recurring/long-triage events, practice should encourage post-mortem at low threshold or create at least informal action tracking for near-misses.\n- **Severity:** **Low**  \n  (Not a strict policy breach but a maturity concern; could improve via lessons-learned feedback loop.)\n\n---\n\n## **Summary Table**\n\n| # | Title | Policy Section | Gap | Severity |\n|---|-------|---------------|-----|----------|\n| 1 | SLA Breach: SEV-2 Unauthorized IAM Role Assumption | 3.1 | Triage took almost 10 hours (vs. 30 minutes) | High |\n| 2 | SLA Breaches: Delays in SEV-3/SEV-4 Triage | 3.1 | Triage very close to or outside window | Low |\n| 3 | Post-Mortem Action Item Closure Lag | 4.3 | Action items overdue, not escalated | Medium |\n| 4 | Incomplete Post-Mortem for SEV-2 Event | 4.1 | No evidence for required post-mortem | Medium |\n| 5 | Customer Notification Records Not Evident | 5.2 | Notification not documented | Low |\n| 6 | No Evidence of Action Item Review/Escalation | 4.3 | No supporting docs/logs of review/escalation | Low |\n| 7 | Regulatory Notification Not Evidenced | 5.1 | No record of GDPR/CCPA notification | Medium |\n| 8 | Gaps in Action Item Granularity for SEV-3 Incidents | 4.1, 4.3 | No review/action for slow handled SEV-3 | Low |\n\n---\n\n## **Overall CC7.3 Compliance Assessment**\nMeridian Analytics has a well-defined incident response policy and demonstrable records for major incidents. SEV-1 events are well-handled, but evidence reveals:\n- Some SLA breaches for triage in serious incidents;\n- Overdue action items not escalated as required;\n- Incomplete documentary evidence for mandatory post-mortems and notification records.\n\n**Improvements are needed in SLA adherence, action item tracking/escalation, and maintaining full records for customer/regulatory notification.**\n\n**CC7.3 is partially met.** Remediation and documentation controls must be tightened before SOC 2 attestation."
+}

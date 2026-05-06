@@ -1,0 +1,19 @@
+resource_type,resource_name,environment,data_classification,encryption_standard_required,encryption_standard_actual,algorithm,key_size,compliance_status,owner,last_audit,notes
+RDS Instance,vrs-prod-core-db,Production,Restricted,AES-256,AES-256,AES-256-GCM,256-bit,Compliant,Platform Team,2025-12-15,Primary customer database
+RDS Instance,vrs-prod-analytics-db,Production,Confidential,AES-256,AES-256,AES-256-GCM,256-bit,Compliant,Analytics Team,2025-12-15,Analytics warehouse
+RDS Instance,vrs-prod-billing-db,Production,Restricted,AES-256,AES-256,AES-256-GCM,256-bit,Compliant,Billing Team,2025-12-15,Billing and payment data
+RDS Instance,vrs-staging-db,Staging,Internal,AES-128,AES-256,AES-256-GCM,256-bit,Compliant,Platform Team,2025-12-15,Exceeds minimum - using AES-256
+S3 Bucket,vrs-prod-customer-uploads,Production,Restricted,SSE-KMS (AES-256),SSE-KMS (AES-256),AES-256,256-bit,Compliant,Platform Team,2025-12-15,Customer document uploads
+S3 Bucket,vrs-prod-backups,Production,Restricted,SSE-KMS (AES-256),SSE-KMS (AES-256),AES-256,256-bit,Compliant,DBA Team,2025-12-15,Database backups
+S3 Bucket,vrs-prod-logs,Production,Internal,SSE-S3,SSE-S3,AES-256,256-bit,Compliant,SRE Team,2025-12-15,Application and audit logs
+S3 Bucket,vrs-prod-reports,Production,Confidential,SSE-KMS (AES-256),SSE-KMS (AES-256),AES-256,256-bit,Compliant,Reporting Team,2025-12-15,Generated reports
+S3 Bucket,vrs-prod-ml-models,Production,Confidential,SSE-KMS (AES-256),SSE-KMS (AES-128),AES-128-GCM,128-bit,Review Needed,ML Team,2025-12-15,ML model artifacts. SSE-KMS enabled but using AES-128 instead of AES-256. Models contain trained weights derived from Confidential customer data. No PII in model files.
+S3 Bucket,vrs-prod-static-assets,Production,Public,None required,SSE-S3,AES-256,256-bit,Compliant,Frontend Team,2025-12-15,Public website assets - exceeds requirements
+EBS Volume,vol-prod-core-01,Production,Restricted,AES-256,AES-256,AES-256,256-bit,Compliant,Platform Team,2025-12-15,Core app server volume
+EBS Volume,vol-prod-core-02,Production,Restricted,AES-256,AES-256,AES-256,256-bit,Compliant,Platform Team,2025-12-15,Core app server volume
+EBS Volume,vol-prod-jenkins,Production,Internal,AES-256,AES-256,AES-256,256-bit,Compliant,DevOps,2025-12-15,CI/CD server volume
+EFS,vrs-prod-shared-config,Production,Confidential,AES-256,AES-256,AES-256,256-bit,Compliant,Platform Team,2025-12-15,Shared application config
+Application Key,user-pii-encryption-key,Production,Restricted,AES-256,AES-256,AES-256-GCM,256-bit,Compliant,Platform Team,2025-12-15,Field-level encryption for PII
+Application Key,session-encryption-key,Production,Internal,AES-128,AES-128,AES-128-GCM,128-bit,Compliant,Platform Team,2025-12-15,Session token encryption - Internal data
+Application Key,webhook-payload-key,Production,Confidential,AES-256,AES-128,AES-128-GCM,128-bit,Review Needed,Integrations Team,2025-12-15,Webhook payloads encrypted with AES-128. Payloads contain Confidential customer event data (account activity notifications). Policy requires AES-256 for Confidential data.
+Application Key,cache-encryption-key,Production,Internal,AES-128,AES-128,AES-128-GCM,128-bit,Compliant,Platform Team,2025-12-15,Redis cache encryption - Internal data

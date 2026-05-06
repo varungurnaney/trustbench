@@ -1,0 +1,85 @@
+{
+  "task_id": "c1.1-5-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:11:34.536159",
+  "score": {
+    "task_id": "c1.1-5-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.6,
+    "f1": 0.6666666666666665,
+    "score": 0.6666666666666665,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "deidentification",
+          "de-identification",
+          "HTTP",
+          "PHI",
+          "unencrypted",
+          "raw PHI",
+          "CERT-NHA-005",
+          "compensating",
+          "remediation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "addressable",
+          "HIPAA",
+          "policy",
+          "not fully",
+          "de-identification"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "should",
+          "Confidential",
+          "healthcare"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "No",
+          "Internal"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3395,
+    "output_tokens": 1655
+  },
+  "raw_response": "Certainly! Below are the identified findings based on the provided evidence, with each finding including a short title, relevant document section(s), explanation of the gap, and severity assessment. All findings are focused on **SOC 2 C1.1** (Confidential Information Identification and Protection) with consideration of **CC6.7** (Encryption).\n\n---\n\n### 1. **Unencrypted PHI Transmission to De-identification Service**\n\n**Section(s):**  \n- Data Protection Policy (Sections 4, 5.2, 5.3, 5.4)  \n- TLS Endpoint Audit  \n- Certificate Inventory  \n- HIPAA Risk Assessment (Section 7.3)\n\n**Gap Explanation:**  \nThe de-identification service (`deidentification-svc.internal.nextera-health.com`) receives raw PHI over an unencrypted internal HTTP connection (port 8080) from the PHI pipeline. This is a direct violation of Nextera\u2019s Data Protection Policy, which mandates encryption in transit for all \u201cRestricted\u201d data (including PHI) internally and externally. It is further substantiated by the HIPAA risk assessment, which identifies this as the sole data flow where PHI is not encrypted in transit. Although exposure is limited to the internal AWS VPC with strict network controls (private subnet, security groups, VPN+MFA, flow logs), PHI is highly sensitive, SOC 2 C1.1 expects technical controls to be in place to protect confidentiality, and the organization\u2019s own standards require full encryption in all environments.\n\n**Severity:** **High**  \n*Rationale:*  \n- PHI is among the most sensitive categories of data, and even low-likelihood exposure is high impact under both HIPAA and SOC 2.  \n- The risk is currently partially mitigated by network isolation and monitoring, but technical controls (encryption in transit) are not being fully applied as specified.\n- Nextera\u2019s own policies have adopted a \u201crequired\u201d (not \u201caddressable or declined\u201d) approach to encryption for PHI \u2013 this is a clear policy exception.\n- SOC 2 and HIPAA both regard internal network encryption as a key control for PHI, especially given modern threat landscapes.\n- Remediation is targeted for Q1 2026, meaning the gap remains open at assessment time; it is therefore an active control deficiency rather than a managed risk.\n\n---\n\n### 2. **Absence of Certificate for De-identification Service**\n\n**Section(s):**  \n- Certificate Inventory (CERT-NHA-005)  \n- TLS Endpoint Audit\n\n**Gap Explanation:**  \nNo TLS certificate is issued or installed for `deidentification-svc.internal.nextera-health.com`, consistent with the service running only on HTTP. This directly correlates to and enables the unencrypted PHI transmission issue above. The lack of a certificate also means there is no current basis for mutual authentication or encryption for this critical internal service. This is evidence of a failure to implement standard identity and encryption controls for a service handling raw PHI.\n\n**Severity:** **High**  \n*Rationale:*  \n- The absence of a certificate is not just a documentation gap but an explicit lack of technical enforcement for encrypted communications.\n- It enables the above transmission gap (Finding 1), and both findings would be merged into a material finding for SOC 2 reporting.\n- The risk is compounded by the data sensitivity and the organization\u2019s policy requirements.\n\n---\n\n### 3. **Compensating Controls Reduce but Do Not Eliminate PHI Exposure**\n\n**Section(s):**  \n- HIPAA Risk Assessment (Section 7.3)\n\n**Gap Explanation:**  \nThe HIPAA risk assessment identifies various compensating controls that lower the likelihood of PHI disclosure (VPC isolation, no public IP, strict SGs, VPN MFA, flow logs), but these are organizational/administrative/monitoring controls, not technical controls (encryption). SOC 2 and C1.1 expect **defense in depth**, especially when technical solutions are feasible and committed by policy. The risk is not fully mitigated, and a technical gap persists.\n\n**Severity:** **Medium**  \n*Rationale:*  \n- Compensating controls are effective at reducing risk, but do not fully meet the letter or spirit of SOC 2 criteria for technical controls around confidentiality for highly sensitive data types like PHI.\n- This reduces, but does not fully remediate, the risk identified; thus, it is not \u201cCritical,\u201d but remains \u201cMedium\u201d so long as remediation is actively pursued and compensating controls are robustly documented and operating.\n\n---\n\n### 4. **Remediation Plan in Place but Gap Remains Open**\n\n**Section(s):**  \n- HIPAA Risk Assessment (Section 7.3 & 7.4)  \n- Data Protection Policy (Sections 5.2, 9)\n\n**Gap Explanation:**  \nWhile there is a formal remediation plan targeting Q1 2026 and clear risk acceptance for the current state, the gap is not yet closed as of the time of assessment. For SOC 2 purposes, any control deficiency impacting the confidentiality of PHI (or similar data) is considered **open** until remediation is verified. This means it should be reported as an active gap\u2014not just a managed risk\u2014even with a plan in place.\n\n**Severity:** **Medium**  \n*Rationale:*  \n- Timely remediation is expected for risks of this nature once identified.  \n- The existence of a plan reduces the severity compared to a gap with no remediation activity, but the \u201cHigh\u201d criticality and open state mean it is still a material finding for SOC 2 purposes.\n\n---\n\n### 5. **All Other Endpoints Handling PHI Are Encrypted in Transit**\n\n**Section(s):**  \n- TLS Endpoint Audit  \n- Certificate Inventory  \n- HIPAA Risk Assessment (Section 7.2)\n\n**Gap Explanation:**  \nThere are **no gaps for other endpoints** \u2014 all other services that handle PHI, both external and internal, are configured for encryption in transit as required (TLS 1.2+ or SFTP/SSH). This demonstrates substantial compliance elsewhere, limiting the materiality to the single service highlighted above.\n\n**Severity:** **N/A (No Finding)**  \n*Rationale:*  \n- No gap\u2014listed for completeness and context.  \n- Supports \u201csubstantially compliant with one identified gap\u201d judgment.\n\n---\n\n## **Summary Table**\n\n| # | Title | Section(s) | Why it\u2019s a Gap | Severity |\n|---|-------|------------|----------------|----------|\n| 1 | Unencrypted PHI Transmission to De-identification Service | Policy, TLS Audit, HIPAA RA | PHI sent over HTTP, violating policy and SOC 2 expectations | High |\n| 2 | Absence of Certificate for De-identification Service | Cert Inventory, TLS Audit | No TLS certificate for PHI-handling endpoint | High |\n| 3 | Compensating Controls Reduce but Do Not Eliminate PHI Exposure | HIPAA RA | Controls reduce but do not technically close encryption gap | Medium |\n| 4 | Remediation Plan in Place but Gap Remains Open | HIPAA RA, Policy | Plan exists but control deficiency not remediated as of assessment | Medium |\n| 5 | All Other PHI Endpoints Encrypted in Transit (No Gap) | TLS Audit, Cert Inventory | N/A | N/A |\n\n---\n\n## **SOC 2 Auditor Professional Judgment**\n\nGiven the business context (healthcare analytics, BAA, PHI, heightened regulatory/sensitivity environment) and Nextera\u2019s stated policies to require encryption in all PHI transmissions, the internal unencrypted PHI flow represents a **material control deficiency** for SOC 2 C1.1 and CC6.7. While current risk is somewhat mitigated, this is a significant issue until closed.\n\nYou should expect a management response and a documented corrective action plan as part of SOC 2 reporting. The finding would likely be cited as \u201cHigh\u201d with an explanation of risk reduction efforts and remediation activities.\n\n---\n\n**If you need draft SOC 2 report language for this finding, please let me know.**"
+}

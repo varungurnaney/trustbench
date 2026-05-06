@@ -1,0 +1,81 @@
+{
+  "task_id": "a1.2-5-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:18:17.062152",
+  "score": {
+    "task_id": "a1.2-5-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "failed",
+          "gap",
+          "RPO"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Q4",
+          "no restore test",
+          "quarterly",
+          "missing",
+          "control"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RTO",
+          "exceed",
+          "growth",
+          "data volume"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "evidence",
+          "RPO",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5266,
+    "output_tokens": 1390
+  },
+  "raw_response": "Below is a readiness assessment for A1.2 (Backup and Recovery) based on the evidence provided for NexGen Platform, covering Q4 2025. Findings include both positive compliance points and observations where issues or improvement areas exist.\n\n---\n\n### 1. **Backup Policy Alignment and Implementation**\n**Section:** System Availability and Recovery Policy \u2014 Sections 3, 4  \n**Why it\u2019s a gap:**  \n- **Strength**: The documented policy clearly defines backup, recovery, retention, storage security, integrity checks, and disaster recovery parameters with clear RTO/RPO and test frequency.  \n- **Implementation**: Daily backup execution logs demonstrate consistent, successful execution of policy for 90/92 days in Q4, with failed backups followed by documented remediation attempts.  \n- **Gap**: No missing or insufficient elements here \u2014 policy and implementation are well-aligned and monitored.  \n**Severity:** N/A \u2014 **No finding**.\n\n---\n\n### 2. **Backup Failures and Remediations**\n**Section:** Daily Backup Execution Logs (Q4 2025)  \n**Why it\u2019s a gap:**  \n- **Observation**:  \n    - 2025-11-03: Initial backup failed due to disk full; manual re-run succeeded after cleanup.  \n    - 2025-11-16: Backup failed due to network timeout; next day\u2019s backup succeeded.\n- **Assessment**: Failures were detected and documented, and in the case of 11/3, remediated same day. The 11/16 failure resulted in a single missed backup, which is outside strict policy, but not a recurring or unaddressed pattern.\n- **Gap**:  \n    - Policy doesn't specify SLA for maximum consecutive missed backups or expected remediation window.\n    - Single-day failure with next-day success (11/16) is generally considered an **acceptable operational variance** as daily backups for 90/92 days meets the \"daily\" intent.\n    - The remediation and alerting processes appear documented and functioning.\n**Severity:** **Low** \u2014 Not material; does **not** result in an audit exception. Acceptable for SOC 2 as long as the issue is addressed and not systemic.\n\n---\n\n### 3. **Quarterly Restore Testing Timeliness and Capacity Planning**\n**Section:** Quarterly Restore Test Results (Q2/Q3), System Availability and Recovery Policy Section 3.3  \n**Why it\u2019s a gap:**  \n- **Strength**: Restore tests were performed at least quarterly (per policy) with successful outcomes; all tests met RTO and data integrity checks.\n- **Gap:**  \n    - Q3 2025 restore took 3:30 (vs policy RTO of 4h, so PASS), but explicit note: \u201cGrowth in data volume increasing restore time \u2014 may exceed RTO by Q2 2026 if trend continues.\u201d\n    - No documented evidence of a **formal capacity monitoring or scaling plan** in place to ensure RTO can be sustained.\n**Severity:** **Medium** \u2014 **Not an audit exception at this time**, but a required management action. If no action is taken before the next cycle and RTO is missed, it will become a finding.\n\n---\n\n### 4. **Backup Retention and Location Controls**\n**Section:** System Availability and Recovery Policy \u2014 3.1, Backup Logs  \n**Why it\u2019s a gap:**  \n- **Strength**: Backups are stored encrypted at rest in a geographically separate GCS bucket. Retention periods are defined and (based on available log samples) appear to be maintained.\n- **Gap:** No direct evidence on log pruning; assumed by compliance with retention periods. No evidence of test restores from **older** backups within retention window.\n**Severity:** **Low** \u2014 Advisory only. No evidence of failure; could consider an additional restore test from an older backup in future reviews for completeness.\n\n---\n\n### 5. **Backup Verification Process**\n**Section:** System Availability and Recovery Policy \u2014 3.3, Backup Logs  \n**Why it\u2019s a gap:**  \n- **Strength**: Automated daily checksum verification is performed; logs indicate backups are \"checksum_verified: yes\" or \"no\" if failed. Quarterly restore tests include data integrity and application validation.\n- **Gap:** No evidence of ad hoc/manual review of automated backup verification process results or periodic audit of failed checksum alerts.\n**Severity:** **Low** \u2014 Not material; this is a best practice for maturing compliance but not a control failure.\n\n---\n\n### 6. **Backup Policy Coverage for Non-Database Assets**\n**Section:** System Availability and Recovery Policy \u2014 3.2  \n**Why it\u2019s a gap:**  \n- **Strength**: Application/configuration covered via Git and IaC; secrets handled in Google Secret Manager (with GCP-managed backup/versioning).  \n- **Gap:** Policy refers to reliance on versioning/GCP for non-database configuration backups; however, there is **no evidence provided of a restore test** for application configuration, infrastructure-as-code, or secrets.\n**Severity:** **Medium** \u2014 Non-blocking finding, but recommended enhancement: evidence of at least annual restore/recovery tests for non-database critical assets (e.g., code/config/secrets) would strengthen the control.\n\n---\n\n## **Summary Table**\n\n| Finding Title                        | Section         | Gap / Reasoning | Severity   |\n|--------------------------------------|-----------------|-----------------|------------|\n| Backup Policy Alignment and Implementation | Policy/Logs     | No gap; robust   | N/A        |\n| Backup Failures and Remediations     | Logs            | Occasional failures, documented/handled; not systemic | Low        |\n| Quarterly Restore Timeliness/Capacity Planning | Restore Tests/Policy | Trend shows RTO at risk from data growth; no evidence of formal plan | Medium     |\n| Backup Retention and Location        | Policy/Logs     | No direct log evidence of retention pruning or restore test from oldest backup | Low        |\n| Backup Verification Process          | Policy/Logs     | No evidence of periodic review of automated checks | Low        |\n| Non-Database Asset Recovery Coverage | Policy/Section 3.2 | No restore test evidence for config/code/secrets | Medium     |\n\n---\n\n## **Conclusion**\n\n**No audit exception required for Q4 2025.** Gaps are operational and advisory in nature. The only \"Medium\" severity findings relate to proactive risk management (capacity planning for restores, and extending recovery testing to non-database assets). These should be addressed as part of maturity and ongoing control improvement prior to a formal SOC 2 Type II report, but are not currently cause for an adverse conclusion.\n\n**If trend lines from restore durations continue, and/or non-database restore capabilities remain untested, these could become significant findings in a future audit period.**"
+}

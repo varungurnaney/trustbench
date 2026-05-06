@@ -1,0 +1,128 @@
+{
+  "id": "cc1.4-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.4",
+  "control_description": "The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/hr-security-policy.md",
+      "type": "policy",
+      "description": "Cobalt Digital Health HR security policy defining background check tiers, HIPAA-specific screening, AUP refusal process, PHI access role change requirements, and training standards"
+    },
+    {
+      "path": "evidence/training-completion-report-2025.csv",
+      "type": "log",
+      "description": "Annual security awareness and HIPAA training completion report for 2025 showing 20 employees with 100% completion (original staff only)"
+    },
+    {
+      "path": "evidence/aup-acknowledgment-tracker.csv",
+      "type": "spreadsheet",
+      "description": "AUP acknowledgment tracker for 25 personnel showing signing history including one refusal case (CDH-8024 Yuki Tanaka) with system access granted despite unresolved refusal"
+    },
+    {
+      "path": "evidence/role-change-access-review-log-2025.csv",
+      "type": "log",
+      "description": "Role change access review log for 2025 showing 7 role changes with HIPAA Privacy Officer sign-offs for PHI access changes"
+    },
+    {
+      "path": "evidence/background-check-new-hires-2025.csv",
+      "type": "spreadsheet",
+      "description": "Background check records for 5 new hires in 2025 with completion dates and OIG screening results"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/employee-onboarding-checklist-2025.md",
+      "type": "report",
+      "description": "Employee onboarding checklist compliance report for 2025 — contains corroborating details about CDH-8024's AUP refusal and unauthorized access provisioning timeline"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II audit of Cobalt Digital Health for the 2025 observation period (January 1 - August 31, 2025). This is a healthcare technology company with PHI access controls. Review all personnel security evidence including the HR policy, training completion report, AUP acknowledgment tracker, role change access review log, background check records, and onboarding checklist. Assess CC1.4 compliance comprehensively. Pay attention to the interaction between multiple controls and whether the organization's response to exceptions was adequate. Some situations require auditor judgment about whether organizational responses constitute genuine compliance or surface-level checkbox compliance.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "CDH-8024 Yuki Tanaka has system access since May 3 despite refusing AUP — legal review LEG-2025-0234 unresolved for 4.5 months",
+      "description": "CDH-8024 (Yuki Tanaka, Infrastructure Engineer, Operations) refused to sign the AUP v4.0 on April 14, 2025, citing objection to Section 12 (personal device monitoring during remote work). Per policy Section 5.3, system access 'must not be provisioned or must be immediately suspended' and the matter must be escalated to VP People Ops and General Counsel. Access may only be restored after the employee signs or the CISO and General Counsel jointly approve an alternative. The policy was initially followed — access was not provisioned on the start date. However, on May 3, the hiring manager (Patrick Dumont, CDH-8016) submitted IT ticket TKT-2025-4891 requesting temporary access for a critical infrastructure migration project. IT provisioned access without verifying AUP status, bypassing the policy control. Multiple compounding failures followed: (1) HR identified the unauthorized access on May 10 but did not enforce suspension due to the migration project's critical nature; (2) the migration project was completed July 15 but access was not revoked or suspended afterward; (3) the legal review LEG-2025-0234 opened April 18 and has not concluded as of August 31 — 4.5 months; (4) the VP People Ops and CISO have not jointly reviewed the case as required by Section 5.3. The employee has had system access for approximately 4 months without acknowledging the organization's acceptable use requirements. The business justification (critical project) may explain the initial bypass, but continuing access 6 weeks after the project completed with no resolution demonstrates a control failure.",
+      "evidence_sources": [
+        "evidence/aup-acknowledgment-tracker.csv",
+        "evidence/background-check-new-hires-2025.csv",
+        "evidence/employee-onboarding-checklist-2025.md",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should identify CDH-8024's 'Refused' AUP status, trace the timeline across multiple documents (AUP tracker, background check records, onboarding checklist), and identify the cascade of failures: IT provisioned access without AUP verification, HR identified but did not enforce, the project completed but access persisted, and the legal review is stalled. The judgment element is whether the critical project justifies the initial bypass — but the continued access after project completion and the 4.5-month unresolved legal review remove any mitigating argument. This requires synthesizing information across 4 documents to build the full picture.",
+      "detection_criteria": {
+        "required_keywords": ["CDH-8024", "Yuki Tanaka", "refused", "AUP", "Section 12", "TKT-2025-4891", "Patrick Dumont", "May 3", "LEG-2025-0234", "April 18", "July 15", "migration", "Section 5.3", "CISO", "General Counsel", "4.5 months", "access not suspended"],
+        "minimum_keyword_matches": 7
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "5 new hires (CDH-8021 through CDH-8025) absent from annual training completion report",
+      "description": "The training completion report lists 20 employees (CDH-8001 through CDH-8020) with 100% completion. However, the AUP tracker and background check records show 5 additional employees hired in 2025: CDH-8021 (Vanessa Kim, January 13), CDH-8022 (William Ortiz, February 3), CDH-8023 (Xavier Dupont, March 10), CDH-8024 (Yuki Tanaka, April 14), and CDH-8025 (Zara Ahmed, May 19). All 5 were hired before the June 1 training cycle opened per Section 4.2. The onboarding checklist confirms CDH-8021 through CDH-8023 and CDH-8025 completed initial security awareness training at onboarding, but this is separate from the annual training module tracked in the completion report. CDH-8024 also completed initial training at onboarding (April 16). These 5 employees should appear in the annual training completion report with a June 1 assigned date. Their absence means the 100% completion rate is based on 20 of 25 active employees — the actual completion rate may be as low as 80% (20/25) if none of the new hires completed annual training. The training report presents a misleading picture of compliance.",
+      "evidence_sources": [
+        "evidence/training-completion-report-2025.csv",
+        "evidence/aup-acknowledgment-tracker.csv",
+        "evidence/background-check-new-hires-2025.csv",
+        "evidence/employee-onboarding-checklist-2025.md",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should cross-reference the training report (20 employees) against the AUP tracker (25 entries) and background check records (5 new hires) to identify the discrepancy. All 5 new hires started before June 1 and should have been enrolled in the annual training cycle. The onboarding report confirms they completed initial training but this is a different module from the annual training. The 100% completion rate is based on an incomplete population.",
+      "detection_criteria": {
+        "required_keywords": ["CDH-8021", "CDH-8022", "CDH-8023", "CDH-8024", "CDH-8025", "Vanessa Kim", "William Ortiz", "Xavier Dupont", "Yuki Tanaka", "Zara Ahmed", "5 new hires", "missing", "annual training", "20 employees", "25", "June 1", "100%", "misleading"],
+        "minimum_keyword_matches": 6
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "RCAR-CDH-003 Rachel Nakamura gained PHI access through role change — judgment on whether enhanced screening was adequate",
+      "description": "RCAR-CDH-003 shows CDH-8018 (Rachel Nakamura) transferred from Support Engineer (no PHI access) to CS Manager (PHI access) on May 15, 2025. The review record shows the HIPAA Privacy Officer signed off May 22, OIG/SAM screening was completed May 20, and a background check upgrade to Enhanced level was completed May 18. This appears well-managed — the PHI access change triggered the correct additional controls. However, the background check upgrade (Basic to Enhanced) was completed May 18, and the Privacy Officer sign-off was May 22, but PHI access was granted May 23. The role change was effective May 15 and the Workday trigger fired May 15. The question is whether CDH-8018 had access to the patient outcome dashboard between May 15 (role change effective date) and May 23 (access formally adjusted after all approvals). If the Workday-Okta integration automatically provisioned CS Manager access on May 15 based on the role change, the employee may have had 8 days of PHI access before the Enhanced background check, OIG screening, and Privacy Officer sign-off were completed. The access_adjusted date of May 23 could mean access was granted on May 23 (controls worked) or that access was adjusted on May 23 after being auto-provisioned on May 15 (controls lagged).",
+      "evidence_sources": [
+        "evidence/role-change-access-review-log-2025.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should examine RCAR-CDH-003 and note the 8-day gap between the role change effective date (May 15) and the access adjustment date (May 23). Policy Section 6.2 requires HIPAA Privacy Officer sign-off within 3 business days for PHI access changes. The sign-off occurred May 22 (5 business days — slightly past the 3-day requirement). The key judgment is whether the Workday-Okta integration provisioned PHI access automatically on May 15 or whether access was withheld until all approvals were complete. The evidence is ambiguous, but the auditor should flag the timing gap and request clarification on whether PHI access was available before the controls were completed.",
+      "detection_criteria": {
+        "required_keywords": ["RCAR-CDH-003", "CDH-8018", "Rachel Nakamura", "Support Engineer", "CS Manager", "PHI access", "May 15", "May 22", "May 23", "Privacy Officer", "OIG", "Enhanced", "8 days", "Workday-Okta", "Section 6.2"],
+        "minimum_keyword_matches": 6
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "IT provisioned system access for CDH-8024 without verifying AUP status — access control bypass",
+      "description": "The onboarding checklist reveals that IT provisioned access for CDH-8024 on May 3 based on hiring manager Patrick Dumont's IT ticket TKT-2025-4891 without verifying the employee's AUP signing status. This indicates that the IT access provisioning process does not include an AUP verification checkpoint, or the checkpoint was bypassed for this request. If the process lacks an AUP verification step, this is a systemic control design gap — any manager could request access for an employee who has not signed the AUP. If the checkpoint exists but was bypassed, this is an execution failure. Either way, the access provisioning process should enforce the AUP signing prerequisite established in Section 5.1, and the manager who requested the bypass (CDH-8016, Patrick Dumont) did so despite being IT Ops Manager and therefore presumably aware of the policy requirement.",
+      "evidence_sources": [
+        "evidence/employee-onboarding-checklist-2025.md",
+        "evidence/aup-acknowledgment-tracker.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should examine not just the CDH-8024 AUP refusal outcome but the process failure that allowed access to be provisioned. The IT access provisioning process either lacks an AUP verification control or the control was bypassed. Patrick Dumont, as IT Ops Manager, should have known about the AUP requirement. This is a process-level finding separate from the CDH-8024-specific AUP refusal finding.",
+      "detection_criteria": {
+        "required_keywords": ["TKT-2025-4891", "Patrick Dumont", "CDH-8016", "IT Ops Manager", "AUP verification", "bypass", "access provisioning", "Section 5.1", "checkpoint", "CDH-8024", "control design"],
+        "minimum_keyword_matches": 5
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 6,
+    "relevant_documents_count": 5,
+    "tags": ["hr_security", "judgment", "AUP_refusal", "healthcare", "HIPAA", "PHI_access", "role_change", "training_completeness", "access_provisioning", "legal_review", "control_bypass"]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "id": "cc7.1m-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "The entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/maintenance-policy.md",
+      "type": "policy",
+      "description": "Aegis Platform Services maintenance policy defining patch SLAs, vendor dependency procedures, exception process, and escalation thresholds"
+    },
+    {
+      "path": "evidence/patching-records-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "Patching records for Q4 2025 with 17 successful patch deployments across production servers"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Patch exception register with 2 vendor dependency exceptions — one where vendor has not released a fix (Citrix) and one where vendor released fix but patch not yet applied (HP)"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II audit of Aegis Platform Services for Q4 2025 (October 1 - December 31, 2025). Review the maintenance policy, patching records, and exception register. Assess whether CC7.1 maintenance requirements are met. Two vendor dependency patch exceptions are documented — examine each carefully. Consider whether waiting for a vendor is always a valid reason to miss a patch SLA, and what happens when a vendor dependency is resolved but the patch is still not applied. The organization may have followed the exception process correctly while still having genuine control gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Citrix ADC Critical vulnerability unpatched for 130+ days — vendor workaround confirmed only partial, and vendor keeps pushing fix timeline with no firm date",
+      "description": "EXC-2025-P-080 documents a Critical (CVSS 9.4) RCE vulnerability on citrix-adc-01 that has been unpatched since August 20. The exception process was followed correctly: CISO approval, 5 compensating controls, monthly reviews. However, several factors make this a judgment call despite process compliance: (1) The vendor workaround is confirmed only partial — Citrix advisory rev 3 (November 15) states the workaround 'only partially mitigates the vulnerability — attack vector through standard TLS remains available.' (2) Citrix has pushed the fix timeline from Q4 2025 to 'early 2026' with no firm date, and 4 consecutive monthly reviews show no progress. (3) Compensating controls for an RCE on a gateway device have inherent limitations — WAF rules and IDS signatures can only detect known exploit patterns. (4) At 130+ days with a CVSS 9.4 vulnerability, a partial workaround, and no firm fix date, the question is whether the organization should be considering product replacement rather than indefinite waiting. Policy Section 4.2 requires 'actively pursuing interim mitigations' but the available mitigation is confirmed partial. The exception process is technically compliant, but the substance of the risk is not being adequately addressed.",
+      "evidence_sources": [
+        "evidence/exception-register.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should recognize that following the exception process is necessary but not sufficient. The key issues are: (1) partial workaround means residual risk is higher than the compensating controls suggest, (2) vendor timeline slippage without firm dates means there is no credible remediation path, (3) 130+ days for a CVSS 9.4 on a gateway device exceeds reasonable risk acceptance even with compensating controls, and (4) the organization has not explored alternatives (product replacement, architecture change) despite the vendor's inability to deliver a fix. This is a judgment call — the auditor must weigh process compliance against substantive risk.",
+      "detection_criteria": {
+        "required_keywords": ["EXC-2025-P-080", "Citrix ADC", "CVE", "9.4", "130 days", "partial workaround", "no firm date", "early 2026", "standard TLS", "compensating controls", "gateway"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "HP printer patch available for 41 days but not applied — vendor dependency resolved but exception still open",
+      "description": "EXC-2025-P-075 was filed on July 10 as a vendor dependency exception because HP had not released a firmware fix. HP released the fix (firmware v5.8.0.2) on November 18. As of December 29, the patch has been available for 41 days but has not been applied. The November monthly review confirmed the patch was released and scheduled it for the December maintenance window. The December review states 'PATCH NOT APPLIED — December maintenance window used for OS patching. Rescheduled to January.' The original exception was valid — the vendor had not released a fix. But the vendor dependency was resolved on November 18 when HP released the patch. From that point forward, this is no longer a vendor dependency — it is a patching prioritization decision. The High-severity SLA is 30 days from patch availability. The patch has been available for 41 days, exceeding the SLA by 11 days. The exception should have been closed and the standard SLA applied once the patch became available. Instead, the exception remains 'Active' and is being used to justify continued delay even though the reason for the exception (no vendor fix) no longer exists.",
+      "evidence_sources": [
+        "evidence/exception-register.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should trace the timeline: exception filed July 10 for vendor dependency, HP released fix November 18, patch not applied as of December 29 (41 days). The High SLA is 30 days. The exception was valid when the vendor had not released a fix, but once the fix was available, the standard SLA should have applied. The exception is being used as a shield to avoid applying an available patch. The December review explicitly shows the patch was deprioritized in favor of OS patching. This is a patching prioritization gap, not a vendor dependency.",
+      "detection_criteria": {
+        "required_keywords": ["EXC-2025-P-075", "HP", "November 18", "firmware v5.8.0.2", "41 days", "30-day SLA", "vendor dependency resolved", "not applied", "December", "prioritization", "rescheduled to January"],
+        "minimum_keyword_matches": 5
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["system_maintenance", "vendor_dependency", "patch_exception", "judgment", "Citrix", "partial_workaround", "exception_lifecycle", "patch_prioritization"]
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "id": "cc3.1-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC3.1",
+  "control_description": "The entity specifies objectives with sufficient clarity to enable the identification of risks to the achievement of its objectives. The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/risk-management-policy.md",
+      "type": "policy",
+      "description": "Skyline Health Inc. risk management policy covering risk governance, appetite, and annual assessment requirements for a healthcare EHR platform"
+    },
+    {
+      "path": "evidence/risk-register.csv",
+      "type": "spreadsheet",
+      "description": "Active risk register with 12 risks covering information security, HIPAA compliance, technology, third-party, and operational categories"
+    },
+    {
+      "path": "evidence/risk-assessment-report-2025.md",
+      "type": "report",
+      "description": "2025 Annual Risk Assessment Report covering 5 risk categories with findings and recommendations"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/hipaa-risk-analysis.md",
+      "type": "report",
+      "description": "HIPAA Security Rule risk analysis summary covering ePHI safeguards. Related to healthcare compliance but focused on HIPAA-specific requirements rather than the broader CC3.1 risk assessment process."
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Skyline Health Inc.'s risk management controls under CC3.1 for the Q4 2025 observation period. Skyline Health provides a cloud-based EHR platform processing PHI. Review the risk management policy, risk register, annual risk assessment report, and any supporting documentation. Assess completeness of risk identification, adequacy of risk coverage, and governance effectiveness. Not all documents may be directly relevant to CC3.1.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Annual risk assessment does not cover financial or market risk -- but these are appropriately excluded",
+      "description": "The annual risk assessment report Section 5 explicitly excludes financial risk (covered by CFO financial risk program) and market risk (not applicable for a SaaS company). This might appear to be a scope gap, but the risk management policy Section 7 requires the assessment to cover 'information security, HIPAA/regulatory compliance, technology and infrastructure, third-party/vendor risk, clinical data integrity, and operational resilience.' The assessment covers all six required categories. Financial and market risks are outside the scope of CC3.1 for a SaaS healthcare platform. The exclusion is documented and justified.",
+      "evidence_sources": ["evidence/risk-assessment-report-2025.md", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "An auditor might note the explicit exclusion of financial and market risks. However, the policy defines 6 required risk domains and all 6 are covered. Financial and market risks are not relevant to CC3.1 for a SaaS company. The exclusion is transparent and appropriate.",
+      "detection_criteria": {
+        "required_keywords": ["financial risk", "market risk", "excluded", "out of scope", "missing category", "incomplete"],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": ["appropriately excluded", "not applicable", "covered by other program", "justified exclusion", "not relevant"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Risk assessment report covers only 5 categories but policy requires 6 -- clinical data integrity missing as a separate domain",
+      "description": "The risk management policy Section 7 requires the annual assessment to cover six risk domains, including 'Clinical data integrity' as a distinct domain. The 2025 risk assessment report Section 3 lists only 5 categories assessed: Information Security, HIPAA/Regulatory Compliance, Technology and Infrastructure, Third-Party/Vendor Risk, and Operational Resilience. 'Clinical data integrity' is not listed as a separately assessed category. While SH-RISK-007 (clinical data integrity corruption) exists in the risk register and Section 4.3 briefly mentions data integrity under 'Technology and Infrastructure,' the policy treats clinical data integrity as its own domain requiring dedicated assessment. For a healthcare EHR platform, clinical data integrity is a critical concern -- incorrect patient data can lead to adverse clinical outcomes. Folding it into the technology category may not provide sufficient depth.",
+      "evidence_sources": ["evidence/risk-assessment-report-2025.md", "evidence/risk-management-policy.md", "evidence/risk-register.csv"],
+      "expected_reasoning": "Compare the policy's Section 7 (6 required domains) against the report's Section 3 (5 categories assessed). The policy lists: information security, HIPAA compliance, technology, third-party, clinical data integrity, operational resilience. The report covers: info sec, HIPAA, tech, third-party, operational resilience. Clinical data integrity is absent as a standalone category. While touched upon under 'Technology,' a dedicated EHR platform should assess clinical data integrity in depth.",
+      "detection_criteria": {
+        "required_keywords": ["clinical data integrity", "5 categories", "6 domains", "missing", "Section 7", "separate domain", "not assessed"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "SH-RISK-006 business associate assessment completion at 80% -- 2 critical BAs unassessed",
+      "description": "SH-RISK-006 (PHI exposure through business associate breach) notes '8 of 10 BA assessments completed for 2025.' Two critical business associates have not been assessed. The risk management policy Section 5 states zero tolerance for known PHI exposure risks. Business associates with access to PHI who have not undergone annual security assessments represent an unknown risk exposure. The annual risk assessment report Section 4.4 confirms 'Assessment completion rate 80%' and Section 6 recommends expanding to cover all 10 critical associates, indicating this gap was identified but not remediated during the observation period.",
+      "evidence_sources": ["evidence/risk-register.csv", "evidence/risk-assessment-report-2025.md", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "Risk register notes 8 of 10 BA assessments completed. Two unassessed BAs with PHI access. The risk management policy has zero tolerance for known PHI exposure risks. Unassessed BAs represent unknown risk. The annual report recommends expanding coverage, confirming the organization is aware of the gap.",
+      "detection_criteria": {
+        "required_keywords": ["SH-RISK-006", "8 of 10", "business associate", "unassessed", "PHI", "80%", "completion", "zero tolerance"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No fraud risk identified in the risk register -- CC3.1 requires identification of fraud risks",
+      "description": "SOC 2 CC3.1 specifically requires the identification and assessment of risks of fraud. The risk register contains 12 risks across information security, HIPAA compliance, technology, third-party, and operational categories. None address fraud-specific risks such as billing fraud, insurance fraud, prescription fraud, or identity theft using patient records. For a healthcare EHR platform processing insurance claims (per the HIPAA risk analysis document showing 890K claims records), fraud risk is material. The absence of any fraud-related risk in the register suggests the risk identification process did not adequately consider the fraud risk dimension required by CC3.1.",
+      "evidence_sources": ["evidence/risk-register.csv", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "CC3.1 explicitly requires identification of fraud risks. Search the risk register for 'fraud', 'billing', 'insurance fraud', 'identity theft', 'prescription diversion'. None found. For a healthcare platform processing patient records and insurance claims, fraud risk is inherent and should be identified. This is a scope gap in the risk identification process.",
+      "detection_criteria": {
+        "required_keywords": ["fraud", "CC3.1", "missing", "not identified", "billing", "insurance", "risk register", "fraud risk"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["risk_assessment", "red_herring", "healthcare", "EHR", "HIPAA", "clinical_data_integrity", "business_associate", "fraud_risk", "risk_coverage"]
+  }
+}

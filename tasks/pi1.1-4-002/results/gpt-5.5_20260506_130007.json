@@ -1,0 +1,71 @@
+{
+  "task_id": "pi1.1-4-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T13:00:07.934136",
+  "score": {
+    "task_id": "pi1.1-4-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "DIC-4510",
+          "stuck in queue",
+          "06:00 UTC"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DIC-4527",
+          "153",
+          "bulk import",
+          "without user notification",
+          "partial file",
+          "MIME type",
+          "schema"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "webhook",
+          "URL",
+          "internal network",
+          "VALIDATION GAP",
+          "Section 5.1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4629,
+    "output_tokens": 3370
+  },
+  "raw_response": "## Overall Assessment\n\n**PI1.1 is partially met, but not fully ready.** Horizon Data Corp has relevant processing integrity mechanisms in place, including SDLC requirements, API schema validation, CI/CD validation, and Q4 integrity check logs. However, the evidence does not fully demonstrate that Horizon has formally defined processing objectives for what constitutes **complete, accurate, and timely** processing across its systems. There are also specific validation and integrity-control gaps, most notably in the bulk import process.\n\n---\n\n## Finding 1: Processing objectives are not formally defined in measurable terms\n\n**Related document / section:**  \n- SDLC Policy, Sections 1, 5, and 6  \n- Data integrity check logs, Q4 2025\n\n**Why it\u2019s a gap:**  \nThe SDLC policy requires input validation, code review, static analysis, and staging validation, but it does not define explicit processing objectives for completeness, accuracy, and timeliness. For example, the evidence does not define:\n\n- What level of record-count discrepancy is acceptable, if any  \n- Whether source and destination counts must always match  \n- Which pipelines require checksum, reconciliation, or business-rule validation  \n- Required processing windows or completion SLAs  \n- Required remediation timelines for failed integrity checks  \n- User notification requirements when records are rejected or partially processed\n\nThe integrity logs show checks being performed, but without documented objectives it is difficult to conclude whether processing was timely or whether the checks performed are sufficient for each pipeline.\n\n**Severity:** Medium\n\n---\n\n## Finding 2: Bulk import validation is insufficient and resulted in incomplete processing without user notification\n\n**Related document / section:**  \n- API input validation configuration: `/api/v2/bulk-import`  \n- Data integrity check log: `DIC-4527`  \n- SDLC Policy, Section 5.1 Validation Requirements and Section 5.2 Validation Testing\n\n**Why it\u2019s a gap:**  \nThe bulk import endpoint validates file type, file size, entity type, mode, and rate limit, but the configuration explicitly states:\n\n> \u201cFile contents are not validated against entity schema before processing. Only MIME type is checked.\u201d\n\nThis is a direct processing integrity gap because malformed or invalid records can enter the processing flow before being fully validated.\n\nThe issue was observed in Q4 2025 in `DIC-4527`, where 153 rows were rejected due to malformed CSV rows, but the importer accepted the partial file without notifying the user. This means the user could reasonably believe the full file was processed when only a subset was accepted.\n\nThis is not merely an isolated execution failure; it reflects a design gap because the validation configuration itself confirms that file contents are not validated before processing.\n\n**Severity:** High\n\n---\n\n## Finding 3: Data integrity checks rely heavily on record-count comparisons and do not consistently validate accuracy\n\n**Related document / section:**  \n- Data integrity check logs for Q4 2025  \n- SDLC Policy, Section 5 Input Validation\n\n**Why it\u2019s a gap:**  \nMost integrity checks in the Q4 logs are `record_count` checks. Record-count matching is useful for assessing completeness, but it does not confirm that the processed data is accurate.\n\nFor example:\n\n- `order-ingestion` uses record-count checks  \n- `inventory-sync` uses record-count checks  \n- `customer-data-export` uses record-count checks  \n- `bulk-import-validation` uses record-count checks  \n- Only `payment-reconciliation` appears to use checksum validation\n\nA source count and destination count may match while field values, amounts, quantities, statuses, or relationships are incorrect. For processing integrity, especially accuracy, record-count checks should be supplemented with checksums, control totals, referential integrity checks, duplicate detection, field-level validations, or business-rule validations.\n\n**Severity:** Medium\n\n---\n\n## Finding 4: Webhook URL validation gap could affect processing integrity and event delivery reliability\n\n**Related document / section:**  \n- API input validation configuration: `/api/v2/webhooks`\n\n**Why it\u2019s a gap:**  \nThe webhook endpoint includes a documented validation gap:\n\n> \u201cNo URL scheme restriction or domain allowlist enforced. Accepts any URI including internal network addresses.\u201d\n\nWhile this issue may primarily have security implications, it also has processing integrity implications. If invalid, internal, unintended, or unsupported webhook destinations are accepted, event delivery may be incomplete, misdirected, or unreliable. The configuration does not define what constitutes a valid webhook destination for accurate and complete event processing.\n\nAt minimum, Horizon should define and enforce acceptable URL schemes, destination rules, and delivery validation requirements.\n\n**Severity:** Low\n\n---\n\n## Observation \u2014 Not Raised as a Finding\n\n`DIC-4510` for `order-ingestion` showed a discrepancy of 3 records. However, the log indicates that an alert was triggered and the three orders stuck in queue were manually reprocessed by 06:00 UTC. Based on the evidence provided, this appears to be an isolated incident with appropriate response and does not by itself indicate a systemic control gap."
+}

@@ -1,0 +1,71 @@
+{
+  "id": "p1.1-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "P1.1",
+  "control_description": "The entity provides notice to data subjects about its privacy practices to meet the entity's objectives related to privacy.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/privacy-policy.md",
+      "type": "policy",
+      "description": "BrightPath Analytics external privacy policy published on company website"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the provided privacy policy for BrightPath Analytics. Assess whether the organization's privacy notice adequately addresses the requirements of SOC 2 Trust Service Criteria P1.1 (Privacy Notice). Identify any gaps, weaknesses, or missing elements that an auditor would flag regarding the completeness of notice provided to data subjects.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No data retention period specified in privacy policy",
+      "description": "The privacy policy does not specify any data retention periods. Section 5 ('Data Storage') mentions that data is stored 'securely on encrypted servers' but provides no information about how long personal data is retained, what criteria determine retention periods, or when data is deleted. SOC 2 P1.1 requires that the privacy notice include the retention period for personal information or the criteria used to determine the retention period.",
+      "evidence_sources": ["evidence/privacy-policy.md"],
+      "expected_reasoning": "Section 5 addresses storage security but entirely omits retention duration. There is no mention of deletion schedules, retention criteria, or data lifecycle anywhere in the policy. This is a required element of privacy notice under P1.1.",
+      "detection_criteria": {
+        "required_keywords": ["retention", "period", "duration", "deletion", "how long", "storage", "lifecycle", "missing"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No mechanism for consent withdrawal described",
+      "description": "The privacy policy describes how consent is obtained (Section 3, 'Consent and Legal Basis') but does not describe any mechanism for data subjects to withdraw their consent. There is no mention of an opt-out process, an unsubscribe mechanism, a consent management portal, or any instructions for revoking previously granted consent. Under P1.1 and GDPR Article 7(3), the notice must inform data subjects of their right to withdraw consent and how to exercise it.",
+      "evidence_sources": ["evidence/privacy-policy.md"],
+      "expected_reasoning": "Section 3 covers consent acquisition and legal bases but contains no withdrawal mechanism. Section 7 ('Your Rights') lists the right to access, rectification, and erasure but omits the right to withdraw consent. This is a fundamental privacy notice gap.",
+      "detection_criteria": {
+        "required_keywords": ["withdraw", "revoke", "opt-out", "consent", "mechanism", "unsubscribe", "missing", "right"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No DPO or privacy contact information provided",
+      "description": "The privacy policy does not provide any contact information for a Data Protection Officer, privacy team, or designated privacy contact. Section 8 ('Contact Us') references 'our support team at support@brightpath.io' but does not identify a specific privacy contact or DPO. P1.1 requires the notice to include the identity and contact information of the entity or its representative responsible for privacy.",
+      "evidence_sources": ["evidence/privacy-policy.md"],
+      "expected_reasoning": "The only contact provided is a generic support email. No DPO, privacy officer, or privacy-specific contact channel is identified. Data subjects need a clear point of contact for privacy inquiries and exercising their rights.",
+      "detection_criteria": {
+        "required_keywords": ["DPO", "Data Protection Officer", "privacy contact", "privacy officer", "contact", "support@brightpath", "generic"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "5 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["privacy_notice", "retention", "consent_withdrawal", "policy_review", "single_document"]
+  }
+}

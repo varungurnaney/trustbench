@@ -1,0 +1,103 @@
+{
+  "id": "cc6.3-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.3",
+  "control_description": "The entity authorizes, modifies, or removes access to data, software functions, and other protected information assets based on roles and responsibilities, segregation of duties, and least privilege principles.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/data-access-policy.md",
+      "type": "policy",
+      "description": "Meridian Insights data access policy with DLP controls and bulk export thresholds"
+    },
+    {
+      "path": "evidence/dlp-alert-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 DLP alert log showing all bulk data access alerts triggered by the data loss prevention system"
+    },
+    {
+      "path": "evidence/export-approval-tickets.csv",
+      "type": "ticket",
+      "description": "Q4 2025 data export approval tickets in ServiceNow with justification and approval chain"
+    },
+    {
+      "path": "evidence/database-query-audit-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 database query audit log showing large result set queries and their context"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Meridian Insights' data loss prevention and bulk export controls under CC6.3. Meridian provides business intelligence services to enterprise clients and handles large volumes of customer data. Review all evidence to assess whether the DLP controls effectively prevent unauthorized bulk data access and export. Several situations involve ambiguity about what constitutes a 'bulk export' versus normal analytical query behavior, and whether the DLP threshold is appropriately calibrated. Exercise professional judgment on each finding.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Analyst h.nguyen ran 8 sequential queries of 9,500 rows each to stay below the 10,000-row DLP threshold — total 76,000 rows extracted",
+      "description": "The database query audit log shows user h.nguyen (Hannah Nguyen, Senior Data Analyst) executed 8 SELECT queries against the customer_profiles table between 2:15 PM and 3:45 PM on November 12, 2025. Each query returned between 9,200 and 9,500 rows, consistently staying just below the 10,000-row DLP alert threshold defined in Policy Section 5.2. The queries used OFFSET/LIMIT pagination (LIMIT 9500 OFFSET 0, LIMIT 9500 OFFSET 9500, etc.), resulting in a cumulative extraction of approximately 76,000 rows — the near-complete customer_profiles table. No DLP alert was triggered because each individual query was below the threshold. The export approval ticket log has no ticket for this extraction. The auditor must determine whether this pattern constitutes intentional threshold evasion or legitimate analytical behavior that exposes a DLP design weakness.",
+      "evidence_sources": ["evidence/database-query-audit-q4.csv", "evidence/dlp-alert-log-q4.csv", "evidence/export-approval-tickets.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor must evaluate: (1) 8 sequential queries with OFFSET/LIMIT pagination just below the threshold is a classic threshold evasion pattern, (2) legitimate analytics rarely requires paginated extraction of an entire table, (3) no DLP alert was triggered despite 76,000 rows being accessed, (4) no export approval ticket exists, (5) the policy's 10,000-row threshold only measures per-query volume, not cumulative volume within a time window, (6) this exposes a DLP design gap — the threshold can be trivially bypassed. Whether h.nguyen intentionally evaded the control or simply used a common data extraction pattern, the DLP control failed to detect the effective bulk export.",
+      "detection_criteria": {
+        "required_keywords": ["h.nguyen", "9,500", "9,200", "76,000", "OFFSET", "LIMIT", "threshold", "evasion", "8 queries", "November 12", "customer_profiles"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "DLP alert DLP-Q4-2025-014 for legitimate BI report was auto-closed without human review",
+      "description": "The DLP alert log shows DLP-Q4-2025-014 was triggered on October 28 when svc-bi-dashboard queried 15,200 rows from order_summary for the monthly executive dashboard refresh. The alert was auto-closed within 2 minutes with disposition 'Auto-Resolved — Known Service Account.' Policy Section 5.3 states: 'All DLP alerts must be reviewed by a Security Analyst within 4 hours.' The auto-resolution rule bypasses human review entirely. While this specific alert was for a legitimate service account operation, the auto-close pattern means any anomalous query by this service account would also be auto-resolved — eliminating the detection control for a privileged service account.",
+      "evidence_sources": ["evidence/dlp-alert-log-q4.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor must weigh: (1) the auto-close is a convenience feature that reduces alert fatigue, (2) but it violates the explicit policy requirement for human review within 4 hours, (3) auto-closing alerts for service accounts means a compromised service account could exfiltrate data without triggering human review, (4) this is a control design issue — the alert exists but the response mechanism nullifies it, (5) the auditor should consider whether alert volume justifies auto-resolution or whether the policy should be updated to permit it with compensating controls.",
+      "detection_criteria": {
+        "required_keywords": ["DLP-Q4-2025-014", "auto-closed", "auto-resolved", "svc-bi-dashboard", "15,200", "human review", "4 hours", "Section 5.3"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Export approval EXP-Q4-2025-008 approved 3 days after the export was already completed",
+      "description": "The export approval ticket log shows EXP-Q4-2025-008 (requested by Carlos Mendez, Business Intelligence) was submitted on December 8 for a bulk export of 25,000 rows from client_engagement_metrics. The approval was completed on December 11 by Data Owner + CISO. However, the database query audit log shows the actual export query (25,000 rows, SELECT INTO S3 export) was executed on December 8 at 4:30 PM — 3 days before the approval was finalized. The DLP alert log confirms DLP-Q4-2025-021 was triggered and reviewed, with the analyst noting 'Export approval ticket EXP-Q4-2025-008 submitted — pending approval.' The export proceeded before approval was completed. Policy Section 5.1 requires approval 'prior to export execution.'",
+      "evidence_sources": ["evidence/export-approval-tickets.csv", "evidence/database-query-audit-q4.csv", "evidence/dlp-alert-log-q4.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor must assess: (1) the export was executed before approval — violating the 'prior to execution' requirement, (2) an approval ticket was submitted, showing intent to follow the process, (3) the DLP alert was triggered and reviewed — the control partially worked, (4) the analyst noted the ticket was 'pending' but did not block the export, (5) this may indicate a workflow design issue — the DLP system detected but did not prevent the export, (6) retroactive approval provides accountability but undermines the preventive purpose of the control.",
+      "detection_criteria": {
+        "required_keywords": ["EXP-Q4-2025-008", "Carlos Mendez", "December 8", "December 11", "before approval", "retroactive", "prior to execution", "25,000", "client_engagement_metrics"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "DLP policy does not define aggregate thresholds — only per-query thresholds are enforced",
+      "description": "Policy Section 5.2 defines the DLP threshold as 'queries returning more than 10,000 rows from Restricted or Confidential tables.' This threshold applies per-query only. There is no aggregate threshold (e.g., cumulative rows accessed within a time window) and no velocity-based alerting (e.g., number of large queries per hour). As demonstrated by the h.nguyen pagination pattern, the per-query threshold is trivially bypassable. The auditor must determine whether the absence of aggregate thresholds represents a material control design weakness or whether per-query thresholds provide sufficient detection for most scenarios.",
+      "evidence_sources": ["evidence/data-access-policy.md", "evidence/database-query-audit-q4.csv"],
+      "expected_reasoning": "The auditor must consider: (1) per-query thresholds are the industry norm and catch most naive bulk exports, (2) aggregate thresholds are more sophisticated and less commonly implemented, (3) the h.nguyen incident demonstrates the practical limitation of per-query thresholds, (4) adding aggregate thresholds would improve detection but may generate excessive false positives for legitimate analytics workloads, (5) this is a control design recommendation rather than a definitive gap — the current threshold provides some protection, just not complete protection.",
+      "detection_criteria": {
+        "required_keywords": ["aggregate", "per-query", "threshold", "10,000", "cumulative", "velocity", "Section 5.2", "design weakness"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["DLP", "bulk_export", "threshold_evasion", "data_loss_prevention", "pagination", "auto_resolution", "retroactive_approval", "judgment"]
+  }
+}

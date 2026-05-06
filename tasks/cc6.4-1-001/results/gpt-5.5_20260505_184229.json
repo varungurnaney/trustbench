@@ -1,0 +1,57 @@
+{
+  "task_id": "cc6.4-1-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T18:42:29.090178",
+  "score": {
+    "task_id": "cc6.4-1-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.13333333333333333,
+    "f1": 0.23529411764705882,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 15,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Section 4.2",
+          "visitor",
+          "escort",
+          "sign-in",
+          "badge"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Section 5.1",
+          "CCTV",
+          "retention",
+          "operational needs",
+          "footage",
+          "90 days"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1061,
+    "output_tokens": 1851
+  },
+  "raw_response": "## Overall Assessment\n\nThe policy establishes a reasonable baseline for physical access control (security zones, badge-based access, visitor sign-in, CCTV, and data center controls). However, it is **not fully sufficient for SOC 2 CC6.4 readiness** because several requirements are vague or missing, especially around timely access revocation, periodic access reviews, visitor escorting, access log retention/review, and accountability for high-security areas.\n\n## Findings\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Badge deactivation timeframe is not defined | Section 4.3 \u2013 Badge Deactivation | The policy states badge deactivation should be completed \u201cpromptly,\u201d but does not define a required timeframe, such as immediately upon termination or within a set number of hours. SOC 2 auditors typically expect timely removal of physical access, especially for terminated employees. | High |\n| 2 | No periodic review of physical access rights | Sections 3.2, 4.1, 8.2 | The policy requires approvals for initial access but does not require periodic recertification of badge access by managers, Facilities, or Security. Auditors would expect periodic reviews to confirm that employees retain only appropriate physical access based on job role and need. | High |\n| 3 | Visitor escort requirements are missing | Section 4.2 \u2013 Visitor Management | The policy requires visitor sign-in and badges but does not state whether visitors must be escorted, where they may go, or whether they are prohibited from entering Restricted or High Security zones without supervision. This is a common SOC 2 expectation for protecting facilities and information assets. | High |\n| 4 | Access log retention and review requirements are not defined | Sections 4.1, 4.3, 8.2 | The policy does not specify retention periods for badge access logs or require routine review of access logs for unusual activity, failed access attempts, after-hours access, or unauthorized attempts. Without log review and retention expectations, the organization may not detect inappropriate physical access. | Medium |\n| 5 | CCTV retention period is vague | Section 5.1 \u2013 CCTV Coverage | The policy states footage is retained \u201cin accordance with operational needs,\u201d but does not define a minimum retention period. Auditors typically expect a defined retention requirement, such as 30, 60, or 90 days, based on risk and operational requirements. | Medium |\n| 6 | Lost, stolen, or damaged badge process is missing | Section 4 \u2013 Access Management | The policy does not define how lost or stolen badges must be reported, how quickly they must be disabled, or how replacement badges are issued. This creates a risk that unauthorized individuals could use active badges. | Medium |\n| 7 | Employee transfers and role changes are not fully addressed | Sections 4.1, 4.3 | The policy mentions badge collection upon reassignment, but it does not clearly require modification or removal of access when employees transfer departments, change roles, or no longer need access to Restricted or High Security zones. | Medium |\n| 8 | Shared data center cabinet combinations reduce accountability | Section 7.2 \u2013 Cabinet Access | Orion cabinets at DataVault use combination locks, and combinations are distributed to authorized Infrastructure team members. Shared combinations make it difficult to attribute access to a specific individual. There is also no stated process for changing combinations immediately when an authorized individual leaves or changes roles. | High |\n| 9 | Data center third-party control reliance is incomplete | Section 7.1 \u2013 Colocation Provider | The policy states that DataVault controls are validated through its SOC 2 Type II report, but it does not require Orion to review the report annually, evaluate exceptions, map complementary user entity controls, or track remediation. Auditors would expect formal vendor assurance procedures for physical security reliance. | Medium |\n| 10 | No explicit tailgating or piggybacking prevention requirements | Sections 3 and 4 | The policy does not address tailgating, piggybacking, or employee responsibility to challenge/report unknown individuals. Badge controls can be bypassed if personnel allow unauthorized individuals to enter secured areas. | Medium |\n| 11 | Emergency or break-glass access is not defined | Sections 3.2, 4 | The policy does not describe how emergency access to Restricted or High Security zones is granted, logged, approved after the fact, or reviewed. Emergency access should be controlled to prevent misuse while still supporting safety and operational continuity. | Low |\n| 12 | Physical security incident response is not addressed | Sections 5, 8 | The policy does not define escalation requirements for physical security incidents such as unauthorized access attempts, missing badges, forced doors, visitor violations, or suspicious activity. SOC 2 auditors often expect physical security exceptions to be reported, investigated, and tracked. | Medium |\n| 13 | Visitor log retention is not specified | Section 4.2 \u2013 Visitor Management | The policy requires visitor information to be logged but does not specify how long visitor logs are retained or who reviews them. Retention is important for investigations and audit evidence. | Low |\n| 14 | After-hours physical access controls are not fully defined | Sections 3, 5.2 | The policy describes after-hours CCTV alerting but does not define whether after-hours facility access is restricted, separately approved, logged, or reviewed. After-hours access generally presents higher physical security risk. | Medium |\n| 15 | Scope of protected information assets is not fully addressed | Sections 1, 2, 3 | The policy addresses facilities, server rooms, network closets, and data center cages, but does not clearly address physical protection of other information assets such as laptops, printed confidential information, removable media, backup media, or storage cabinets. CC6.4 covers facilities and protected information assets, not only building access. | Medium |\n\n## Summary Conclusion\n\nThe policy **partially addresses CC6.4** by defining physical zones, badge access, visitor registration, CCTV coverage, and data center security expectations. However, an auditor would likely flag the policy as needing improvement because several key control elements are either missing or too vague, especially:\n\n- Timely badge deactivation requirements  \n- Periodic physical access reviews  \n- Visitor escorting and restricted-area controls  \n- Defined log and CCTV retention periods  \n- Lost/stolen badge procedures  \n- Review of third-party data center SOC 2 reports  \n- Stronger accountability for high-security data center cabinet access"
+}

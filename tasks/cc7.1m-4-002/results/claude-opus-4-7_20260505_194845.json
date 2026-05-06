@@ -1,0 +1,59 @@
+{
+  "task_id": "cc7.1m-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T19:48:45.159298",
+  "score": {
+    "task_id": "cc7.1m-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.125,
+    "f1": 0.2222222222222222,
+    "score": 0.2222222222222222,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "core-switch-01",
+          "285 minutes",
+          "99.34%",
+          "99.99%",
+          "hardware failure",
+          "EML-509"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "GEN-DC-01",
+          "generator",
+          "quarterly",
+          "deferred",
+          "January",
+          "EML-514",
+          "Section 5.3"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4854,
+    "output_tokens": 3021
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: CC7.1 Equipment Maintenance Program\n**Observation Period:** October 1 \u2013 December 31, 2025\n**Entity:** Bastion Technologies\n\n---\n\n## Executive Summary\n\nBastion Technologies has a documented maintenance policy (POL-MAINT-009 v3.2) with defined intervals, SLAs, and escalation thresholds. Q4 2025 evidence shows generally consistent execution of preventive maintenance (UPS, HVAC, PDUs, fire suppression), strong uptime/SLA performance, and good documentation discipline (work performed, technician, change ticket, next scheduled date).\n\nHowever, several gaps exist that warrant attention before a Type II audit, primarily concerning the **Q1 2026 generator maintenance deferral**, **scheduling discipline relative to policy intervals**, and **escalation logic interpretation**.\n\n---\n\n## Findings\n\n### Finding 1: Quarterly Generator Maintenance Deferred Without Formal Risk Assessment or Escalation\n- **Related Section:** Policy Section 5.1 (Preventive Maintenance Schedule \u2013 Diesel Generators, Quarterly) and Section 5.3 (Overdue Maintenance)\n- **Gap:** The full quarterly preventive maintenance for GEN-DC-01 (last performed October 4, 2025) was deferred from the December maintenance window (MW-EQUIP, first Saturday) to January 2026. EML-514 documents that the deferral was a unilateral facilities decision driven by competing HVAC priorities, with no documented change ticket (`change_ticket: N/A`), no risk acceptance, and no management approval. The generator is a critical resilience component, and deferring its quarterly preventive maintenance \u2014 even when weekly self-tests pass \u2014 represents a deviation from the policy interval. Self-tests (5 min) are not a substitute for the policy-mandated 30-min load test, oil change, and filter replacement.\n- **Severity:** **High** \u2014 The generator is a Tier-1 resilience control. Deferral without documented risk assessment, change approval, or compensating controls undermines CC7.1's requirement to maintain components to meet entity objectives.\n\n---\n\n### Finding 2: Ambiguous / Permissive Interpretation of Overdue Escalation Threshold\n- **Related Section:** Policy Section 5.3 (Overdue Maintenance)\n- **Gap:** EML-514 reflects the facilities team's interpretation that the 30-day overdue escalation clock starts only **after** the 90-day quarterly interval has elapsed (i.e., escalation would not occur until day 121). This interpretation effectively allows quarterly maintenance to slip up to 30 days past the interval before any escalation, and the policy as written is silent on whether \"overdue\" begins at the scheduled date or at some grace period thereafter. As of December 31, GEN-DC-01 was at 88 days since last service with no escalation initiated and no scheduled completion date prior to the 90-day interval expiring. The policy needs a precise definition of \"overdue\" (e.g., \"any day past the next-scheduled date\") and management should not rely on facilities self-interpretation.\n- **Severity:** **Medium** \u2014 Control design weakness; could allow systematic slippage of preventive maintenance without management visibility.\n\n---\n\n### Finding 3: Generator Maintenance Not Aligned With Defined Equipment Maintenance Window\n- **Related Section:** Policy Section 3 (Maintenance Windows \u2013 MW-EQUIP, first Saturday of each month) and Section 5.1\n- **Gap:** Policy designates the first Saturday of each month as the equipment maintenance window. Quarterly generator maintenance was performed October 4 (Saturday \u2014 compliant), but the next quarterly was due no later than January 3, 2026 (the first Saturday of January). It is now scheduled for January 4, 2026 (Sunday), outside the defined MW-EQUIP window. Additionally, no November or December MW-EQUIP slot was used for any generator activity, despite the window being available. This indicates weak alignment between policy-defined windows and actual scheduling.\n- **Severity:** **Low** \u2014 Documentation/scheduling discipline issue; does not by itself indicate a maintenance failure but reflects poor adherence to the policy's structural framework.\n\n---\n\n### Finding 4: Core Switch Failure (INC-2025-M-040) Not Linked to Preventive Maintenance Evidence\n- **Related Section:** Policy Section 5.1 (Network Equipment \u2013 Annual) and Uptime Report (November core-switch-01)\n- **Gap:** core-switch-01 experienced a complete hardware failure on November 13, 2025 causing 285 minutes of unplanned downtime and breaching SLA (99.34% vs. 99.99% target). EML-509 (Annual Network Preventive, dated November 8) references \"fan cleaning on core-switch-01 (post-replacement)\" \u2014 meaning the switch failed and was replaced, then maintenance was performed on the replacement. There is no evidence of a pre-failure preventive maintenance record for the original core-switch-01 in Q4, no root cause analysis tied to maintenance practices, and no documented review of whether the annual interval for network equipment is sufficient. For an availability-critical component, an annual physical inspection cadence may be insufficient and should be re-evaluated post-incident.\n- **Severity:** **Medium** \u2014 The failure itself may not be a control gap (hardware fails), but the absence of a documented post-incident review of maintenance adequacy for critical network gear is a CC7.1 evaluation gap.\n\n---\n\n### Finding 5: Deferred Maintenance Not Captured Under Change Management\n- **Related Section:** Policy Section 6 (Change Management \u2014 \"All maintenance requires a change ticket\")\n- **Gap:** The decision to **defer** generator quarterly maintenance is itself a change to the maintenance schedule but has no change ticket (EML-514 shows `change_ticket: N/A`). Policy Section 6 requires change tickets for maintenance activities; by extension, schedule deviations should be tracked. There is no audit trail of who approved the deferral, when the decision was made, or what compensating controls were considered.\n- **Severity:** **Medium** \u2014 Lack of documented approval/audit trail for control deviations is a recurring SOC 2 weakness pattern.\n\n---\n\n### Finding 6: Uptime Report Note Confirms Deferral Without Triggering Internal Action\n- **Related Section:** Uptime Report (December gen-dc-01 entry) and Policy Section 5.3\n- **Gap:** The December uptime report explicitly notes \"Full quarterly maintenance deferred to January\" for GEN-DC-01. This indicates the deferral was visible in operational reporting but did not trigger management review, escalation to the IT Director, or risk assessment. This suggests reporting exists but is not actively monitored against policy thresholds \u2014 a detective control design weakness.\n- **Severity:** **Low** \u2014 Monitoring/reporting effectiveness gap.\n\n---\n\n### Finding 7: No Evidence of Application/Database/OS Patching Records (Scope Observation)\n- **Related Section:** Policy Section 4 (Patching) and CC7.1 scope (application, database, OS software)\n- **Gap:** CC7.1 explicitly covers **application, database, and operating system software** maintenance. The evidence provided focuses heavily on **physical/facility equipment** (UPS, HVAC, generators, fire suppression, PDUs, network). While uptime reports reference \"patching\" notes, no patch management logs, vulnerability scan results, or evidence of adherence to the Section 4.1 patch SLAs (Critical 14d / High 30d / Medium 90d / Low 180d) were provided. This is a significant evidence gap for the CC7.1 control as scoped.\n- **Severity:** **High** \u2014 Without patching evidence, the auditor cannot opine on a substantial portion of CC7.1's scope.\n\n---\n\n## Summary of Severities\n\n| Severity | Count | Findings |\n|----------|-------|----------|\n| Critical | 0 | \u2014 |\n| High | 2 | Findings 1, 7 |\n| Medium | 3 | Findings 2, 4, 5 |\n| Low | 2 | Findings 3, 6 |\n\n## Recommended Remediation Priorities\n1. **Complete the deferred generator quarterly maintenance immediately** and document the gap with a retrospective risk assessment.\n2. **Provide patch management evidence** (patch logs, vulnerability scans, SLA compliance metrics) for Q4 2025.\n3. **Clarify Policy Section 5.3** to define \"overdue\" unambiguously (e.g., 1 day past next_scheduled).\n4. **Require change tickets for any maintenance deferral**, with IT Director approval.\n5. **Conduct post-incident review** of core-switch-01 failure including maintenance interval adequacy for critical network gear."
+}

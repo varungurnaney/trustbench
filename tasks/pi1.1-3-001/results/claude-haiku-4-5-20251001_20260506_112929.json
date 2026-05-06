@@ -1,0 +1,55 @@
+{
+  "task_id": "pi1.1-3-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-06T11:29:29.974860",
+  "score": {
+    "task_id": "pi1.1-3-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.5,
+    "precision": 0.16666666666666666,
+    "f1": 0.25,
+    "score": 0.5,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "staging",
+          "missing",
+          "Section 4.3",
+          "Section 5.1",
+          "24 hours",
+          "integration tests",
+          "QA sign-off"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "container scan",
+          "Critical"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2349,
+    "output_tokens": 1843
+  },
+  "raw_response": "# COMPLIANCE AUDIT FINDINGS\n**Control PI1.1: Processing Objectives for Complete, Accurate, and Timely Processing**\n\n---\n\n## FINDING 1: Missing Staging Deployment Stage\n\n**Title:** Production pipeline bypasses mandatory staging validation requirement\n\n**Policy Reference:** Section 5.1 (Pipeline Architecture), Section 4.3 (Staging Validation)\n\n**Gap Description:**\nThe GitHub Actions pipeline configuration contains only build, docker-build, production-approval, production-deploy, and post-deploy-verification stages. **The mandatory staging deployment stage is completely absent.** \n\nThe SDLC policy explicitly requires:\n- \"All code changes must be deployed to staging and validated before production deployment\"\n- Pipeline architecture mandates a \"Staging Deploy\" stage as step 2\n- A minimum 24-hour staging validation period before production promotion\n- QA team sign-off on staging deployment before production authorization\n\nThe current pipeline deploys directly from build approval to production, eliminating the opportunity to validate processing integrity in an environment that mirrors production (as required by Section 5.2).\n\n**Severity:** **CRITICAL**\n\n**Impact:** Code changes bypass validation in a production-equivalent environment, increasing risk of production incidents and data processing errors. The entity cannot demonstrate that processing objectives for accuracy and completeness are verified before live deployment.\n\n---\n\n## FINDING 2: Missing Integration Testing Stage\n\n**Title:** No integration testing validation before production deployment\n\n**Policy Reference:** Section 4.2 (Integration Testing), Section 5.1 (Pipeline Architecture)\n\n**Gap Description:**\nThe SDLC policy requires integration tests to \"run against the staging environment after each staging deployment\" and states \"All integration tests must pass before production promotion is authorized.\"\n\nThe pipeline configuration includes:\n- Unit tests (section 4.1 coverage) \u2713\n- SAST scanning \u2713\n- Container scanning \u2713\n- Post-deploy smoke tests \u2713\n\nHowever, **there is no explicit integration testing stage** that validates system components working together before production deployment. Smoke tests occur *after* production deployment, not before.\n\n**Severity:** **CRITICAL**\n\n**Impact:** End-to-end processing flows and inter-system data flows are not validated before production. Processing errors involving multiple components or external integrations may reach production undetected. The entity cannot demonstrate accuracy of complete processing workflows.\n\n---\n\n## FINDING 3: Missing QA Sign-Off Control\n\n**Title:** No QA team approval gate before production deployment\n\n**Policy Reference:** Section 4.3 (Staging Validation), Section 5.1 (Pipeline Architecture - Stage 3)\n\n**Gap Description:**\nThe SDLC policy explicitly requires: \"The QA team must sign off on staging deployment before production promotion is authorized.\"\n\nThe pipeline includes only:\n- Automated build approval (coverage/SAST gates)\n- Release Manager approval for production\n\n**There is no QA sign-off approval stage** between staging validation and production deployment. The \"production-approval\" stage specifies only \"release-managers\" as required approvers, with no mention of QA participation.\n\n**Severity:** **HIGH**\n\n**Impact:** QA's assessment of processing completeness and accuracy in the staging environment is bypassed. The manual review step that validates processing objectives were met in the staging environment is absent from the control framework.\n\n---\n\n## FINDING 4: Missing Mandatory 24-Hour Staging Validation Period\n\n**Title:** No enforced minimum validation duration before production promotion\n\n**Policy Reference:** Section 4.3 (Staging Validation), Section 5.1 (Pipeline Architecture - Stage 3)\n\n**Gap Description:**\nThe SDLC policy mandates: \"Minimum staging validation period is 24 hours before production promotion.\"\n\nThe pipeline configuration shows:\n```json\n\"production-approval\": {\n  \"timeout_hours\": 48,\n  \"minimum_approvals\": 1\n}\n```\n\nThe 48-hour timeout represents the *maximum* time an approval can remain pending, not a *minimum* validation duration. There is no mechanism to enforce that:\n- Code remains in staging for a minimum of 24 hours\n- Processing behavior is observed for a baseline period before promotion\n- Time-dependent or delayed error conditions have an opportunity to surface\n\n**Severity:** **HIGH**\n\n**Impact:** Rapid deployment to production eliminates the opportunity to observe processing behavior over time. Errors that manifest under sustained load or time-dependent conditions may not surface. The completeness and accuracy objectives cannot be validated across a meaningful observation period.\n\n---\n\n## FINDING 5: Missing Environment Parity Verification in Pipeline\n\n**Title:** No pipeline step validates staging/production configuration parity\n\n**Policy Reference:** Section 5.2 (Environment Parity)\n\n**Gap Description:**\nThe SDLC policy requires: \"Staging and production environments must maintain configuration parity. Infrastructure-as-Code (Terraform) ensures environment consistency. Configuration drift between staging and production must be reviewed and resolved within 48 hours.\"\n\nThe pipeline configuration contains:\n- Build stages with code compilation and testing\n- Docker image building\n- ECS deployment commands\n- Rollback procedures\n\n**There is no pipeline stage that validates configuration parity** between staging and production environments before production deployment. No drift detection or verification step exists within the deployment automation.\n\n**Severity:** **HIGH**\n\n**Impact:** Processing may complete accurately in staging (with different configurations) but fail or process incorrectly in production (with different configurations). The assumption that staging validation results transfer to production cannot be verified. Processing objectives for accuracy cannot be assured.\n\n---\n\n## FINDING 6: Insufficient Post-Deploy Verification Scope\n\n**Title:** Post-deployment verification does not measure processing objectives\n\n**Policy Reference:** Section 6 (Processing Integrity) and PI1.1 (Control definition)\n\n**Gap Description:**\nThe SDLC policy Section 6 defines processing integrity requirements:\n- 6.1 Input Validation\n- 6.2 Data Reconciliation (record count validation for batch jobs)\n- 6.3 Error Handling (failed transactions must not be silently dropped)\n\nPost-deploy verification includes only:\n```json\n\"smoke-tests\" and \"health-check\"\n```\n\n**The smoke tests and health checks do not address processing integrity objectives.** There are no verification steps confirming:\n- Input validation is functioning as designed\n- Data reconciliation counts match expectations\n- Error handling is logging and preventing silent failures\n- Processing completeness (no records dropped)\n\n**Severity:** **MEDIUM**\n\n**Impact:** Post-deployment verification cannot demonstrate that processing objectives for completeness and accuracy are being met in production. Critical processing integrity failures may remain undetected.\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Control Gap | Policy Section | Severity | Remediation Priority |\n|---------|-------------|-----------------|----------|----------------------|\n| 1 | Missing staging deployment stage | 5.1, 4.3 | CRITICAL | Immediate |\n| 2 | No integration testing before production | 4.2, 5.1 | CRITICAL | Immediate |\n| 3 | Missing QA sign-off approval | 4.3, 5.1 | HIGH | Urgent |\n| 4 | No 24-hour minimum validation period | 4.3 | HIGH | Urgent |\n| 5 | No environment parity verification | 5.2 | HIGH | Urgent |\n| 6 | Insufficient processing integrity verification | 6.0, PI1.1 | MEDIUM | High |\n\n---\n\n## OVERALL ASSESSMENT\n\n**Control PI1.1 Readiness: NOT MET**\n\nThe pipeline implementation does **not support** the SDLC policy requirements for defining and validating processing objectives. The entity cannot demonstrate with evidence that:\n- Complete processing is validated (missing integration tests and staging validation)\n- Accurate processing is confirmed in production-equivalent conditions (missing staging stage and environment parity checks)\n- Timely processing integrity is verified before promotion (missing QA oversight and minimum validation period)\n\n**Recommendation:** The GitHub Actions pipeline must be significantly redesigned to include all mandatory stages from the SDLC policy before this control can be considered effective."
+}

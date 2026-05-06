@@ -1,0 +1,75 @@
+{
+  "task_id": "cc6.1-5-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:20:00.825279",
+  "score": {
+    "task_id": "cc6.1-5-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.2857142857142857,
+    "f1": 0.36363636363636365,
+    "score": 0.36363636363636365,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Diana Vasquez",
+          "TERM-Q4-024",
+          "holiday",
+          "on-call",
+          "staffing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Marcus Hall",
+          "TERM-Q4-016",
+          "involuntary",
+          "AWS",
+          "access key",
+          "5 days"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5372,
+    "output_tokens": 1839
+  },
+  "raw_response": "Below is a detailed readiness assessment of CrestPoint Technologies' access revocation and termination controls under SOC 2 CC6.1 for Q4 2025, based on all provided evidence. The findings are formatted per your instructions.\n\n---\n\n### **Finding 1: Delayed Okta Account Revocation Due to Holiday Staffing Gap**\n\n- **Section:** Q4 2025 Employee Termination Log (TERM-Q4-024), Access Control Policy \u00a76.1 (Employee Termination) and SLA requirements  \n- **Why it's a gap:**  \n  - Policy requires Okta accounts to be disabled within 24 hours of termination notification (policy section 6.1).  \n  - For Diana Vasquez (TERM-Q4-024), IT on-call availability lapses over a 3-day holiday weekend led to Okta disablement occurring **64.75 hours after termination notification**, substantially exceeding the 24-hour SLA.  \n  - While the employee was marked as a \"low risk\" voluntary departure and the log asserts \"No login activity during gap,\" this reveals a process weakness: the SLA cannot reliably be met during certain calendar periods, increasing the risk of unauthorized access.\n- **Severity:** **Medium**  \n  *Justification: No evidence of inappropriate access or risk realized; however, SLA breach exposes a control gap. The lack of a compensating control for holiday/off-hour terminations introduces residual risk.*\n\n---\n\n### **Finding 2: AWS IAM Access Key Deactivation Missed for Involuntary Termination**\n\n- **Section:** Q4 2025 Employee Termination Log (TERM-Q4-016), Access Control Policy \u00a76.1, \u00a76.2 (Termination and Involuntary Termination)  \n- **Why it's a gap:**  \n  - For Marcus Hall (TERM-Q4-016), Okta disablement (and thus most logical access) occurred within SLA, but **AWS IAM access keys were not deactivated until 5 days after termination**.  \n  - This delay happened **despite the individual being involuntarily terminated**, where policy demands **immediate revocation of all access** and active sessions.  \n  - IT notes in the log indicate no evidence of API key usage during that interval, somewhat mitigating risk, but this is a clear procedural lapse that could have enabled unauthorized API access.\n- **Severity:** **High**  \n  *Justification: Involuntary terminations are high risk for data exfiltration or sabotage. Manual key deactivation is a known weak point\u2014here, the process failed, though no misuse was observed.*\n\n---\n\n### **Finding 3: Lack of Documented Compensating Control for After-Hours/Weekend Terminations**\n\n- **Section:** Access Control Policy \u00a78 (Exceptions), \u00a76.1 (Termination SLAs), Q4 Employee Termination Log  \n- **Why it's a gap:**  \n  - The policy requires 24-hour (voluntary) or immediate (involuntary) disablement, but the Diana Vasquez case (TERM-Q4-024) shows that offboarding staff were unavailable on holidays, leading to SLA breach.\n  - No written compensating controls or contingency plans for after-hours/holiday terminations were documented or referenced (e.g., on-call escalation or automated deactivation triggers).\n  - While effect was minimal in this case (voluntary, no activity), absence of preparedness for after-hours events could be material in different circumstances (e.g., disgruntled involuntary termination on a weekend).\n- **Severity:** **Medium**  \n  *Justification: This is a process design issue that, if unremedied, may result in more severe future impacts. Should be addressed before relying on this control as \"effective.\"*\n\n---\n\n### **Finding 4: No Evidence of Access Post-Revocation for Terminated Users**\n\n- **Section:** Okta Login Audit Logs, Q4 2025 Employee Termination Log  \n- **Why it's a gap:**  \n  - *This is a positive finding*: Okta audit logs for all sample terminations confirm that no terminated employee successfully authenticated after account lockout/suspension.\n  - All authentication attempts post-disablement failed; in fact, some attempts (\"user.session.start, FAILURE\") are logged, confirming that controls are indeed preventing access once accounts are locked.\n- **Severity:** **Low (Not a gap / Positive control evidence)**  \n  *Justification: Provides assurance that account lockout controls are effective after activation, though timeliness of activation (see above findings) is the limiting factor for overall control effectiveness.*\n\n---\n\n### **Finding 5: Effective Quarterly Access Reviews with Timely Remediation**\n\n- **Section:** Q4 2025 Quarterly Access Review Records, Access Control Policy \u00a75  \n- **Why it's a gap:**  \n  - *This is a positive finding*: Quarterly access reviews across 15 key systems were performed on time, with inappropriate access identified and promptly revoked as required by policy.\n  - Completeness and timeliness reduce the risk of persistent orphaned access due to operational breakdowns in termination workflows.\n- **Severity:** **Low (Not a gap / Positive control evidence)**  \n  *Justification: No exceptions or delays were noted. Supports broader assurance over access management lifecycle.*\n\n---\n\n### **Finding 6: Isolated SLA Breaches Do Not Indicate Systemic Failure**\n\n- **Section:** Cumulative evidence, All Termination and Offboarding Records Q4  \n- **Why it's a gap:**  \n  - In Q4, **2 out of 25 terminations breached the 24-hour SLA** for Okta or infrastructure deactivation (TERM-Q4-016, TERM-Q4-024).\n  - Both explain the reason: human error (missed AWS key) and holiday staffing (Okta disable), not system failures or design. No evidence of exploitation in either case.\n  - However, absence of compensating controls (see above) means future cases could pose greater risk.\n- **Severity:** **Medium**  \n  *Justification: Breaches are infrequent but not systemic. Ongoing procedural gaps must be monitored and resolved to claim full \"reasonable assurance.\" Materiality depends on risk appetite and future controls remediation.*\n\n---\n\n## **Summary Table**\n\n| #   | Title                                                         | Section(s)                            | Why it's a Gap                                                                                  | Severity        |\n|-----|---------------------------------------------------------------|---------------------------------------|--------------------------------------------------------------------------------------------------|----------------|\n| 1   | Delayed Okta Account Revocation Due to Holiday Staffing Gap    | Term Log, Policy \u00a76.1                 | Okta disablement outside SLA due to unstaffed holiday period, no compensating control documented | Medium         |\n| 2   | AWS IAM Access Key Deactivation Missed for Involuntary Term   | Term Log, Policy \u00a76.1, \u00a76.2           | AWS IAM keys disabled late (5 days) after involuntary termination, no API use observed           | High           |\n| 3   | No Compensating Control for After-Hours/Weekend Terminations  | Policy \u00a78, \u00a76.1, Term Log             | No documented process for out-of-hours revocation, which led to actual SLA breach                | Medium         |\n| 4   | No Evidence of Access Post-Revocation for Terminated Users    | Okta Audit Log, Term Log              | Terminated accounts unable to authenticate post-revocation, confirming technical control         | Low (Positive) |\n| 5   | Effective Quarterly Access Reviews                            | Access Review Records, Policy \u00a75       | All access reviews timely; inappropriate access remediated per policy                            | Low (Positive) |\n| 6   | Isolated SLA Breaches Do Not Indicate Systemic Breakdown      | All termination evidence               | Only 2/25 terminations breached SLA; non-systemic but repeatable gaps observed                  | Medium         |\n\n\n---\n\n### **Summary Conclusion for CC6.1 (Q4 2025):**\n\n**CrestPoint\u2019s logical access termination controls are generally effective** and provide strong assurance that user and privileged access is revoked in a timely manner for the overwhelming majority of cases. Technical enforcement at the IdP (Okta) level appears robust, with access blocked immediately once accounts are disabled.\n\n**However, there are repeat process gaps\u2014particularly for AWS IAM key deactivation and after-hours/holiday offboarding\u2014which resulted in two material SLA breaches this quarter.** While neither resulted in unauthorized access, the absence of compensating controls and dependency on manual processes leaves some residual risk. These gaps should be remediated with automation or robust after-hours escalation/on-call coverage to provide full reasonable assurance per SOC 2\u2019s CC6.1 requirements.\n\n---\n\n**Recommendations to Close Gaps:**\n\n- Implement documented after-hours/off-hours offboarding escalation or automation for account revocation.\n- Automate detection/disabling of cloud API keys upon HR termination flag.\n- Periodically test and review process adherence, especially for involuntary and holiday/weekend terminations. \n\n---\n\n**End of assessment.**"
+}

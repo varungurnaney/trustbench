@@ -1,0 +1,72 @@
+{
+  "task_id": "pi1.1-4-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:43:08.297681",
+  "score": {
+    "task_id": "pi1.1-4-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 0.4444444444444445,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "emergency",
+          "post-deploy review",
+          "48 hours",
+          "follow-up"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PR-5614",
+          "order processing timeout",
+          "48 hours",
+          "35 days"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "ORDER_TIMEOUT_MS",
+          "configuration drift",
+          "staging",
+          "production",
+          "35 days",
+          "48 hours",
+          "CDR-309",
+          "CDR-314"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2964,
+    "output_tokens": 1073
+  },
+  "raw_response": "Certainly. Below are the key findings related to the control PI1.1 based on the evidence provided. Each finding references the relevant document section, explains the gap, and assigns a severity level.\n\n---\n\n### Finding 1: **Emergency Change Without Post-Deploy Review**\n\n**Section Referenced:**  \n- SDLC Policy 3.2 Emergency Changes  \n- PR-5614 in the Pull Request Records  \n\n**Why It\u2019s a Gap:**  \nThe SDLC policy requires that all emergency changes receive a documented post-deploy review within 48 hours. PR-5614 (EMERGENCY: Fix order processing timeout, deployed on 2025-11-24) was authorized by the CTO and merged directly, but there is no record of a post-deploy review being performed or documented. This constitutes a deviation from defined processing objectives for ensuring completeness and accuracy of production changes, and undermines coverage of compensating controls for unreviewed code paths.\n\n**Severity:**  \n**High** \u2014 Emergency changes without review may introduce undetected errors or risks, directly impacting processing integrity objectives.\n\n---\n\n### Finding 2: **Configuration Drift Remediation Delay After Emergency Change**\n\n**Section Referenced:**  \n- SDLC Policy 5.2 Configuration Management  \n- Configuration Drift Reports (CDR-309 through CDR-314)\n\n**Why It\u2019s a Gap:**  \nFollowing PR-5614, configuration drift was introduced between staging and production (e.g., ORDER_TIMEOUT_MS) on 2025-11-26. As of the end of the quarter (2025-12-29), this drift persisted for 35 days. The SDLC policy requires remediation of configuration drift >5% within 48 hours, but is less explicit for smaller drift levels. However, since processing parameters (timeouts, retries) directly affect processing accuracy and completeness, the unremediated drift after an emergency fix represents a breakdown in aligning environments and risks untested or inconsistent processing behavior.\n\n**Severity:**  \n**Medium** \u2014 Sustained configuration differences, particularly in operational parameters, pose a processing integrity risk\u2014specifically, the risk of undetected errors cascading into production.\n\n---\n\n### Finding 3: **Strong Code Review Process for Standard Changes**\n\n**Section Referenced:**  \n- SDLC Policy 3.1 Mandatory Review  \n- Pull Request Records\n\n**Why It\u2019s Not a Gap:**  \nAll non-emergency PRs show evidence of pre-merge review, by a reviewer not the author, with documented comments and approvals. This matches the policy and supports the achievement of accurate processing objectives.\n\n**Severity:**  \n**N/A \u2014 No Gap** (Positive control observation)\n\n---\n\n### Finding 4: **Timely and Accurate Detection of Configuration Drift**\n\n**Section Referenced:**  \n- SDLC Policy 5.2  \n- Configuration Drift Reports  \n\n**Why It\u2019s Not a Gap:**  \nWeekly drift scans are performed and documented. Each scan references the precise drift, if any, with appropriate notes and status. Drift is consistently below the 5% threshold except where explained. This supports the objective of accurate and timely processing via environment consistency.\n\n**Severity:**  \n**N/A \u2014 No Gap** (Positive control observation)\n\n---\n\n### Finding 5: **Policy Alignment to Processing Objectives**\n\n**Section Referenced:**  \n- SDLC Policy Sections 3, 5, 6  \n- Pull Request and Configuration Records  \n\n**Why It\u2019s Not a Gap:**  \nThe policy clearly defines roles, review requirements (including for emergencies), configuration management, and input/data integrity practices. These processing objectives and control activities are well-articulated and appropriately address completeness, accuracy, and timeliness.\n\n**Severity:**  \n**N/A \u2014 No Gap** (Positive control observation)\n\n---\n\n### Summary Table\n\n| # | Title                                            | Section(s)                          | Gap Rationale                                           | Severity |\n|---|--------------------------------------------------|-------------------------------------|---------------------------------------------------------|----------|\n| 1 | Emergency Change Without Post-Deploy Review      | SDLC Policy 3.2, PR-5614            | Emergency deployed without required compensating review  | High     |\n| 2 | Configuration Drift Remediation Delay            | SDLC Policy 5.2, CDR-309 to CDR-314 | Critical drift persisted >30 days after emergency change | Medium   |\n| 3 | Strong Code Review for Standard Changes          | SDLC Policy 3.1, PR records         | No gap; pre-merge reviews consistently performed         | N/A      |\n| 4 | Timely/Accurate Detection of Config Drift        | SDLC Policy 5.2, Drift Reports      | No gap; weekly scans performed and documented           | N/A      |\n| 5 | Policy Aligns to Processing Objectives           | SDLC Policy, All Records            | No gap; policy and practices support PI1.1              | N/A      |\n\n---\n\n**Recommendations:**  \n- Strengthen adherence to the emergency change post-deploy review requirement. Document reviews and follow-up actions within required timeframes.\n- Enhance procedures for remediating configuration drift, especially following emergency fixes, to quickly restore consistency and uphold processing objectives.\n- Continue current code review and drift detection practices for standard changes.\n\nLet me know if you need detailed remediation steps or sample language for management response."
+}

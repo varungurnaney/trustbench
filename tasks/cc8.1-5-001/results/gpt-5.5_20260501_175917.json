@@ -1,0 +1,88 @@
+{
+  "task_id": "cc8.1-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T17:59:17.610962",
+  "score": {
+    "task_id": "cc8.1-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.8,
+    "precision": 0.6666666666666666,
+    "f1": 0.7272727272727272,
+    "score": 0.7272727272727272,
+    "gaps_detected": 4,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-414",
+          "94.2%",
+          "flaky"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-415",
+          "Jared Kim",
+          "CAB"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-406",
+          "CHG-418",
+          "rollback"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "staging"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "remediation SLA"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7577,
+    "output_tokens": 3524
+  },
+  "raw_response": "## Readiness Assessment \u2014 CC8.1 Change Management Findings\n\nOverall, Beacon SaaS has a reasonably mature change management process: changes are logged, peer reviewed, risk rated, tested in staging, approved where required, deployed in controlled windows in most cases, and rollbacks were executed promptly when criteria were met. However, several exceptions and evidence gaps should be remediated before audit.\n\n---\n\n### 1. High-risk change deployed below required test pass threshold\n\n**Related document / section:**  \n- Change Management Policy \u00a74.3 \u2014 Staging Environment Testing  \n- Deployment log: CHG-414  \n- CI/CD automated test results: CHG-414; flaky test registry\n\n**Why this is a gap:**  \nPolicy requires normal changes to pass **100% of critical tests and 98% overall pass rate** before production deployment. CHG-414, a **High-risk** real-time analytics pipeline migration to Kafka, was deployed with only a **94.2% overall pass rate**, below the documented threshold.\n\nManagement\u2019s explanation that failures were known flaky tests is relevant, but the policy does not define a formal exception process allowing CAB to waive the 98% requirement. In addition, several flaky Kafka-related tests had exceeded the stated **30-day remediation SLA**, with some open for 109 days. Because the failed tests related to the same technology area as the change \u2014 Kafka analytics pipeline \u2014 the exception is more significant than a generic unrelated flaky test issue.\n\n**Severity:** High\n\n---\n\n### 2. CAB delegation was verbal and not formally authorized\n\n**Related document / section:**  \n- Change Management Policy \u00a74.4 \u2014 CAB Approval  \n- Deployment log: CHG-415\n\n**Why this is a gap:**  \nCHG-415 was a **Medium-risk normal change**, requiring CAB approval before production deployment. The change was approved by **Jared Kim, Engineering Manager**, because the CAB did not convene during the holiday week. The deployment log states approval was based on \u201cverbal authorization\u201d from Natasha Volkov.\n\nThe policy identifies the CAB membership and requires CAB approval to be documented in the change ticket. It does not define a delegated approver process, alternate CAB authority, holiday exception process, or acceptance of verbal authorization. This creates an authorization documentation gap and weakens evidence that the change was approved in accordance with the defined control.\n\n**Severity:** Medium\n\n---\n\n### 3. Normal change deployed outside approved deployment window\n\n**Related document / section:**  \n- Change Management Policy \u00a74.5 \u2014 Production Deployment  \n- Deployment log: CHG-402\n\n**Why this is a gap:**  \nPolicy requires production deployments to occur Tuesday through Thursday between **10:00 AM and 4:00 PM ET**. CHG-402 was deployed on **Friday, October 10, 2025 at 14:00 ET**.\n\nAlthough CHG-402 was Low risk and did not require CAB approval, the policy\u2019s deployment window requirement appears to apply to production deployments generally. The evidence does not show that an exception was requested or approved.\n\n**Severity:** Low\n\n---\n\n### 4. Required change request attributes are not evidenced in the deployment log\n\n**Related document / section:**  \n- Change Management Policy \u00a74.1 \u2014 Change Request  \n- Q4 deployment log\n\n**Why this is a gap:**  \nPolicy requires normal changes to be documented with, at minimum:\n\n- Description and business justification  \n- Risk assessment  \n- Rollback plan  \n- Affected systems and services  \n- Estimated deployment window\n\nThe deployment log includes useful fields such as change title, risk level, peer reviewer, test results, CAB approval, deployment outcome, and rollback status. However, it does not evidence several required change request attributes, particularly business justification, affected systems, estimated deployment window, and pre-defined rollback plan.\n\nThis may be an evidence gap rather than an actual operating failure if the underlying Jira tickets contain the required information. For audit readiness, Beacon should provide sample or complete Jira change records to support that \u00a74.1 requirements were consistently met.\n\n**Severity:** Medium\n\n---\n\n### 5. Testing coverage gaps indicated by production rollbacks\n\n**Related document / section:**  \n- Change Management Policy \u00a74.3 \u2014 Staging Environment Testing  \n- Change Management Policy \u00a74.6 \u2014 Rollback Criteria  \n- Change Management Policy \u00a76 \u2014 Deployment Metrics and Reporting  \n- Deployment log: CHG-406, CHG-418  \n- CI/CD automated test results: CHG-406, CHG-418\n\n**Why this is a gap:**  \nTwo changes passed staging/testing but required rollback shortly after production deployment:\n\n- **CHG-406 \u2014 API rate limiting implementation:** rolled back after P95 latency exceeded the 200% threshold.  \n- **CHG-418 \u2014 Kubernetes node pool scaling update:** rolled back after pod rescheduling failures caused intermittent 503 errors.\n\nThe rollback process itself appears to have operated appropriately; both rollbacks were timely and aligned with policy criteria. However, the failures suggest gaps in pre-production validation coverage:\n\n- CHG-406 was High risk and should have included effective performance regression testing. The latency failure was not detected before production.  \n- CHG-418 involved infrastructure scheduling behavior that was not adequately validated before deployment.\n\nAdditionally, the quarter had **2 rollbacks out of 20 deployments**, a 10% change failure rate, exceeding the policy reporting target of **<5%**. The evidence does not show monthly leadership review of this metric or broader corrective action beyond the individual follow-up fixes.\n\n**Severity:** Medium\n\n---\n\n### 6. Emergency change root cause analysis not fully evidenced\n\n**Related document / section:**  \n- Change Management Policy \u00a75 \u2014 Emergency Change Process  \n- Deployment log: CHG-409  \n- CI/CD automated test results: CHG-409\n\n**Why this is a gap:**  \nCHG-409 appears to be a valid emergency change: it addressed a critical XSS vulnerability under active exploitation, had peer review, passed automated tests, bypassed staging as permitted, and received retrospective CAB approval within five business days.\n\nHowever, policy also requires emergency changes to be logged and reviewed at the next CAB meeting with a **root cause analysis documenting why the emergency process was invoked**. The deployment log includes a brief justification \u2014 \u201cactive exploitation detected\u201d \u2014 but the evidence provided does not include a formal RCA or emergency CAB review record.\n\nThis is not a major control failure because the emergency process was otherwise followed, but the required documentation is incomplete.\n\n**Severity:** Low\n\n---\n\n## Items not considered findings\n\n- **Low-risk changes without CAB approval:** This is consistent with the policy, which requires CAB approval only for Medium and High-risk normal changes.  \n- **CHG-409 staging bypass and off-hours deployment:** These are allowed under the emergency change process.  \n- **Rollbacks for CHG-406 and CHG-418:** The rollbacks themselves were appropriate and timely; the concern is the testing/validation coverage that failed to detect issues before production.  \n- **Infrastructure capacity planning report:** Not directly relevant to CC8.1 change management control operation."
+}

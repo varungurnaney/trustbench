@@ -1,0 +1,69 @@
+{
+  "task_id": "cc7.1-1-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:43:42.902925",
+  "score": {
+    "task_id": "cc7.1-1-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "regular basis",
+          "scan frequency",
+          "undefined",
+          "measurable",
+          "weekly",
+          "monthly"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely manner",
+          "severity",
+          "Critical",
+          "days",
+          "undefined"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "missing",
+          "patches"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1235,
+    "output_tokens": 2045
+  },
+  "raw_response": "# SOC 2 CC7.1 Compliance Assessment\n## Cirrus Technologies Vulnerability Management Policy\n\n---\n\n## FINDINGS\n\n### 1. **Lack of Specific Scan Frequency Requirements**\n\n**Related Section:** 3.3 Scan Frequency\n\n**Gap Description:**\nThe policy states scans \"shall be performed on a regular basis\" but fails to define concrete frequency requirements. SOC 2 CC7.1 requires *detection* procedures to identify changes to configurations and new vulnerabilities. Without defined frequencies (e.g., \"weekly for critical assets,\" \"monthly for all systems\"), there is no objective standard to measure compliance or ensure timely detection of vulnerabilities.\n\n**Why It Matters:**\nAn auditor cannot verify that the control is operating effectively without specific, measurable scan frequency requirements. \"Regular basis\" is subjective and unenforceable.\n\n**Severity:** High\n\n---\n\n### 2. **Absence of Configuration Change Detection Monitoring**\n\n**Related Section:** Entire Document\n\n**Gap Description:**\nCC7.1 explicitly requires detection of \"changes to configurations that result in the introduction of new vulnerabilities.\" The policy focuses on vulnerability scanning but does not address monitoring of configuration changes themselves (e.g., firewall rule modifications, OS updates, application deployments, network topology changes). There is no mention of configuration management databases (CMDBs), change logs, or continuous configuration monitoring tools.\n\n**Why It Matters:**\nThe control is incomplete. Vulnerability scanning alone detects *existing* vulnerabilities but not the configuration *changes* that introduce them. A misconfigured firewall rule might not be detected until a vulnerability scanner runs\u2014creating a gap window.\n\n**Severity:** Critical\n\n---\n\n### 3. **No Mention of Newly Discovered Vulnerabilities Monitoring**\n\n**Related Section:** 3.1 Scanning Tools, 6.1 Vulnerability Tracking\n\n**Gap Description:**\nWhile the policy covers scanning, it does not explicitly address monitoring for *newly discovered* vulnerabilities (zero-days, CVEs published since the last scan). SOC 2 CC7.1 requires susceptibility monitoring for \"newly discovered vulnerabilities.\" The policy lacks details on:\n- Threat intelligence feeds or CVE monitoring services\n- Time-to-detect for public disclosures\n- Procedures for assessing organizational susceptibility to newly announced CVEs\n\n**Why It Matters:**\nAn organization could have all systems scanned weekly but still miss zero-day vulnerabilities announced between scans. SOC 2 requires proactive monitoring of emerging threats, not just periodic scanning.\n\n**Severity:** High\n\n---\n\n### 4. **No Defined Monitoring for Staging/Non-Production Configuration Drift**\n\n**Related Section:** 3.2 Scanning Scope\n\n**Gap Description:**\nWhile the policy includes staging environments in scanning scope, it does not address ongoing monitoring or detection of configuration drift in non-production systems. Changes in staging could propagate to production, but the policy lacks procedures for detecting unauthorized or unintended configuration changes in these environments.\n\n**Why It Matters:**\nConfiguration changes in staging environments can introduce vulnerabilities that migrate to production. Without monitoring for configuration changes (not just scanning for vulnerabilities), the control is reactive rather than preventive.\n\n**Severity:** Medium\n\n---\n\n### 5. **Insufficient Detail on Compensating Controls Validation**\n\n**Related Section:** 5.2 Remediation Procedures, 7.1 Risk Acceptance\n\n**Gap Description:**\nThe policy permits \"deploying compensating controls\" but does not describe how these controls are validated, tested, or monitored for effectiveness. There is no requirement for ongoing monitoring to ensure compensating controls remain effective or that the vulnerability is not exploitable despite the control.\n\n**Why It Matters:**\nSOC 2 CC7.1 requires monitoring procedures to ensure vulnerabilities are identified. If an organization relies on a compensating control (e.g., network segmentation to mitigate a vulnerability), continuous monitoring must verify that the control remains in place and effective.\n\n**Severity:** High\n\n---\n\n### 6. **No Continuous Monitoring or Real-Time Detection Capability**\n\n**Related Section:** Entire Document\n\n**Gap Description:**\nThe policy is entirely based on periodic scanning (vulnerability assessments at defined intervals). It does not mention continuous monitoring, real-time detection, or security information and event management (SIEM) integration that could identify suspicious activity indicative of vulnerability exploitation or configuration changes as they occur.\n\n**Why It Matters:**\nSOC 2 CC7.1 uses the term \"detection and monitoring procedures\" (plural). Periodic scanning alone may not constitute sufficient \"monitoring.\" Continuous or near-real-time detection mechanisms (e.g., intrusion detection, configuration drift alerts) strengthen the control.\n\n**Severity:** Medium\n\n---\n\n### 7. **Lack of Third-Party/Vendor System Monitoring Detail**\n\n**Related Section:** 2. Scope\n\n**Gap Description:**\nThe policy states that \"Third-party hosted systems are covered under vendor management agreements\" but provides no detail on what those agreements must include regarding vulnerability detection and monitoring. There are no requirements for:\n- Service-level agreements (SLAs) for vendor vulnerability disclosure\n- Frequency and scope of vendor security assessments\n- Procedures for validating vendor compliance with vulnerability management\n- Escalation procedures if vendors fail to remediate\n\n**Why It Matters:**\nThird-party systems are often significant sources of vulnerability exposure. The policy defers responsibility without ensuring adequate monitoring or accountability.\n\n**Severity:** High\n\n---\n\n### 8. **No Evidence of Monitoring Procedure Effectiveness Testing**\n\n**Related Section:** Entire Document\n\n**Gap Description:**\nThe policy does not describe how the organization validates that detection and monitoring procedures actually work (e.g., penetration testing, red team exercises, intentional vulnerability injection to test detection). There is no mention of control testing, validation, or metrics to measure detection effectiveness.\n\n**Why It Matters:**\nSOC 2 auditors require evidence that monitoring controls are operating effectively, not just that they exist. A documented test schedule demonstrating that vulnerabilities *are* detected strengthens the control.\n\n**Severity:** Medium\n\n---\n\n### 9. **Vague Remediation Timeframes**\n\n**Related Section:** 5.2 Remediation Procedures\n\n**Gap Description:**\nRemediation \"should be performed in a timely manner commensurate with the severity and risk\" lacks specific Service Level Objectives (SLOs). There are no defined timeframes (e.g., \"Critical: 24 hours,\" \"High: 7 days\"). Without defined targets, compliance cannot be objectively measured.\n\n**Why It Matters:**\nWhile technically a remediation issue rather than a detection/monitoring gap, undefined timeframes create ambiguity about when vulnerabilities should be addressed, making it impossible to determine if monitoring is timely.\n\n**Severity:** Medium\n\n---\n\n### 10. **No Monitoring of Patch/Update Deployment Completion**\n\n**Related Section:** 5.2 Remediation Procedures\n\n**Gap Description:**\nThe policy assigns patch deployment to IT Operations but does not describe monitoring procedures to verify that patches have been successfully deployed and that systems are no longer vulnerable. There is no mention of post-remediation scanning or verification.\n\n**Why It Matters:**\nPatch deployment can fail or be incomplete. Monitoring should verify that remediation actions actually resolved the vulnerability, not merely that the action was initiated.\n\n**Severity:** High\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Severity | Type |\n|---------|----------|------|\n| 1. Lack of Specific Scan Frequency | High | Control Definition |\n| 2. No Configuration Change Detection | Critical | Missing Control Element |\n| 3. No Newly Discovered Vulnerability Monitoring | High | Missing Control Element |\n| 4. Staging Environment Drift Not Monitored | Medium | Scope Gap |\n| 5. Compensating Controls Not Validated | High | Monitoring Gap |\n| 6. No Continuous Monitoring Capability | Medium | Control Design |\n| 7. Third-Party System Monitoring Undefined | High | Vendor Management |\n| 8. No Monitoring Effectiveness Testing | Medium | Validation Gap |\n| 9. Vague Remediation Timeframes | Medium | Measurement Gap |\n| 10. No Post-Remediation Verification | High | Monitoring Gap |\n\n---\n\n## OVERALL ASSESSMENT\n\n**Compliance Status:** **Non-Compliant**\n\nThe policy establishes a foundation for vulnerability scanning and remediation but **fails to adequately address SOC 2 CC7.1's core requirement for detection and monitoring procedures to identify configuration changes and newly discovered vulnerabilities.** The most critical gap is the absence of configuration change monitoring; the policy focuses on vulnerability detection without addressing the configuration changes that introduce vulnerabilities.\n\n**Recommendation:** Substantially revise the policy to include:\n- Specific scan frequencies and continuous monitoring capabilities\n- Configuration change detection and monitoring procedures\n- Threat intelligence and CVE monitoring integration\n- Post-remediation verification\n- Third-party vulnerability management SLAs\n- Control effectiveness testing procedures"
+}

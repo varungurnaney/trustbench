@@ -1,0 +1,99 @@
+{
+  "id": "c1.1-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "C1.1",
+  "control_description": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/data-classification-policy.md",
+      "type": "policy",
+      "description": "Crestline Data Systems data classification and protection policy defining encryption requirements for each data classification level"
+    },
+    {
+      "path": "evidence/database-encryption-status.csv",
+      "type": "report",
+      "description": "Database encryption status report showing field-level encryption status for all PII columns across production databases"
+    },
+    {
+      "path": "evidence/dlp-rule-config.json",
+      "type": "config",
+      "description": "DLP rule configuration across email, CASB, endpoint, API gateway, and database activity monitoring"
+    },
+    {
+      "path": "evidence/data-flow-diagram.md",
+      "type": "architecture_diagram",
+      "description": "Data flow diagram documenting all Restricted data flows including the new GraphQL API launched October 2025"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Crestline Data Systems covering Q4 2025 (October 1 - December 31, 2025). Review all provided evidence artifacts and cross-reference the data classification policy requirements against the actual database encryption status, DLP configuration, and data flow documentation. Identify inconsistencies between stated policy and actual implementation. Focus on whether confidential data is protected as required.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "crestline_analytics database stores email and phone in plaintext despite policy requiring field-level encryption",
+      "description": "The data classification policy (Section 3.2 and 4.1) classifies email addresses and phone numbers as Restricted and requires AES-256 field-level encryption for all Restricted data columns. However, the database encryption status report shows that crestline_analytics.customer_profiles.email and crestline_analytics.customer_profiles.phone have field_level_encryption=No and encryption_method=None, with notes stating 'PLAINTEXT - copied from users table via nightly ETL.' The data is encrypted in the source table (crestline_prod.users) but the ETL job decrypts it and writes plaintext to the analytics database. Additionally, crestline_analytics.engagement_events.user_email is also stored in plaintext, 'denormalized for query performance.'",
+      "evidence_sources": ["evidence/data-classification-policy.md", "evidence/database-encryption-status.csv", "evidence/data-flow-diagram.md"],
+      "expected_reasoning": "Policy Section 3.2 classifies email and phone as Restricted → Section 4.1 requires AES-256 field-level encryption → database report shows crestline_analytics has 3 PII columns in plaintext → data flow diagram confirms nightly ETL copies and decrypts this data → direct contradiction between policy and implementation.",
+      "detection_criteria": {
+        "required_keywords": ["crestline_analytics", "customer_profiles", "plaintext", "email", "phone", "field-level encryption", "ETL", "nightly", "decrypted"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "GraphQL API launched October 2025 has no DLP coverage for bulk PII extraction",
+      "description": "The DLP configuration (api_gateway section) shows DLP rule DLP-API-001 only covers the v2 REST API endpoints (/api/v2/users, /api/v2/customers, /api/v2/accounts) with a known_gaps field explicitly stating 'GraphQL API (api.crestline.com/graphql) launched October 2025 - not yet integrated with DLP rules.' The data flow diagram (Section 4.2) confirms the GraphQL API supports nested queries with pagination that can retrieve all user PII, and notes that 'rate limiting is per-query, not per-record, so bulk extraction is possible within rate limits.' The policy (Section 5.1) requires DLP coverage for 'API data exports.' This is a new data export channel with bulk PII extraction capability and zero DLP monitoring.",
+      "evidence_sources": ["evidence/dlp-rule-config.json", "evidence/data-flow-diagram.md", "evidence/data-classification-policy.md"],
+      "expected_reasoning": "DLP config shows API DLP only covers REST v2 endpoints → known_gaps field explicitly acknowledges GraphQL gap → data flow diagram shows GraphQL supports bulk PII queries → policy requires DLP on API exports → new channel with no monitoring.",
+      "detection_criteria": {
+        "required_keywords": ["GraphQL", "DLP", "not yet integrated", "bulk", "pagination", "October 2025", "DLP-API-001", "REST", "known_gaps"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Database activity monitoring does not cover crestline_analytics tables containing plaintext PII",
+      "description": "DLP rule DLP-DAM-001 monitors bulk SELECT queries on the 'users' and 'payment_methods' tables in crestline_prod. However, the crestline_analytics database contains plaintext PII (email, phone) in customer_profiles and engagement_events tables, and these tables are not included in DAM monitoring. An attacker or malicious insider with read access to crestline_analytics could extract plaintext PII without triggering any DLP alert.",
+      "evidence_sources": ["evidence/dlp-rule-config.json", "evidence/database-encryption-status.csv"],
+      "expected_reasoning": "DAM rule DLP-DAM-001 only monitors 'users' and 'payment_methods' tables → crestline_analytics has plaintext PII → not monitored → bulk extraction of plaintext PII would go undetected.",
+      "detection_criteria": {
+        "required_keywords": ["DLP-DAM-001", "crestline_analytics", "customer_profiles", "engagement_events", "not monitored", "plaintext", "bulk SELECT"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "DLP rule configuration last updated September 2025 — predates GraphQL API launch",
+      "description": "The DLP configuration metadata shows last_updated as 2025-09-15, over three months before the end of the audit period. The GraphQL API launched in October 2025 (per data flow diagram), meaning the DLP configuration has not been updated since before this new data export channel went live. This suggests no process exists to trigger DLP rule updates when new data flows are introduced, despite policy Section 6 requiring DPIA approval for new Restricted data flows.",
+      "evidence_sources": ["evidence/dlp-rule-config.json", "evidence/data-flow-diagram.md", "evidence/data-classification-policy.md"],
+      "expected_reasoning": "DLP config last updated September 15 → GraphQL launched October 2025 → 3+ month gap → no DLP update triggered by new data flow → process gap in connecting DPIA to DLP rule updates.",
+      "detection_criteria": {
+        "required_keywords": ["September 2025", "last_updated", "GraphQL", "October 2025", "DPIA", "process gap", "DLP rules"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["encryption_at_rest", "field_level_encryption", "DLP", "data_classification", "cross_reference", "policy_vs_implementation", "GraphQL", "analytics_pipeline"]
+  }
+}

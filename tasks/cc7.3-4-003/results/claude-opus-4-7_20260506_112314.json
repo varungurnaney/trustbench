@@ -1,0 +1,85 @@
+{
+  "task_id": "cc7.3-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:23:14.007201",
+  "score": {
+    "task_id": "cc7.3-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-605",
+          "SEC-EXC-2025-103",
+          "60 hours",
+          "model poisoning"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-607",
+          "Not Started",
+          "Okta session token",
+          "model registry"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-604",
+          "prompt injection",
+          "system prompts",
+          "data breach",
+          "customer notification"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-601",
+          "INC-2025-605",
+          "action items",
+          "6 of 8",
+          "3 of 10",
+          "P1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6650,
+    "output_tokens": 3046
+  },
+  "raw_response": "# SOC 2 CC7.3 Readiness Assessment \u2014 Stratosphere AI\n\n## Observation Period: October 1 \u2013 December 31, 2025\n\n---\n\n## Summary of Evidence Reviewed\n\n- Incident Response Policy v2.8 (POL-SEC-IRP-004)\n- Q4 2025 incident register (8 incidents)\n- Q4 2025 infrastructure patching report *(not directly relevant to CC7.3 \u2014 pertains to vulnerability management/CC7.1)*\n- SOC 2 Type II readiness checklist *(internal preparation document; not direct control evidence)*\n- Security exception register\n\n## Overall Assessment\n\nThe incident response program is **substantially designed** to meet CC7.3, with AI-specific incident types appropriately incorporated. However, several **operational execution gaps** were identified during the Q4 observation period that warrant findings.\n\n---\n\n## Findings\n\n### Finding 1: Post-Mortem Overdue for INC-2025-607 (No Documented Exception)\n\n- **Related Section:** Policy \u00a75.1 (Post-Mortem Timelines); Incident Register INC-2025-607\n- **Gap:** INC-2025-607 (P2 \u2014 unauthorized model registry access via stale Okta session) was resolved December 13, 2025, with a post-mortem due December 18, 2025. As of the readiness checklist date (January 12, 2026), the post-mortem status is \"Not Started\" \u2014 approximately **25 days overdue**. Unlike INC-2025-605, no exception was filed in the security exception register. This is a direct deviation from policy with no documented justification.\n- **Severity:** **High**\n- **Rationale:** This represents both a control execution failure and a process failure (missed escalation). Per policy \u00a75.3, items overdue >14 days should escalate to the Head of Security, and the incident itself involves identity/access controls \u2014 material to multiple SOC 2 criteria.\n\n---\n\n### Finding 2: Low Action Item Completion Rates on Material Incidents\n\n- **Related Section:** Policy \u00a75.3 (Action Item Governance); Incident Register\n- **Gap:** Several incidents show low completion rates for remediation action items by the end of the observation period:\n  - **INC-2025-604** (P2 prompt injection / data breach): 2 of 6 complete (33%)\n  - **INC-2025-605** (P1 suspected model poisoning): 3 of 10 complete (30%)\n  - **INC-2025-601** (P1 training data exfiltration): 6 of 8 complete (75%)\n- There is no evidence that the >14-day or >30-day escalation thresholds in policy \u00a75.3 were triggered, reviewed, or documented. The readiness checklist itself flags this as a gap.\n- **Severity:** **Medium**\n- **Rationale:** While some delay is expected for complex remediation, the absence of documented escalation, status, or revised target dates indicates the action item governance process is not operating as designed.\n\n---\n\n### Finding 3: Customer Notification Timing Not Documented for INC-2025-604\n\n- **Related Section:** Policy \u00a76.1 (Customer Notification SLAs); Incident INC-2025-604\n- **Gap:** INC-2025-604 was classified as a data breach per customer agreements (system prompts containing customer business logic were exfiltrated). Policy \u00a76.1 requires affected customer notification within 72 hours of confirmation for P1 data breaches; customer agreements appear to apply similar terms. The incident register and readiness checklist both note that customer notification timing is undocumented. Without contemporaneous evidence (notification logs, timestamps, customer communications), the auditor cannot confirm SLA compliance.\n- **Severity:** **High**\n- **Rationale:** Customer breach notification is a CC7.3 communication requirement and a likely contractual obligation. Lack of evidence is itself a control deficiency.\n\n---\n\n### Finding 4: P3 Triage SLA Missed on INC-2025-608\n\n- **Related Section:** Policy \u00a73.1 (Triage SLAs); Incident INC-2025-608\n- **Gap:** INC-2025-608 (P3 DDoS, detected December 19, 2025 at 03:15 UTC / ~19:15 PT prior day) was triaged at 09:00 UTC (~01:00 PT), 345 minutes after detection. Policy \u00a73.1 specifies P3 triage at 4 hours (240 minutes) **during business hours (M-F 9AM-6PM PT)**. The detection occurred outside business hours, so policy permits next-business-hour triage \u2014 but this exception is not clearly stated in the register, and the SLA framework does not explicitly define how off-hours P3 detections are handled.\n- **Severity:** **Low**\n- **Rationale:** Likely policy-compliant under the business-hours coverage clause, but the policy is ambiguous about off-hours P3 SLA calculation. Recommend clarifying language and explicit annotation in the register. Mitigated by automated Cloudflare response (no customer impact).\n\n---\n\n### Finding 5: Initial Severity Classification of INC-2025-608 May Be Inadequate\n\n- **Related Section:** Policy \u00a72 (Severity Levels); Incident INC-2025-608\n- **Gap:** A 2.3M req/sec DDoS against the inference API was classified P3 (\"suspicious activity, failed attacks, minor service degradation\"). While auto-mitigation succeeded, the attack volume and target (customer-facing inference) arguably meets P2 criteria (partial outage potential). The classification appears to have been made retrospectively after Cloudflare succeeded. There is no documented severity reassessment process.\n- **Severity:** **Low**\n- **Rationale:** Outcome-based severity classification undermines triage SLAs. Recommend documenting initial vs. final severity.\n\n---\n\n### Finding 6: Offboarding Control Weakness Surfaced by INC-2025-607 \u2014 Not a CC7.3 Gap, But Cross-Referenced\n\n- **Related Section:** INC-2025-607 root cause\n- **Gap:** Okta session tokens for a terminated employee remained valid for 7 days post-deprovisioning, enabling unauthorized access to the model registry. This is primarily a **CC6 (Logical Access) finding**, but CC7.3 requires that identified incidents drive remediation \u2014 and the absence of a started post-mortem (Finding 1) means corrective action for the underlying access control flaw is not being tracked through the IR program.\n- **Severity:** **Medium** *(as it relates to CC7.3 follow-through; the underlying CC6 issue should be assessed separately)*\n\n---\n\n## Items Reviewed and Determined NOT to Be Findings\n\n| Item | Disposition |\n|------|------------|\n| INC-2025-605 resolution at 60 hours (vs. 24-hour policy) | **Not a gap.** Properly documented in exception register SEC-EXC-2025-103, approved by CEO, with valid technical justification, compensating controls (containment in 1.25 hrs, customer notified, model reverted), and resolution within the extended 72-hour window. |\n| AI-specific incident type coverage | **Not a gap.** Policy \u00a72 and \u00a78 explicitly address model poisoning, training data exfiltration, and prompt injection. Q4 incidents demonstrate operational coverage. |\n| Tabletop exercises | **Not a gap.** Policy mandates semi-annual exercises with AI-specific scenarios; readiness checklist confirms March and September 2025 exercises. |\n| Q4 patching report | **Out of scope for CC7.3.** Belongs to CC7.1 (vulnerability management). Included in evidence packet but not assessed against CC7.3. |\n| SOC 2 readiness checklist | **Not direct evidence.** Used only to corroborate self-identified gaps; not relied upon as control evidence. |\n| INC-2025-603 (researcher checkpoint downloads) | **Not a gap.** P3 with legitimate business justification confirmed; post-mortem not required by policy. |\n\n---\n\n## Recommendations\n\n1. **Immediate:** Complete INC-2025-607 post-mortem and document why escalation thresholds were not triggered; address the Okta session token revocation gap.\n2. **Immediate:** Produce contemporaneous customer notification evidence for INC-2025-604 prior to fieldwork.\n3. **Near-term:** Implement automated reporting on action item aging with documented escalation evidence.\n4. **Near-term:** Clarify policy on off-hours P3 triage SLA calculation.\n5. **Process:** Document initial severity classification separately from final severity; require justification for downgrades.\n\n## Readiness Conclusion\n\nCC7.3 is **not yet ready for Type II testing without remediation.** The control design is sound, but execution gaps in Q4 (overdue post-mortem, undocumented customer notifications, low action item completion without escalation) would likely result in a **qualified opinion** if presented as-is. Findings 1 and 3 are the most material and should be addressed before auditor fieldwork begins February 3, 2026."
+}

@@ -1,0 +1,111 @@
+{
+  "id": "c1.1-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "C1.1",
+  "control_description": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/encryption-policy.md",
+      "type": "policy",
+      "description": "Bridgeport Financial Technologies data protection and encryption policy"
+    },
+    {
+      "path": "evidence/tls-endpoint-audit.csv",
+      "type": "config",
+      "description": "TLS configuration audit for all Bridgeport endpoints (15 endpoints)"
+    },
+    {
+      "path": "evidence/cloud-storage-encryption-audit.csv",
+      "type": "report",
+      "description": "S3 bucket encryption audit showing encryption type, KMS keys, and compliance status"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO-approved security exceptions with compensating controls and review status"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/vendor-security-assessment-q4.csv",
+      "type": "report",
+      "description": "Vendor security assessment results — not directly relevant to C1.1 encryption controls"
+    },
+    {
+      "path": "evidence/incident-response-summary-q4.md",
+      "type": "report",
+      "description": "Q4 2025 incident response summary — tangentially related but primarily operational"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Bridgeport Financial Technologies covering Q4 2025 (October 1 - December 31, 2025). Review all provided evidence artifacts and assess compliance with C1.1 and CC6.7 (Data Protection / Encryption). Not all documents may be relevant. Note that the organization maintains an exception register for approved deviations from policy — consider whether exceptions with documented compensating controls adequately address apparent gaps before flagging them as findings. Identify genuine control deficiencies only.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Prometheus metrics endpoint using HTTP has a valid active CISO exception (EXC-2025-011)",
+      "description": "The TLS audit shows metrics-collector.internal.bridgeportft.com on port 8080 using plaintext HTTP. This initially appears to violate the TLS requirement. However, the exception register shows EXC-2025-011 is active (expires June 2026), CISO-approved, with documented compensating controls: VPC-only access, no PII or business data exposed, VPC Flow Logs monitoring, and quarterly review. The endpoint serves only system metrics (CPU/memory/disk). The policy (Section 4.1) explicitly permits unencrypted HTTP for Internal-classified data within a private VPC with exception approval. The last review on December 15, 2025 confirmed compensating controls are effective. This is NOT a finding.",
+      "evidence_sources": ["evidence/tls-endpoint-audit.csv", "evidence/exception-register.csv", "evidence/encryption-policy.md"],
+      "expected_reasoning": "HTTP endpoint detected → check data classification: Internal, no PII → check exception register: EXC-2025-011 active → policy Section 4.1 permits this with exception → compensating controls verified December 15 → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["metrics-collector", "EXC-2025-011", "VPC", "no PII", "approved", "compensating", "not a finding"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["finding", "gap", "violation", "deficiency", "non-compliant"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "partner-data-sync.bridgeportft.com uses weak CBC cipher with PII and no exception",
+      "description": "The TLS audit shows partner-data-sync.bridgeportft.com uses TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 — a CBC mode cipher suite that is vulnerable to padding oracle attacks. This endpoint is classified as Restricted, contains PII (customer names and account numbers for bank integration feed), and has HSTS disabled. Unlike the Prometheus endpoint which has an approved exception (EXC-2025-011), there is NO exception in the register covering this endpoint's weak cipher suite. The policy (Section 4.3) requires AES-256 for Restricted data, and this endpoint uses AES-128-CBC.",
+      "evidence_sources": ["evidence/tls-endpoint-audit.csv", "evidence/exception-register.csv", "evidence/encryption-policy.md"],
+      "expected_reasoning": "partner-data-sync uses AES-128-CBC cipher → data classified Restricted with PII → policy requires AES-256 for Restricted → no exception exists for this endpoint → CBC mode is vulnerable → HSTS also disabled → genuine finding.",
+      "detection_criteria": {
+        "required_keywords": ["partner-data-sync", "CBC", "AES-128", "Restricted", "PII", "no exception", "bank integration", "customer names", "account numbers"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "bft-prod-ml-training S3 bucket uses SSE-S3 instead of SSE-KMS despite containing PII-derived data",
+      "description": "The cloud storage audit shows bft-prod-ml-training uses SSE-S3 encryption instead of the required SSE-KMS. While there is an active exception (EXC-2025-013), the notes in the storage audit state this was 'Flagged in Q3 review but remediation still pending.' The exception was granted in August 2025 as a temporary measure while awaiting a SageMaker upgrade, with 'migration to SSE-KMS planned for Q1 2026.' The bucket contains derived PII features (income brackets and zip codes linked to customer IDs). While the exception provides temporary coverage, the stalled remediation and the fact this has been non-compliant since at least Q3 2025 should be noted as an observation with a recommendation to accelerate remediation.",
+      "evidence_sources": ["evidence/cloud-storage-encryption-audit.csv", "evidence/exception-register.csv", "evidence/encryption-policy.md"],
+      "expected_reasoning": "Storage audit shows bft-prod-ml-training as Non-Compliant → SSE-S3 instead of SSE-KMS → exception EXC-2025-013 exists and is active → but remediation pending since Q3 → derived PII present → exception covers it technically but remediation timeline should be tracked.",
+      "detection_criteria": {
+        "required_keywords": ["bft-prod-ml-training", "SSE-S3", "SSE-KMS", "EXC-2025-013", "PII", "remediation", "pending", "SageMaker", "derived"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "partner-data-sync.bridgeportft.com has HSTS disabled on a production PII endpoint",
+      "description": "The TLS endpoint audit shows partner-data-sync.bridgeportft.com has HSTS disabled. This is a production endpoint classified as Restricted that handles PII for bank integration. Without HSTS, connections could be downgraded from HTTPS to HTTP via man-in-the-middle attack, exposing customer names and account numbers in transit.",
+      "evidence_sources": ["evidence/tls-endpoint-audit.csv"],
+      "expected_reasoning": "HSTS disabled on partner-data-sync → production endpoint with Restricted data → downgrade attacks possible → combined with the weak cipher issue, this endpoint has multiple encryption deficiencies.",
+      "detection_criteria": {
+        "required_keywords": ["partner-data-sync", "HSTS", "disabled", "Restricted", "downgrade", "production"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 6,
+    "relevant_documents_count": 4,
+    "tags": ["encryption", "exceptions", "compensating_controls", "red_herring", "noise_documents", "TLS", "cloud_storage", "cipher_suite"]
+  }
+}

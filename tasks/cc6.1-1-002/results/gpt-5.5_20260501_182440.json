@@ -1,0 +1,84 @@
+{
+  "task_id": "cc6.1-1-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:24:40.179468",
+  "score": {
+    "task_id": "cc6.1-1-002",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 20,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely",
+          "SLA",
+          "hours",
+          "immediate",
+          "same day",
+          "revocation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "production",
+          "MFA",
+          "multi-factor",
+          "database",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "evidence",
+          "retention",
+          "format"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "role change",
+          "manager",
+          "notify",
+          "previous"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 892,
+    "output_tokens": 2397
+  },
+  "raw_response": "## Overall Assessment\n\nNovaTech\u2019s Access Control Policy addresses several core CC6.1 expectations, including access request approvals, role-based access, privileged access management, password requirements, MFA for some access paths, quarterly access reviews, and authentication monitoring.\n\nHowever, the policy has several gaps and ambiguities that an auditor would likely flag because CC6.1 expects logical access controls to be clearly defined, consistently applied, and supported by appropriate security infrastructure and architecture over protected information assets.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | MFA Requirements Are Not Comprehensive | Section 4.2 \u2013 Multi-Factor Authentication | MFA is required only for VPN, AWS console, and email from non-corporate devices. The policy does not require MFA for all privileged access, production systems, administrative access, internal applications, code repositories, or access to sensitive data. This creates a risk that high-impact systems may be accessed with only a password. | High |\n| 2 | Termination Access Removal Is Vague | Section 6.1 \u2013 Termination | The policy states that access should be removed \u201cin a timely manner\u201d but does not define a specific SLA, such as immediate, same day, or within 24 hours. It also only mentions disabling Active Directory and does not address downstream systems, SaaS applications, AWS, databases, VPN, privileged accounts, API keys, or local accounts. | High |\n| 3 | Role Change Process Is Weak and Decentralized | Section 6.2 \u2013 Role Changes | The policy places responsibility on the previous manager to notify IT of access that should be removed, but it does not require formal access revalidation during transfers, manager approval for retained access, or a defined SLA for removing access no longer needed. This increases the risk of accumulated or inappropriate access. | High |\n| 4 | Logical Access Architecture Is Not Defined | Sections 1, 2, 7 \u2013 Purpose, Scope, Monitoring | CC6.1 refers to logical access security software, infrastructure, and architectures. The policy does not describe key access control architecture components such as SSO, identity provider, directory services, conditional access, network segmentation, firewalls, VPN design, bastion hosts, zero trust controls, or separation between production and non-production environments. | Medium |\n| 5 | Service Accounts, API Keys, and Non-Human Identities Are Not Addressed | Missing from Policy | The policy focuses on employee and user access but does not define requirements for service accounts, API tokens, SSH keys, machine identities, integration accounts, or cloud access keys. There are no requirements for ownership, approval, rotation, least privilege, monitoring, or disabling unused non-human accounts. | High |\n| 6 | Privileged Access Controls Lack Detail | Section 3.3 \u2013 Privileged Access | The policy states that privileged accounts are managed through CyberArk and sessions are recorded, but it does not specify approval workflows, just-in-time access, MFA for privileged access, periodic privileged access reviews, emergency or break-glass access handling, credential rotation, or monitoring of privileged activity. | High |\n| 7 | Access Reviews Do Not Explicitly Cover All Critical Access Types | Section 5 \u2013 Access Reviews | Quarterly access reviews are required, but the policy does not explicitly state that reviews include privileged users, AWS IAM roles, production databases, service accounts, third-party users, VPN users, code repository access, or terminated/transferred users. Without this scope, reviews may miss high-risk access. | Medium |\n| 8 | Third-Party Access Requirements Are Insufficient | Sections 2, 3, 6 | The scope includes contractors and third-party personnel, but the policy does not define additional controls for vendor access, such as sponsor ownership, expiration dates, contract termination notifications, restricted access paths, MFA, monitoring, or periodic reauthorization. | Medium |\n| 9 | Monitoring Requirements Are Limited | Section 7 \u2013 Monitoring | Monitoring is limited to failed login attempts and weekly review of authentication logs. The policy does not address monitoring of successful privileged logins, access to sensitive data, production access, administrative changes, IAM changes, anomalous behavior, cloud activity, or integration with a SIEM/alerting process. | Medium |\n| 10 | Account Lockout Policy May Not Address All Systems | Section 7 \u2013 Monitoring | The policy states that accounts lock after five failed attempts for 30 minutes, but it does not clarify whether this applies consistently across Active Directory, VPN, AWS, internal applications, databases, and privileged access systems. Inconsistent enforcement may leave systems vulnerable to brute-force attacks. | Low |\n| 11 | Access Provisioning Does Not Require Data/System Owner Approval for All Sensitive Access | Section 3.1 and 3.2 \u2013 Access Provisioning and Role Definitions | The policy requires manager approval for standard access and additional approvals for some roles, but it does not consistently require application owner, data owner, or system owner approval for access to sensitive applications or protected information assets. Manager approval alone may not be sufficient to validate business need. | Medium |\n| 12 | No Explicit Requirement for Least Privilege Validation After Provisioning | Section 3.1 \u2013 New User Access | The policy states that users are assigned role-based access following least privilege, but it does not describe how least privilege is validated, who owns role definitions, how roles are reviewed, or how excessive permissions are prevented during provisioning. | Medium |\n| 13 | Emergency or Break-Glass Access Is Not Defined | Missing from Policy | The policy does not define how emergency access is granted, approved, monitored, time-limited, reviewed, or revoked. This is important for production and administrative access, where emergency privileges may bypass normal approval workflows. | Medium |\n| 14 | Shared Account Prohibition Does Not Address Exceptions or Legacy Accounts | Section 3.3 \u2013 Privileged Access | The policy prohibits shared accounts but does not describe how existing shared accounts are identified, remediated, monitored, or granted exceptions. It also does not clarify whether shared application, database, or service accounts are allowed under controlled conditions. | Medium |\n| 15 | Password Policy Does Not Address Initial Passwords or Password Reset Controls | Section 4.1 \u2013 Password Requirements | The policy defines password complexity and expiration but does not address secure password reset procedures, identity verification for resets, temporary password expiration, password storage, or help desk reset controls. Weak reset procedures can undermine strong password requirements. | Medium |\n| 16 | Email MFA Requirement Leaves Corporate Devices Potentially Unprotected | Section 4.2 \u2013 Multi-Factor Authentication | MFA is required for email only when accessed from non-corporate devices. The policy does not require MFA for email access from corporate devices, even though email is commonly used for password resets, sensitive communications, and account recovery. | Medium |\n| 17 | No Explicit Access Control Requirements for Protected Data | Sections 1 and 2 \u2013 Purpose and Scope | The policy refers broadly to systems, applications, and data but does not define protected information assets, sensitive data categories, or specific access restrictions for confidential, customer, regulated, or production data. This makes it difficult to demonstrate that access controls are aligned with data sensitivity. | Medium |\n| 18 | Retention Requirements Are Limited to Privileged Session Recordings | Section 3.3 \u2013 Privileged Access | Privileged sessions are retained for 12 months, but the policy does not define retention periods for access requests, approvals, access review evidence, authentication logs, revocation records, or exception approvals. These records are important audit evidence for CC6.1. | Low |\n| 19 | Exceptions Process Lacks Periodic Review Requirement | Section 8 \u2013 Exceptions | Exceptions require CISO approval, risk assessment, and compensating controls, which is positive. However, the policy does not require expiration dates, periodic review, reapproval, or tracking to closure. Open-ended exceptions can weaken logical access controls over time. | Low |\n| 20 | No Requirement to Periodically Review Access Roles or Entitlement Models | Section 3.2 \u2013 Role Definitions | The policy lists high-level roles but does not require periodic review of role definitions, entitlements, or role-to-permission mappings. Outdated roles may accumulate excessive permissions and conflict with least privilege. | Medium |\n\n---\n\n## Summary of Key Auditor Concerns\n\nThe most significant readiness gaps are:\n\n1. **MFA is not required broadly enough**, especially for privileged and production access.  \n2. **Termination and role-change access removal is not sufficiently defined or time-bound.**  \n3. **Service accounts, API keys, and non-human identities are missing from the policy.**  \n4. **Privileged access management requirements are too high-level.**  \n5. **The policy does not describe the broader logical access architecture expected under CC6.1.**  \n6. **Monitoring is limited and does not clearly cover privileged, production, cloud, or sensitive data access.**\n\nOverall, the policy is a solid starting point, but it would likely need enhancement before being considered fully aligned with SOC 2 CC6.1 expectations."
+}

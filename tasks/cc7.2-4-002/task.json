@@ -1,0 +1,106 @@
+{
+  "id": "cc7.2-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.2",
+  "control_description": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/monitoring-policy.md",
+      "type": "policy",
+      "description": "Polaris Financial security monitoring and event management policy defining SIEM, alerting, privileged activity monitoring, and daily log review requirements"
+    },
+    {
+      "path": "evidence/alert-tuning-log.csv",
+      "type": "log",
+      "description": "Q4 2025 alert tuning log showing 7 tuning actions including 2 rule disablements"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Security exception register with exceptions for GuardDuty alert disable and delayed SIEM integration"
+    },
+    {
+      "path": "evidence/privileged-activity-report-q4.csv",
+      "type": "log",
+      "description": "Weekly privileged activity review reports for Q4 2025 with reviewer sign-off"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/system-uptime-q4.md",
+      "type": "report",
+      "description": "System uptime report for Q4 2025 — operational availability metrics not directly relevant to monitoring control effectiveness"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Polaris Financial's monitoring and anomaly detection controls for the Q4 2025 observation period. Review the monitoring policy, alert tuning log, exception register, and privileged activity reports. Assess whether CC7.2 requirements are met. Be careful to distinguish between properly managed exceptions and genuine control gaps. Not all documents are relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "GuardDuty cryptocurrency mining alert disabled for ML GPU instances",
+      "description": "TUNE-303 shows the GuardDuty cryptocurrency mining alert (RULE-088) was disabled on November 1, 2025. This appears to be a monitoring gap — a disabled detection rule for cryptocurrency mining. However, exception SEC-EXC-2025-020 documents CISO approval, a 90-day time limit (expires January 30, 2026), and comprehensive compensating controls: CloudTrail monitoring for non-ML EC2 launches, CrowdStrike process monitoring on GPU instances, and daily GPU utilization dashboard review. The false positive rate was 100% because ML training workloads trigger the cryptocurrency mining heuristic. The exception was reviewed December 15 with no anomalies detected. This is NOT a finding — the disable followed the Section 4.3 process correctly.",
+      "evidence_sources": ["evidence/alert-tuning-log.csv", "evidence/exception-register.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "The auditor should identify TUNE-303, cross-reference SEC-EXC-2025-020, verify CISO approval, confirm the 90-day time limit, and validate compensating controls. The 100% false positive rate justifies the disable, and the compensating controls (CrowdStrike, CloudTrail, GPU dashboards) provide alternative detection mechanisms.",
+      "detection_criteria": {
+        "required_keywords": ["TUNE-303", "GuardDuty", "cryptocurrency", "SEC-EXC-2025-020", "CISO approval", "compensating controls", "100% false positive"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": ["approved exception", "CISO approval", "compensating controls", "not a finding", "properly managed"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Database privilege escalation alert disabled without CISO approval and with no expiration date",
+      "description": "TUNE-305 shows the database privilege escalation alert (RULE-055) was disabled on November 20, 2025. The tuning log records Security Operations Lead (Maria Santos) approval but explicitly notes 'CISO approval NOT obtained.' Policy Section 4.3 requires CISO approval and a maximum 90-day disable period for any disabled alert rule. TUNE-305 has no expiration date set. The compensating controls are weaker than TUNE-303: basic CloudTrail monitoring for RDS API calls and manual weekly DBA log review. This is a policy violation on multiple counts: no CISO approval, no time limit, and no formal exception registered. Additionally, database privilege escalation is a critical detection rule for a financial services company — disabling it removes detection for unauthorized elevation of database access, which is a primary data breach vector. No exception exists in the exception register for this disable.",
+      "evidence_sources": ["evidence/alert-tuning-log.csv", "evidence/monitoring-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "The auditor should compare TUNE-305 to TUNE-303. TUNE-303 followed the process correctly (CISO approval, 90-day limit, formal exception). TUNE-305 did not (Security Operations Lead approval only, no expiration, no exception registered). The policy requires CISO approval for disabled rules. Database privilege escalation monitoring is critical for a financial services company. The contrast between the two disabled rules highlights a process inconsistency.",
+      "detection_criteria": {
+        "required_keywords": ["TUNE-305", "RULE-055", "database privilege escalation", "CISO approval NOT obtained", "no expiration", "Section 4.3", "Maria Santos", "no exception"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Two weeks of privileged activity reviews missed during Q4",
+      "description": "The privileged activity report shows 'Not Reviewed' entries for the weeks ending November 23 (Thanksgiving) and December 21 (holiday week). Policy Section 5.2 requires weekly privileged activity reviews with sign-off documentation. During these two unreviewed weeks, privileged activities (IAM modifications, security group changes, database admin operations, configuration changes, data exports) occurred without human review. The policy makes no provision for holiday exceptions to the weekly review cadence. For a financial services company, privileged activity during holiday periods — when staffing is reduced and security oversight is minimal — is precisely when review is most important.",
+      "evidence_sources": ["evidence/privileged-activity-report-q4.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "The auditor should scan the privileged activity report for completeness and find two 'Not Reviewed' entries. Policy Section 5.2 requires weekly review. The missing reviews during holidays are a gap — holiday periods are high-risk windows for insider threats. The automated monitoring continues, but the human review and sign-off process was not performed.",
+      "detection_criteria": {
+        "required_keywords": ["November 23", "December 21", "Not Reviewed", "Thanksgiving", "holiday", "weekly review", "Section 5.2", "privileged activity", "sign-off"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "No evidence of monthly alert rule review for October",
+      "description": "Policy Section 4.2 requires monthly review of alert rules and thresholds. The alert tuning log shows tuning actions in October (TUNE-301, TUNE-302), November (TUNE-303, TUNE-304, TUNE-305), and December (TUNE-306, TUNE-307). While tuning actions occurred in each month, these appear to be reactive adjustments to specific high-FP rules, not a systematic monthly review of all alert rules. There is no evidence of a documented monthly review covering false positive rates across all rules, threshold baselines, or new detection rule additions as described in Section 4.2.",
+      "evidence_sources": ["evidence/alert-tuning-log.csv", "evidence/monitoring-policy.md"],
+      "expected_reasoning": "The tuning log shows individual rule adjustments but not the structured monthly review required by Section 4.2. A monthly review should cover all rules, not just those that triggered enough false positives to require attention. The distinction between reactive tuning and proactive review is important.",
+      "detection_criteria": {
+        "required_keywords": ["monthly review", "Section 4.2", "reactive", "systematic", "alert tuning", "false positive rates", "all rules"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["alert_tuning", "disabled_rules", "red_herring", "CISO_approval", "privileged_activity", "financial_services", "weekly_review", "holiday_gap"]
+  }
+}

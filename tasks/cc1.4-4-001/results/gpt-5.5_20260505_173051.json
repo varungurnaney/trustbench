@@ -1,0 +1,63 @@
+{
+  "task_id": "cc1.4-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:30:51.470982",
+  "score": {
+    "task_id": "cc1.4-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 0.33333333333333337,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Greenleaf",
+          "Apex Janitorial",
+          "Non-Sensitive",
+          "no system access",
+          "exception"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "HCS-3007",
+          "Natasha Orlova",
+          "BGC-2025-084",
+          "EXC-HR-2025-003",
+          "Pending",
+          "expired",
+          "AWS root",
+          "Kubernetes admin",
+          "staging",
+          "production",
+          "90-day risk assessment",
+          "Section 3.3"
+        ],
+        "total_keywords": 14,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3045,
+    "output_tokens": 2045
+  },
+  "raw_response": "## Findings\n\n### 1. Sensitive employee granted privileged production access before background check completion  \n**Related document/section:**  \n- POL-HR-019, Section 3.1 \u2014 Background Check Requirements  \n- Background check record BGC-2025-084 \u2014 Natasha Orlova / HCS-3007  \n\n**Why this is a gap:**  \nPOL-HR-019 requires individuals in Sensitive roles to complete a Comprehensive background check before system access is provisioned. Natasha Orlova, a Site Reliability Engineer classified as Sensitive, was hired and provisioned access on June 2, 2025, while the background check was initiated the same day and remained pending as of December 28, 2025. The background check record further notes she had full production access, including AWS root and Kubernetes admin access, during this period.\n\nThis is not consistent with the policy requirement that Sensitive-role background checks be completed before access is granted.\n\n**Severity:** Critical  \n\n---\n\n### 2. Pending background check exceeded 90 days without documented risk assessment  \n**Related document/section:**  \n- POL-HR-019, Section 3.3 \u2014 Pending Background Checks  \n- Exception register, EXC-HR-2025-003  \n- Background check record BGC-2025-084  \n\n**Why this is a gap:**  \nPOL-HR-019 requires background checks pending beyond 60 days to be escalated to the CHRO, and checks pending beyond 90 days require a documented risk assessment. For HCS-3007, the exception register confirms the check was delayed beyond 60 days and escalated, but also states that no 90-day risk assessment was completed. The background check remained pending as of December 28, 2025, well beyond the 90-day threshold.\n\nThe organization therefore did not follow its own escalation and risk documentation requirements for an unresolved background check on a Sensitive employee.\n\n**Severity:** High  \n\n---\n\n### 3. Expired background check exception was not renewed while access continued  \n**Related document/section:**  \n- Exception register, EXC-HR-2025-003  \n- POL-HR-019, Section 3.3 \u2014 Pending Background Checks  \n\n**Why this is a gap:**  \nThe approved exception for Natasha Orlova expired on November 2, 2025. The exception register states that the background check was still pending as of December 28, 2025, and that no exception renewal was filed. Continued access after the exception expiration was therefore not supported by a current documented approval.\n\nThis indicates a breakdown in exception governance and monitoring for personnel security exceptions.\n\n**Severity:** High  \n\n---\n\n### 4. Compensating controls for delayed background check were not aligned with actual access granted  \n**Related document/section:**  \n- Exception register, EXC-HR-2025-003  \n- Background check record BGC-2025-084  \n\n**Why this is a gap:**  \nThe compensating controls documented for EXC-HR-2025-003 state that access was limited to the staging environment and that the manager would conduct weekly code reviews. However, the background check record states that the employee had full production access, including AWS root and Kubernetes admin access, since June 2, 2025.\n\nThis inconsistency indicates that the documented compensating controls were either not implemented, not monitored, or inaccurately recorded. Because the employee had privileged production access while the background check was pending, the documented mitigation was insufficient.\n\n**Severity:** Critical  \n\n---\n\n### 5. Insufficient evidence to verify employee security awareness training compliance  \n**Related document/section:**  \n- POL-HR-019, Sections 4.1\u20134.3 \u2014 Security Awareness Training  \n- Contractor Onboarding and Security Review \u2014 Q4 2025, Section 3  \n- Exception register, EXC-HR-2025-004  \n\n**Why this is a gap:**  \nThe policy requires new hires to complete Mimecast Awareness Training within 10 business days and all active personnel to complete annual refresher training by November 30, subject to approved extensions. The evidence provided includes contractor training compliance for Q4 and one documented employee training extension for Roberto Iglesias, but it does not include a complete 2025 employee training completion report for new hires or annual refresher training.\n\nAs a result, there is insufficient evidence to conclude that employee security awareness training requirements were met across the 2025 population.\n\n**Severity:** Medium  \n\n---\n\n## Observations Without Findings\n\n- Non-Sensitive employee background checks appear to be completed within the 30-day window allowed by POL-HR-019.  \n- Most Sensitive employees had Comprehensive background checks completed before their hire/access dates, consistent with policy.  \n- Contractor background check exceptions for Greenleaf Office Supplies and Apex Janitorial LLC appear to have documented rationale and compensating controls, and the contractors had no system access.  \n- The training extension for Roberto Iglesias was approved and completed within the extended deadline."
+}

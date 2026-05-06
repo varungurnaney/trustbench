@@ -1,0 +1,87 @@
+{
+  "id": "a1.2-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "A1.2",
+  "control_description": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup and recovery infrastructure, and recovery plan procedures to meet its objectives. Backup and recovery processes include procedures for recovery of data, systems, and infrastructure to meet the entity's availability commitments and system requirements.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/backup-policy.md",
+      "type": "policy",
+      "description": "Keystone Data backup and recovery policy defining retention periods, RPO/RTO, and backup procedures"
+    },
+    {
+      "path": "evidence/legal-hold-register.csv",
+      "type": "spreadsheet",
+      "description": "Active legal holds requiring data preservation beyond standard retention, including 7-year hold on customer transaction data"
+    },
+    {
+      "path": "evidence/backup-retention-config.json",
+      "type": "config",
+      "description": "AWS Backup retention configuration showing lifecycle rules for all backup vaults"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/data-retention-policy.md",
+      "type": "policy",
+      "description": "General data retention policy covering application-level data lifecycle management"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Keystone Data's backup controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the backup policy, legal hold register, and backup retention configuration. Assess compliance with A1.2. Pay particular attention to whether the backup retention scheme adequately supports all data preservation requirements, including legal and regulatory obligations. Not all documents may be relevant. Use professional judgment to determine whether identified issues are material findings.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Backup retention (30 days) conflicts with active 7-year legal hold — no mechanism to preserve legal-hold data",
+      "description": "The backup policy Section 5.1 defines daily backup retention at 30 days, with monthly consolidated backups retained for 12 months and annual backups for 7 years. The legal hold register shows an active hold (LH-2024-003) requiring preservation of all customer transaction data from January 2022 through December 2024 for litigation purposes. The hold explicitly states: 'All backups containing customer transaction data from the specified period must be preserved until hold is released. Estimated duration: 5-7 years.' The backup retention configuration (backup-retention-config.json) shows that the daily backup lifecycle rule applies uniformly to all backups in the vault — there is no mechanism to exclude legal-hold data from the 30-day rotation. The annual backup for 2022, 2023, and 2024 would be retained for 7 years per standard policy, but only one point-in-time snapshot per year is preserved. The legal hold may require more granular recovery points. The judgment element: does the annual backup satisfy the legal hold, or does the litigation team need daily-granularity backups from the hold period? And critically — is there any mechanism to prevent the automated 30-day lifecycle from deleting backups that should be preserved?",
+      "evidence_sources": ["evidence/backup-policy.md", "evidence/legal-hold-register.csv", "evidence/backup-retention-config.json"],
+      "expected_reasoning": "The auditor should cross-reference the backup retention configuration against the legal hold register. The 30-day daily retention means daily backups from 2022-2024 were deleted long ago. Only annual snapshots remain for those years. The legal hold requires preservation of 'all backups' containing transaction data — but the daily backups are already gone. The backup lifecycle configuration has no legal-hold exclusion mechanism. For current and future backups, the 30-day rotation will continue to delete daily backups that may contain data subject to the hold. The judgment: is this a backup infrastructure gap (A1.2) or purely a legal/compliance issue outside the scope of backup controls?",
+      "detection_criteria": {
+        "required_keywords": ["legal hold", "LH-2024-003", "30-day retention", "7-year", "customer transaction", "no mechanism", "lifecycle", "preserve", "annual backup"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Backup retention configuration does not support granular hold policies — all backups in vault follow same lifecycle",
+      "description": "The backup retention configuration shows a single lifecycle policy applied to the entire backup vault (ks-backup-vault-prod). The policy transitions backups to cold storage after 30 days and deletes them after 365 days, with annual snapshots retained for 7 years. There is no tagging mechanism, no vault-level segregation, and no lifecycle exclusion for legal holds. The legal hold register has 3 active holds with different retention requirements (3 years, 5 years, and 7 years for different data sets). The backup infrastructure cannot distinguish between backups that are subject to legal holds and those that can be safely rotated. This is a control design gap — the backup system was designed for operational recovery but not for data preservation obligations.",
+      "evidence_sources": ["evidence/backup-retention-config.json", "evidence/legal-hold-register.csv", "evidence/backup-policy.md"],
+      "expected_reasoning": "The auditor should examine whether the backup infrastructure supports the organization's data preservation obligations. Three active legal holds with different retention periods cannot be satisfied by a single lifecycle policy. The infrastructure needs either separate vaults with different policies, tag-based lifecycle rules, or AWS Backup Vault Lock for legal holds. None of these are configured. The judgment: is backup infrastructure design for legal holds within the scope of A1.2, or is this a legal/GRC responsibility?",
+      "detection_criteria": {
+        "required_keywords": ["single lifecycle", "vault", "no tagging", "no segregation", "legal hold", "different retention", "control design", "data preservation"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No documented process for notifying backup team when legal holds are issued",
+      "description": "The legal hold register shows LH-2024-003 was issued in March 2024, LH-2025-001 in February 2025, and LH-2025-004 in September 2025. The backup policy has no section addressing legal holds, data preservation obligations, or coordination with Legal. There is no documented process for the Legal team to notify the infrastructure team when a legal hold is issued, no process for the infrastructure team to implement backup preservation in response, and no verification that hold-relevant backups are actually being preserved. The most recent hold (LH-2025-004, issued September 2025) covers data from the current year — yet the backup retention configuration has not been modified since January 2025. This suggests the backup team may not be aware of the hold.",
+      "evidence_sources": ["evidence/legal-hold-register.csv", "evidence/backup-policy.md", "evidence/backup-retention-config.json"],
+      "expected_reasoning": "The auditor should check whether the backup policy references legal holds (it does not), whether the backup retention configuration was updated after each legal hold issuance (it was not), and whether there is any documented coordination between Legal and Infrastructure. The absence of a process means legal holds may not be operationally implemented in the backup system. The judgment: is this an A1.2 finding (backup infrastructure not meeting organizational requirements) or a process maturity issue?",
+      "detection_criteria": {
+        "required_keywords": ["no process", "legal hold", "backup team", "notification", "coordination", "not modified", "September 2025", "LH-2025-004"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["backup", "retention", "legal_hold", "data_preservation", "judgment_call", "lifecycle_policy", "compliance_conflict"]
+  }
+}

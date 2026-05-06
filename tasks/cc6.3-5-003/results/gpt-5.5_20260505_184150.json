@@ -1,0 +1,80 @@
+{
+  "task_id": "cc6.3-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T18:41:50.698955",
+  "score": {
+    "task_id": "cc6.3-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.375,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "h.nguyen",
+          "76,000",
+          "threshold",
+          "November 12",
+          "customer_profiles"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "auto-resolved",
+          "svc-bi-dashboard"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "EXP-Q4-2025-008",
+          "December 8",
+          "December 11",
+          "25,000"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "threshold",
+          "10,000",
+          "cumulative"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6150,
+    "output_tokens": 4838
+  },
+  "raw_response": "Based on the evidence reviewed, Meridian\u2019s DLP and bulk export control design is partially defined, but operating effectiveness is not fully demonstrated. The following findings indicate gaps under **CC6.3** related to authorization, least privilege, segregation of duties, and prevention of unauthorized bulk data access/export.\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Unapproved bulk export executed before required approvals were completed** | Policy Sections **5.1 Bulk Export Authorization**, **5.3 Alert Response** | Ticket **EXP-Q4-2025-008** shows a 25,000-row Confidential data export to S3 was executed on **December 8** before Data Owner approval on **December 10** and CISO approval on **December 11**. The DLP alert **DLP-Q4-2025-021** also notes the export had already executed while approval was pending. This indicates the control is primarily detective and did not prevent a bulk export from occurring without prior authorization, contrary to policy. | **High** |\n| 2 | **Paginated extraction bypassed DLP threshold controls** | Policy Sections **5.1 Bulk Export Authorization**, **5.2 Automated DLP Alerting**, **4.1 Least Privilege** | The database audit log shows **h.nguyen** executed eight sequential queries on **November 12** against `customer_profiles`, each returning fewer than 10,000 rows, but totaling approximately **76,000 cumulative rows** in one session. No corresponding DLP alert or approval ticket was provided. Because the DLP threshold appears to evaluate each query individually, users can avoid alerting by splitting a large extraction into sub-threshold batches. This is especially concerning because `customer_profiles` appears to contain Restricted data. | **High** |\n| 3 | **Approval requirements for Restricted and high-volume exports were inconsistently applied** | Policy Sections **4.3 Approval Chain**, **5.1 Bulk Export Authorization** | The policy requires Restricted data access to be approved by **Manager + Data Owner + Privacy Officer + CISO**, while bulk exports over 10,000 rows require **Data Owner + CISO** approval. However, tickets involving Restricted data, such as **EXP-Q4-2025-005** and **EXP-Q4-2025-006**, do not show Privacy Officer approval. EXP-Q4-2025-005 also lacks CISO approval despite involving Restricted data. Additionally, **EXP-Q4-2025-001** requested 12,500 Confidential rows but was marked \u201cUnder 10k threshold for CISO,\u201d which conflicts with the documented threshold. These inconsistencies indicate the approval workflow is not reliably enforcing the documented authorization model. | **High** |\n| 4 | **Service account bulk access alerts are auto-resolved without evidenced analyst review or approved exception** | Policy Sections **5.2 Automated DLP Alerting**, **5.3 Alert Response**, **8 Exceptions** | Numerous alerts for service accounts such as `svc-bi-dashboard` and `svc-etl-pipeline` were auto-resolved within minutes despite large result sets, including repeated 47,000-row queries against `customer_profiles`. The policy requires all DLP alerts to be reviewed by a Security Analyst within four hours, including verification of business justification and approval. The evidence does not include a service account allowlist, approved exception, compensating controls, or periodic validation of these high-volume service account activities. Auto-resolution may be reasonable for known scheduled jobs, but it needs formal authorization and review criteria. | **Medium** |\n| 5 | **DLP alert log and database audit log do not fully reconcile** | Policy Sections **5.4 DLP Technology**, **7 Monitoring** | Several events do not align between the DLP alert log and the database audit log. For example, the October 3 and October 5 events appear to have mismatched users and query contexts between the two logs. The DLP log shows `svc-bi-dashboard` on October 3 and `a.santos` on October 5, while the database audit log shows the reverse pattern. Additionally, some DLP alerts do not appear in the provided database audit log, and the November 12 paginated extraction appears in the audit log but not in the DLP alert log. These inconsistencies reduce confidence that DLP alerts are complete, accurately attributed, and traceable to source activity. | **Medium** |\n| 6 | **DLP alert disposition was not fully documented for the policy violation** | Policy Section **5.3 Alert Response** | Alert **DLP-Q4-2025-021** was left as \u201cUnder Review \u2014 Ticket Pending\u201d even though the related ticket **EXP-Q4-2025-008** was later approved and completed. The evidence does not show final disposition, root cause, escalation to the CISO for the pre-approval violation, or remediation to prevent recurrence. The policy requires the analyst to document disposition and escalate when approval or justification is missing. | **Medium** |\n| 7 | **DLP thresholds are not aligned to the full export approval policy** | Policy Sections **5.1 Bulk Export Authorization**, **5.2 Automated DLP Alerting** | The policy requires approval for exports below 10,000 rows, including exports under 1,000 rows and between 1,000\u201310,000 rows. However, automated DLP alerting is focused on queries returning more than 10,000 rows or certain external write operations. This creates a monitoring gap for smaller but still policy-relevant exports, particularly where sensitive data is involved or where multiple smaller exports occur over time. The November 12 paginated extraction demonstrates this threshold weakness in practice. | **Medium** |\n| 8 | **Segregation of duties is weakened by overlapping Data Owner and CISO approvals** | Policy Sections **4.2 RBAC**, **4.3 Approval Chain**, **5.1 Bulk Export Authorization** | Multiple approval tickets list **Patricia Wolfe** as Data Owner approver, and she is also the CISO. For high-risk exports requiring both Data Owner and CISO approval, the same individual appears to satisfy both roles in several cases. The policy does not define how independent approval is maintained when one person holds multiple approval roles. This weakens segregation of duties and reduces the effectiveness of the approval chain for high-volume or sensitive exports. | **Medium** |\n\nOverall, Meridian has a documented DLP and bulk export policy and evidence of alert review activity, but the control is not yet operating effectively enough to conclude that unauthorized bulk access and export are consistently prevented. The most significant issues are the executed pre-approval export, the paginated extraction bypass, and inconsistent application of approval requirements for sensitive data."
+}

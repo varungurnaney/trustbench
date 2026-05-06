@@ -1,0 +1,92 @@
+{
+  "task_id": "c1.1-5-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:13:14.490151",
+  "score": {
+    "task_id": "c1.1-5-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "deidentification",
+          "de-identification",
+          "HTTP",
+          "PHI",
+          "patient names",
+          "unencrypted",
+          "raw PHI",
+          "CERT-NHA-005",
+          "compensating",
+          "remediation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "addressable",
+          "implemented",
+          "Section 5.4",
+          "HIPAA",
+          "inconsistency",
+          "policy",
+          "de-identification"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Confidential",
+          "Section 5.2",
+          "mandatory",
+          "healthcare"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-NHA-007",
+          "grafana",
+          "No",
+          "manual",
+          "Internal"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3998,
+    "output_tokens": 3564
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: C1.1 Confidential Information Protection\n## Nextera Health Analytics\n\n---\n\n## FINDINGS\n\n### 1. **Unencrypted PHI Transmission: De-identification Service**\n\n**Document Reference:** TLS Endpoint Audit (deidentification-svc.internal.nextera-health.com, port 8080); HIPAA Risk Assessment Section 7.3\n\n**Gap Description:**\n\nRaw PHI (patient names, MRNs, diagnosis codes, dates of service) transits over unencrypted HTTP between the PHI pipeline and the de-identification service. This directly contradicts:\n- The Data Protection Policy Section 5.2, which mandates TLS 1.2+ for all internal Restricted data communications\n- Policy Section 5.4, which explicitly states encryption is \"required for all PHI in transit\"\n- HIPAA Security Rule 45 CFR \u00a7 164.312(e)(1), which Nextera has affirmatively committed to implementing (not treating as an addressable specification it will decline)\n\nWhile the risk assessment acknowledges compensating controls (VPC isolation, security groups, VPC Flow Logs, private subnet, MFA/VPN access requirements), **compensating controls do not eliminate the control deficiency**\u2014they reduce residual risk. The control itself (encryption) is absent.\n\n**Why This Is a Gap:**\n\n- **Policy non-compliance:** The organization's own written policy explicitly requires encryption for all internal Restricted (PHI/PII) data communications. This service is in violation.\n- **HIPAA commitment mismatch:** The policy document Section 5.4 affirmatively states that encryption is implemented for all PHI in transit. This service contradicts that assertion.\n- **SOC 2 Principle 1 (CC6.1/CC6.7):** Requires the entity to implement logical access controls, including encryption of sensitive data in transit. An unencrypted channel carrying PHI is a control gap regardless of compensating controls.\n- **Materiality of PHI:** Healthcare data is the highest classification (Restricted) in Nextera's own schema. The de-identification service is the operational choke point where raw PHI is processed; this is a critical data flow.\n\n**Severity: CRITICAL**\n\n**Justification for Critical Rating:**\n- Raw PHI is transiting in plaintext; this is the category of data Nextera's policy mandates encryption for\n- The data flow is essential to the organization's core function (de-identification of patient data)\n- A breach at this point (before de-identification) would expose unredacted PHI\n- Nextera has a BAA obligation to implement HIPAA Security Rule protections; an unencrypted PHI channel is a direct violation\n- The gap is not a temporary operational issue\u2014it is a design decision (service runs outside Kubernetes, intentionally unencrypted)\n\n---\n\n### 2. **Incomplete Certificate Inventory and Missing TLS Configuration**\n\n**Document Reference:** Certificate Inventory (CERT-NHA-005); TLS Endpoint Audit (deidentification-svc row)\n\n**Gap Description:**\n\nThe de-identification service has no certificate record in the inventory and no TLS configuration. The certificate inventory explicitly shows status \"No Certificate\" with the note: \"De-identification service runs on HTTP (port 8080). No TLS certificate configured.\"\n\nThis represents a gap in **certificate lifecycle management** as defined in Policy Section 7 (Certificate Management). While the policy doesn't require pre-issuance of certificates for all services, it does establish mandatory monitoring, expiration alerts, and auto-renewal for all production certificates. The absence of a certificate for a production internal service processing PHI indicates:\n\n1. No certificate was ever provisioned\n2. No monitoring or renewal process covers this service\n3. The service falls outside the certificate management control framework\n\n**Why This Is a Gap:**\n\n- **Control framework gap:** The Certificate Management policy (Section 7) applies to \"all production certificates.\" This service is in production (vpc-prod) but is not included in the framework.\n- **Monitoring gap:** Policy Section 8 requires quarterly encryption posture assessments and AWS Config enforcement. A plaintext internal channel is not being caught by these controls, suggesting they are not comprehensive.\n\n**Severity: HIGH**\n\n**Justification:**\n- This is a component-level control deficiency (no certificate exists) that enables the larger encryption gap\n- It indicates the certificate management process is not discovering or enforcing coverage on all production services\n- Unlike the encryption gap (which could theoretically be accepted with risk mitigation), the absence of a certificate means no enforcement mechanism exists to transition this service to encryption\n\n---\n\n### 3. **Incomplete Network Encryption Posture Assessment**\n\n**Document Reference:** Data Protection Policy Section 8 (Monitoring); HIPAA Risk Assessment Section 7.2 (Assessment Scope)\n\n**Gap Description:**\n\nThe Data Protection Policy mandates \"Quarterly encryption posture assessments\" and \"AWS Config rules enforce encryption on resource creation.\" However, the de-identification service\u2014a plaintext internal PHI channel\u2014was not detected or flagged by these controls until an independent third-party HIPAA risk assessment in September 2025.\n\nThis suggests the \"quarterly encryption posture assessments\" either:\n- Do not cover internal service-to-service communication channels (only storage and external transit)\n- Were not executed comprehensively in the periods before the independent assessment\n- Do not have enforcement authority over services outside Kubernetes\n\n**Why This Is a Gap:**\n\n- **Control design weakness:** Encryption posture assessments are supposed to identify encryption gaps, but they failed to identify a critical one\n- **Scope limitation:** AWS Config rules may only cover cloud-native resources; the de-identification EC2 instance is not covered by Istio mTLS or AWS Config enforcement\n- **Timing gap:** An independent third party found the issue in September 2025; there is no evidence this was identified in any quarterly internal assessment\n\n**Severity: HIGH**\n\n**Justification:**\n- This is a control execution and scope deficiency that compounds the encryption gap\n- It indicates the organization cannot currently assure that all PHI in transit is encrypted, because their monitoring controls have blind spots\n- For a healthcare analytics company subject to SOC 2 and HIPAA, the ability to comprehensively assess encryption posture is foundational\n\n---\n\n### 4. **Lack of Enforcement for Addressable HIPAA Specification**\n\n**Document Reference:** Data Protection Policy Section 5.4; HIPAA Risk Assessment Section 7.2\n\n**Gap Description:**\n\nThe Data Protection Policy clearly states:\n\n> \"Per HIPAA Security Rule \u00a7 164.312(e)(1), encryption of data in transit is an 'addressable' specification. Nextera's risk assessment has determined that encryption is 'reasonable and appropriate' for all PHI transmissions. Therefore, encryption is required for all PHI in transit \u2014 this addressable specification is implemented, not documented-and-declined.\"\n\nThis is an explicit organizational commitment. However, no compensating control, exception process, or risk acceptance is documented for the de-identification service. The HIPAA risk assessment (Section 7.3) recommends remediation by Q1 2026 but does not show:\n- A formal exception request\n- CISO approval for the deviation\n- Risk acceptance documentation\n- Quarterly review of the gap\n\n**Why This Is a Gap:**\n\n- **Control commitment inconsistency:** Nextera has stated it will implement encryption for all PHI in transit. The de-identification service is a deviation from that commitment with no formal exception.\n- **Lack of formal risk acceptance:** Policy Section 9 (Exceptions) requires CISO approval and HIPAA risk assessment for PHI exceptions. The independent risk assessment identified the gap but does not show a formal exception approved by the CISO.\n- **Compliance documentation gap:** For SOC 2 purposes, an identified control gap must either be remediated or formally accepted with documented risk justification. This gap is neither remediated nor formally accepted.\n\n**Severity: HIGH**\n\n**Justification:**\n- This is a governance gap: a control commitment exists but is not being uniformly applied\n- Without formal exception documentation, auditors cannot verify that management is aware of and has consciously accepted this risk\n- For regulated data (PHI), this gap undermines the control framework's credibility\n\n---\n\n### 5. **Inadequate Exception Management Process for Identified Control Gap**\n\n**Document Reference:** Data Protection Policy Section 9 (Exceptions); HIPAA Risk Assessment Section 7.3 (Recommendation)\n\n**Gap Description:**\n\nThe independent HIPAA risk assessment identified the de-identification service gap and recommended remediation by Q1 2026. However, the provided evidence does not show:\n\n1. A formal exception request submitted to the CISO\n2. CISO approval and sign-off of the exception\n3. Risk acceptance documentation\n4. Compensating control effectiveness evidence (beyond what the risk assessment provided)\n5. A scheduled remediation task or project plan with Q1 2026 target\n\nThe policy mandates (Section 9):\n- CISO approval required\n- HIPAA risk assessment required \u2713 *completed*\n- Maximum exception duration: 6 months for PHI-related exceptions\n- Quarterly review of all active exceptions\n\nWithout documented exception management, the gap exists in an ambiguous state: identified but not formally managed.\n\n**Why This Is a Gap:**\n\n- **Process non-compliance:** The exception management process defined in Policy Section 9 is not being followed\n- **Missing documentation:** No formal exception record is provided for review\n- **Unclear accountability:** It is not clear whether the CISO has explicitly approved operating with unencrypted PHI transmission until Q1 2026\n- **Audit trail deficiency:** For SOC 2 purposes, control deviations require documented approval and periodic review. None is evident here.\n\n**Severity: MEDIUM**\n\n**Justification:**\n- This is a governance and documentation gap rather than a technical one\n- The underlying technical gap (unencrypted PHI) is captured in Finding 1 (Critical)\n- However, the lack of formal exception management means the organization cannot demonstrate that this gap is being consciously managed\n- Remediation of this finding is straightforward: formalize the exception, obtain CISO approval, and document compensating controls\n\n---\n\n### 6. **Grafana Certificate Missing Auto-Renewal**\n\n**Document Reference:** Certificate Inventory (CERT-NHA-007)\n\n**Gap Description:**\n\nThe Grafana internal certificate (grafana.internal.nextera-health.com, CERT-NHA-007) has auto-renewal disabled (\"No\"). The certificate expires on September 1, 2026. The Data Protection Policy Section 7 mandates:\n\n> \"Auto-renewal required for all production certificates\"\n\nWhile Grafana carries only \"Internal\" classified data (not PHI/PII), it is a production monitoring service. The disabled auto-renewal creates a renewal risk: if the 30-day expiration alert fails or is missed, the certificate will expire, potentially causing service disruption.\n\n**Why This Is a Gap:**\n\n- **Policy non-compliance:** Policy Section 7 requires auto-renewal for all production certificates; Grafana is in production and does not have auto-renewal enabled\n- **Renewal failure risk:** Manual renewal introduces operational risk (human error, alerts missed)\n- **Incomplete control:** The monitoring control (30-day alerts) is a detection mechanism, not a prevention mechanism; auto-renewal prevents the failure entirely\n\n**Severity: LOW**\n\n**Justification:**\n- Grafana carries Internal (non-PHI) data, so the confidentiality impact is lower than PHI-bearing services\n- The 30-day alert provides a reasonable safety margin (six months until expiration)\n- However, this is a clear policy violation and represents a control gap in certificate lifecycle management\n- Easy to remediate: enable auto-renewal via cert-manager\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Severity | Related Control(s) | Remediation Effort | Timeline Impact |\n|---------|----------|-------------------|-------------------|-----------------|\n| 1. Unencrypted PHI transmission (de-identification) | **CRITICAL** | C1.1, CC6.1, CC6.7, Policy 5.2, 5.4, HIPAA \u00a7 164.312(e)(1) | High \u2014 requires architecture change (add TLS to service) | Q1 2026 (per assessment recommendation) |\n| 2. Missing certificate for de-identification service | **HIGH** | C1.1, CC6.7, Policy Section 7 | Medium \u2014 provision certificate once TLS is enabled | Dependent on Finding 1 |\n| 3. Incomplete encryption posture assessment | **HIGH** | C1.1, CC6.1, Policy Section 8 | Medium \u2014 expand assessment scope and automation | 30\u201360 days |\n| 4. Lack of enforcement for addressable HIPAA spec | **HIGH** | C1.1, Policy 5.4, Section 9 | Low \u2014 formalize existing assessment as exception | Immediate |\n| 5. Missing exception management documentation | **MEDIUM** | C1.1, Policy Section 9 | Low \u2014 document formal exception, CISO approval | Immediate |\n| 6. Grafana auto-renewal disabled | **LOW** | C1.1, Policy Section 7 | Low \u2014 one-line config change | Immediate |\n\n---\n\n## OVERALL ASSESSMENT\n\n**Control C1.1 Status: NOT YET EFFECTIVE**\n\nNextera Health Analytics has established a comprehensive Data Protection Policy with explicit encryption requirements for PHI. However, a critical gap exists: raw PHI transits unencrypted between the PHI pipeline and the de-identification service. This violates:\n\n1. The organization's own policy (Sections 5.2, 5.4)\n2. HIPAA Security Rule \u00a7 164.312(e)(1), which the policy explicitly commits to implementing\n3. SOC 2 Principle 1 requirements for logical access controls on sensitive data\n\nWhile compensating controls (VPC isolation, security groups, network monitoring) reduce the likelihood of exploitation, **they do not satisfy the control requirement**. Compensating controls address risk; control deficiencies must be remediated or formally managed via exception.\n\n**Additionally:**\n- The exception management process (Policy Section 9) has not been applied to this identified gap\n- The encryption posture assessment process (Policy Section 8) has incomplete scope and did not detect the gap internally\n- A formal, CISO-approved exception record is absent\n\n**Recommendation:**\n\nFor Nextera to achieve effective control status for C1.1:\n\n1. **Immediate (this week):**\n   - Formalize exception: Submit HIPAA risk assessment to CISO as exception request; document CISO approval and risk acceptance\n   - Expand encryption posture assessment scope to include all internal service-to-service channels\n   - Enable auto-renewal for Grafana certificate\n\n2. **Short-term (30\u201360 days):**\n   - Implement quarterly review process for the de-identification service exception\n   - Update monitoring to detect any unencrypted channels carrying PHI\n\n3. **Medium-term (Q1 2026, per assessment recommendation):**\n   - Implement TLS 1.2+ on de-identification service\n   - Provision and manage certificate for the service\n   - Deactivate the exception and move to standard control\n\nUntil the de-identification service is encrypted (or a formally managed exception is in place), this control cannot be attested as effective for purposes of a SOC 2 Type II report."
+}

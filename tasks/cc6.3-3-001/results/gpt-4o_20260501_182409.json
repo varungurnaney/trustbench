@@ -1,0 +1,93 @@
+{
+  "task_id": "cc6.3-3-001",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-01T18:24:09.429449",
+  "score": {
+    "task_id": "cc6.3-3-001",
+    "model": "gpt-4o",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.6,
+    "precision": 0.5,
+    "f1": 0.5454545454545454,
+    "score": 0.6,
+    "gaps_detected": 3,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "developer_debug",
+          "write access",
+          "CISO",
+          "approval",
+          "ALL TABLES",
+          "least privilege"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "evan",
+          "segregation",
+          "etl_pipeline",
+          "developer_debug"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "production",
+          "clearview_production"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "bulk",
+          "CISO",
+          "export",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "postgres"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2012,
+    "output_tokens": 553
+  },
+  "raw_response": "### Finding 1: Excessive Privileges to Developer Role\n- **Document Section**: PostgreSQL role and grant configuration\n- **Gap Explanation**: The `developer_debug` role has been granted `SELECT`, `INSERT`, `UPDATE`, and `DELETE` privileges on all tables in the `clearview_production` database. This contradicts the principle of least privilege outlined in the control objective and policy. Neither the Data Access Authorization Policy nor the access requests indicate proper approvals for this level of access.\n- **Severity**: High\n\n### Finding 2: Missing Write Access Approvals\n- **Document Section**: Data access request tickets for Q4 2025\n- **Gap Explanation**: Tickets DAR-403 and DAR-405 granted read-write access to the `clearview_production` database. According to the Data Access Authorization Policy, write access requires CISO approval, which is missing in both cases.\n- **Severity**: Critical\n\n### Finding 3: Unapproved Extended Role Memberships\n- **Document Section**: PostgreSQL role and grant configuration, Data access request tickets for Q4 2025\n- **Gap Explanation**: Evan Smith holds both the `developer_debug` and `etl_pipeline` roles, allowing write access across all production tables without documented approval in the records provided. Only managerial and VP Engineering approval is visible for read-write access referenced in DAR-407.\n- **Severity**: High\n\n### Finding 4: Inadequate Role Segregation for Support Operations\n- **Document Section**: PostgreSQL role and grant configuration, Data Access Authorization Policy\n- **Gap Explanation**: The `support_tool` role has `SELECT` and `UPDATE` privileges on customer-related tables. Without documented justification for write-access or alignment with segregation of duties recommended in the given policy, this could pose a compliance risk.\n- **Severity**: Medium\n\n### Finding 5: Inconsistent Data Export Controls\n- **Document Section**: ClearView Analytics data access authorization policy\n- **Gap Explanation**: The policy specifies detailed rules for data export, including bulk data export approvals. However, there is no reference in the document set to these controls being implemented or monitored effectively, which is essential for ensuring compliance with policy statements.\n- **Severity**: Medium\n\n### Finding 6: Unvalidated Explicit Permissions for Analytics Roles\n- **Document Section**: PostgreSQL role and grant configuration\n- **Gap Explanation**: The `data_science_team` role in the `clearview_analytics` production database is allowed unrestricted `CREATE` operations without corresponding request or approval. This lacks synergy with the principle of least privilege, which should emphasize necessity-based permissions.\n- **Severity**: Medium"
+}

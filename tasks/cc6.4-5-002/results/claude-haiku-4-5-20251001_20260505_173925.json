@@ -1,0 +1,82 @@
+{
+  "task_id": "cc6.4-5-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:39:25.899096",
+  "score": {
+    "task_id": "cc6.4-5-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.18181818181818182,
+    "f1": 0.26666666666666666,
+    "score": 0.26666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Q3 review",
+          "Section 4.6",
+          "quarterly",
+          "CTR-0191",
+          "stale access"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "annual audit",
+          "Section 8.2",
+          "access list",
+          "independent"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "pre-registered",
+          "walk-in",
+          "Section 6.1",
+          "Security Manager approval",
+          "VIS-0319",
+          "VIS-0329"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "November 28"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 9394,
+    "output_tokens": 3001
+  },
+  "raw_response": "# CC6.4 Compliance Assessment \u2013 Prism Analytics Physical Access Controls\n\n## Executive Summary\n\nPrism Analytics demonstrates a **mature physical security program** with documented policies, regular audits, and active access management controls. However, the Q4 2025 observation period reveals **two findings** that impact the design and operating effectiveness of CC6.4: one Medium severity gap in contractor access deactivation timeliness, and one Medium severity gap in visitor management pre-registration enforcement.\n\n---\n\n## FINDINGS\n\n### **Finding 1: Delayed Contractor Badge Deactivation**\n\n**Title:** Contractor badge deactivated beyond policy-required timeframe\n\n**Related Policy Section:** POL-PS-025, Section 4.4 (\"Contractor Lifecycle\") and Section 4.6 (\"Quarterly Access Review\")\n\n**Evidence Location:** Q3 2025 Quarterly Badge Access Review, Row QAR-010\n\n**Gap Description:**\n\nThe quarterly access review (October 8, 2025) identified that contractor Alex Drummond (CTR-0191, NetForge Solutions) had an active badge despite his contract ending on **September 15, 2025**. The badge remained active for **23 days** beyond contract termination.\n\n**Policy Requirement:**\n- POL-PS-025, Section 4.4 states: \"Contractor badges activated on or after contract start date. **Deactivated within 1 business day of contract end.**\"\n\n**What Actually Happened:**\n- Contract end date: September 15, 2025\n- Expected deactivation: September 16, 2025 (1 business day later)\n- Actual detection: October 8, 2025 (23 days late)\n- Action taken: Deactivation ticket FAC-2025-1143 opened on October 8 (after discovery)\n- No evidence that the badge was proactively monitored or deactivated on schedule\n\n**Why This Is a Gap:**\n\n1. **Control Breakdown:** The contractor badge remained active in restricted zones (Network Closet per QAR-010) for nearly four weeks post-termination, creating unauthorized access risk.\n\n2. **Process Failure:** The deactivation was not performed by HR/Facilities at contract end, but rather discovered reactively during the quarterly review.\n\n3. **Reliance on Reactive Review:** While the quarterly review ultimately caught the issue, the 1-business-day policy exists to minimize the window of risk. A 23-day delay contradicts this design.\n\n4. **Incomplete Investigation:** The Q3 review documents opened a ticket but does not indicate how the slip occurred or what corrective action was implemented to prevent recurrence.\n\n**Severity:** **MEDIUM**\n\n**Rationale:** \n- The gap allowed unauthorized logical access to network infrastructure for an extended period.\n- However, the quarterly review process functioned as a detective control and identified the issue.\n- No evidence of actual unauthorized access; risk was mitigated by discovery.\n- Prism should strengthen the **preventive** control (automated notifications to Facilities when contractor end dates approach) rather than rely solely on quarterly detective reviews.\n\n---\n\n### **Finding 2: Visitor Access to Restricted Zone Without Documented Infrastructure Director Approval**\n\n**Title:** Vendor accessed server room without evidence of required Infrastructure Director approval\n\n**Related Policy Section:** POL-PS-025, Section 6.3 (\"Escort\") and Section 4.5 (\"Access Modifications\")\n\n**Evidence Location:** Q4 2025 Visitor Sign-In Log, Row VIS-0319\n\n**Gap Description:**\n\nOn **November 8, 2025**, vendor Tony Alvarez from DataPure Cleaning accessed the **Server Room** (restricted zone per POL-PS-025, Section 3.2). The visitor log documents:\n\n| Field | Value |\n|-------|-------|\n| Visitor Name | Tony Alvarez |\n| Company | DataPure Cleaning |\n| Purpose | Server room deep cleaning |\n| Areas Accessed | Server Room |\n| Pre-Registered | **No** |\n| Escort Status | Escorted |\n| Check-In Time | 12:00 |\n| Check-Out Time | 14:00 |\n| Notes | \"Scheduled but not pre-registered in system. No Security Manager approval documented.\" |\n\n**Policy Requirements:**\n\n1. POL-PS-025, Section 6.1: \"All visitors must be pre-registered by the host employee via the visitor management system **at least 24 hours in advance**.\"\n\n2. POL-PS-025, Section 6.1.1 (Walk-In Exception): \"Walk-in visitors (not pre-registered) require **real-time approval from the Security Manager** before check-in proceeds. **The Security Manager's approval must be documented in the visitor log.**\"\n\n3. POL-PS-025, Section 6.3: \"Visitors **restricted to General Office zone** unless **Infrastructure Director approves** Restricted zone escorted access.\"\n\n**What Actually Happened:**\n- Vendor was not pre-registered in the visitor management system\n- Visit was \"scheduled\" (implying known in advance) but not formalized in the system\n- No Security Manager approval documented for walk-in exception\n- No Infrastructure Director approval documented for restricted (Server Room) zone access\n- Visitor was escorted, but documentation of approvals is absent\n\n**Why This Is a Gap:**\n\n1. **Missing Compensating Controls:** The policy requires either (a) 24-hour pre-registration **OR** (b) real-time Security Manager approval + documentation. Neither is evidenced for VIS-0319.\n\n2. **Restricted Zone Without Authorization:** Server Room is a restricted zone. Policy requires Infrastructure Director approval for visitor access. No evidence of this approval exists.\n\n3. **Documentation Deficiency:** The visitor log itself notes \"No Security Manager approval documented,\" indicating the audit trail is incomplete. For a SOC 2 audit, the absence of documented approval is equivalent to the absence of approval.\n\n4. **Conflicting Practices:** VIS-0324 (November 28, 2025, James Thornton, walk-in) shows the correct pattern\u2014Security Manager approval is explicitly documented (\"Walk-in approved by Security Manager K. Yamamoto\"). VIS-0319 lacks this.\n\n5. **Operational Risk:** A vendor with access to the server room for two hours without clear approval or oversight documentation could have accessed physical information assets (cabling, hardware serial numbers, configuration details visible on screens, etc.).\n\n**Severity:** **MEDIUM**\n\n**Rationale:**\n- Policy violations are clearly documented; compensating controls are absent.\n- However, the visit was **escorted** (per VIS-0319, escort_status = \"Escorted\"), which provides a mitigating control. Unauthorized solo access did not occur.\n- The Infrastructure Director (David Nakamura) was listed as the host employee, suggesting implicit organizational awareness, but this does not substitute for documented approval.\n- The visitor management system flagged this as a process anomaly (note field indicates awareness of the deviation).\n- This is a **design weakness** (process gap) rather than an **operating effectiveness failure** (control failure), as the escort compensating control functioned.\n\n**Recommendation:**\n- Implement mandatory Infrastructure Director pre-approval for all restricted-zone vendor visits, with documented approval stored in the visitor management system.\n- Require 24-hour pre-registration or real-time documented Security Manager approval before any visitor check-in, with system blocks preventing check-in without these elements.\n\n---\n\n## Observations (Non-Findings)\n\n### \u2713 Colocation Data Center Oversight (Well-Controlled)\n\n**POL-PS-025, Section 8.2 (Annual Audit)** \u2014 Prism conducted an independent annual physical security audit on June 10, 2024 (audit report: DC-AUD-2024-003). This audit:\n- Verified cabinet-specific locks and authorized access lists\n- Confirmed CCTV coverage of Prism cabinet rows\n- Validated environmental controls specific to Prism's equipment\n- Did not rely solely on the provider's SOC 2 report (correctly per policy)\n\n**Q4 2025 Status:** The next audit is due by June 10, 2025. As of December 31, 2025, the audit is **overdue**. This should be flagged as a **compliance oversight** but is outside the Q4 2025 observation period effectiveness assessment. **Action:** Prism should schedule the 2025 colocation audit immediately.\n\n---\n\n### \u2713 Quarterly Badge Access Review (Process Operating)\n\n**POL-PS-025, Section 4.6** \u2014 Prism's Q3 2025 quarterly badge access review (October 8, 2025, completed by Karen Yamamoto) demonstrates:\n- Comprehensive verification of all 12 badge authorizations (employees + contractors)\n- Documented review actions with completion status tracking\n- Detection of stale access (Tanya Morales, 86 days; Robert Klein, 67 days remote-first with justification)\n- Identification of required corrective actions (tickets FAC-2025-1142 for employee, FAC-2025-1143 for contractor)\n\n**Design:** Quarterly review process is well-designed and evidenced. **Operating Effectiveness:** The review identified two issues requiring remediation; both tickets opened and tracked to October 15 deadline. Process is functioning as intended.\n\n---\n\n### \u2713 Badge Access Log (Complete and Compliant)\n\n**Q4 2025 Badge Access Log (55 entries)** \u2014 Corporate office badge access is:\n- Fully logged with timestamps, badge IDs, employees, access points, and zones\n- All logged access corresponds to authorized badges from the quarterly review\n- No denied access entries (no unauthorized attempts)\n- Access patterns align with job functions (e.g., David Nakamura and Marcus Lee accessing Server Room with appropriate frequency; general office badges restricted to General Office)\n\n**Design & Operating Effectiveness:** Controls are operating as designed.\n\n---\n\n### \u2713 Visitor Management (Mostly Compliant)\n\n**Q4 2025 Visitor Sign-In Log (30 entries)** \u2014 Of 30 visitor entries reviewed:\n- **27 entries (90%)** fully compliant: pre-registered, ID verified, escorted, badge returned\n- **2 entries (7%)** walk-ins with documented Security Manager approval (VIS-0324) or brief visits (VIS-0329)\n- **1 entry (3%)** non-compliant (VIS-0319, detailed in Finding 2 above)\n\n**Restricted Zone Access:** Three vendors accessed Server Room (VIS-0302, VIS-0305, VIS-0325, VIS-0319, VIS-0315) \u2014 all escorted. VIS-0302, VIS-0305, and VIS-0325 show no documentation issues. VIS-0319 is the noted finding.\n\n---\n\n### \u2713 Environmental and Fire Suppression Controls\n\n**FM-200 Fire Suppression (Annual Test Report, October 3, 2025)** \u2014 System tested and certified operational per NFPA 2001/72. No findings relevant to physical access.\n\n---\n\n## Summary of Compliance Posture\n\n| Control Area | Status | Evidence |\n|--------------|--------|----------|\n| **Access Control System** | Compliant | Genetec system with badge readers; access logs complete |\n| **Employee Badge Management** | Compliant | Quarterly review functioning; active badges verified |\n| **Contractor Badge Deactivation** | **Non-Compliant** | 23-day delay in deactivation (Finding 1) |\n| **Visitor Pre-Registration & Approval** | **Partially Non-Compliant** | One instance lacking required approvals (Finding 2); 90% of visits otherwise compliant |\n| **Restricted Zone Controls** | Compliant | Server Room access properly logged; mostly escorted correctly |\n| **Colocation Oversight** | Compliant (with note) | Annual audit conducted; next audit now overdue (beyond Q4 observation period) |\n| **CCTV & Retention** | Compliant | 90-day retention; coverage verified in colocation and corporate office |\n\n---\n\n## Conclusion\n\n**Prism Analytics' CC6.4 control framework is substantially designed and mostly operating effectively.** The two findings represent process gaps rather than systemic control failures:\n\n1. **Finding 1 (Contractor Deactivation)** reveals a gap in the timeliness of the preventive control; however, the detective control (quarterly review) functioned and identified the issue within ~3 weeks of the observation period.\n\n2. **Finding 2 (Visitor Approval Documentation)** reveals a single instance of inadequate approval documentation; however, the escort compensating control was in place and the visitor management system flagged the anomaly.\n\nBoth findings should be remediated prior to issuance of the final SOC 2 Type II report to support an unqualified opinion on CC6.4."
+}

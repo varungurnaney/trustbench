@@ -1,0 +1,59 @@
+{
+  "task_id": "cc6.6-2-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:40:48.128829",
+  "score": {
+    "task_id": "cc6.6-2-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "FW-018",
+          "9300",
+          "0.0.0.0/0",
+          "Elasticsearch",
+          "outbound",
+          "data exfiltration"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "FW-019",
+          "webhook",
+          "0.0.0.0/0",
+          "partner",
+          "IP restriction",
+          "allowlist",
+          "inbound"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1384,
+    "output_tokens": 1770
+  },
+  "raw_response": "# CC6.6 Compliance Assessment Report\n## Logical Access Security Measures - System Boundary Protection\n\n---\n\n## FINDINGS\n\n### Finding 1: Overly Permissive Outbound Elasticsearch Access\n**Related Rules:** FW-018\n\n**Gap Description:**\nRule FW-018 permits outbound TCP 9300 to 0.0.0.0/0 (entire internet) for Elasticsearch cluster transport. This violates least privilege principles. Elasticsearch cluster communication should be restricted to:\n- Known cluster nodes only (specific IP ranges/security groups)\n- Internal network boundaries, not public internet\n\nThe 0.0.0.0/0 destination creates an unnecessary attack surface and could facilitate data exfiltration or SSRF-based attacks.\n\n**Severity:** HIGH\n\n---\n\n### Finding 2: Uncontrolled Outbound HTTPS to Internet (Multiple Rules)\n**Related Rules:** FW-008, FW-017, FW-021\n\n**Gap Description:**\nThree rules permit outbound HTTPS (TCP 443) to 0.0.0.0/0 without explicit destination controls:\n- FW-008: Third-party API calls (Stripe/Twilio)\n- FW-017: S3 exports\n- FW-021: Alert services (PagerDuty/Slack)\n\nWhile the descriptions indicate legitimate purposes, the actual firewall rules do not enforce these restrictions. Any service in these security groups could reach any HTTPS endpoint on the internet, creating risk of:\n- Data exfiltration to attacker-controlled servers\n- Lateral movement to external C2 infrastructure\n- Lack of auditability on actual destinations\n\n**Recommendation:** Implement egress filtering to specific FQDNs/IP ranges or use AWS security group chaining with explicit endpoints.\n\n**Severity:** HIGH\n\n---\n\n### Finding 3: Missing Network Segmentation - Prometheus Metrics Exposure\n**Related Rules:** FW-014\n\n**Gap Description:**\nRule FW-014 exposes Prometheus metrics (TCP 9090) across the entire production subnet range (10.0.0.0/16) without role-based restrictions. Prometheus endpoints typically expose:\n- System metrics that reveal infrastructure topology\n- Service versions and configurations\n- Potentially sensitive business metrics\n\nAccess should be restricted to:\n- Monitoring tier security group only\n- Specific monitoring/admin hosts\n- Authenticated access controls at application layer\n\n**Severity:** MEDIUM\n\n---\n\n### Finding 4: Excessive Bastion Host Privileges\n**Related Rules:** FW-013, FW-015\n\n**Gap Description:**\nThe bastion host (sg-prod-bastion) is permitted outbound SSH (TCP 22) to the entire production subnet range (10.0.0.0/16). This creates:\n- Excessive lateral movement potential if bastion is compromised\n- No service-level access controls (can SSH to any production host)\n- Violation of least privilege - should restrict SSH to specific application tier hosts only\n\nAdditionally, FW-015 grants bastion access to Grafana dashboards, concentrating admin access.\n\n**Recommendation:** Restrict FW-013 to specific security groups (sg-prod-app-tier, sg-prod-data-tier, etc.) rather than entire subnet range.\n\n**Severity:** HIGH\n\n---\n\n### Finding 5: Webhook Inbound Rule Lacks Rate Limiting & Validation Context\n**Related Rules:** FW-019, FW-020\n\n**Gap Description:**\nRule FW-019 accepts inbound HTTPS webhooks from 0.0.0.0/0 (any external source). While firewall-level IP restrictions may not be feasible for partner webhooks, the control lacks:\n- Documentation of webhook source validation mechanisms\n- Rate limiting or DDoS protection configuration\n- IP allowlist of known partner ranges (if applicable)\n- Evidence of WAF/API gateway controls\n\nThe firewall rule alone is insufficient for CC6.6 boundary protection without compensating controls.\n\n**Severity:** MEDIUM\n\n---\n\n### Finding 6: Missing Denial of Service Protections\n**Related Rules:** FW-001, FW-002, FW-019 (All internet-facing rules)\n\n**Gap Description:**\nSecurity groups alone do not provide DDoS/volumetric attack protection. No evidence provided of:\n- AWS Shield (Standard/Advanced) configuration\n- WAF rules on ALB or CloudFront\n- Rate limiting policies\n- Connection limits or throttling\n\nCC6.6 requires protection \"against threats from sources outside system boundaries\"\u2014this includes volumetric attacks from external sources.\n\n**Severity:** MEDIUM\n\n---\n\n### Finding 7: Analytics Security Group - Overly Broad Outbound Access\n**Related Rules:** FW-017, FW-018\n\n**Gap Description:**\nThe analytics security group permits:\n- Outbound HTTPS to 0.0.0.0/0 (FW-017) - S3 exports\n- Outbound TCP 9300 to 0.0.0.0/0 (FW-018) - Elasticsearch\n\nCombined, these rules allow analytics tier to reach any internet destination. For a data analytics service, this creates significant exfiltration risk. Should be restricted to:\n- Specific AWS S3 endpoint ranges\n- Internal Elasticsearch cluster only\n\n**Severity:** HIGH\n\n---\n\n### Finding 8: Lack of Egress Deny-All Default Policy\n**Related Rules:** All rules (implicit finding)\n\n**Gap Description:**\nThe provided rules show only explicit allows. No evidence of a default-deny outbound rule (implicit or explicit) that would catch unspecified traffic. Best practice requires:\n- Explicit deny-all default for outbound traffic\n- All outbound communication explicitly approved\n\nIf the default is permissive (allow-all), the explicit rules provide limited real protection.\n\n**Severity:** MEDIUM\n\n---\n\n### Finding 9: Missing Rule Change Management & Approval Documentation\n**Related Rules:** All rules\n\n**Gap Description:**\nThe data export shows rule modification dates, but provides no evidence of:\n- Change approval workflows (who authorized each rule)\n- Business justification documentation\n- Regular access reviews/recertification\n- Owner assignment for each rule\n- Quarterly firewall rule audits\n\nCC6.6 requires \"implements\" controls\u2014documentation of governance is required.\n\n**Severity:** MEDIUM\n\n---\n\n### Finding 10: No Evidence of Encrypted Administrative Access\n**Related Rules:** FW-005, FW-012, FW-013, FW-015 (SSH/administrative access)\n\n**Gap Description:**\nWhile SSH is restricted to bastion, there is no evidence of:\n- Encryption enforcement at application layer (SSH key rotation policies, etc.)\n- Multi-factor authentication for bastion access\n- Session logging/monitoring for administrative connections\n- IP allowlisting beyond VPN CIDR for bastion SSH (FW-012 allows entire 10.3.0.0/16)\n\nFW-012 should be restricted to specific VPN server IPs, not entire VPN subnet.\n\n**Severity:** MEDIUM\n\n---\n\n## SUMMARY\n\n| Severity | Count |\n|----------|-------|\n| **Critical** | 0 |\n| **High** | 4 |\n| **Medium** | 6 |\n| **Total** | 10 |\n\n**High-Severity Issues Requiring Immediate Remediation:**\n1. Elasticsearch outbound access to 0.0.0.0/0\n2. Uncontrolled outbound HTTPS (3 instances)\n3. Bastion host excessive privileges\n4. Analytics tier overly broad access\n\n**Recommendation:** Address all High-severity findings before attesting to CC6.6 compliance."
+}

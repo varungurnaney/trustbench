@@ -1,0 +1,70 @@
+{
+  "task_id": "a1.2-1-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:05:56.330512",
+  "score": {
+    "task_id": "a1.2-1-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.15,
+    "f1": 0.2608695652173913,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 20,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "RPO",
+          "RTO",
+          "recovery objective",
+          "missing",
+          "availability commitments"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "restore test",
+          "testing",
+          "recover",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "failure",
+          "escalation",
+          "alerting",
+          "missing",
+          "response"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 589,
+    "output_tokens": 1931
+  },
+  "raw_response": "## Overall Assessment\n\nThe policy partially addresses SOC 2 A1.2 backup requirements by defining backup frequency, encryption, retention, storage location, roles, and approval. However, it does **not adequately address recovery infrastructure and recovery plan procedures** needed to meet availability commitments and system requirements. An auditor would likely flag the policy as incomplete for A1.2 readiness because it focuses on backup creation, but provides limited detail on recovery, testing, monitoring, escalation, and alignment to recovery objectives.\n\n| # | Finding | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | No documented recovery procedures | Entire policy / missing recovery section | The policy describes how backups are created and stored, but does not define how data, systems, applications, or infrastructure are restored during an outage or data loss event. SOC 2 A1.2 expects recovery plan procedures, not just backup procedures. | High |\n| 2 | No defined RTO or RPO | Section 1 Purpose; Section 3 Backup Schedule | The policy does not specify Recovery Time Objectives or Recovery Point Objectives for systems, databases, or file storage. Without RTO/RPO, there is no way to determine whether backup and recovery processes meet availability commitments or system requirements. | High |\n| 3 | No evidence of backup restoration testing | Entire policy / missing testing section | The policy does not require periodic restore testing or disaster recovery exercises. Backups may exist, but without testing, the organization cannot demonstrate that backups are recoverable or that recovery procedures work as intended. | High |\n| 4 | No monitoring or alerting requirements for backup jobs | Section 3 Backup Schedule | The policy states that backups are performed but does not describe monitoring of backup success, failure alerts, exception handling, or review of backup logs. SOC 2 A1.2 includes maintaining and monitoring backup and recovery infrastructure. | Medium |\n| 5 | No escalation or remediation process for failed backups | Section 7 Roles and Responsibilities | Responsibilities are listed at a high level, but the policy does not define what happens when a backup fails, who is notified, required response timelines, or how issues are tracked to resolution. | Medium |\n| 6 | Recovery infrastructure is not described | Section 6 Backup Storage | The policy states that backups are stored in a separate AWS account, but it does not describe the recovery infrastructure needed to restore systems, such as standby environments, infrastructure-as-code, replacement compute resources, network configurations, DNS, IAM roles, or database restore procedures. | High |\n| 7 | Availability commitments are not referenced | Section 1 Purpose; Section 3 Backup Schedule; Section 5 Backup Retention | The policy does not map backup schedules, retention, or recovery capabilities to customer commitments, SLAs, internal availability targets, or system requirements. A1.2 requires backup and recovery processes to meet availability commitments. | High |\n| 8 | Scope may be incomplete | Section 2 Scope | The scope is limited to production databases, application servers, and file storage in the AWS us-east-1 environment. It does not clarify whether SaaS platforms, CI/CD systems, configuration repositories, secrets, IAM configurations, logs, monitoring systems, or non-production systems needed for recovery are covered. | Medium |\n| 9 | No disaster recovery or regional failure procedures | Section 3.2 File System Backups; Section 6 Backup Storage | The policy mentions S3 cross-region replication to us-west-2, but does not define recovery steps for a us-east-1 outage, regional failover, restoration of databases or application servers in another region, or dependencies required to operate after a regional failure. | High |\n| 10 | Backup integrity validation is not required | Section 3 Backup Schedule; Section 6 Backup Storage | The policy does not require validation that backups are complete, uncorrupted, and restorable. Encryption and storage alone do not demonstrate that backup data is usable for recovery. | Medium |\n| 11 | No immutable backup or ransomware protection requirements | Section 5 Backup Retention; Section 6 Backup Storage | The policy does not address backup immutability, object lock, deletion protection, versioning, or safeguards against malicious or accidental deletion of backups. Cross-account storage is helpful, but the control design is incomplete without explicit protection against tampering or deletion. | Medium |\n| 12 | Access control requirements are too limited | Section 6 Backup Storage; Section 7 Roles and Responsibilities | The policy states that cross-account access is restricted to the backup service role, but does not define administrative access controls, least privilege requirements, MFA, break-glass access, periodic access reviews, or logging of backup access. | Medium |\n| 13 | No logging or audit trail requirements | Section 3 Backup Schedule; Section 6 Backup Storage | The policy does not require logging of backup creation, modification, deletion, restore activity, or administrative access. Auditors would expect evidence that backup and recovery activities are traceable and monitored. | Medium |\n| 14 | No maintenance or change management process for backup infrastructure | Section 7 Roles and Responsibilities; Section 8 Policy Review | The policy assigns backup infrastructure maintenance to the Cloud Engineer, but does not define how changes to backup jobs, retention, KMS keys, backup accounts, or recovery infrastructure are reviewed, approved, tested, and documented. | Medium |\n| 15 | Monthly backup process is not fully defined | Section 5 Backup Retention | The retention table references monthly backups retained for 12 months, but Section 3 only defines daily full backups and S3 replication. The policy does not explain when monthly backups are created, which systems they apply to, or how they are managed. | Low |\n| 16 | No documented recovery approval or invocation criteria | Entire policy / missing recovery governance section | The policy does not define who can declare a disaster, approve recovery actions, initiate failover, or authorize restoration of production data. This is important for controlled recovery operations. | Medium |\n| 17 | Environmental protections are not addressed | Entire policy | SOC 2 A1.2 references environmental protections. Because Cirrus Labs uses AWS, physical and environmental protections may be inherited from AWS, but the policy does not state reliance on AWS controls or reference AWS shared responsibility, data center protections, or vendor assurance reviews. | Low |\n| 18 | Policy review is annual only, with no trigger-based review | Section 8 Policy Review | Annual review is defined, but the policy does not require review after major architecture changes, incidents, failed recovery tests, new availability commitments, or material changes to infrastructure. | Low |\n| 19 | No evidence requirements are defined | Entire policy | The policy does not specify what evidence must be retained to demonstrate compliance, such as backup job logs, restore test results, access reviews, alert tickets, or recovery exercise reports. This may create audit readiness gaps. | Low |\n| 20 | No dependency recovery planning | Entire policy | The policy does not address recovery of dependent services such as DNS, IAM, KMS keys, networking, secrets management, monitoring, third-party integrations, or CI/CD pipelines. These dependencies may be necessary to restore service availability. | Medium |\n\n## Summary of Key Auditor Concerns\n\nAn auditor would likely conclude that the policy establishes a basic backup framework, but does not fully satisfy A1.2 because it lacks:\n\n- Documented recovery procedures.\n- Defined RTOs and RPOs.\n- Periodic restore testing.\n- Backup monitoring and failure escalation.\n- Recovery infrastructure design.\n- Alignment to availability commitments.\n- Disaster recovery and regional outage procedures.\n- Evidence retention requirements.\n\nTo improve readiness, Cirrus Labs should supplement this policy with a formal **Backup and Recovery Standard** or **Disaster Recovery Plan** that includes recovery workflows, system-specific RTO/RPO requirements, testing cadence, monitoring, escalation procedures, and evidence requirements."
+}

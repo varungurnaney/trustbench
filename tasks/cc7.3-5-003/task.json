@@ -1,0 +1,117 @@
+{
+  "id": "cc7.3-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.3",
+  "control_description": "The entity responds to identified security incidents by executing a defined incident response program to understand, contain, remediate, and communicate security incidents, as appropriate.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/incident-response-policy.md",
+      "type": "policy",
+      "description": "Prism Data Platform incident response policy with annual testing requirement and advisory post-major-change review provision"
+    },
+    {
+      "path": "evidence/incident-log-q4-2025.csv",
+      "type": "log",
+      "description": "Q4 2025 incident register with 7 incidents including 4 directly tied to platform migration and multi-sector data incidents"
+    },
+    {
+      "path": "evidence/platform-migration-summary.md",
+      "type": "report",
+      "description": "Summary of Q3/Q4 2025 major platform migration from VM-based to Kubernetes-native architecture with timeline and security review status"
+    },
+    {
+      "path": "evidence/tabletop-exercise-results.md",
+      "type": "report",
+      "description": "March 2025 tabletop exercise results — conducted against pre-migration architecture with note that no post-migration exercise was performed"
+    },
+    {
+      "path": "evidence/customer-onboarding-timeline.md",
+      "type": "report",
+      "description": "Customer sector expansion timeline showing 2025 entry into healthcare (HIPAA) and retail (PCI DSS) markets, with IRP coverage assessment"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Prism Data Platform covering Q4 2025. Prism completed a major platform migration from VM-based to Kubernetes-native architecture during Q3-Q4 2025 and expanded into healthcare and retail customer sectors. Review all evidence and assess whether CC7.3 requirements for incident response are met. Exercise professional judgment on the adequacy of the IRP given the significant changes to the platform and business. Consider whether the annual testing frequency is sufficient given the scope of changes, and whether migration-related incidents indicate systemic issues.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Annual IRP tabletop exercise conducted against pre-migration architecture — no post-migration testing performed",
+      "description": "The March 2025 tabletop exercise was conducted using IRP v2.3 and the pre-migration VM-based architecture. Since March, the platform underwent a complete migration to Kubernetes (6 phases, June-December 2025). The exercise results document itself notes: 'The IRP has not been updated to reflect these changes, and no additional tabletop exercise has been conducted to validate the IRP against the new architecture.' Policy Section 7.1 requires only annual testing, and Section 7.3 makes post-major-change review 'advisory' with 'no mandatory action required.' However, 4 of 7 Q4 incidents (INC-2025-902, 904, 905, 906) had root causes directly tied to the platform migration. This is a judgment call: the policy technically requires only annual testing, but the scale of architectural change (monolithic VMs -> 8 K8s clusters, new service mesh, new monitoring, new CI/CD pipeline) effectively makes the March tabletop irrelevant to current operations. Should the CISO have exercised the Section 7.3 advisory authority to mandate an additional test?",
+      "evidence_sources": ["evidence/tabletop-exercise-results.md", "evidence/incident-response-policy.md", "evidence/platform-migration-summary.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "The tabletop was conducted in March against the old architecture. The platform migration changed everything: compute (VMs -> K8s), networking (VPN -> service mesh), monitoring (Datadog -> Grafana), CI/CD pipeline, secrets management. The IRP was not updated. 4 of 7 Q4 incidents were migration-related. Policy Section 7.3 makes post-change review advisory — so technically the organization is compliant with its own policy. But the auditor must judge: is annual testing sufficient when the entire platform changed? The 4 migration-related incidents provide evidence that the IR team was operating without a validated plan for the new architecture.",
+      "detection_criteria": {
+        "required_keywords": ["March 2025 tabletop", "pre-migration architecture", "no post-migration testing", "Section 7.3 advisory", "4 migration-related incidents", "Kubernetes", "annual testing insufficient"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "IRP v2.3 does not address healthcare (HIPAA) or retail (PCI DSS) regulatory requirements despite serving these sectors",
+      "description": "The IRP was written in March 2025 when Prism served only financial services customers. Healthcare customers were onboarded starting April 2025 and retail customers starting August 2025. The customer onboarding timeline confirms: the IRP references 'financial data' and 'trading analytics' throughout, mentions SEC/FINRA notification but not HIPAA or PCI DSS, has no multi-sector incident scenarios, and no cross-sector data isolation verification procedure. INC-2025-904 demonstrated exactly this gap: healthcare patient data was routed to a retail customer's dashboard, requiring HIPAA notification. The IRP does not include HIPAA breach notification procedures (60-day timeline to HHS, individual notification requirements, risk assessment methodology). Policy Section 5.1 mentions 'sector-specific: HIPAA, PCI' notifications as applicable, but this is a one-line reference with no procedural detail on how to handle multi-sector incidents. The judgment call: is the one-line mention in Section 5.1 sufficient, or does the IRP need detailed HIPAA/PCI notification procedures now that these sectors represent active customers with real incidents?",
+      "evidence_sources": ["evidence/incident-response-policy.md", "evidence/customer-onboarding-timeline.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "The IRP mentions HIPAA/PCI in one line (Section 5.1) but has no detailed procedures. Healthcare customers onboarded April-July 2025. Retail customers August-October 2025. INC-2025-904 was a cross-sector data leak (healthcare -> retail) requiring HIPAA notification. INC-2025-901 also affected healthcare customers. The customer onboarding timeline explicitly notes the IRP's gaps. The auditor must weigh: is a one-line reference to 'sector-specific notifications as applicable' adequate when the company has already experienced multi-sector incidents?",
+      "detection_criteria": {
+        "required_keywords": ["IRP v2.3", "HIPAA", "PCI DSS", "no procedural detail", "healthcare customers", "retail customers", "INC-2025-904", "cross-sector data leak", "one-line reference"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "4 of 7 Q4 incidents were directly caused by platform migration — pattern indicates systemic security gap in migration process",
+      "description": "The platform migration summary identifies 4 incidents with root causes tied to the migration: INC-2025-902 (stale SSH key from pre-migration), INC-2025-904 (tenant routing error in new K8s pipeline), INC-2025-905 (compromised container image in new K8s ingestion pipeline), INC-2025-906 (default Grafana credentials in new observability stack). The security review status shows that Grafana/Prometheus security review and Flink cluster security review were 'Not Performed,' and no comprehensive post-migration security assessment was conducted. The judgment call: did the migration process include adequate security controls? Individual component reviews were done (K8s config, container pipeline, Istio), but no holistic post-migration assessment was performed. The 4 migration-related incidents — including 1 SEV-1 (ransomware) and 1 SEV-2 (cross-sector data leak) — suggest the security review was incomplete.",
+      "evidence_sources": ["evidence/platform-migration-summary.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "4 of 7 incidents tied to migration = 57% of Q4 incidents caused by architectural changes. Grafana review was not performed (leading to INC-2025-906). Flink review not performed. No comprehensive post-migration assessment. Some reviews were done (K8s, Istio, container pipeline), but the gaps led to real incidents. From a CC7.3 perspective, the incident response program should include provisions for identifying and addressing systemic sources of incidents — the migration is a clear pattern that was not addressed holistically.",
+      "detection_criteria": {
+        "required_keywords": ["4 of 7 incidents", "migration-related", "Grafana security review not performed", "Flink review not performed", "no comprehensive post-migration assessment", "systemic pattern", "INC-2025-902", "INC-2025-904", "INC-2025-905", "INC-2025-906"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-905 (SEV-1 ransomware) resolution exceeded 24-hour target at 38.25 hours with only 3 of 8 action items complete",
+      "description": "INC-2025-905 (ransomware on data ingestion gateway) was resolved in 38.25 hours, exceeding the 24-hour SEV-1 target by 59%. The ingestion gateway processes data for all customer sectors, making this incident affect financial, healthcare, and retail customers simultaneously. Only 3 of 8 action items are complete as of end of Q4. The root cause (compromised container image in the new K8s ingestion pipeline, deployed October 2025) is directly migration-related. No exception was filed for the resolution SLA miss. The judgment element: the data ingestion gateway is the most critical component in the architecture, and ransomware on it affected all sectors — yet remediation is lagging with 5 action items incomplete.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "SEV-1 ransomware with 38.25-hour resolution vs. 24-hour target. Affects all customer sectors. Root cause is migration-related (new K8s pipeline). 3 of 8 action items complete — 5 still outstanding. No exception filed. Policy Section 4.3 requires 14-day escalation for overdue items. This incident is 4 weeks old with 5 items incomplete.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-905", "38.25 hours", "24-hour target", "ransomware", "ingestion gateway", "3 of 8 action items", "all sectors", "no exception filed"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-904 cross-sector data leak — healthcare patient data routed to retail customer for 23 minutes",
+      "description": "INC-2025-904 is the most concerning incident from a CC7.3 perspective: healthcare patient data (described as 'de-identified but with re-identification risk') was visible in a retail customer's analytics dashboard for 23 minutes. The root cause was a tenant routing configuration error in the new Kubernetes-based pipeline orchestrator deployed September 2025. HIPAA notification was filed. Only 3 of 6 action items are complete. The incident demonstrates that the new K8s architecture lacks adequate tenant isolation controls for multi-sector data processing. The judgment call: is this a one-time configuration error, or does it indicate a fundamental design flaw in how the new platform handles multi-sector tenant isolation? The auditor should assess whether the remaining 3 action items address the systemic tenant isolation gap.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/platform-migration-summary.md"],
+      "expected_reasoning": "Cross-sector data leak is the highest-risk incident type for a multi-sector platform. Healthcare data in a retail dashboard for 23 minutes = HIPAA breach. Root cause is the new K8s pipeline orchestrator — a migration-related issue. 3 of 6 action items complete. The auditor must determine if the remaining items address the fundamental tenant isolation design or just the specific configuration error. If only the specific error is addressed, the systemic risk remains.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-904", "cross-sector data leak", "healthcare patient data", "retail customer dashboard", "23 minutes", "tenant routing", "HIPAA notification", "Kubernetes pipeline orchestrator"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "55 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 5,
+    "tags": ["incident_response", "judgment", "annual_testing_frequency", "platform_migration", "multi_sector", "HIPAA", "PCI_DSS", "cross_sector_data_leak", "Kubernetes", "architecture_change"]
+  }
+}

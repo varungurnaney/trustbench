@@ -1,0 +1,62 @@
+{
+  "task_id": "cc7.1m-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T19:44:24.225762",
+  "score": {
+    "task_id": "cc7.1m-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.09090909090909091,
+    "f1": 0.16666666666666669,
+    "score": 0.16666666666666669,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "core-switch-01",
+          "EXC-2025-M-040",
+          "retroactive",
+          "4-hour",
+          "Section 5.2"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "NetOps Solutions",
+          "Approved Vendor List",
+          "not on",
+          "VML-407",
+          "VML-410",
+          "lb-prod-01",
+          "lb-prod-02",
+          "Section 6.1",
+          "Section 6.3",
+          "F5",
+          "unauthorized"
+        ],
+        "total_keywords": 13,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5612,
+    "output_tokens": 3185
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: CC7.1 Maintenance Controls\n## Observation Period: Q4 2025 (October 1 - December 31, 2025)\n\n---\n\n## Executive Summary\n\nIronclad Services demonstrates generally strong maintenance practices during Q4 2025, with disciplined use of maintenance windows, consistent change management, and proper documentation of emergency events. However, a **significant control failure** was identified regarding unauthorized vendor access by NetOps Solutions, which occurred on two separate occasions and was not detected, escalated, or remediated through the policy-defined channels.\n\n---\n\n## Findings\n\n### Finding 1: Unauthorized Vendor Performed Maintenance on Production Load Balancers (Recurring)\n\n**Title:** NetOps Solutions performed production maintenance without being on the Approved Vendor List\n\n**Document Reference:** \n- Vendor Maintenance Log entries VML-407 (2025-12-03) and VML-410 (2025-12-17)\n- System Maintenance Policy Sections 6.1 (Approved Vendor List) and 6.3 (Unauthorized Vendor Access)\n\n**Gap Description:**\nNetOps Solutions performed maintenance on production load balancers (lb-prod-01, lb-prod-02) \u2014 including F5 BIG-IP firmware upgrades, SSL offload reconfiguration, health monitor changes, and iRule updates \u2014 on two occasions during Q4 2025. NetOps Solutions does **not appear on the Approved Vendor List** (Section 6.1) and **has no maintenance agreement on file**. \n\nMultiple control failures are evident:\n1. **Direct policy violation** of Section 6.1, which states \"Only vendors on the Approved Vendor List may perform maintenance.\"\n2. **No evidence of escalation** per Section 6.3, which requires unauthorized vendor access to be reported to the IT Director within 24 hours. The first occurrence (Dec 3) was not reported, allowing a second occurrence (Dec 17) to happen 14 days later.\n3. **No exception register entry** exists for either NetOps Solutions engagement, indicating the activity bypassed the formal exception/approval process documented in EXC-2025-M-040 through EXC-2025-M-042.\n4. **Procurement control failure** \u2014 a vendor was granted CyberArk PAM access and change ticket approvals (CHG-2025-4058, CHG-2025-4062) without a vendor agreement.\n5. **Quarterly Approved Vendor List review** (Section 6.1) did not detect or remediate the gap created when the internal F5 engineer departed.\n\n**Severity:** **Critical**\n\nThis finding represents a systemic breakdown across vendor management, change approval, and exception escalation. Production internet-facing components (load balancers handling SSL termination) were modified by an unvetted third party with no contractual obligations regarding confidentiality, security, or liability.\n\n---\n\n### Finding 2: Recurring Unauthorized Access Not Detected by Compensating Controls\n\n**Title:** Change management approvals failed to flag non-approved vendor\n\n**Document Reference:**\n- Change tickets CHG-2025-4058 and CHG-2025-4062\n- Policy Section 5.1 (Change Tickets) and 6.1 (Approved Vendor List)\n\n**Gap Description:**\nBoth NetOps Solutions engagements were processed through the standard ServiceNow change management workflow and approved without anyone identifying that the vendor was not on the Approved Vendor List. This indicates that the change approval process does not include a verification step against the Approved Vendor List, allowing policy violations to pass through controls undetected. The fact that the same unauthorized vendor was used twice \u2014 with the second event two weeks after the first \u2014 confirms the absence of a feedback loop between vendor maintenance logging and approval workflows.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Certificate Monitoring Gap Led to Unplanned Emergency Maintenance\n\n**Title:** Silenced monitoring alert resulted in expired production SSL certificate\n\n**Document Reference:**\n- Exception register entry EXC-2025-M-042 (2025-12-18)\n\n**Gap Description:**\nThe SSL certificate for api.ironclad.io expired unexpectedly because a monitoring alert was silenced during an earlier false alarm and never re-enabled. While the emergency response (verbal authorization, retroactive change ticket within 4 hours, post-incident review) properly followed Section 5.2, the underlying cause reflects a **monitoring hygiene weakness** that is preventable. There is no evidence that a procedural control (e.g., automatic alert un-suppression, secondary monitoring, or alert silencing approval workflow) has been implemented despite the recommendation in the PIR notes.\n\n**Severity:** **Medium**\n\nThis is a quality-of-operations finding. The emergency was handled correctly, but it should not have been an emergency.\n\n---\n\n### Finding 4: Approved Vendor List Quarterly Review Effectiveness\n\n**Title:** Approved Vendor List does not include all vendors required to support production systems\n\n**Document Reference:**\n- Approved Vendor List, Policy Section 6.1\n- Vendor Maintenance Log VML-407, VML-410\n\n**Gap Description:**\nThe Approved Vendor List \"as of January 2025\" does not include any vendor for F5 BIG-IP load balancer maintenance. When the internal F5 engineer departed, no approved vendor existed to fulfill that function, which created the conditions enabling the NetOps Solutions engagement. The quarterly review process described in Section 6.1 either did not occur in October 2025 or did not identify this coverage gap. There is also no listed vendor for Palo Alto Networks, despite a PAN-OS upgrade being performed by Palo Alto Networks technician Oscar Rivera (VML-403) \u2014 suggesting the Approved Vendor List may be incomplete or out of date relative to actual production technology.\n\n**Severity:** **High**\n\n---\n\n### Finding 5: On-Site Vendor Supervision Documentation Inconsistencies\n\n**Title:** Supervising employee field present for on-site work but not consistently captured\n\n**Document Reference:**\n- Vendor Maintenance Log (all entries)\n- Policy Section 6.2 (Vendor Access)\n\n**Gap Description:**\nSection 6.2 requires that \"On-site vendor work [be] supervised by Ironclad employee.\" Review of Q4 2025 entries shows that on-site work consistently lists a supervising employee (Maria Chen, James Park, Kevin Ortiz). However, the supervision requirement is procedurally captured but there is no evidence of supervision checklists, sign-off, or evidence that the supervising employee remained present throughout the maintenance window. This is an evidence completeness gap rather than a control failure.\n\n**Severity:** **Low**\n\n---\n\n## Positive Observations\n\nThe following control areas operated effectively during Q4 2025 and should be noted for the auditor's record:\n\n1. **Emergency maintenance procedure (EXC-2025-M-040, core-switch-01 failure)** was executed correctly: verbal CISO authorization, retroactive change ticket within the 4-hour requirement (created at 11:15 UTC, 2h 30m after authorization), and PIR completed within 72 hours. This demonstrates Section 5.2 operates as designed.\n\n2. **Vendor access extension (EXC-2025-M-041, Oracle RAC patching)** was justified, properly documented, authorized in writing by the IT Director, and supported by CyberArk PAM session recording.\n\n3. **Maintenance window adherence** is strong \u2014 18 of 19 maintenance events occurred within designated MW-PROD, MW-NET, or MW-CORP windows; the sole exception was the appropriately handled emergency.\n\n4. **CyberArk Vendor PAM with session recording** was consistently used for remote vendor sessions (REC-2025-VPN-0201, 0205, 0208, 0212, 0218, 0225), satisfying Section 6.2 access controls \u2014 though notably, this control allowed unauthorized vendors to connect, indicating PAM access provisioning is not gated by Approved Vendor List membership.\n\n5. **Patching cadence** appears to meet Section 4.1 SLAs based on monthly OS patching cycles in October, November, and December.\n\n---\n\n## Recommendation Summary\n\n| Priority | Recommendation |\n|---|---|\n| Immediate | Suspend NetOps Solutions access. Conduct retroactive risk assessment of changes made to lb-prod-01/02. Execute vendor agreement or replace with approved vendor. |\n| Immediate | Add Approved Vendor List validation as a mandatory checkpoint in ServiceNow change approval workflow. |\n| 30 days | Reconcile Approved Vendor List against all production technology dependencies; expand list to include F5 and Palo Alto coverage. |\n| 30 days | Implement procedural controls for monitoring alert silencing (time-bound suppressions, approval workflow). |\n| 60 days | Integrate CyberArk PAM provisioning with Approved Vendor List as authoritative source. |\n\n**Overall Control Conclusion:** CC7.1 is **partially effective** for the Q4 2025 observation period. The unauthorized vendor finding (NetOps Solutions) is material and would likely result in an exception in a formal SOC 2 Type II report unless management can demonstrate timely remediation and a corrective action plan."
+}

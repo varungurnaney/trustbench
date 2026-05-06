@@ -1,0 +1,58 @@
+{
+  "task_id": "cc7.1m-4-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:30:43.316452",
+  "score": {
+    "task_id": "cc7.1m-4-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.1111111111111111,
+    "f1": 0.19999999999999998,
+    "score": 0.19999999999999998,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "core-switch-01",
+          "retroactive",
+          "Section 5.2"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "NetOps Solutions",
+          "Approved Vendor List",
+          "not on",
+          "VML-407",
+          "VML-410",
+          "Section 6.1",
+          "Section 6.3",
+          "F5",
+          "unauthorized"
+        ],
+        "total_keywords": 13,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3561,
+    "output_tokens": 1349
+  },
+  "raw_response": "Below are the findings from your SOC 2 readiness assessment for Ironclad Services, focused on CC7.1 for Q4 2025:\n\n---\n\n### 1. **Vendor Maintenance Performed by Unauthorized Vendor**\n\n- **Section:** Maintenance Policy Section 6.1 & Vendor Maintenance Log (VML-407, VML-410)\n- **Why it\u2019s a gap:** Policy Section 6.1 explicitly states that only vendors on the Approved Vendor List (AVL) may perform maintenance. NetOps Solutions performed maintenance on F5 BIG-IP load balancers (see VML-407 & VML-410), but is not on the AVL and has no maintenance agreement on file. There are two logged instances of this violation during the review period.  \n- **Severity:** **High**  \n  *Direct violation of policy; may expose systems to unvetted third parties and creates potential compliance and security risk.*\n\n---\n\n### 2. **Failure to Report Unauthorized Vendor Activity**\n\n- **Section:** Maintenance Policy Section 6.3 & Vendor Maintenance Log (VML-407, VML-410)\n- **Why it\u2019s a gap:** Policy Section 6.3 requires that unauthorized vendor maintenance must be reported to the IT Director within 24 hours. There is no evidence in the exception register or maintenance notes that this activity was self-reported or remediated as required by the policy.\n- **Severity:** **Medium**  \n  *Failure to follow up on policy violation impairs oversight, corrective action, and risk management.*\n\n---\n\n### 3. **Emergency Maintenance: Proper Authorization and Documentation**\n\n- **Section:** Emergency Maintenance (Exception Register, Maintenance Window Schedule, Maintenance Policy Section 5.2)\n- **Why it\u2019s a Strength:** The emergency replacement of core-switch-01 on Nov 13, 2025, followed all required steps: verbal CISO authorization, retroactive change ticket within 4 hours, post-incident review within 72 hours, and documentation of root cause and recommendations. The vendor utilized (Cisco Systems) was approved per Section 6.1.\n- **Severity:** **N/A**  \n  *No gap observed.*\n\n---\n\n### 4. **Maintenance Activities Tracked and Linked to Change Tickets**\n\n- **Section:** Change Management (Maintenance Window Schedule, Change Tickets, Maintenance Policy Section 5.1)\n- **Why it\u2019s a Strength:** All standard and emergency maintenance (other than emergency exceptions) during maintenance windows had corresponding change tickets, following risk and rollback planning requirements. Evidence shows consistent usage of ServiceNow change management.\n- **Severity:** **N/A**  \n  *No gap observed.*\n\n---\n\n### 5. **Patch and Maintenance SLAs Clearly Defined and Followed**\n\n- **Section:** Maintenance Policy Section 4\n- **Why it\u2019s a Strength:** Patch SLAs are defined. The schedule and logs indicate timely patching and regular maintenance occur as required.\n- **Severity:** **N/A**  \n  *No gap observed.*\n\n---\n\n### 6. **Remote Vendor Access Controls and Session Recording Implemented**\n\n- **Section:** Maintenance Policy Section 6.2, Vendor Maintenance Log\n- **Why it\u2019s a Strength:** All remote vendor work was performed via CyberArk Vendor PAM with session recording as required by policy. No gaps observed for approved vendors.\n- **Severity:** **N/A**  \n  *No gap observed.*\n\n---\n\n### 7. **Third-Party Risk Management Gap: Ad Hoc Vendor Engagement**\n\n- **Section:** Vendor Maintenance Log (VML-407, VML-410) and Policy Section 6.1\n- **Why it\u2019s a gap:** Onboarding of NetOps Solutions as a vendor was not handled through Procurement or risk review processes, indicating a breakdown in third-party onboarding and risk review. Even though technical controls (PAM, session recording) were in place, vendor vetting, contracting, and review were bypassed.\n- **Severity:** **Medium**  \n  *Introduces vendor risk that is not subject to contractual, security, or compliance controls.*\n\n---\n\n### 8. **Exception Register Usage and Emergency Process Adherence**\n\n- **Section:** Exception Register & Maintenance Policy (Emergency Changes, Vendor Access Extension)\n- **Why it\u2019s a Strength:** Exceptions such as extended vendor access and certificate renewals were reviewed, justified, and appropriately authorized, with retroactive change tickets and post-incident reviews.\n- **Severity:** **N/A**  \n  *No gap observed.*\n\n---\n\n## Summary Table\n\n| # | Title                                                      | Section(s)                                | Gap/Why                                             | Severity |\n|---|------------------------------------------------------------|-------------------------------------------|-----------------------------------------------------|----------|\n| 1 | Vendor Maintenance Performed by Unauthorized Vendor         | Policy 6.1, Vendor Maintenance Log        | Non-AVL vendor, unvetted, access F5 load balancers  | High     |\n| 2 | Failure to Report Unauthorized Vendor Activity              | Policy 6.3, Exception Register, Log       | Not escalated or remediated                        | Medium   |\n| 3 | Emergency Maintenance: Proper Authorization and Documentation | Policy 5.2, Exception Register, Log   | All steps followed (Positive observation)           | N/A      |\n| 4 | Maintenance Activities Tracked and Linked to Change Tickets | Policy 5.1, Maintenance Window Log        | All tracked/linked (Positive observation)           | N/A      |\n| 5 | Patch and Maintenance SLAs Clearly Defined and Followed     | Policy 4, Maintenance Window Log          | SLAs met (Positive observation)                     | N/A      |\n| 6 | Remote Vendor Access Controls and Session Recording         | Policy 6.2, Vendor Maintenance Log        | CyberArk PAM utilized (Positive observation)        | N/A      |\n| 7 | Third-Party Risk Mgmt Gap: Ad Hoc Vendor Engagement        | Policy 6.1, Vendor Maintenance Log        | New vendor not risk-reviewed/onboarded              | Medium   |\n| 8 | Exception Register Usage and Emergency Process Adherence    | Exception Register, Policy 5, Log         | All items documented and reviewed (Positive)        | N/A      |\n\n---\n\n**Key Recommendations:**  \n- Immediately remediate and report unauthorized vendor maintenance. Initiate risk review and vendor onboarding for NetOps Solutions if their services are to continue.  \n- Review and reinforce third-party onboarding and risk processes with network and IT teams.  \n- Ensure all deviations from approved vendor procedures are logged, reported, and formally approved per policy.\n\n---\n\n*Prepared by: SOC 2 Auditor \u2014 CC7.1 Review (Q4 2025)*"
+}

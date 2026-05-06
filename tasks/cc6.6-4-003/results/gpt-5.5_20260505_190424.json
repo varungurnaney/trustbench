@@ -1,0 +1,88 @@
+{
+  "task_id": "cc6.6-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T19:04:24.660124",
+  "score": {
+    "task_id": "cc6.6-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "Cloud Armor"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-data-export-lb",
+          "external",
+          "no Cloud Armor",
+          "Section 3.1",
+          "signed URLs",
+          "WAF",
+          "customer data"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-webhook-waf",
+          "XSS",
+          "LFI",
+          "RFI",
+          "rate limiting",
+          "adaptive protection",
+          "disabled"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-mgmt-vpc",
+          "Cloud IDS",
+          "not deployed",
+          "peering",
+          "production",
+          "CI/CD",
+          "management VPC"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2460,
+    "output_tokens": 1767
+  },
+  "raw_response": "## Overall Assessment\n\n**CC6.6 is not fully met for Q4 2025 readiness.** Vertex Data has documented perimeter security requirements and has Cloud Armor and Cloud IDS coverage for key production frontend/API environments. However, the evidence shows material gaps in external endpoint protection and IDS coverage for a peered management VPC that could affect production boundary security.\n\n---\n\n## Findings\n\n### 1. External Data Export Load Balancer Has No Cloud Armor Protection\n\n**Document section:**  \n- *Cloud Armor WAF policy configurations* \u2014 `load_balancers_without_cloud_armor`  \n- *Perimeter Security and Boundary Protection Policy*, Section 3.1 \u2014 \u201cAll public-facing endpoints must be served through Google Cloud Load Balancer with Cloud Armor security policies\u201d\n\n**Why it\u2019s a gap:**  \nThe `vtx-prod-data-export-lb` is explicitly listed as an **external-facing** load balancer serving customer bulk data exports, but it has **no Cloud Armor policy associated**. This conflicts with the policy requirement that all public-facing endpoints use Cloud Armor with OWASP rules, DDoS protection, geographic restrictions, and custom rate limiting.\n\nThe endpoint relies on signed URLs with a 1-hour TTL, but signed URLs do not provide equivalent protection against external threats such as:\n- Automated abuse or scraping\n- DDoS or volumetric request spikes\n- OWASP-class web attacks\n- Rate-limit bypass attempts\n- Unauthorized geographic access, if applicable\n\nBecause this endpoint serves bulk customer data, the exposure is especially significant.\n\n**Severity:** High\n\n---\n\n### 2. Webhook WAF Policy Is Incomplete Compared to Policy Requirements\n\n**Document section:**  \n- *Cloud Armor WAF policy configurations* \u2014 `vtx-prod-webhook-waf`  \n- *Perimeter Security and Boundary Protection Policy*, Section 3.1 \u2014 WAF requirements\n\n**Why it\u2019s a gap:**  \nThe webhook WAF policy has only one OWASP rule enabled: SQL Injection. It does **not** include the broader OWASP CRS protections present on the frontend and API policies, such as:\n- XSS\n- LFI\n- RFI\n\nAdditionally, Adaptive Protection is disabled and there is no rate limiting rule configured for the webhook endpoint.\n\nThis does not align with the policy requirement for public-facing endpoints to have:\n- OWASP ModSecurity Core Rule Set protections\n- DDoS protection via Cloud Armor Adaptive Protection\n- Custom rate limiting rules\n\nWebhook endpoints are often exposed to internet-originating traffic and can be targeted for replay, abuse, malformed payload attacks, and denial-of-service activity. The current configuration provides only partial boundary protection.\n\n**Severity:** Medium\n\n---\n\n### 3. Geographic Restriction Requirements Are Not Evidenced in Cloud Armor Policies\n\n**Document section:**  \n- *Perimeter Security and Boundary Protection Policy*, Section 3.1 \u2014 \u201cGeographic restrictions per data residency requirements\u201d  \n- *Cloud Armor WAF policy configurations* \u2014 all listed Cloud Armor policies\n\n**Why it\u2019s a gap:**  \nThe perimeter security policy requires geographic restrictions per data residency requirements. However, the Cloud Armor configurations for the frontend, API, and webhook policies do not show any geo-based allow or deny rules.\n\nThe absence of geo-restriction rules means there is no evidence that data residency-based access restrictions are enforced at the boundary layer. If certain production services are required to restrict access by geography, this control is not demonstrably implemented.\n\n**Severity:** Medium\n\n---\n\n### 4. Cloud IDS Not Deployed in Management VPC Peered to Production\n\n**Document section:**  \n- *Cloud IDS deployment status* \u2014 `vtx-mgmt-vpc`  \n- *Perimeter Security and Boundary Protection Policy*, Section 4.1 \u2014 \u201cCloud IDS must be deployed on all production VPC networks\u201d\n\n**Why it\u2019s a gap:**  \nCloud IDS is not deployed in `vtx-mgmt-vpc`. The notes state that this VPC contains CI/CD runners and monitoring infrastructure and has peering to production through `vtx-shared-vpc`.\n\nAlthough the management VPC may not be labeled as a production application VPC, it has connectivity to production and contains infrastructure that can materially affect production security. CI/CD runners and monitoring systems are high-value targets because compromise could enable:\n- Lateral movement into production\n- Deployment pipeline compromise\n- Credential theft\n- Abuse of monitoring or administrative access paths\n\nThe lack of IDS coverage creates a blind spot for detecting threats crossing or originating from the management network boundary.\n\n**Severity:** High\n\n---\n\n### 5. Egress Control Implementation Not Evidenced\n\n**Document section:**  \n- *Perimeter Security and Boundary Protection Policy*, Section 5 \u2014 Egress Controls\n\n**Why it\u2019s a gap:**  \nThe policy states that all production egress must route through Cloud NAT with logging enabled, and that only approved external destinations are permitted through firewall rules with default-deny egress. However, the evidence provided does not include supporting configurations or logs showing:\n- Cloud NAT deployment and logging status\n- Egress firewall rules\n- Default-deny egress enforcement\n- Approved destination allowlists\n- Evidence of production egress routing through controlled NAT paths\n\nBecause CC6.6 includes protection against external threats and unauthorized boundary communications, egress controls are relevant to limiting exfiltration and command-and-control traffic. The policy exists, but operating evidence was not provided to confirm implementation.\n\n**Severity:** Medium\n\n---\n\n## Conclusion\n\nVertex Data has implemented several important boundary protection measures, including Cloud Armor on major production frontend/API load balancers and Cloud IDS on production VPCs in us-central1 and europe-west1. However, CC6.6 is **not fully satisfied** based on the evidence reviewed due to:\n\n- An external customer data export endpoint with no Cloud Armor protection\n- Incomplete WAF protections for the webhook endpoint\n- Missing evidence of required geo-restrictions\n- No IDS coverage for a management VPC with production connectivity\n- Lack of implementation evidence for egress controls\n\nThese gaps should be remediated or formally risk-accepted before concluding that CC6.6 is operating effectively."
+}

@@ -1,0 +1,88 @@
+{
+  "task_id": "cc6.1-1-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T18:24:50.614240",
+  "score": {
+    "task_id": "cc6.1-1-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.36363636363636365,
+    "f1": 0.5333333333333333,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely",
+          "SLA",
+          "timeframe",
+          "hours",
+          "immediate",
+          "revocation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "production",
+          "MFA",
+          "multi-factor",
+          "database",
+          "server",
+          "coverage",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "evidence",
+          "format"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "role change",
+          "manager",
+          "notify",
+          "stale",
+          "accumulation",
+          "creep",
+          "previous"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1019,
+    "output_tokens": 2742
+  },
+  "raw_response": "# SOC 2 CC6.1 Readiness Assessment\n## NovaTech Solutions \u2014 Access Control Policy (POL-IAM-001)\n\n---\n\n### Assessment Summary\n\nThe policy demonstrates a reasonable foundational framework for logical access control. However, several gaps exist that would prevent a clean SOC 2 opinion under CC6.1 without remediation or supplemental evidence. Findings are detailed below.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: MFA Scope Is Insufficiently Broad\n\n| Field | Detail |\n|---|---|\n| **Section** | 4.2 \u2014 Multi-Factor Authentication |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap:**\nMFA is only required for VPN access, AWS console access, and email from non-corporate devices. This leaves significant attack surface unaddressed. Notably absent from MFA requirements:\n\n- Internal web applications and SaaS tools (e.g., GitHub, Jira, Salesforce)\n- Privileged/administrator account logins generally\n- Remote desktop or jump server access\n- Any access to systems containing sensitive or regulated data\n\nCC6.1 requires that the entity implement controls to prevent unauthorized access to protected information assets. Limiting MFA to three narrow scenarios is inconsistent with that objective, particularly given the breadth of systems in scope (Section 2). An auditor would expect MFA to be required for **all remote access** and **all privileged access** at minimum, with strong consideration for all access to production systems.\n\n---\n\n### Finding 2: Termination Process Lacks Defined SLA and Is Notification-Dependent\n\n| Field | Detail |\n|---|---|\n| **Section** | 6.1 \u2014 Termination |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap:**\nThe termination procedure contains two material weaknesses:\n\n1. **No defined timeframe.** The policy states access \"should be removed in a timely manner,\" which is not a measurable or enforceable standard. CC6.1 requires that logical access be revoked appropriately; without a defined SLA (e.g., immediate upon termination, or within 4 hours), the control cannot be tested and may not operate effectively.\n\n2. **Dependency on informal notification.** HR notifies IT via *email*, which creates a manual, unmonitored hand-off with no confirmation mechanism or escalation path. If the email is missed or delayed, terminated users could retain access indefinitely. A formal, automated, or system-integrated workflow (e.g., HRIS-to-IAM integration or ServiceNow workflow) would be expected.\n\nContrast this with Section 5.2, which gives a 5-business-day SLA for access revocation found during quarterly reviews \u2014 the termination process, which carries greater urgency, has *no* equivalent standard.\n\n---\n\n### Finding 3: No Encryption Requirements for Data in Transit or at Rest\n\n| Field | Detail |\n|---|---|\n| **Section** | Policy-wide \u2014 Not addressed |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap:**\nCC6.1 explicitly encompasses protections over *protected information assets*, which includes controls such as encryption to prevent unauthorized access or exposure. The policy contains no requirements for:\n\n- Encryption of data at rest (databases, file storage, backups)\n- Encryption of data in transit (TLS requirements, prohibited protocols)\n- Key management practices\n\nThe absence of any encryption language is a significant structural gap. Even if encryption controls exist operationally (e.g., AWS S3 bucket encryption, TLS enforced at load balancers), the policy does not establish the requirement, meaning there is no policy basis for auditors to confirm those controls are intentional, mandated, and consistently applied.\n\n---\n\n### Finding 4: Role Change Access Revocation Relies Solely on Previous Manager\n\n| Field | Detail |\n|---|---|\n| **Section** | 6.2 \u2014 Role Changes |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap:**\nThe policy places the entire responsibility for notifying IT of access removal during role changes on the *previous manager*. This is a weak control design because:\n\n- The previous manager may have no incentive or reminder to act once the employee has moved on\n- There is no defined timeline for this notification\n- There is no compensating control (e.g., quarterly access reviews would catch this, but with up to a 3-month lag)\n- New managers are not involved in the process, despite being better positioned to understand what the employee now needs\n\nThis creates a high risk of **access accumulation (privilege creep)** over time, which directly contradicts the least privilege principle stated in Section 3.1 and is a core concern under CC6.1.\n\n---\n\n### Finding 5: Network Segmentation and Infrastructure Security Controls Are Absent\n\n| Field | Detail |\n|---|---|\n| **Section** | Policy-wide \u2014 Not addressed |\n| **Severity** | \ud83d\udfe0 High |\n\n**Gap:**\nCC6.1 references logical access security over *infrastructure and architectures*, yet the policy contains no mention of:\n\n- Network segmentation (e.g., separation of production, staging, and corporate environments)\n- Firewall or security group rules governing access between zones\n- Zero-trust or perimeter controls\n- AWS-specific infrastructure controls (Security Groups, VPCs, NACLs)\n\nWhile these controls may be documented elsewhere (e.g., a network security policy or AWS architecture document), their complete absence from an access control policy that explicitly scopes AWS infrastructure (Section 2) is a gap. An auditor reviewing only this policy would have no basis to conclude that infrastructure-level logical access protections exist.\n\n---\n\n### Finding 6: No Defined Onboarding Identity Verification Process\n\n| Field | Detail |\n|---|---|\n| **Section** | 3.1 \u2014 New User Access |\n| **Severity** | \ud83d\udfe0 High |\n\n**Gap:**\nThe access provisioning process describes how access is *requested and approved*, but does not address how a user's **identity is verified** before access is granted. CC6.1 requires that the entity identify and authenticate users prior to granting access. The policy does not specify:\n\n- How user identity is confirmed (e.g., HR record match, government ID verification)\n- How accounts are linked to verified individuals\n- Whether provisioning is tied to a formal onboarding workflow in HR systems\n\nWithout this, there is no documented assurance that access is being granted to the correct, verified individual \u2014 a foundational requirement for logical access security.\n\n---\n\n### Finding 7: Quarterly Access Reviews Have No Defined Sampling or Completeness Standard\n\n| Field | Detail |\n|---|---|\n| **Section** | 5.1 / 5.2 \u2014 Periodic Reviews |\n| **Severity** | \ud83d\udfe0 High |\n\n**Gap:**\nThe access review process requires quarterly reviews by system owners but does not specify:\n\n- Whether reviews must cover **all systems** in scope or only a subset\n- Whether **100% of user accounts** must be reviewed or whether sampling is permitted\n- How **service accounts and non-human identities** are handled (they are not mentioned anywhere in the policy)\n- What constitutes a completed and acceptable review\n\nThe absence of service account / non-human identity coverage is particularly notable. Automated accounts, API keys, and service accounts are common vectors for unauthorized access and are specifically expected to be addressed under CC6.1.\n\n---\n\n### Finding 8: Account Lockout Policy Allows Brute-Force Window\n\n| Field | Detail |\n|---|---|\n| **Section** | 7 \u2014 Monitoring |\n| **Severity** | \ud83d\udfe1 Medium |\n\n**Gap:**\nThe policy permits **5 consecutive failed login attempts** before locking an account, with the lock lasting only **30 minutes** before presumably resetting. This configuration:\n\n- Allows an attacker to attempt up to 5 passwords before triggering a lockout\n- Resets automatically after 30 minutes, enabling repeated brute-force cycles without manual intervention or alerting\n- Contains no mention of alerting the security team or account owner upon lockout events\n\nIndustry practice typically involves stricter thresholds (3\u20135 attempts), indefinite lockout requiring manual unlock for privileged accounts, and real-time alerting. The 30-minute auto-reset in particular removes human oversight from a potentially active attack scenario.\n\n---\n\n### Finding 9: No Third-Party / Vendor Access Controls\n\n| Field | Detail |\n|---|---|\n| **Section** | 2 (Scope) vs. Policy body |\n| **Severity** | \ud83d\udfe1 Medium |\n\n**Gap:**\nSection 2 explicitly scopes the policy to include *third-party personnel*, yet the body of the policy contains no controls specific to third-party or vendor access. Missing elements include:\n\n- Whether third parties require a sponsor or internal owner\n- Restrictions on third-party access scope (e.g., time-limited, IP-restricted)\n- Whether third parties are subject to the same MFA requirements\n- How third-party access is reviewed and revoked at contract end\n\nThird-party access is a well-known risk area under CC6.1. Including third parties in scope without addressing them substantively creates an unenforceable commitment.\n\n---\n\n### Finding 10: Exception Management Lacks Periodic Review Requirement\n\n| Field | Detail |\n|---|---|\n| **Section** | 8 \u2014 Exceptions |\n| **Severity** | \ud83d\udfe1 Medium |\n\n**Gap:**\nExceptions are permitted with CISO approval and require a risk assessment and compensating controls \u2014 which is appropriate. However, the policy does not require that exceptions be:\n\n- **Time-limited** (i.e., granted for a defined period with an expiration date)\n- **Periodically re-evaluated** (e.g., reviewed annually or at a defined cadence)\n- **Tracked in a central register** for audit visibility\n\nWithout these requirements, exceptions granted today could persist indefinitely, and the compensating controls documented at the time of approval may become stale or ineffective. Auditors will expect to see an exceptions register and evidence that exceptions are re-reviewed.\n\n---\n\n## Summary Table\n\n| # | Title | Section | Severity |\n|---|---|---|---|\n| 1 | MFA scope is insufficiently broad | 4.2 | \ud83d\udd34 Critical |\n| 2 | Termination lacks SLA and uses informal notification | 6.1 | \ud83d\udd34 Critical |\n| 3 | No encryption requirements defined | Policy-wide | \ud83d\udd34 Critical |\n| 4 | Role change revocation relies solely on previous manager | 6.2 | \ud83d\udd34 Critical |\n| 5 | No network segmentation or infrastructure controls | Policy-wide | \ud83d\udfe0 High |\n| 6 | No identity verification at onboarding | 3.1 | \ud83d\udfe0 High |\n| 7 | Access reviews lack completeness standards and omit service accounts | 5.1/5.2 | \ud83d\udfe0 High |\n| 8 | Account lockout allows brute-force cycling | 7 | \ud83d\udfe1 Medium |\n| 9 | Third-party access controls absent despite in-scope | 2 / Policy-wide | \ud83d\udfe1 Medium |\n| 10 | Exceptions have no expiration or re-review requirement | 8 | \ud83d\udfe1 Medium |\n\n---\n\n## Overall Readiness Assessment\n\n> **Not Ready for Audit \u2014 Remediation Required**\n\nThe policy establishes a recognizable access control structure (RBAC, PAM, periodic reviews, MFA concepts), but contains **four critical gaps** that would likely result in a qualified opinion or noted exceptions under CC6.1. The most urgent items for remediation are the termination SLA, MFA scope expansion, and addition of encryption and infrastructure security requirements. All critical and high findings should be addressed before audit fieldwork begins."
+}

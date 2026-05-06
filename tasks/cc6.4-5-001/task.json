@@ -1,0 +1,117 @@
+{
+  "id": "cc6.4-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.4",
+  "control_description": "The entity restricts physical access to facilities and protected information assets to meet the entity's objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/physical-security-policy.md",
+      "type": "policy",
+      "description": "Meridian Software physical security policy defining multi-tenant building controls, data center requirements, and environmental monitoring standards"
+    },
+    {
+      "path": "evidence/badge-access-log-q4-2025.csv",
+      "type": "log",
+      "description": "Badge access log for Q4 2025 with 60 entries showing badge swipes across building and suite access points"
+    },
+    {
+      "path": "evidence/data-center-audit-report.md",
+      "type": "report",
+      "description": "Third-party colocation provider annual physical audit report with audit dates and compliance findings"
+    },
+    {
+      "path": "evidence/environmental-sensor-calibration-records.csv",
+      "type": "spreadsheet",
+      "description": "Environmental sensor calibration history showing last calibration dates and next due dates for all server room sensors"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/cctv-retention-report-q4-2025.csv",
+      "type": "log",
+      "description": "CCTV footage retention verification log showing 90-day retention compliance — no issues identified"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II audit of Meridian Software for the Q4 2025 observation period (October 1 - December 31, 2025). Review all evidence related to their physical security program and assess CC6.4 compliance. The company operates in a shared office building and uses a third-party colocation data center. Examine access controls, data center oversight, environmental monitoring, and any nuanced compliance questions. Consider whether controls are adequate given the organization's operational context. Not all provided documents may be relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Shared building lobby provides uncontrolled access to Meridian's floor — no badge control until suite entrance",
+      "description": "The physical security policy Section 2.2 describes the building as a multi-tenant office building where Meridian occupies the 4th floor. Section 3.2 states that 'badge access is enforced at the 4th floor suite entrance (AP-SUITE-01)' but acknowledges that the building lobby, elevators, and stairwells are managed by the property management company and are accessible to all building tenants and their visitors. The badge access log confirms the first controlled access point is AP-SUITE-01 on the 4th floor — there are no Meridian-controlled access points at the building entrance, elevator, or stairwell. This means anyone who enters the building lobby (which is open during business hours and has no property management badge requirement) can walk directly to Meridian's suite entrance door. While the suite door is badge-controlled, this creates a single point of failure — if the suite door is tailgated, propped open, or the badge reader fails, there is no compensating control at the building perimeter. Policy Section 3.3 states 'Meridian relies on property management building access controls as the first layer of physical security,' but no evidence exists that the property management company enforces any access control at the building entrance during business hours. The policy assumes a defense-in-depth model but only one layer is actually controlled by Meridian.",
+      "evidence_sources": [
+        "evidence/physical-security-policy.md",
+        "evidence/badge-access-log-q4-2025.csv"
+      ],
+      "expected_reasoning": "The auditor should recognize that in a multi-tenant building, Meridian has limited control over perimeter access. The policy acknowledges reliance on property management but provides no evidence that property management enforces building-level access controls. The badge access log shows AP-SUITE-01 as the first Meridian-controlled access point, confirming no building-level controls exist. The auditor must assess whether a single badge-controlled door is adequate for CC6.4 or whether compensating controls (anti-tailgating, reception staffing, CCTV at suite entrance) are needed. This requires judgment about adequacy in a shared building context.",
+      "detection_criteria": {
+        "required_keywords": ["multi-tenant", "shared building", "lobby", "AP-SUITE-01", "property management", "single point of failure", "defense-in-depth", "tailgating", "Section 3.2", "Section 3.3"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Colocation data center physical audit overdue by 2 months — last audit was 14 months ago against annual requirement",
+      "description": "Policy Section 8.2 requires 'annual physical security audits of the colocation provider, conducted by Meridian personnel or a qualified third party, to verify that the provider's physical controls meet Meridian's requirements.' The data center audit report shows the last audit was conducted on August 15, 2024, covering the period August 2023 – July 2024. As of December 31, 2025, it has been 16 months since the last Meridian-initiated audit. The next audit was due by August 15, 2025, making it 4 months overdue at the end of the observation period. While the colocation provider (SecureVault Colo) maintains its own SOC 2 Type II report (referenced in the audit report), Meridian's policy specifically requires an independent Meridian-led audit in addition to relying on the provider's SOC 2 report. The provider's SOC 2 report covers their general controls but does not verify Meridian-specific cabinet security, access list accuracy, or lock rotation compliance. The 4-month gap means Meridian cannot demonstrate it verified the colocation provider's controls during the Q4 2025 observation period.",
+      "evidence_sources": [
+        "evidence/data-center-audit-report.md",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should check the data center audit report date against the policy's annual requirement. The last audit was August 15, 2024. The annual requirement means the next audit was due by August 15, 2025. As of December 31, 2025, the audit is 4 months overdue. The auditor must distinguish between the colocation provider's own SOC 2 report (which exists) and Meridian's independent audit requirement (which is overdue). The key judgment is whether the provider's SOC 2 covers Meridian's specific needs — the policy explicitly states it does not.",
+      "detection_criteria": {
+        "required_keywords": ["August 15 2024", "14 months", "annual audit", "colocation", "SecureVault", "overdue", "Section 8.2", "SOC 2", "Meridian-led", "independent"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Environmental sensor calibration overdue by 2 months — sensors still reading within range but accuracy unverified",
+      "description": "The environmental sensor calibration records show that the server room temperature and humidity sensors (TEMP-01, TEMP-02, HUM-01, HUM-02) were last calibrated on August 10, 2025, with the next calibration due October 10, 2025. As of December 31, 2025, calibration is 82 days overdue. The environmental monitoring logs show sensors are still reading within normal ranges (70-73F, 42-45% humidity), but without current calibration, the accuracy of these readings cannot be verified. Policy Section 9.3 requires sensor calibration every 6 months. If sensors have drifted, the server room could be experiencing temperatures or humidity levels outside acceptable ranges without detection. The risk is compounded by the fact that both temperature sensors have the same overdue calibration date — if both have drifted in the same direction, there is no independent cross-check. This is a subtle gap because the sensors appear to be functioning normally, but calibration is what ensures 'functioning normally' is actually true.",
+      "evidence_sources": [
+        "evidence/environmental-sensor-calibration-records.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should review calibration records and compare last_calibration and next_due dates against the current date (December 31, 2025). Four sensors are overdue by approximately 82 days. The auditor must exercise judgment: the sensors are reading within range, so there is no immediate alarm, but uncalibrated sensors may produce inaccurate readings. The 6-month calibration cycle in policy Section 9.3 exists precisely because sensor drift is a known phenomenon. The gap is subtle because there is no visible operational impact — the risk is undetected drift.",
+      "detection_criteria": {
+        "required_keywords": ["calibration", "October 10", "82 days", "overdue", "TEMP-01", "HUM-01", "sensor drift", "Section 9.3", "6 months", "accuracy"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "No anti-tailgating controls at suite entrance despite single-layer access model",
+      "description": "Given that AP-SUITE-01 is the only Meridian-controlled access point (Finding F-001), the absence of anti-tailgating measures at this door is a compounding weakness. The badge access log shows consistent single-badge entries, but the policy does not address tailgating prevention. There is no mention of anti-passback, turnstiles, mantraps, or tailgating awareness training. In a multi-tenant building where the suite door is the sole controlled barrier, tailgating allows anyone to bypass the only physical access control. While anti-tailgating controls are not universally required, they are a recommended compensating control when building-level perimeter security is not under the entity's control.",
+      "evidence_sources": [
+        "evidence/physical-security-policy.md",
+        "evidence/badge-access-log-q4-2025.csv"
+      ],
+      "expected_reasoning": "This finding builds on F-001. The auditor should recognize that in the absence of building-level controls, the suite door must be the strongest possible barrier. The policy is silent on tailgating prevention. The badge access log does not show anti-passback enforcement. The auditor must judge whether this is a standalone finding or a supporting element of the broader single-layer access concern.",
+      "detection_criteria": {
+        "required_keywords": ["tailgating", "anti-passback", "single layer", "AP-SUITE-01", "compensating control", "multi-tenant", "suite entrance"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["physical_security", "judgment", "multi_tenant", "shared_building", "colocation", "environmental_monitoring", "calibration", "tailgating", "defense_in_depth"]
+  }
+}

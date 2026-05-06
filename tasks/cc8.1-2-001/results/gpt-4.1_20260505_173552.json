@@ -1,0 +1,71 @@
+{
+  "task_id": "cc8.1-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:35:52.019983",
+  "score": {
+    "task_id": "cc8.1-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "recommended",
+          "not required",
+          "staging",
+          "testing",
+          "should",
+          "mandatory",
+          "gap"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "standard change",
+          "pre-approved",
+          "security",
+          "review"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "standard change",
+          "testing",
+          "evidence",
+          "pre-approved"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1083,
+    "output_tokens": 1433
+  },
+  "raw_response": "Below is an assessment of the NovaCrest Technologies change management policy against SOC 2 CC8.1 requirements. Findings are listed for any detected gaps or deficiencies.\n\n---\n\n# SOC 2 CC8.1 Readiness Assessment\n\n## Overall Impression\nThe policy is well-structured and covers many fundamental aspects of change management including authorization, categorization, approval, deployment, and documentation. However, some gaps and ambiguities exist relative to SOC 2 expectations, particularly around documentation, testing rigor, and procedure changes.\n\n---\n\n### 1. **Insufficient Testing Requirements**\n\n- **Section:** 4.3 Testing\n- **Gap:** The policy states \"Testing in staging is recommended\" but does not mandate testing for all changes (except High/Critical risk). For non-high/critical changes, testing is not required, undermining the assurance that changes will not adversely affect production systems.\n- **Severity:** High\n- **Details:** SOC 2 expects changes to be validated through testing prior to production implementation. Using \"recommended\" (rather than \"required\") could lead to changes being deployed without adequate testing, increasing risk.\n\n---\n\n### 2. **Lack of Documentation Requirements for All Change Activities**\n\n- **Section:** 4.1 Submission, 4.6 Post-Implementation Review\n- **Gap:** While initial change requests and post-implementation review are documented in ServiceNow, the policy does not explicitly require that all steps (peer review, test results, approvals, back-out plans, etc.) are to be fully documented and retained.\n- **Severity:** Medium\n- **Details:** SOC 2 requires evidence that the entire change management process (design, review, testing, approval, implementation, verification) is documented and auditable.\n\n---\n\n### 3. **Procedures Not Explicitly Included in Scope**\n\n- **Section:** 2. Scope\n- **Gap:** The policy refers to changes to \"production environments, application deployments, infrastructure...\" but makes only a perfunctory mention of \"procedures.\" SOC 2 CC8.1 expects procedural (process) changes to be subject to change control, but the policy does not define what constitutes a procedural change, nor how these are logged, reviewed, or approved.\n- **Severity:** Medium\n- **Details:** Changes to operational processes, runbooks, support procedures, or user manuals could introduce risk but may fall outside the formal process as currently written.\n\n---\n\n### 4. **Standard Change Catalog - Lack of Periodic Review**\n\n- **Section:** 5. Standard Change Catalog\n- **Gap:** The policy provides a set of pre-approved (\"standard\") changes but does not require periodic review to ensure these changes still meet risk criteria and organizational needs.\n- **Severity:** Low\n- **Details:** Without periodic review, there is a risk that changes in technology or threat landscape could render pre-approved changes insecure or inappropriate.\n\n---\n\n### 5. **Emergency Change Approval Lacks Security Involvement**\n\n- **Section:** 3. Change Categories, 4.4 Approval\n- **Gap:** Emergency changes do not require Security team involvement at the time of the change (only VP Engineering approval and retrospective CAB). Security concerns may not be adequately addressed for urgent changes.\n- **Severity:** Medium\n- **Details:** While speed is important for emergencies, lack of upfront security assessment could expose production to unvetted changes.\n\n---\n\n### 6. **Change Communication/Notification Not Addressed**\n\n- **Section:** N/A\n- **Gap:** The policy does not specify any process or requirement for communicating planned changes (other than to CAB) to affected stakeholders, users, or other teams (e.g., IT, support, business, customers).\n- **Severity:** Low\n- **Details:** Effective change management includes notifying impacted parties to ensure readiness, coordinate dependencies, and minimize disruption.\n\n---\n\n### 7. **No Explicit Requirement to Update Related Documentation**\n\n- **Section:** N/A (general implementation process)\n- **Gap:** There is no explicit step requiring updates to affected documentation (e.g., architecture diagrams, runbooks, user manuals) as part of the change process.\n- **Severity:** Low\n- **Details:** SOC 2 expects procedures to ensure that supporting documentation is updated to reflect production changes.\n\n---\n\n### 8. **Lack of Segregation of Duties Detail in Deployment**\n\n- **Section:** 4.5 Deployment\n- **Gap:** The policy specifies SRE team executes deployments but doesn't state if new code can be deployed by its author, nor does it clarify whether it enforces segregation of duties to prevent unauthorized changes.\n- **Severity:** Medium\n- **Details:** SOC 2 expects deployment controls to restrict who can move code to production, ideally ensuring reviewers and deployers are not the same individual.\n\n---\n\n### 9. **CAB Approval Process Not Defined for Absences/Quorum Failure**\n\n- **Section:** 6. CAB\n- **Gap:** The CAB quorum is stated, but there is no provision stating what happens if a quorum isn't met or if key members are absent. \n- **Severity:** Low\n- **Details:** Lack of a fallback may result in urgent changes being delayed or changes proceeding without sufficient oversight.\n\n---\n\n## Summary Table\n\n| # | Title | Section | Description | Severity |\n|---|-------|---------|-------------|----------|\n| 1 | Insufficient Testing Requirements | 4.3 | Testing only \"recommended\" for normal changes, not mandatory for all | High |\n| 2 | Lack of Documentation Requirements for All Change Activities | 4.1, 4.6 | Not explicit about documentation for peer reviews, tests, etc. | Medium |\n| 3 | Procedures Not Explicitly Included in Scope | 2 | Scope does not clearly include all procedural changes | Medium |\n| 4 | Standard Change Catalog - Lack of Periodic Review | 5 | No review/expiration of standard/pre-approved changes | Low |\n| 5 | Emergency Change Approval Lacks Security Involvement | 3, 4.4 | No security review for emergency changes | Medium |\n| 6 | Change Communication/Notification Not Addressed | N/A | No requirement to notify stakeholders (beyond CAB) | Low |\n| 7 | No Explicit Requirement to Update Related Documentation | N/A | Change process does not include documentation updates | Low |\n| 8 | Lack of Segregation of Duties Detail in Deployment | 4.5 | No clarification of who can deploy and avoidance of self-deployment | Medium |\n| 9 | CAB Approval Process Not Defined for Absences/Quorum Failure | 6 | No contingency plan for CAB approval if quorum not met | Low |\n\n---\n\n**Recommendation:** To be fully ready for SOC 2 CC8.1, NovaCrest Technologies should consider updating the policy to address the above gaps, emphasizing testing for all changes (not only high/critical risk), robust documentation of every step, clearer inclusion of procedural changes, periodic standard change reviews, explicit segregation of duties, and required notifications/documentation updates."
+}

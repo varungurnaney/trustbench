@@ -1,0 +1,88 @@
+{
+  "task_id": "cc6.3-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:41:53.869186",
+  "score": {
+    "task_id": "cc6.3-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "COMPLIANCE_AUDITOR",
+          "EXC-2025-088",
+          "PCI",
+          "masking"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "j.crawford",
+          "ACCOUNTADMIN",
+          "Risk Analytics",
+          "DBA team",
+          "no exception",
+          "admin_setup"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "MARKETING_ANALYTICS",
+          "cardholder_data",
+          "masking",
+          "PCI",
+          "h.park",
+          "s.mehta",
+          "b.chen",
+          "no exception"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SVC_DATA_PIPELINE",
+          "SYSADMIN",
+          "minimum",
+          "least privilege"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6462,
+    "output_tokens": 2106
+  },
+  "raw_response": "# CC6.3 Data Access Authorization \u2014 Audit Findings\n\n## Summary of Assessment\n\nI reviewed the Snowflake role/grant export against POL-DAP-2025-011 (Data Access Authorization Policy) and the CISO exception register. The penetration test report and data retention policy were not relevant to CC6.3 authorization controls and were excluded from analysis.\n\nI identified **four genuine findings**. Several apparent issues (COMPLIANCE_AUDITOR external access, RISK_ANALYTICS access to disaggregated data) are covered by valid, documented exceptions (EXC-2025-088, EXC-2025-082) with appropriate compensating controls and were not flagged.\n\n---\n\n## Finding 1: Marketing personnel granted unmasked access to PCI cardholder data\n\n**Severity: CRITICAL**\n\n**Related to:** Snowflake export \u2014 MARKETING_ANALYTICS grants on `VERTEX_PROD.PAYMENTS.cardholder_data` for users h.park, s.mehta, b.chen (granted 2025-09-22 by `admin_setup`); Policy POL-DAP-2025-011 Sections 3.3, 4.1, 4.2.\n\n**Gap:**\n- Policy Section 3.3 explicitly states: \"Marketing personnel must not access raw PCI data.\"\n- Policy Section 4.2 requires dynamic data masking for all non-DBA roles accessing PCI-scoped tables. The grants record explicitly notes \"no masking policy applied\" \u2014 the `masking_policy` column is empty for all three rows.\n- Policy Section 4.1 requires Data Owner + CISO + Privacy Officer approval plus PCI-DSS annual certification for direct cardholder data access. There is **no corresponding entry in the exception register** for these grants.\n- The MARKETING_ANALYTICS role definition in Section 3.1 explicitly states \"No PCI data access.\"\n- Granted by `admin_setup` rather than via the standard `dba_setup` workflow \u2014 suggests bypass of normal authorization.\n\nThis is a direct PCI-DSS violation as well as a CC6.3 failure on multiple dimensions: role definition, segregation of duties, least privilege, and authorization workflow.\n\n---\n\n## Finding 2: ACCOUNTADMIN granted to Risk Analytics user without authorization or business justification\n\n**Severity: HIGH**\n\n**Related to:** Snowflake export \u2014 `ACCOUNTADMIN` granted to j.crawford (Risk Analytics) on 2025-11-18 by `admin_setup`; Policy Section 3.1 and 3.3.\n\n**Gap:**\n- Policy Section 3.1 restricts ACCOUNTADMIN to \"DBA team only\" with approval from CISO + CTO + Board. j.crawford is in Risk Analytics, not DBA.\n- Policy Section 3.3 states: \"Risk team personnel must not have administrative database privileges\" \u2014 direct segregation-of-duties violation.\n- Grant notes state \"Granted for report debugging \u2014 no formal request\" \u2014 explicitly acknowledges absence of authorization workflow.\n- No exception register entry exists for this grant.\n- Provides system-level privileges far exceeding least-privilege need for \"report debugging.\"\n\n---\n\n## Finding 3: Service account SVC_DATA_PIPELINE granted SYSADMIN in violation of policy\n\n**Severity: HIGH**\n\n**Related to:** Snowflake export \u2014 `SVC_DATA_PIPELINE` with `SYSADMIN` privileges across ALL databases/schemas; Policy Section 5.1.\n\n**Gap:**\n- Policy Section 5.1 explicitly states: \"Broad roles (SYSADMIN, ACCOUNTADMIN) are prohibited for service accounts.\"\n- Service account scope is `ALL/ALL/ALL` \u2014 directly contradicts least-privilege requirement that service accounts be \"scoped to the minimum privileges required for the automated workflow.\"\n- No exception register entry covers this grant.\n- While the account does have a designated owner (Derek Huang) satisfying Section 5.2, the privilege scope is non-compliant.\n\n---\n\n## Finding 4: Access grants performed without evidence of documented approval workflow\n\n**Severity: MEDIUM**\n\n**Related to:** Snowflake export \u2014 all grants; Policy Sections 3.1 (approval requirements per role).\n\n**Gap:**\n- Policy Section 3.1 specifies approval requirements (e.g., Manager + Data Owner; CISO for RISK_ANALYTICS; CISO + CTO for DBA_ADMIN; CISO + CTO + Board for ACCOUNTADMIN).\n- The grant export contains no approval ticket reference, approver name, or request ID for any standard grant \u2014 only `granted_by` (the executor, not approver). This makes it impossible to verify whether documented approvals existed prior to provisioning.\n- For example, DBA_ADMIN grants to k.petrov and l.huang require CISO + CTO approval, but no linkage to an approval record is present in the evidence.\n- Even if approvals exist in a separate system, the lack of traceability between the grant and authorization record is itself a control weakness for CC6.3.\n\nThis finding is conditional \u2014 if Vertex can produce ticketing/approval records linked to each grant, severity would drop to Low (documentation/traceability only).\n\n---\n\n## Items Reviewed and Cleared (No Finding)\n\n- **COMPLIANCE_AUDITOR role with broad SELECT including external user (s.lee):** Covered by EXC-2025-088 with strong compensating controls (time-limited warehouse, PCI masking applied, immutable audit logging, named users only). Valid exception.\n- **RISK_ANALYTICS access to fraud_indicators / transaction_summaries (d.santos):** Covered by EXC-2025-082; access limited to RISK schema, no PCI tables, pre-aggregated data, weekly CISO review. Valid exception.\n- **DBA_ADMIN with two named individuals (k.petrov, l.huang):** Conforms to Section 3.1 \"Maximum 2 named individuals.\"\n- **k.petrov holding both DBA_ADMIN and ACCOUNTADMIN:** Consistent with policy (DBA team)."
+}

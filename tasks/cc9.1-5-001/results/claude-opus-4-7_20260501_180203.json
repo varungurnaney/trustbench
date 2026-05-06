@@ -1,0 +1,91 @@
+{
+  "task_id": "cc9.1-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:02:03.090211",
+  "score": {
+    "task_id": "cc9.1-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.6,
+    "precision": 0.3,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 3,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "qualified opinion",
+          "CC6.1",
+          "access review",
+          "Karen Mitchell",
+          "CIAM"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "PrestoServe",
+          "customer notification",
+          "November 2025 incident"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "long-lived API key",
+          "March 2025",
+          "GitHub repository",
+          "credential rotation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "December 28",
+          "January 7",
+          "holiday freeze",
+          "Critical vendor"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 10716,
+    "output_tokens": 4715
+  },
+  "raw_response": "# SOC 2 CC9.1 Readiness Assessment \u2014 Onyx Data Vendor Risk Management\n\n**Auditor:** Independent Compliance Review\n**Observation Period:** October 1 \u2013 December 31, 2025\n**Control:** CC9.1 \u2014 Risk Mitigation for Business Disruption and Vendor/Partner Risk\n\n---\n\n## Overall Assessment\n\nOnyx Data has a generally mature vendor risk management program with documented policy (OD-GRC-POL-007 v2.4), a tiered vendor inventory, SOC 2 review processes, and demonstrated incident response capability (PrestoServe). However, **several findings\u2014including one Critical and two High\u2014indicate the control is not currently operating effectively as designed.** The program design is sound; execution gaps exist particularly around qualified SOC 2 follow-up, customer notification policy alignment, and DPA execution.\n\n---\n\n## Findings\n\n### Finding 1: Cloudmatic Qualified SOC 2 Opinion \u2014 Risk Assessment Not Performed\n- **Severity:** **CRITICAL**\n- **Related to:** Policy Section 4.3 (item 4); Vendor OD-V-004; SOC 2 Review Tracker\n- **Gap:** Policy OD-GRC-POL-007 \u00a74.3.4 explicitly requires that \"Reports with qualified opinions require a formal risk assessment documenting the nature of the qualification, potential impact on Onyx Data, and any compensating controls or remediation commitments from the vendor.\" Cloudmatic's SOC 2 Type II report (reviewed June 18, 2025) carries a **qualified opinion on CC6.1** for missed access reviews. Karen Mitchell escalated this to Angela Torres on June 20, 2025; **as of December 31, 2025\u2014more than six months later\u2014no formal risk assessment has been completed.** This is particularly concerning because Cloudmatic operates the customer-facing CIAM/SSO/MFA platform\u2014a Critical-tier vendor whose own access review failures directly bear on the security of Onyx Data customer authentication. The contract is also expiring December 31, 2025 with renewal under negotiation, meaning a key risk-informed input to renewal terms is missing.\n- **Why this matters for CC9.1:** The control requires the entity to *select and develop risk mitigation activities*. Identifying a qualified opinion without performing the required risk assessment means risk mitigation activities have not been selected or developed for a known, material third-party control deficiency.\n\n---\n\n### Finding 2: Customer Notification Policy Inconsistent with Decision Framework Used in PrestoServe Incident\n- **Severity:** **HIGH**\n- **Related to:** Policy Section 6.1 and 6.2; PrestoServe Incident Report \u00a73.1\n- **Gap:** Policy \u00a76.2 classifies \"Potential customer data exposure \u2014 Vendor cannot confirm or deny customer data was affected\" as requiring escalation **within 24 hours to CISO, Legal, and the customer comms team.** Policy \u00a76.1 requires a \"customer communication decision within 48 hours of confirmed customer data impact.\" During the November 8\u201328 PrestoServe uncertainty period, 2.3M Onyx Data customer records were potentially exposed for 20 days. The General Counsel's rationale cited a \"confirmed data breach\" threshold for customer notification, but **the policy does not actually specify whether unconfirmed-but-material exposure requires customer notification, customer advisory, or silence**\u2014creating a policy gap that was filled ad hoc by a 3-1 committee vote. The VP GRC's documented dissent is itself evidence of internal disagreement on the policy. The remediation plan (Item #4: \"Review Onyx Data's customer notification thresholds policy\") implicitly acknowledges this gap, but the action is \"Not Started\" as of report date.\n- **Why this matters for CC9.1:** Risk mitigation activities for vendor-driven business disruption must include consistent, pre-defined customer communication thresholds. The lack of policy clarity means the response was reactive and contested rather than control-driven.\n\n---\n\n### Finding 3: PrestoServe SOC 2 Coverage Gap \u2014 No Bridge Letter for Incident Period\n- **Severity:** **HIGH**\n- **Related to:** Vendor OD-V-016; SOC 2 Review Tracker\n- **Gap:** PrestoServe's most recent SOC 2 Type II report covers January 1 \u2013 December 31, 2024. The November 2025 incident (compromised long-lived API key, public GitHub exposure, multi-tenant query access) occurred in a period **not covered by any SOC 2 attestation reviewed by Onyx Data.** The bridge letter has been \"In Progress\" since at least the November 28, 2025 forensic close. Onyx Data is also relying on PrestoServe for the Q4 business review, which was rescheduled from December 28 to January 7, 2026\u2014pushing critical post-incident assurance activities out of the observation period entirely. Additionally, the next SOC 2 review is overdue under policy: the 2024 report should have been followed by review of the 2025 report, but PrestoServe's 2025 Type II report has not been received/reviewed.\n- **Why this matters for CC9.1:** A Critical-tier vendor with an active confirmed security incident has no current third-party assurance covering the incident period, undermining the SOC 2 review control as a risk mitigation activity.\n\n---\n\n### Finding 4: Twilio DPA Not Executed Despite Customer PII Processing\n- **Severity:** **HIGH**\n- **Related to:** Vendor OD-V-006; Policy Section 4.1\n- **Gap:** Twilio is a High-tier vendor processing customer phone numbers and email addresses (PII) and delivering 2FA\u2014security-sensitive functionality. The vendor inventory shows **DPA Executed = No**, with note \"DPA execution pending \u2014 Legal reviewing updated terms.\" Policy \u00a74.1 requires \"Data processing agreement (DPA) execution for vendors handling customer data\" as part of initial assessment. Twilio onboarded in September 2022, meaning the DPA has been outstanding for over three years. The contract also expires August 31, 2025\u2014which has already passed as of the observation period\u2014raising a separate question about contract renewal status.\n- **Why this matters for CC9.1:** Contractual data protection obligations are a primary risk mitigation activity. Operating without an executed DPA for a PII-processing vendor for 3+ years represents a sustained control gap.\n\n---\n\n### Finding 5: Twilio and Multiple Vendors Operating Past Contract Expiration\n- **Severity:** **MEDIUM**\n- **Related to:** Vendor inventory \u2014 OD-V-006 (Twilio), OD-V-005 (Datadog)\n- **Gap:** Several vendors show contract end dates that have passed as of December 31, 2025 with no renewal documented:\n  - Datadog (OD-V-005): contract end 2025-06-30 \u2014 6 months past expiration\n  - Twilio (OD-V-006): contract end 2025-08-31 \u2014 4 months past expiration\n  These vendors are still listed as \"Active\" with no notes regarding renewal. Operating Critical/High vendors past contract expiration creates uncertainty around enforceable security clauses (incident notification, right to audit, breach notification) per Policy \u00a75.1.\n- **Why this matters for CC9.1:** Contractual risk mitigation mechanisms (72-hour notification, right to audit, DPA enforcement) may not be legally enforceable absent valid contracts.\n\n---\n\n### Finding 6: Cloudmatic Q4 Business Review Conducted Late / Renewal Risk\n- **Severity:** **MEDIUM**\n- **Related to:** Vendor OD-V-004\n- **Gap:** Cloudmatic's last business review was September 30, 2025, and the next was scheduled for January 7, 2026. Critical vendors require **quarterly** business reviews per Policy \u00a74.2. With Cloudmatic's contract expiring December 31, 2025 and a known qualified SOC 2 opinion, a Q4 business review should have occurred *before* contract expiration to inform the renewal decision. The Q4 review has effectively been skipped within the observation period.\n- **Why this matters for CC9.1:** Periodic business reviews are a core ongoing monitoring activity and missed for a vendor with active known control issues.\n\n---\n\n### Finding 7: PrestoServe Q4 Business Review Pushed Outside Observation Period\n- **Severity:** **MEDIUM**\n- **Related to:** Vendor OD-V-016; Policy \u00a74.2\n- **Gap:** PrestoServe's Q4 2025 business review was rescheduled from December 28, 2025 to January 7, 2026 due to the holiday freeze. Combined with the post-incident review (also January 10) and pending bridge letter, all post-incident assurance activities fall outside the Q4 observation period. While operationally understandable, no compensating evidence (e.g., interim attestation, documented monitoring artifact) bridges the gap for the Critical-tier vendor most affected by recent events.\n- **Severity rationale:** Mitigated by the fact that incident forensics confirmed no Onyx Data data compromise and that activities are scheduled, not absent.\n\n---\n\n### Finding 8: Multiple Medium-Tier Vendors Lack Executed DPAs Despite Data Exposure\n- **Severity:** **MEDIUM**\n- **Related to:** Vendors OD-V-010 (SendGrid), OD-V-011 (Atlassian), OD-V-012 (Slack), OD-V-013 (GitHub)\n- **Gap:** Several Medium-tier vendors with some data exposure show DPA = No:\n  - SendGrid: customer email addresses (PII)\n  - GitHub: source code that \"may contain test data\"\n  - Atlassian and Slack: marked \"no customer data\" but house internal documentation and communications that often contain customer references\n  Policy \u00a74.1 requires DPAs \"for vendors handling customer data.\" SendGrid in particular handles customer email PII without a DPA, which is a more direct concern than the other three.\n- **Why this matters for CC9.1:** Inconsistent application of contractual safeguards across the vendor portfolio.\n\n---\n\n### Finding 9: Outdated Security Questionnaires for Long-Tenured Vendors\n- **Severity:** **LOW**\n- **Related to:** Vendor inventory column \"last_security_questionnaire\"; Policy \u00a74.2\n- **Gap:** Several High-tier vendors have security questionnaires dating to onboarding with no refresh, despite policy requiring renewal \"every 2 years\":\n  - AWS: 2021-01-15 (~5 years)\n  - Stripe: 2022-03-10 (~3.5 years)\n  - Cloudflare: 2021-06-10 (~4.5 years)\n  - Twilio: 2022-09-15 (~3 years)\n  Note: For Critical vendors the policy requires re-questionnaire only \"at material change,\" so AWS/Stripe/Snowflake may technically comply. **However, High-tier Twilio is past the 2-year requirement.**\n- **Why this matters for CC9.1:** Periodic questionnaire refresh is a designed risk mitigation activity; its lapse for a High-tier vendor (Twilio) is a control execution gap.\n\n---\n\n### Finding 10: PrestoServe Incident Root Cause Indicates Inadequate Onboarding Due Diligence\n- **Severity:** **LOW** (informational/observational)\n- **Related to:** PrestoServe Incident Report \u00a72.3; Policy \u00a74.1\n- **Gap:** The incident root cause\u2014a long-lived API key (not rotated since March 2025) committed to a public GitHub repository\u2014suggests PrestoServe lacked (a) credential rotation policies, (b) secrets scanning, and (c) secure SDLC practices that should have been surfaced during onboarding (April 2024). Onyx Data's 127-question security questionnaire and SOC 2 review apparently did not detect or flag these weaknesses. While the incident response was effective, the underlying due diligence may not have meaningfully assessed PrestoServe's secrets management maturity.\n- **Why this matters for CC9.1:** This is more of a process-improvement observation: the design of the security questionnaire and SOC 2 review may benefit from enhanced focus on credential lifecycle and secret management for vendors with multi-tenant data access.\n\n---\n\n## Summary of Findings\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Cloudmatic qualified SOC 2 \u2014 risk assessment never performed | **Critical** |\n| 2 | Customer notification policy inconsistent / unclear | High |\n| 3 | PrestoServe SOC 2 bridge letter outstanding | High |\n| 4 | Twilio DPA not executed for 3+ years | High |\n| 5 | Vendors operating past contract expiration | Medium |\n| 6 | Cloudmatic Q4 business review missed | Medium |\n| 7 | PrestoServe Q4 business review deferred outside period | Medium |\n| 8 | Medium-tier vendors lacking DPAs | Medium |\n| 9 | Outdated security questionnaires (Twilio) | Low |\n| 10 | Onboarding due diligence depth (PrestoServe) | Low |\n\n---\n\n## Auditor Conclusion\n\n**CC9.1 is partially effective with significant exceptions.** The vendor risk management program is well-designed, but the failure to perform a required risk assessment for a qualified Critical-vendor SOC 2 opinion (Cloudmatic), combined with policy ambiguity exposed by the PrestoServe incident, indicates that **risk mitigation activities are not being consistently selected and developed as the control requires.** Remediation of Findings 1\u20134 is recommended prior to the Type II report period close to support an unqualified CC9.1 opinion."
+}

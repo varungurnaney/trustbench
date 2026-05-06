@@ -1,0 +1,74 @@
+{
+  "task_id": "cc6.1-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:35:33.699310",
+  "score": {
+    "task_id": "cc6.1-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.23076923076923078,
+    "f1": 0.375,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 13,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "footnote",
+          "contractor",
+          "VPN",
+          "exempt",
+          "MFA",
+          "equivalent",
+          "Table 3-1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "emergency",
+          "break-glass",
+          "recommended",
+          "required",
+          "post-review",
+          "revocation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "service account",
+          "credential",
+          "rotation",
+          "password",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3134,
+    "output_tokens": 3117
+  },
+  "raw_response": "# CC6.1 Readiness Assessment \u2014 Pinnacle Financial Services Access Control Policy\n\n## Findings\n\n---\n\n### Finding 1: MFA Exemption for Remote Contractors via Client VPN\n**Section:** 3.2, Table 3-1, Footnote 3\n**Gap:** The policy permits remote contractors accessing via client-provided VPN to be exempt from MFA when the contractor's home organization \"enforces equivalent authentication controls.\" This creates several issues:\n- No defined process for validating or attesting to the equivalence of the third party's controls\n- No requirement for documented evidence of the third party's authentication standards\n- Directly contradicts Section 4.2, which states \"Multi-factor authentication is required for **all users**\"\n- No periodic re-validation requirement\n- An auditor will flag this as an undocumented control bypass for an external population accessing a regulated financial environment.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Emergency/Break-Glass Procedure Lacks Mandatory Post-Use Review\n**Section:** 7.3 Emergency Access Procedure\n**Gap:** Multiple weaknesses in break-glass controls:\n- Post-incident review is \"**recommended** within 5 business days\" rather than mandated\n- No required CISO or independent approval for invocation (any SRE member may self-invoke)\n- No requirement that emergency credential be rotated immediately after use\n- Incident report summary is the SRE team lead's responsibility, but there's no enforcement mechanism, deadline, or independent verification\n- No specified retention or review of session recordings during break-glass use\n- Shared credential model conflicts with individual accountability principles in CC6.1\n\n**Severity:** **Critical**\n\n---\n\n### Finding 3: Termination Timeline Inconsistency and Excessive SLA\n**Section:** 6.1 Termination\n**Gap:** \n- Okta suspension occurs within **4 hours**, but AWS IAM bindings within **24 hours** \u2014 this 20-hour window leaves potential standing access via direct IAM credentials, access keys, or federated tokens\n- For involuntary terminations (especially of privileged users), 4 hours is generally considered too long; SOC 2 expectations are typically near-immediate (under 1 hour or before notification)\n- No requirement to revoke active sessions/tokens (Section 4.3 notes 8-hour token lifetime \u2014 a terminated user with active session could retain access)\n- No mention of SaaS/third-party application deprovisioning beyond Okta (e.g., applications not behind SSO)\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Password Expiration Conflicts with Modern Standards\n**Section:** 4.1 Password Requirements\n**Gap:** 90-day password expiration conflicts with current NIST SP 800-63B guidance, which discourages periodic rotation absent evidence of compromise. While not a direct CC6.1 violation, auditors increasingly question this as a control weakness because it encourages weaker password patterns. More importantly, the policy doesn't specify whether these requirements apply to service accounts or only human users (Section 4.1 says \"human user accounts\" but Section 8 doesn't define service account password/credential standards beyond API keys).\n\n**Severity:** **Low**\n\n---\n\n### Finding 5: Service Account Authentication Standards Undefined\n**Section:** 8.1 Service Account Governance\n**Gap:** \n- No defined credential standards for service accounts (password length, complexity, rotation cadence)\n- Section 8.2 covers API keys (90-day rotation) but doesn't address service account passwords\n- No requirement for service accounts to use certificate-based or vault-managed authentication\n- Quarterly access review is mentioned, but no requirement to validate the human owner is still employed/in role\n- No prohibition on interactive login for service accounts\n\n**Severity:** **High**\n\n---\n\n### Finding 6: Quarterly Access Review Gaps\n**Section:** 5.1 Quarterly Access Reviews\n**Gap:**\n- No defined escalation path if a system owner fails to complete review within the 15-business-day window\n- No independent validation that revocations actually occurred within 5 business days (relies on system owner self-attestation)\n- No requirement to review dormant/inactive accounts specifically\n- Q4 2025 review evidence will be critical for the audit period \u2014 policy doesn't specify how completeness is verified\n- No segregation of duties: the same system owner who approved access may be the only reviewer\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Third-Party Integration Approval Chain Weakness\n**Section:** 3.2, Table 3-1\n**Gap:** Third-party integrations require only \"Data Owner + CISO\" approval with a 12-month renewal cycle. Missing:\n- No required security/risk assessment of the third party prior to integration\n- No requirement for scoped/least-privilege permissions documentation\n- No defined revocation triggers (e.g., contract termination, vendor breach)\n- 12-month review is significantly less frequent than the 90-day key rotation in Section 8.2 \u2014 creating a gap where a key may be rotated to an integration that should have been deauthorized\n\n**Severity:** **Medium**\n\n---\n\n### Finding 8: No Defined Treatment of Dormant/Inactive Accounts\n**Section:** Policy-wide (notably absent from Sections 5 and 6)\n**Gap:** The policy lacks any provision for:\n- Automatic disablement of accounts after a period of inactivity (typically 30\u201390 days)\n- Identification of orphaned accounts (no active owner)\n- Treatment of accounts during extended leaves of absence\nThis is a common CC6.1 audit finding and the absence is conspicuous given the otherwise detailed policy.\n\n**Severity:** **High**\n\n---\n\n### Finding 9: Failed Login Threshold Inconsistency\n**Section:** 4.1 vs. 7.1\n**Gap:** Section 4.1 locks an account after 5 consecutive failed attempts, but Section 7.1 alerts the SOC only after 10 failed attempts in 15 minutes. Logically, an account would already be locked before the SOC alert triggers under single-account attack scenarios. The intent (likely cross-account/distributed alerting) isn't documented, creating ambiguity in detection coverage.\n\n**Severity:** **Low**\n\n---\n\n### Finding 10: Privileged Access \"Dual Approval\" Single Point of Failure\n**Section:** 3.3 Privileged Access\n**Gap:** Privileged access requires \"Manager + CISO\" dual approval. With a single CISO (Sandra Mitchell, per the document header), there is no documented delegation if the CISO is unavailable, which could either:\n- Delay legitimate access provisioning\n- Drive users toward the break-glass procedure (Finding 2) inappropriately\nNo backup approver is named, and there is no \"CISO designee\" provision.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 11: Role Change Revocation Sequencing Issue\n**Section:** 6.2 Role Changes\n**Gap:** Policy states \"previous role access is revoked **before** new role access is granted\" and allows \"5 business days\" to adjust access. This could leave employees without any access during transition, creating pressure for managers to bypass the formal process. More importantly, the 5-business-day window combined with the previous-then-new sequence is operationally unrealistic and likely results in non-compliance in practice. No interim/transitional access provision is documented.\n\n**Severity:** **Low**\n\n---\n\n### Finding 12: Exception Process Lacks Risk Acceptance Documentation\n**Section:** 10 Exceptions\n**Gap:** \n- No required risk assessment or risk owner sign-off (only CISO approval)\n- No defined criteria for what may or may not be excepted (e.g., can MFA be excepted? Can access reviews be skipped?)\n- No requirement to notify auditors or include exceptions in management reporting\n- The Section 3.2 footnote 3 MFA exemption appears to be a standing exception that bypasses this formal process entirely\n\n**Severity:** **Medium**\n\n---\n\n### Finding 13: No Defined Authentication Requirements for Non-Production Environments\n**Section:** Various\n**Gap:** Policy applies to production, staging, development, and DR environments (Section 1), but only differentiates idle session timeout for non-production (Section 4.3). There is no clarity on whether:\n- Production data may exist in non-production (and what controls apply)\n- Developer access to production requires additional controls\n- Non-production environments require the same MFA/RBAC enforcement\nThis is a frequent audit issue for financial institutions.\n\n**Severity:** **Medium**\n\n---\n\n## Summary\n\n| Severity | Count |\n|----------|-------|\n| Critical | 2 |\n| High | 3 |\n| Medium | 5 |\n| Low | 3 |\n\n**Top remediation priorities for Q4 2025 audit readiness:**\n1. Eliminate or formalize the contractor MFA exemption (Finding 1)\n2. Strengthen break-glass procedure with mandatory post-review and credential rotation (Finding 2)\n3. Establish dormant account policy (Finding 8)\n4. Define service account credential standards (Finding 5)\n5. Tighten termination SLA and address active session revocation (Finding 3)"
+}

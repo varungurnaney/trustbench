@@ -1,0 +1,76 @@
+{
+  "task_id": "cc9.1-4-003",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T13:01:03.530423",
+  "score": {
+    "task_id": "cc9.1-4-003",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "MongoDB Atlas",
+          "Elevated",
+          "risk acceptance",
+          "CISO",
+          "misconfiguration",
+          "compensating"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "LaunchDarkly",
+          "scope change",
+          "customer segmentation",
+          "August 2025",
+          "Section 4.4",
+          "reassessment",
+          "original assessment"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Stripe",
+          "Auth0",
+          "Critical",
+          "missing",
+          "Section 4.3",
+          "financial data",
+          "authentication"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2485,
+    "output_tokens": 2276
+  },
+  "raw_response": "# CC9.1 Readiness Assessment \u2014 Solaris Tech Inc.\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Control:** CC9.1 \u2014 Risk Mitigation for Vendors and Business Partners\n\n---\n\n## Assessment Summary\n\nAfter cross-referencing the Vendor Risk Management Policy (POL-VRM-006), vendor inventory, risk assessment log, and incident response plan, I identified **three genuine control deficiencies** and **one observation** warranting attention. Two initially apparent issues \u2014 the MongoDB Atlas elevated risk rating and the LaunchDarkly customer data access \u2014 require closer scrutiny and are addressed separately below.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: LaunchDarkly Risk Assessment Not Refreshed Following Material Scope Change\n\n**Severity: High**\n\n**Relevant Documents:**\n- POL-VRM-006, Section 4.4 (Scope Change Reassessment)\n- Vendor Inventory: ST-V-009\n- Risk Assessment Log: ST-V-009\n\n**Gap Description:**\n\nThe vendor inventory notes that LaunchDarkly was granted access to **customer segmentation data in August 2025**, representing a material expansion from the access scope documented at the time of the most recent risk assessment (May 15, 2025), which recorded data access as *\"Internal \u2014 production configuration flags only\"* with the explicit assessor note *\"No customer data access at time of assessment.\"*\n\nPOL-VRM-006, Section 4.4 requires a risk assessment refresh within **30 days** of a material scope change. Access to a new data category \u2014 specifically, the addition of customer data where none previously existed \u2014 is explicitly listed as a qualifying material change. A refresh should have been completed by approximately **September 2025** at the latest.\n\nNo refreshed assessment appears in the risk assessment log, and the vendor's next scheduled assessment is not until May 2026. LaunchDarkly is classified as a **High** tier vendor, and the addition of customer segmentation data may warrant reassessment of whether the vendor's tier classification itself remains appropriate.\n\n**Why This Is Not a False Positive:**\nThis is not a pre-existing accepted risk. The original assessment was accurate at the time; the gap is the **absence of a triggered reassessment** after a documented change event that unambiguously meets the policy's criteria for a refresh.\n\n**Remediation:**\nInitiate an out-of-cycle risk assessment for LaunchDarkly immediately, reassess tier classification given the new data access scope, and implement a process control to ensure scope change notifications from business owners trigger a formal reassessment workflow within the required 30-day window.\n\n---\n\n### Finding 2: Stripe Inc. and Auth0 (Okta) Risk Assessments Absent from Risk Assessment Log\n\n**Severity: High**\n\n**Relevant Documents:**\n- POL-VRM-006, Sections 4.3 and 2 (Annual Risk Assessments, Critical Tier Requirements)\n- Vendor Inventory: ST-V-003, ST-V-004\n- Risk Assessment Log (no entries for ST-V-003 or ST-V-004)\n\n**Gap Description:**\n\nBoth Stripe Inc. (ST-V-003) and Auth0/Okta (ST-V-004) are classified as **Critical** tier vendors processing **customer PII and financial data** and **customer authentication credentials**, respectively. POL-VRM-006, Section 4.3 requires that all Critical and High tier vendors undergo an **annual risk assessment**.\n\nNeither vendor has any entry in the provided risk assessment log. The inventory note for Stripe states only that *\"SOC 2 reviewed annually. PCI DSS maintained,\"* which reflects SOC 2 report review activity (Section 4.1) but does not constitute or substitute for a comprehensive risk assessment under Section 4.3. For Auth0, there is an informational note about the Okta acquisition, but no assessment has been documented.\n\nGiven the criticality of these vendors \u2014 one handling payment data and one controlling authentication for all customers \u2014 the absence of documented risk assessments represents a meaningful gap in the risk mitigation program.\n\n**Why This Is Not a False Positive:**\nSOC 2 report review and risk assessment are distinct activities under the policy. The policy explicitly enumerates risk assessment criteria (incident history, financial stability, regulatory posture, control effectiveness) that extend beyond what a SOC 2 review captures. The Auth0/Okta acquisition event may itself have constituted a material change warranting an assessment under Section 4.4.\n\n**Remediation:**\nComplete and document risk assessments for ST-V-003 and ST-V-004 before or during the audit observation period. For Auth0, the corporate acquisition by Okta and any resulting platform or subservice organization changes should be specifically evaluated. Establish a tracking mechanism to ensure all Critical and High vendors have assessment records with documented due dates.\n\n---\n\n### Finding 3: No Documented Business Continuity or Disruption Risk Mitigation for Critical Vendors\n\n**Severity: Medium**\n\n**Relevant Documents:**\n- POL-VRM-006 (overall framework)\n- Incident Response Plan, Section 7 (Vendor Incident Procedures)\n- CC9.1 Control Objective (risks from business disruptions)\n\n**Gap Description:**\n\nCC9.1 explicitly scopes to risks arising from **potential business disruptions**, not solely security incidents. The provided evidence addresses vendor security incident response (IRP Section 7) and security risk assessments (POL-VRM-006, Section 4.3), but no evidence has been provided demonstrating that Solaris Tech identifies and develops **risk mitigation activities for business disruption scenarios** \u2014 such as vendor outages, vendor insolvency, service discontinuation, or concentration risk.\n\nSpecifically:\n- No evidence of **business continuity or fallback planning** for Critical vendors (AWS, Snowflake, Stripe, Auth0), where a service disruption would directly impact Solaris Tech's ability to deliver its product.\n- No evidence of **concentration risk analysis** (e.g., multiple Critical vendors hosted on AWS infrastructure).\n- The risk assessment template fields visible in the log (data access scope, findings, compensating controls) appear oriented toward security risk, with no documented evaluation of availability or continuity risk.\n\n**Why This Is Not a False Positive:**\nThe IRP covers response *after* a vendor incident is detected; it does not constitute proactive disruption risk mitigation. CC9.1 requires that mitigation activities be *developed*, not merely that incidents be responded to. This gap is in the design of the risk program, not in a single vendor's record.\n\n**Remediation:**\nExpand the risk assessment template to include evaluation of vendor availability risk, concentration risk, and single-point-of-failure exposure. Document contingency or fallback strategies for Critical vendors (e.g., multi-region configurations, alternative provider analysis, contractual uptime SLAs). This need not be a full BCP document but should be demonstrably part of the CC9.1 risk mitigation activity.\n\n---\n\n## Observation (Not a Finding): MongoDB Atlas Elevated Risk Rating\n\n**Relevant Documents:** Risk Assessment Log, ST-V-007\n\nThis item does **not** constitute a control deficiency. The elevated risk rating for MongoDB Atlas reflects a documented incident from 2024. The risk assessment log shows:\n\n- Root cause was attributed to **customer misconfiguration**, not a platform vulnerability\n- MongoDB implemented mandatory security defaults and automated alerts in Q1 2025\n- A post-incident SOC 2 bridge letter confirmed no platform control failures\n- Compensating controls are documented (customer-managed encryption keys, network peering, no public endpoint, quarterly configuration audits)\n- **Formal risk acceptance was documented and CISO-approved on October 25, 2025**\n\nThis is an example of the risk management program functioning as intended. Flagging this as a finding would be a false positive. The auditor should confirm during fieldwork that the risk acceptance documentation is retrievable and that compensating controls are operating effectively.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Primary Policy Reference | Vendor(s) Affected |\n|---|---------|----------|--------------------------|-------------------|\n| 1 | LaunchDarkly risk assessment not refreshed after material scope change | **High** | POL-VRM-006 \u00a74.4 | ST-V-009 |\n| 2 | Stripe and Auth0 missing from risk assessment log | **High** | POL-VRM-006 \u00a74.3 | ST-V-003, ST-V-004 |\n| 3 | No documented business disruption risk mitigation for Critical vendors | **Medium** | CC9.1; POL-VRM-006 overall | All Critical tier vendors |\n\n---\n\n## Auditor Notes for Fieldwork\n\nDuring fieldwork, the following should be confirmed or requested as additional evidence:\n\n1. **LaunchDarkly:** Confirm the exact date customer segmentation data access was provisioned and whether any internal change request or access review ticket exists that would have triggered a reassessment workflow. Determine whether this access changes the vendor's tier classification.\n2. **Stripe / Auth0:** Request any risk assessment documentation that may exist outside the provided log. If assessments were performed but not logged, this becomes a documentation gap rather than an assessment gap \u2014 still a finding, but of lower severity.\n3. **Auth0/Okta Acquisition:** Request documentation of any due diligence or risk review performed at the time of the acquisition to understand whether subservice organization changes or platform migrations occurred.\n4. **Business Disruption:** Request any BCP, vendor contingency, or availability risk documentation that may not have been included in the evidence package.\n5. **SOC 2 Report Review Evidence:** Confirm that CUEC documentation from Critical vendor SOC 2 reviews is being maintained and acted upon, as CUECs directly bear on Solaris Tech's own control responsibilities."
+}

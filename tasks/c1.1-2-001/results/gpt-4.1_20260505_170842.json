@@ -1,0 +1,86 @@
+{
+  "task_id": "c1.1-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:08:42.019821",
+  "score": {
+    "task_id": "c1.1-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-reporting",
+          "TLS 1.0",
+          "deprecated",
+          "CBC",
+          "Confidential"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-011",
+          "legacy-reporting",
+          "auto-renewal",
+          "No",
+          "manual"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-007",
+          "internal-tools",
+          "auto-renewal",
+          "manual"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-reporting",
+          "HSTS",
+          "disabled",
+          "downgrade",
+          "production",
+          "Confidential"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2407,
+    "output_tokens": 1262
+  },
+  "raw_response": "Certainly! Below are the identified findings related to Crestline Data Systems\u2019 encryption posture for data in transit, mapped to the provided evidence and relevant controls (C1.1, CC6.7). Each finding includes a title, location, description, and severity.\n\n---\n\n### 1. **Use of Weak TLS Protocol on Legacy Endpoint**\n   - **Section:** TLS configuration audit report; Endpoint: `legacy-reporting.crestline.com`\n   - **Gap Description:**  \n     The `legacy-reporting.crestline.com` endpoint is configured to accept **TLS 1.0** and uses the outdated cipher suite `TLS_RSA_WITH_AES_128_CBC_SHA`. TLS 1.0 is end-of-life (EOL), deprecated in major browsers, and vulnerable to numerous attacks (e.g., BEAST, POODLE). Use of static RSA key exchange does not provide forward secrecy.\n   - **Severity:** **Critical**\n\n---\n\n### 2. **No Certificate Auto-Renewal for Legacy Reporting**\n   - **Section:** Certificate inventory (CERT-011) & TLS audit report (legacy-reporting.crestline.com)\n   - **Gap Description:**  \n     The certificate for `legacy-reporting.crestline.com` does **not have auto-renewal enabled**. Manual renewal increases risk of lapses, leading to potential service interruption or security exposure (expired certificates are rejected by browsers/clients, causing downtime or potential for man-in-the-middle).\n   - **Severity:** **High**\n\n---\n\n### 3. **No HSTS on Internal Endpoints**\n   - **Section:** TLS configuration audit report; Endpoints: All `.crestline.net` (e.g., `internal-tools.crestline.net`, `grafana.crestline.net`, `kibana.crestline.net`, `vault.crestline.net`, `jenkins.crestline.net`)\n   - **Gap Description:**  \n     **HTTP Strict Transport Security (HSTS)** is disabled on all internal endpoints. While these are not public-facing, lack of HSTS can enable downgrade attacks if an attacker gains internal network access. HSTS is a best practice for enforcing HTTPS and should be evaluated for all endpoints carrying confidential/restricted/internal data, including internal tools, monitoring, and vault.\n   - **Severity:** **Medium**\n\n---\n\n### 4. **Staging Endpoints Lack HSTS**\n   - **Section:** TLS configuration audit report; Endpoints: `staging-api.crestline.com`, `staging-app.crestline.com`\n   - **Gap Description:**  \n     Staging API and app endpoints do **not have HSTS enabled**. While typically lower risk than production, if confidential test data is used or staging mirrors production config, HSTS should be considered to uphold security consistency and reduce risk during internal access.\n   - **Severity:** **Low**\n\n---\n\n### 5. **Manual Certificate Renewal for Internal Endpoints**\n   - **Section:** Certificate inventory; CERT-007, CERT-008, CERT-009, CERT-010 (all `.crestline.net`)\n   - **Gap Description:**  \n     Internal endpoints use certificates issued by a private CA and **do not have automatic renewal**. Manual processes rely on human intervention, increasing the risk of missed renewals or configuration drift, potentially disrupting access to sensitive management interfaces (Vault, Jenkins, Monitoring).\n   - **Severity:** **Medium**\n\n---\n\n### 6. **SFTP Endpoint Out of Encryption Inventory**\n   - **Section:** TLS configuration audit report; Endpoint: `partner-sftp.crestline.com`\n   - **Gap Description:**  \n     The inventory includes SFTP/SSH configuration for `partner-sftp.crestline.com` with strong encryption (`chacha20-poly1305@openssh.com`), but this endpoint **does not appear in the certificate inventory**. While SFTP does not use X.509 certificates, tracking authentication keys for critical SFTP endpoints is recommended for completeness in \"key/cert inventory\" and incident response.\n   - **Severity:** **Low**\n\n---\n\n### 7. **Short Notification Window for Certificate Renewal**\n   - **Section:** Certificate inventory; Multiple certs (e.g., CERT-004, CERT-005, CERT-006)\n   - **Gap Description:**  \n     Several certificates (e.g., for CDN and Docs) have a notification window of **only 14 days** prior to expiry. This is a narrow window for operational response; industry best practice is 30-60 days, particularly with manual approval steps or DNS validation.\n   - **Severity:** **Low**\n\n---\n\n## **Summary Table**\n\n| **Title**                                           | **Section**         | **Gap**                                                                    | **Severity** |\n|-----------------------------------------------------|---------------------|---------------------------------------------------------------------------|:------------:|\n| Use of Weak TLS Protocol on Legacy Endpoint         | TLS Audit           | TLS 1.0 and weak cipher on legacy-reporting.crestline.com                  |   Critical   |\n| No Certificate Auto-Renewal for Legacy Reporting    | Cert Inventory/TLS  | Manual cert renewal for legacy reporting                                   |    High      |\n| No HSTS on Internal Endpoints                       | TLS Audit           | HSTS not enabled for internal tools (vault, Jenkins, etc.)                 |   Medium     |\n| Staging Endpoints Lack HSTS                         | TLS Audit           | HSTS not enabled on staging API/app                                        |     Low      |\n| Manual Cert Renewal for Internal Endpoints          | Cert Inventory      | No auto-renewal for internal endpoint certs                                |   Medium     |\n| SFTP Endpoint Out of Encryption Inventory           | TLS Audit/Cert Inv  | SFTP key tracking not in cert inventory                                    |     Low      |\n| Short Notification Window for Certificate Renewal   | Cert Inventory      | Only 14-day notice for some prod certs                                     |     Low      |\n\n---\n\n### **Action Required**\n\nMost urgent remediation is needed for the use of TLS 1.0 on the legacy reporting endpoint (Critical), and for any endpoints serving clients or external partners using confidential or restricted data without secure protocols or robust certificate management.\n\nLet me know if you need suggested remediation steps or more detailed mapping to SOC 2 controls!"
+}

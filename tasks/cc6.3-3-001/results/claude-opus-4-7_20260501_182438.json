@@ -1,0 +1,104 @@
+{
+  "task_id": "cc6.3-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:24:38.883833",
+  "score": {
+    "task_id": "cc6.3-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.4166666666666667,
+    "f1": 0.5882352941176471,
+    "score": 1.0,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "developer_debug",
+          "write access",
+          "CISO",
+          "approval",
+          "ALL TABLES",
+          "least privilege",
+          "charlie",
+          "diana"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "evan",
+          "dual",
+          "segregation",
+          "etl_pipeline",
+          "developer_debug",
+          "TRUNCATE",
+          "no expiration"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "production",
+          "replica",
+          "masking",
+          "PII",
+          "clearview_production"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "marketing",
+          "HubSpot",
+          "CISO",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "postgres",
+          "superuser",
+          "2023",
+          "db_admin"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3141,
+    "output_tokens": 2662
+  },
+  "raw_response": "# CC6.3 Readiness Assessment \u2014 ClearView Analytics Q4 2025\n\n## Executive Summary\n\nThe control environment for CC6.3 has **significant deficiencies**. While a documented authorization policy exists (POL-DAA-001 v2.3), there are material gaps between policy requirements and actual implementation. Multiple instances of over-privileged access, missing approvals, and violations of least privilege were identified. Overall, **CC6.3 is NOT operating effectively** for the Q4 2025 audit period.\n\n---\n\n## Findings\n\n### Finding 1: Write Access Granted Without Required CISO Approval\n**Related to:** Policy \u00a73.1 / Tickets DAR-403, DAR-405, DAR-407\n**Gap:** Policy \u00a73.1 explicitly states *\"Write access to any customer database requires CISO approval.\"* However, three production read-write access grants were approved without CISO sign-off:\n- DAR-403 (charlie.wong): Manager approval only\n- DAR-405 (diana.jones): Manager approval only\n- DAR-407 (evan.smith): Manager + VP Engineering, no CISO\n\nThis is a direct policy violation and represents an authorization control failure.\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Restricted Data Access Approved by Wrong Authority\n**Related to:** Policy \u00a72 (Authorization Matrix) / Ticket DAR-406\n**Gap:** Policy requires **Data Owner + CISO + Legal** approval for Restricted data. DAR-406 (alice.chen, unmasked PII) was approved by Data Owner + Manager + Privacy Officer \u2014 none of whom satisfy the CISO or Legal requirement. The data was reclassified handling (unmasked PII = Restricted) but used Confidential-level approvers.\n**Severity:** **Critical**\n\n---\n\n### Finding 3: Persistent \"developer_debug\" Role Violates Least Privilege\n**Related to:** PostgreSQL grants / Policy \u00a73.1\n**Gap:** The `developer_debug` role (granted 2023-09-05) holds SELECT/INSERT/UPDATE/DELETE on **ALL TABLES** of `clearview_production`, and is assigned to three named users (charlie.wong, diana.jones, evan.smith). This is a standing, broad-scope privilege used as a substitute for time-limited break-glass access. It directly contradicts least-privilege principles and exists outside the per-ticket authorization model.\n**Severity:** **Critical**\n\n---\n\n### Finding 4: Access Granted with No Expiration\n**Related to:** Ticket DAR-407\n**Gap:** DAR-407 (evan.smith) was granted read-write access to ALL TABLES with `expiration_date: No expiration`. This violates the implicit time-bounded access model evidenced by other tickets and prevents quarterly review effectiveness (Policy \u00a74). Permanent privileged access should not be issued via a ticketed request flow.\n**Severity:** **High**\n\n---\n\n### Finding 5: Segregation of Duties Violation \u2014 evan.smith\n**Related to:** Role memberships\n**Gap:** User `evan.smith` is a member of both `developer_debug` (full DML on production) **and** `etl_pipeline` (SELECT/INSERT/UPDATE/DELETE/**TRUNCATE**). The combination grants a single individual the ability to modify and destroy production data without compensating controls. CC6.3 explicitly references segregation of duties.\n**Severity:** **High**\n\n---\n\n### Finding 6: Service Account Access Granted to a Team Alias\n**Related to:** Ticket DAR-404\n**Gap:** DAR-404 was granted to `marketing-team` (a group/alias), not an individual. The corresponding service account `svc-marketing-hubspot` is appropriate, but the ticket itself records access at a team level, defeating individual accountability and complicating periodic access review attestation.\n**Severity:** **Medium**\n\n---\n\n### Finding 7: \"ALL TABLES\" Justifications Lack Specificity\n**Related to:** Tickets DAR-403, DAR-405, DAR-407\n**Gap:** Justifications such as *\"Debugging production data sync issue\"* or *\"Performance testing data generation\"* do not justify access to **every table** in production. Authorization decisions did not appear to challenge scope, indicating the approval workflow does not enforce least privilege. Diana Jones's \"performance testing\" should occur in a non-production environment.\n**Severity:** **High**\n\n---\n\n### Finding 8: Quarterly Access Review Evidence Not Produced\n**Related to:** Policy \u00a74\n**Gap:** Policy \u00a74 requires quarterly access reviews and monthly access reports. No evidence of the Q3 or Q4 2025 review was provided. Without periodic review, modifications/removals (a CC6.3 requirement) cannot be validated. The presence of a 2023-vintage `developer_debug` grant suggests reviews are not occurring or not resulting in remediation.\n**Severity:** **High**\n\n---\n\n### Finding 9: PII Masking Control Not Verifiable\n**Related to:** Policy \u00a73.4 / `clearview_analytics` grants\n**Gap:** Policy \u00a73.4 states the analytics replica masks PII by default and unmasked access is time-limited to 30 days. The grant configuration shows `data_science_team` has SELECT (and CREATE) on ALL TABLES of `clearview_analytics` but does not evidence column-level masking, view-based masking, or a mechanism enforcing the 30-day limit on DAR-406. The control as designed cannot be tested.\n**Severity:** **Medium**\n\n---\n\n### Finding 10: `data_science_team` Has CREATE Privilege on Analytics\n**Related to:** `clearview_analytics` grants\n**Gap:** The `data_science_team` role holds `CREATE` on the analytics database, enabling creation of objects (and potentially unmasked views over base tables). Combined with Finding 9, this could be used to circumvent default masking. No ticket evidences authorization for CREATE.\n**Severity:** **Medium**\n\n---\n\n### Finding 11: Grants Issued Directly by Superusers Without Ticket Linkage\n**Related to:** All grants in PostgreSQL configuration\n**Gap:** Grants are recorded as issued by `postgres` or `db_admin` with a `granted_date` but no linkage to an authorizing ticket (DAR-###). There is no traceability between policy-mandated approvals and actual database changes, which is a fundamental CC6.3 evidentiary requirement.\n**Severity:** **High**\n\n---\n\n### Finding 12: Backdated Marketing Integration Grant\n**Related to:** DAR-404 vs. `marketing_integration` grant\n**Gap:** DAR-404 is dated 2025-08-20, but the `marketing_integration` role grant is dated 2025-08-22 \u2014 acceptable. However, the ticket expiration is 2026-02-20 (6 months) while other Confidential grants are 90 days. Inconsistent access duration policy is not documented.\n**Severity:** **Low**\n\n---\n\n## Recommended Remediation Priorities\n\n| Priority | Action |\n|---|---|\n| Immediate | Revoke `developer_debug` role; require break-glass JIT access with CISO approval |\n| Immediate | Revoke or remediate DAR-403, DAR-405, DAR-406, DAR-407 |\n| Immediate | Remove dual role membership for evan.smith |\n| 30 days | Implement ticket-to-grant traceability (ticket ID required in grant metadata) |\n| 30 days | Execute and document Q4 2025 access review |\n| 60 days | Implement automated expiration enforcement and PII masking controls |\n\n**Overall CC6.3 Readiness Conclusion:** **Not Ready** \u2014 Critical findings must be remediated before a Type II audit window can produce a clean opinion."
+}

@@ -1,0 +1,86 @@
+{
+  "task_id": "cc6.6-4-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:26:27.392510",
+  "score": {
+    "task_id": "cc6.6-4-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.4,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-internal-grpc-lb",
+          "internal",
+          "Cloud Armor",
+          "Istio mTLS"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-data-export-lb",
+          "external",
+          "no Cloud Armor",
+          "Section 3.1",
+          "signed URLs",
+          "WAF",
+          "customer data"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "vtx-prod-webhook-waf",
+          "adaptive protection"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-mgmt-vpc",
+          "Cloud IDS",
+          "not deployed",
+          "peering",
+          "production",
+          "CI/CD",
+          "management VPC"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2461,
+    "output_tokens": 1083
+  },
+  "raw_response": "Certainly! Below are the identified findings from your provided evidence regarding SOC 2 CC6.6 (boundary protection), each with the requested details.\n\n---\n\n### Finding 1: **Cloud IDS Not Deployed in Management VPC**\n- **Section:** Cloud IDS deployment status; Policy Section 4.1 (\"Cloud IDS must be deployed on all production VPC networks\")\n- **Why it's a gap:** The management VPC (\u201cvtx-mgmt-vpc\u201d) has *no* Cloud IDS deployed. The security policy explicitly requires IDS on \"all production VPC networks.\" Although the management VPC contains CI/CD runners and monitoring infrastructure rather than core production workload, it is connected by peering to production VPCs. This linkage exposes a potential path for external or lateral threats to bypass detection if exploited.\n- **Severity:** **High**\n\n---\n\n### Finding 2: **No Cloud Armor/WAF on External Data Export Endpoint**\n- **Section:** Cloud Armor WAF configurations (\u201cload_balancers_without_cloud_armor\u201d); Policy Section 3.1 (all public-facing endpoints must use Cloud Armor)\n- **Why it's a gap:** The external \u201cvtx-prod-data-export-lb\u201d serves customer data exports but does not have a Cloud Armor policy applied. The endpoint is externally accessible (public-facing). The policy requires *all* public endpoints to be protected by WAF/Cloud Armor, even if additional measures like signed URLs with 1-hour TTL are present. Without WAF, this endpoint is lacking protection against common web attacks or volumetric (DDoS) threats from the internet.\n- **Severity:** **High**\n\n---\n\n### Finding 3: **Reduced WAF Coverage for Webhook Endpoint**\n- **Section:** Cloud Armor WAF configurations (\"cloud_armor_policies\": \"vtx-prod-webhook-waf\"); Policy Section 3.1 (use of OWASP CRS and adaptive protection)\n- **Why it's a gap:** The webhook endpoint has a minimal WAF policy (only SQLi detection) and does not have adaptive protection enabled. Policy requires the full OWASP Core Rule Set and adaptive protection for all public-facing endpoints. As webhook endpoints are commonly targeted by a variety of attacks (not just SQLi), this is less defense than the standard for other endpoints. While risk may be mitigated by endpoint design, the configuration is not in full alignment with documented policy.\n- **Severity:** **Medium**\n\n---\n\n### Finding 4: **No Cloud Armor on Internal Load Balancer (Expected/Acceptable)**\n- **Section:** Cloud Armor WAF configurations (\u201cload_balancers_without_cloud_armor\u201d); Policy Section 3.1 (scope: \u201cAll public-facing endpoints\u201d)\n- **Why it's a gap:** The internal load balancer (\"vtx-prod-internal-grpc-lb\") does not have Cloud Armor, but is used exclusively within the service mesh, is internal-only, and protected by Istio mTLS. The policy requires WAF on public endpoints; internal-only traffic is excluded from that requirement. This is not a gap\u2014*justified configuration* based on documented scoping.\n- **Severity:** **N/A (No finding, well-justified)**\n\n---\n\n### Finding 5: **Alert Threshold Inconsistency in Staging VPC IDS**\n- **Section:** Cloud IDS deployment status; Policy Section 4.1 (full detection signature coverage)\n- **Why it's a gap:** The \u201cvtx-staging-vpc\u201d IDS deployment is configured with a threat severity filter set to \"MEDIUM\" and above, whereas production VPCs have broader coverage including informational threats. While not directly out of policy (policy scope is production), reduced detection in preprod environments may delay visibility into new exploits or misconfigurations, especially if staging environments are internet-reachable or bridged to production via peering.\n- **Severity:** **Low**\n\n---\n\n**Summary Table**\n\n| Title                                                   | Section                                              | Why Gap?                                                                                 | Severity |\n|---------------------------------------------------------|------------------------------------------------------|------------------------------------------------------------------------------------------|----------|\n| Cloud IDS Not Deployed in Management VPC                | IDS deployment status; Policy 4.1                    | No IDS on mgmt VPC (required by policy), VPC has prod connectivity via peering           | High     |\n| No Cloud Armor/WAF on External Data Export Endpoint     | WAF configs; Policy 3.1                              | Public data export endpoint lacks Cloud Armor/WAF, contrary to policy                     | High     |\n| Reduced WAF Coverage for Webhook Endpoint               | WAF configs; Policy 3.1                              | Webhook endpoint has limited WAF rules/adaptive protection not enabled                    | Medium   |\n| No Cloud Armor on Internal Load Balancer (Expected)     | WAF configs; Policy 3.1                              | Internal LB, policy scoped to public endpoints\u2014acceptable configuration                   | N/A      |\n| Alert Threshold Inconsistency in Staging VPC IDS        | IDS deployment status; Policy 4.1                    | Staging IDS filters out lower-severity alerts\u2014potentially reduces early exploit visibility| Low      |\n\n---\n\n**Notes:**\n- **Vendor reviews** were not relevant to CC6.6 and are disregarded.\n- Recommend timely remediation of High/Medium findings to ensure alignment with stated controls and industry norms for system boundary protection."
+}

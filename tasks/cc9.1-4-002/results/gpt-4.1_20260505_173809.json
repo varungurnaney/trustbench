@@ -1,0 +1,68 @@
+{
+  "task_id": "cc9.1-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:38:09.925993",
+  "score": {
+    "task_id": "cc9.1-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.25,
+    "f1": 0.3333333333333333,
+    "score": 0.3333333333333333,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "Cohere AI",
+          "SOC 2",
+          "exception",
+          "compensating",
+          "new vendor"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Elastic Cloud",
+          "VEXC-2025-001",
+          "expired",
+          "no renewed exception",
+          "SOC 2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "Cohere AI",
+          "Critical"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2273,
+    "output_tokens": 1089
+  },
+  "raw_response": "Based on your evidence and instructions, here is a readiness assessment for SOC 2 CC9.1 (Risk Mitigation for Vendors and Business Partners) for Q4 2025. All evidence reviewed for relevant timeframes, policy coverage, exceptions, and actual vendor practice. See findings below.\n\n---\n\n## 1. **Expired Exception for Elastic Cloud without Remediation**\n\n- **Section:** Exception Register (\"VEXC-2025-001, Elastic Cloud\") and Vendor Inventory (PD-V-008)\n- **Gap Explanation:**\n  - The policy (Section 4.3) requires that expired exceptions must be renewed or the vendor must provide the required assessment before continued operation. The exception for Elastic Cloud (high tier, processes security data) expired Oct 31, 2025. The SOC 2 report is still not received, and \"No renewal filed.\" However, the vendor is still listed as \"Active\" in the vendor inventory as of December 2025. This means the expired exception was not formally renewed, and the control requirement for ongoing assessment is unmet.\n- **Severity:** **High**\n  - Elastic Cloud has access to security event data and auth logs (sensitive), and ongoing operation without an active exception or required assessment could expose sensitive data or create an audit finding. The risk is somewhat mitigated by compensating controls (SSO, encrypted data, questionnaires), but policy deviation undermines the control framework\u2019s reliability.\n\n---\n\n## 2. **Timely Review of Vendor Risk for Expired Exceptions**\n\n- **Section:** Exception Process (Policy 4.3) and Exception Register (VEXC-2025-001)\n- **Gap Explanation:**\n  - The policy states that expired exceptions must be either renewed (with updated risk assessment and controls) or the underlying audit evidence (SOC 2) obtained. There's no evidence of a risk review or compensating risk response at/after exception expiry for Elastic Cloud. The lack of de-provisioning or documented risk acceptance after Oct 31, 2025, is a deficiency in risk monitoring.\n- **Severity:** **Medium**\n  - This is separate from the technical vendor \"Active\" status; it is about the process discipline and timely review of continued vendor risk. While actual controls are still present, the lack of documented refresh, renewal, or formal risk acceptance at exception expiry is a process weakness.\n\n---\n\n## 3. **No Current Deficiency Identified: Vendor Tiers and Assessments**\n\n- **Section:** Vendor Risk Policy Sections 2/3/4, Vendor Inventory\n- **Gap Explanation:**\n  - All other vendors are either meeting SOC 2 report review requirements, have valid and documented exceptions (with CISO approval, defined compensating controls, and valid expiration dates within the Q4 2025 period), or are in the appropriate tier with policy-aligned assessment (questionnaire, contract review, DPA, etc.). Figma's exception is still \"Active\" and relates to temporary data access, correctly scoped and documented; Cohere AI is a new vendor with compensating controls and a current exception.\n- **Severity:** **N/A (No finding)**\n  - No gap for these items, included for clarity.\n\n---\n\n## 4. **No Evidence of Lapsed Business Continuity/DR Controls for Vendors**\n\n- **Section:** BCP Summary, Vendor Inventory (Key Dependencies)\n- **Gap Explanation:**\n  - BCP and DR testing is documented, and vendor dependencies (e.g., AWS, Snowflake) are part of a failover-tested architecture. There is no evidence that vendor business disruption risk is unmitigated from a BCP/DR perspective for critical vendors. No finding.\n- **Severity:** **N/A (No finding)**\n\n---\n\n## Summary Table\n\n| # | Title                                         | Section                                    | Why It's a Gap                                         | Severity |\n|---|-----------------------------------------------|--------------------------------------------|--------------------------------------------------------|----------|\n| 1 | Expired Exception for Elastic Cloud           | Exception Register, Vendor Inventory        | Vendor operating post-expiry with no renewed exception | High     |\n| 2 | Timely Review of Vendor Risk for Expired Exception | Exception Register, Policy Section 4.3     | No risk review/renewal at exception expiry (Elastic)   | Medium   |\n| 3 | No Current Deficiency: Vendor Tiers & Assessment | VRM Policy 2-4, Vendor Inventory           | All current exceptions & reviews align with policy     | N/A      |\n| 4 | No Evidence of Lapsed BCP/DR Controls         | BCP, Vendor Inventory                      | BCP/DR tested; no unmitigated vendor business risks    | N/A      |\n\n---\n\n### Remediation Recommendations\n\n- Formalize risk review and either renew the exception for Elastic Cloud or enforce suspension of vendor operations until the required SOC 2 is received. Ensure all exceptions are tracked for timely renewal and that no vendors operate with lapsed exceptions or missing mandatory assessments.\n- Consider audit triggers or automated alerts for expiring exceptions to prevent such lapses in the future.\n\n---\n\n**In summary:** The only control deficiencies relate to failure to renew or remediate a lapsed high-risk exception for Elastic Cloud, and the associated lack of timely risk review/response post-expiry. All other evidence supports effective CC9.1 compliance."
+}

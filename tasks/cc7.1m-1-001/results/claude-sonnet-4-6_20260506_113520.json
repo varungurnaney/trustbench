@@ -1,0 +1,75 @@
+{
+  "task_id": "cc7.1m-1-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T11:35:20.792806",
+  "score": {
+    "task_id": "cc7.1m-1-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.42857142857142855,
+    "f1": 0.6,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "maintenance window",
+          "schedule",
+          "when",
+          "hours",
+          "missing",
+          "not defined"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely manner",
+          "SLA",
+          "severity",
+          "should",
+          "monthly"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "preventive maintenance",
+          "schedule",
+          "frequency",
+          "Section 3.1",
+          "how often",
+          "interval",
+          "missing",
+          "hardware inspection"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 956,
+    "output_tokens": 2422
+  },
+  "raw_response": "# SOC 2 CC7.1 Readiness Assessment \u2014 System Maintenance Policy\n**Entity:** Crestline Technologies\n**Document Reviewed:** POL-MAINT-001 v2.3\n**Control:** CC7.1 \u2014 System Component Maintenance\n**Assessment Date:** Current\n**Assessor Role:** Compliance Auditor\n\n---\n\n## Executive Summary\n\nThe policy establishes a reasonable foundational framework for system maintenance. However, several gaps exist that would prevent an auditor from concluding that the policy fully supports CC7.1's intent of maintaining system components to meet entity objectives. The most significant deficiencies involve the absence of defined patch timelines, unclear end-of-life management, missing monitoring mechanisms, and inadequate coverage of certain component types. Seven findings are documented below.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Patch Timelines Are Not Defined\n\n**Section:** 4.3 \u2014 Patch Deployment\n**Severity:** \ud83d\udd34 Critical\n\n**Gap:**\nThe policy states that patches \"should be deployed in a timely manner based on the severity of the vulnerability or issue being addressed,\" but provides no specific timeframes. There are no defined SLAs tied to severity levels (e.g., Critical, High, Medium, Low). This language is aspirational rather than enforceable.\n\nUnder CC7.1, auditors expect to see defined, measurable patch windows that demonstrate the entity has established concrete commitments to maintaining system components. Without defined timelines, there is no basis for testing compliance, no accountability mechanism, and no assurance that critical vulnerabilities receive appropriate urgency.\n\n**What's Missing:**\n- A severity classification matrix (e.g., Critical/High/Medium/Low)\n- Corresponding maximum remediation windows for each tier (e.g., Critical patches deployed within 72 hours, High within 14 days, Medium within 30 days)\n- An escalation path when timelines cannot be met (e.g., compensating controls, risk acceptance)\n- Distinction between security patches and non-security updates\n\n---\n\n### Finding 2: No End-of-Life (EOL) / End-of-Support (EOS) Management\n\n**Section:** Policy-wide (gap \u2014 no section exists)\n**Severity:** \ud83d\udd34 Critical\n\n**Gap:**\nThe policy contains no provisions addressing software or hardware components that have reached or are approaching end-of-life or end-of-support status. This is a significant omission given that unsupported components represent one of the highest-risk scenarios in maintaining system integrity.\n\nCC7.1 requires the entity to maintain components to meet its objectives \u2014 running unsupported software with no patch availability is directly contrary to this requirement. Auditors routinely test for EOL policies, and the absence of one is commonly cited as a material gap in SOC 2 engagements.\n\n**What's Missing:**\n- A requirement to track EOL/EOS dates for all in-scope components\n- A defined process for evaluating and remediating EOL systems (upgrade, replace, or document accepted risk)\n- Prohibition on or approval requirements for deploying known EOL components\n- Assignment of ownership for EOL lifecycle tracking\n\n---\n\n### Finding 3: Patch Testing Requirements Are Insufficiently Defined\n\n**Section:** 4.2 \u2014 Patch Testing\n**Severity:** \ud83d\udfe0 High\n\n**Gap:**\nSection 4.2 requires patches to be tested in a non-production environment before deployment but provides no detail on what constitutes adequate testing. There is no minimum testing criteria, no defined testing period or duration, no requirement to document test results, and no process for handling patches that fail testing or require emergency bypass of the testing requirement.\n\nThe absence of testing standards creates a risk that the testing step becomes a checkbox exercise with no substantive verification, or that critical patches are rushed to production with no testing under the guise of urgency, with no controls governing that decision.\n\n**What's Missing:**\n- Minimum criteria for what constitutes a passed test (e.g., functionality checks, regression testing, rollback verification)\n- Documentation requirements for test results and approvals\n- A defined process for emergency patches that bypass normal testing, including compensating controls and post-deployment review\n- Alignment with the Change Management Policy (POL-CHG-001) for testing governance\n\n---\n\n### Finding 4: No System/Software Inventory or Asset Scope Definition\n\n**Section:** 2 \u2014 Scope\n**Severity:** \ud83d\udfe0 High\n\n**Gap:**\nThe policy's scope references \"production systems, staging environments, corporate infrastructure, and physical equipment\" but does not require or reference a maintained inventory of the specific components subject to this policy. A maintenance program is only as effective as the population of assets it covers.\n\nWithout an authoritative inventory, there is no way to confirm that all in-scope components are receiving required maintenance, that patch compliance is being tracked comprehensively, or that newly deployed systems are automatically enrolled in the maintenance program. This also creates audit risk \u2014 if the entity cannot enumerate what is in scope, auditors cannot validate coverage.\n\n**What's Missing:**\n- A requirement to maintain (or reference a separately maintained) inventory of all in-scope system components\n- Defined criteria for what makes a system \"in scope\" for maintenance requirements\n- A process for onboarding new systems into the maintenance program at deployment\n- Linkage to a Configuration Management Database (CMDB) or equivalent asset register\n\n---\n\n### Finding 5: No Defined Maintenance Schedule or Frequency Requirements\n\n**Section:** 3.1 \u2014 Preventive Maintenance\n**Severity:** \ud83d\udfe0 High\n\n**Gap:**\nSection 3.1 lists categories of preventive maintenance activities (hardware inspections, log rotation, certificate renewals, etc.) but assigns no frequency requirements to any of them. There is no defined schedule indicating how often each activity must occur, and no requirement to create or maintain a forward-looking maintenance calendar.\n\nWithout defined frequencies, \"preventive maintenance\" as described is a list of activities that may or may not be performed at any interval, which is not a program \u2014 it is a suggestion. Auditors will test whether scheduled maintenance was performed, and without defined schedules, that test cannot be conducted.\n\n**What's Missing:**\n- Explicit frequency requirements for each preventive maintenance activity type (e.g., hardware inspections quarterly, certificate renewal 30 days before expiration)\n- A requirement to maintain a scheduled maintenance calendar\n- Alert or notification requirements for upcoming maintenance windows\n- Ownership assignment for each maintenance activity type\n\n---\n\n### Finding 6: Monitoring and Verification of Patch Compliance Not Addressed\n\n**Section:** Policy-wide (gap \u2014 no section exists)\n**Severity:** \ud83d\udfe0 High\n\n**Gap:**\nThe policy describes how patches are obtained, tested, and deployed, but contains no requirement to monitor, measure, or report on patch compliance across the environment. There is no mention of vulnerability scanning, patch compliance dashboards, or reporting to management on the state of patching.\n\nCC7.1 implicitly requires not just a process for deploying patches, but assurance that the process is working. An entity cannot demonstrate that system components are being maintained without mechanisms to detect gaps \u2014 unpatched systems, missed deployment windows, or newly discovered vulnerabilities that have not been addressed.\n\n**What's Missing:**\n- A requirement for regular vulnerability scanning or patch compliance scanning\n- Defined reporting metrics and reporting frequency (e.g., monthly patch compliance report to IT management)\n- Escalation procedures for systems that fall out of compliance with patch timelines\n- A defined exception management process with risk acceptance requirements\n\n---\n\n### Finding 7: Vendor Maintenance Oversight Controls Are Insufficient\n\n**Section:** 5 \u2014 Vendor Maintenance\n**Severity:** \ud83d\udfe1 Medium\n\n**Gap:**\nSection 5 establishes basic access controls for vendor maintenance activities but lacks several controls necessary to ensure that third-party maintenance activities are adequately governed. There is no requirement to review vendor maintenance activity logs after the fact, no defined approval process before vendor access is granted, and no requirement that vendors provide documentation of work performed independently of Crestline staff.\n\nAdditionally, the requirement for \"advance notice of maintenance activities\" has no defined minimum timeframe, making it effectively unenforceable. Annual review of vendor agreements is mentioned but there is no requirement to verify that current agreements remain adequate or that maintenance activity is performed in accordance with contractual terms.\n\n**What's Missing:**\n- A minimum advance notice requirement for vendor maintenance (e.g., 5 business days for scheduled, 24 hours for urgent)\n- A formal approval workflow before vendor access is provisioned\n- A requirement for vendors to provide post-maintenance reports or work summaries\n- A process to verify vendor maintenance logs against expected scope of work\n- Criteria for evaluating vendor agreement adequacy beyond simply confirming renewal\n\n---\n\n## Summary Table\n\n| # | Finding Title | Section | Severity |\n|---|---------------|---------|----------|\n| 1 | Patch Timelines Are Not Defined | 4.3 | \ud83d\udd34 Critical |\n| 2 | No EOL/EOS Management Process | N/A (missing) | \ud83d\udd34 Critical |\n| 3 | Patch Testing Requirements Insufficiently Defined | 4.2 | \ud83d\udfe0 High |\n| 4 | No System Inventory or Asset Scope Definition | 2 | \ud83d\udfe0 High |\n| 5 | No Maintenance Schedule or Frequency Requirements | 3.1 | \ud83d\udfe0 High |\n| 6 | No Patch Compliance Monitoring or Reporting | N/A (missing) | \ud83d\udfe0 High |\n| 7 | Vendor Maintenance Oversight Controls Insufficient | 5 | \ud83d\udfe1 Medium |\n\n---\n\n## Recommended Remediation Priority\n\n**Immediate (before audit fieldwork):**\nFindings 1 and 2 represent the highest risk to a clean SOC 2 opinion. Patch timeline definitions and EOL management are areas where auditors will directly test for evidence of controls operating effectively. Without defined timelines, no operating effectiveness testing can be completed.\n\n**Short-Term (within 30\u201360 days):**\nFindings 3, 4, 5, and 6 should be addressed through policy revision and, where necessary, implementation of supporting tools or procedures. These gaps collectively indicate that the maintenance program cannot be validated as operating comprehensively.\n\n**Standard Cycle:**\nFinding 7 can be addressed in the normal policy update cycle but should be resolved prior to the audit period to generate sufficient evidence of improved vendor oversight.\n\n---\n\n*This assessment reflects a policy-level review only. Operational effectiveness of controls has not been evaluated and would require separate testing of evidence artifacts including patch records, maintenance logs, scanning reports, and vendor documentation.*"
+}

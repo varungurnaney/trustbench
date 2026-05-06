@@ -1,0 +1,65 @@
+{
+  "report_id": "RT-2025-Q3",
+  "report_title": "Quarterly Restore Test Report -- Q3 2025",
+  "organization": "Apex Digital Inc.",
+  "test_date": "2025-09-18",
+  "test_environment": "us-west-2 (Disaster Recovery)",
+  "test_lead": "Maria Santos, Infrastructure Lead",
+  "approved_by": "David Chen, CISO",
+  "backup_set": {
+    "backup_id": "BKP-2025-0917",
+    "backup_date": "2025-09-17",
+    "backup_type": "full",
+    "source_system": "apex-db-prod-01",
+    "backup_size_gb": 156.2
+  },
+  "restore_timeline": {
+    "test_start": "2025-09-18T10:00:00Z",
+    "phase_1_database_restore": {
+      "start": "2025-09-18T10:00:00Z",
+      "end": "2025-09-18T11:58:00Z",
+      "duration_minutes": 118,
+      "notes": "PostgreSQL cluster restore. 156.2 GB at ~1.3 GB/min throughput."
+    },
+    "phase_2_data_integrity": {
+      "start": "2025-09-18T11:58:00Z",
+      "end": "2025-09-18T12:22:00Z",
+      "duration_minutes": 24,
+      "notes": "SHA-256 checksum verification. 510 of 512 tables passed. 2 tables (audit_log_archive, session_cache) showed row count mismatch. Investigation: partitioned tables with partition pruning behavior difference between prod (PG 15.4) and DR (PG 15.3). Manual data verification confirmed data integrity intact. Root cause: DR PostgreSQL minor version mismatch causes different partition scan plans. Remediation: schedule DR PostgreSQL upgrade to 15.4 before Q4 test."
+    },
+    "phase_3_rto_validation": {
+      "start": "2025-09-18T10:00:00Z",
+      "end": "2025-09-18T13:12:00Z",
+      "duration_minutes": 192,
+      "notes": "Total restore time 192 minutes against 240-minute RTO. 48-minute margin."
+    },
+    "phase_4_application_validation": {
+      "start": "2025-09-18T13:12:00Z",
+      "end": "2025-09-18T13:42:00Z",
+      "duration_minutes": 30,
+      "notes": "API health checks: all 24 endpoints responding. Background job processing: 3 of 3 job queues active. User authentication flow: SSO login, MFA challenge, session creation all verified. Application functionality validation: PASS."
+    },
+    "test_end": "2025-09-18T13:42:00Z",
+    "total_duration_minutes": 192
+  },
+  "data_integrity_results": {
+    "checksum_match": "partial",
+    "tables_verified": 512,
+    "tables_passed": 510,
+    "tables_failed": 2,
+    "failed_tables": ["audit_log_archive", "session_cache"],
+    "failure_root_cause": "PostgreSQL minor version difference (15.4 vs 15.3) causes partition pruning differences. Data verified intact via manual inspection.",
+    "remediation": "DR PostgreSQL upgrade to 15.4 scheduled for October 2025."
+  },
+  "rto_assessment": {
+    "target_minutes": 240,
+    "actual_minutes": 192,
+    "result": "PASS",
+    "margin_minutes": 48
+  },
+  "sign_off": {
+    "test_lead": "Maria Santos",
+    "date": "2025-09-18",
+    "comments": "Test passed with 2 partition-related row count anomalies. Data integrity confirmed via manual verification. DR PostgreSQL upgrade scheduled."
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "report_id": "RT-2025-Q4",
+  "report_title": "Quarterly Restore Test Report -- Q4 2025",
+  "organization": "Pinnacle SaaS Inc.",
+  "test_date": "2025-12-14",
+  "test_environment": "us-west-2 (Disaster Recovery)",
+  "test_lead": "Kevin Yamamoto, Infrastructure Lead",
+  "approved_by": "Sandra Nguyen, CISO",
+  "backup_set": {
+    "backup_id": "BKP-2025-1213",
+    "backup_date": "2025-12-13",
+    "backup_type": "full",
+    "source_system": "pin-db-prod-01",
+    "backup_size_gb": 178.4
+  },
+  "restore_timeline": {
+    "test_start": "2025-12-14T10:00:00Z",
+    "phase_1_database_restore": {
+      "start": "2025-12-14T10:00:00Z",
+      "end": "2025-12-14T12:28:00Z",
+      "duration_minutes": 148,
+      "notes": "PostgreSQL cluster restore from full backup. Data volume 178.4 GB. Restore throughput approximately 1.2 GB/min."
+    },
+    "phase_2_application_config": {
+      "start": "2025-12-14T12:28:00Z",
+      "end": "2025-12-14T13:10:00Z",
+      "duration_minutes": 42,
+      "notes": "Application configuration, secrets, and environment variable restoration from Vault backup."
+    },
+    "phase_3_data_integrity": {
+      "start": "2025-12-14T13:10:00Z",
+      "end": "2025-12-14T13:38:00Z",
+      "duration_minutes": 28,
+      "notes": "SHA-256 checksum verification across all restored tables. Row count validation. Referential integrity checks."
+    },
+    "phase_4_health_checks": {
+      "start": "2025-12-14T13:38:00Z",
+      "end": "2025-12-14T13:55:00Z",
+      "duration_minutes": 17,
+      "notes": "Application endpoint health checks, API response validation, background job processing confirmation."
+    },
+    "test_end": "2025-12-14T13:55:00Z",
+    "total_duration_minutes": 235
+  },
+  "data_integrity_results": {
+    "checksum_match": true,
+    "tables_verified": 847,
+    "tables_passed": 847,
+    "tables_failed": 0,
+    "total_rows_verified": 142389451,
+    "row_count_match": true,
+    "referential_integrity": "pass"
+  },
+  "rto_assessment": {
+    "target_minutes": 240,
+    "actual_minutes": 235,
+    "result": "PASS",
+    "margin_minutes": 5
+  },
+  "quarter_over_quarter_comparison": {
+    "q3_2025": {
+      "test_date": "2025-09-20",
+      "data_volume_gb": 152.1,
+      "total_duration_minutes": 198,
+      "rto_result": "PASS",
+      "margin_minutes": 42
+    },
+    "q4_2025": {
+      "test_date": "2025-12-14",
+      "data_volume_gb": 178.4,
+      "total_duration_minutes": 235,
+      "rto_result": "PASS",
+      "margin_minutes": 5
+    },
+    "data_growth_percent": 17.3,
+    "duration_increase_percent": 18.7
+  },
+  "issues_encountered": [
+    {
+      "issue": "Database restore throughput lower than Q3 due to increased index count",
+      "resolution": "No intervention required -- completed within window",
+      "impact": "Database restore phase 14 minutes longer than Q3"
+    }
+  ],
+  "recommendations": [
+    "Monitor data growth trajectory and assess RTO sustainability",
+    "Consider parallel restore for large tables to improve throughput",
+    "Evaluate pg_restore --jobs parameter tuning"
+  ],
+  "sign_off": {
+    "test_lead": "Kevin Yamamoto",
+    "date": "2025-12-14",
+    "comments": "Test passed. All data integrity checks confirmed. RTO met."
+  }
+}

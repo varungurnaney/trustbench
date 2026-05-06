@@ -1,0 +1,78 @@
+{
+  "task_id": "cc7.3-4-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T19:22:52.178733",
+  "score": {
+    "task_id": "cc7.3-4-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.2857142857142857,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-405",
+          "SEC-EXC-2025-078",
+          "concurrent",
+          "INC-2025-404"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-404",
+          "SEV-1",
+          "ransomware"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-404",
+          "PM-404-AI-03",
+          "Not Started",
+          "ransomware"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-407"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6437,
+    "output_tokens": 3222
+  },
+  "raw_response": "# CC7.3 Incident Response Control \u2014 Readiness Assessment\n\n## Executive Summary\n\nVantage Cloud Systems demonstrates a **mature incident response program** with well-defined policies, documented processes, and effective execution during Q4 2025. The program includes defined severity classifications, response SLAs, post-mortem requirements, and communication protocols. Evidence shows incidents were detected, triaged, contained, and remediated within policy parameters. However, **three control gaps** have been identified\u2014one of which represents a genuine control deficiency, while two represent documentation/process completeness issues.\n\n---\n\n## Detailed Findings\n\n### **1. Incomplete Post-Mortem Action Item Tracking and Closure**\n\n**Related Document:** INC-2025-404 Post-Mortem Report (Section 5)\n\n**Gap Description:**\n\nThe INC-2025-404 post-mortem documents **9 preventive action items** with target dates ranging from December 10, 2025 through February 28, 2026. As of the evidence date (January 18, 2026 based on incident register review), the status tracking shows:\n- **4 items completed** (PM-404-AI-04 only documented as \"Complete\"; others show \"In Progress\" or \"Not Started\")\n- **5 items remain incomplete**, including:\n  - **PM-404-AI-03** (Fine-grained GitHub PATs): Target 2026-01-15 \u2014 **OVERDUE by 3+ days** with \"Not Started\" status\n  - **PM-404-AI-05** (CI pipeline integrity monitoring): Target 2026-01-31\n  - **PM-404-AI-06** (Developer security training): Target 2026-02-15\n  - **PM-404-AI-07** (Second security on-call): Target 2026-01-01 \u2014 **OVERDUE by 18+ days** with \"Not Started\" status\n  - **PM-404-AI-08** (Runtime container monitoring): Target 2026-02-28\n\n**Why This Is a Gap:**\n\nPer IRP-POL-2025-001 (Section 4.3): *\"Items overdue >14 days escalated to CISO.\"*\n\nThe post-mortem action item tracking does not evidence:\n1. **Weekly review cadence** in Tuesday Security Operations standups (policy requirement)\n2. **Escalation documentation** for items overdue >14 days (PM-404-AI-07 appears to be overdue by ~18 days with no escalation evidence provided)\n3. **Completion verification** \u2014 \"In Progress\" items lack target completion dates, milestone checkpoints, or blockers documentation\n\n**Impact:** This represents a **gap in the operational execution** of the incident response program's remediation phase. While the post-mortem itself is comprehensive, the *sustaining* control for action item oversight is not demonstrated.\n\n**Severity: High**\n\n**Recommendation:**\n- Provide evidence of weekly escalation reviews (Slack threads, meeting minutes, Jira velocity reports) for all incidents with open action items.\n- Implement mandatory escalation notification (email/Slack) to CISO when items cross 14-day overdue threshold.\n- For PM-404-AI-07 (on-call staffing), confirm whether delay is due to resourcing constraints and document mitigation (e.g., interim contractor, team reallocation).\n\n---\n\n### **2. Absence of Documented Severity Level Confirmation at Time of INC-2025-405 Triage**\n\n**Related Documents:** \n- INC-2025-405 incident log entry\n- SEC-EXC-2025-078 exception register entry\n- INC-2025-404 post-mortem (timeline context)\n\n**Gap Description:**\n\nINC-2025-405 (unauthorized IAM role assumption) was detected at 03:55 UTC on November 12 and triaged at 04:38 UTC\u2014a 43-minute delay that violated the **30-minute SEV-2 triage SLA** (IRP-POL-2025-001, Section 3.1).\n\nThe evidence provided justifies the delay:\n- **Concurrent SEV-1 incident** (INC-2025-404 ransomware) was consuming the entire security team's attention\n- **Compensating control**: SRE on-call (Mei Lin) acknowledged the PagerDuty alert at 04:05 UTC and performed initial assessment\n- **Risk constraint**: The IAM role's permissions were limited to read-only S3 access with no data exfiltration evidence during the 43-minute window\n- **Outcome**: Containment completed within 4-hour SEV-2 SLA at 06:00 UTC\n\nHowever, the incident register and post-mortem do not contain evidence that the **severity classification (SEV-2) was formally confirmed during triage** (at 04:38 UTC when David Okafor triaged it). The exception register retroactively justifies the delay, but there is no contemporaneous triage documentation (e.g., triage checklist, severity decision log, incident ticket notes at 04:38 UTC) showing the IC or triaging engineer confirmed SEV-2 classification based on initial facts.\n\n**Why This Is a Gap:**\n\nCC7.3 requires the entity to *\"respond to identified security incidents by executing a **defined incident response program**.\"* Part of a defined program is **consistent severity classification at the point of triage**, which ensures:\n1. SLA clocks start accurately\n2. Resource allocation decisions are justified at the time (not retroactively)\n3. Exception handling is triggered **during** the incident, not after\n\nThe exception register shows a **retroactive approval** (requested 2025-11-14, two days after incident), which is appropriate for acknowledging valid delays, but does not demonstrate that severity was **validated in real-time** during triage.\n\n**Impact:** This is a minor documentation gap. The incident was ultimately handled appropriately, SLAs were met on containment, and the exception was valid. However, it indicates potential weakness in the **formal triage process** (e.g., missing incident ticket fields, triage decision checklist, or severity confirmation template).\n\n**Severity: Medium**\n\n**Recommendation:**\n- Provide incident ticket/war room notes from 04:38 UTC showing severity classification decision and rationale (alert severity, initial blast radius assessment, etc.)\n- If unavailable, implement a triage checklist/form that captures:\n  - Initial severity assessment (alert-driven vs. human judgment)\n  - Justification for final severity classification\n  - SLA acknowledgment and clock start time\n  - Escalation path for concurrent incidents\n- Review PagerDuty incident creation templates to ensure severity is auto-populated from alert definitions and confirmed by human triage.\n\n---\n\n### **3. Incident Response Policy Does Not Address Concurrent Incident Prioritization Framework**\n\n**Related Documents:**\n- IRP-POL-2025-001 (Sections 3.1-3.3: SLAs)\n- SEC-EXC-2025-078 exception register\n- INC-2025-404 and INC-2025-405 post-mortems\n\n**Gap Description:**\n\nThe incident response policy defines **individual SLAs for each severity level** (e.g., SEV-2 triage in 30 minutes, SEV-1 in 15 minutes), but does not provide **guidance on how to handle concurrent incidents** when team capacity is constrained.\n\nIn practice, Vantage correctly prioritized INC-2025-404 (SEV-1 ransomware) over INC-2025-405 (SEV-2 unauthorized IAM role) when both incidents were active simultaneously. The exception register documents this decision: *\"Team appropriately prioritized SEV-1 ransomware containment over SEV-2 triage.\"*\n\nHowever, the policy does not codify:\n1. **Severity-based prioritization rule** (e.g., SEV-1 escalations suspend SEV-2/3 response)\n2. **Compensating controls for deprioritized incidents** (e.g., SRE bridge coverage, alert acknowledgment timing)\n3. **Escalation thresholds** (e.g., if SEV-2 SLA breach is >15 minutes due to concurrent incident, auto-escalate to CISO)\n4. **Resource allocation guidance** (e.g., minimum staffing model for concurrent incidents)\n\nThe policy's silence on this scenario means the correct decision was based on **incident commander judgment**, not **documented policy**. If a future incident commander made a different prioritization call, there would be no policy baseline to reference.\n\n**Why This Is a Gap:**\n\nCC7.3 specifies: *\"The entity responds to identified security incidents by executing a **defined incident response program.**\"* A \"defined\" program should include explicit rules for foreseeable scenarios (concurrent incidents). Currently, prioritization is implicit rather than explicit.\n\nThis is a **policy completeness gap**, not an operational failure. The organization responded correctly, but lacks a written control to guide consistent responses.\n\n**Severity: Medium**\n\n**Recommendation:**\n- Add section to IRP-POL-2025-001 (suggest Section 8: \"Concurrent Incident Management\"):\n  - **Prioritization rule:** SEV-1 incidents take absolute priority; SEV-2 SLA suspension is acceptable if IC documents concurrent higher-severity incident with timestamp\n  - **Compensating control expectation:** Non-IC-assigned senior SRE or security engineer must provide alert acknowledgment and initial triage assessment for deprioritized incidents within 50% of SLA (e.g., 15 minutes for SEV-2 within 30-minute window)\n  - **Documentation requirement:** IC must record prioritization decision and justification in incident ticket/war room notes at time of decision\n  - **Escalation trigger:** If deprioritized incident SLA breach exceeds 50% of original SLA, security operations manager notifies CISO and documents in exception register within 4 hours of resolution\n  - **Staffing model:** Recommend second on-call (documented as PM-404-AI-07 action item\u2014currently overdue)\n- Reference this section in future exception approvals to clarify policy alignment.\n\n---\n\n## Findings Summary Table\n\n| Finding | Category | Severity | Evidence Gap | Operational Impact |\n|---------|----------|----------|--------------|-------------------|\n| **1. Action Item Tracking Incomplete** | Remediation | High | No escalation docs for overdue items; no weekly review evidence | Preventive controls may not be implemented; risk of recurrence |\n| **2. Severity Confirmation Not Documented at Triage** | Process | Medium | No incident ticket notes showing SEV-2 confirmation at 04:38 UTC | Triage process may lack formal severity validation step |\n| **3. Concurrent Incident Prioritization Framework Missing** | Policy | Medium | Policy silent on prioritization rules; decision documented only in exception register | Future incidents may lack consistent prioritization guidance |\n\n---\n\n## Control Strengths Identified\n\nThe following control elements are **operating effectively**:\n\n1. \u2705 **Severity Classification**: Clear definitions (Section 2 of policy) with alert-driven detection working well (CrowdStrike, CloudTrail, WAF).\n\n2. \u2705 **SLA Compliance**: Q4 2025 incident log shows strong adherence:\n   - INC-2025-401 (SEV-1): 9 min triage (SLA 15 min) \u2713\n   - INC-2025-402 (SEV-2): 17 min triage (SLA 30 min) \u2713\n   - INC-2025-404 (SEV-1): 8 min triage (SLA 15 min) \u2713\n   - INC-2025-405 (SEV-2): 43 min triage (SLA 30 min, exception documented) \u2713\n   - INC-2025-407 (SEV-2): 23 min triage (SLA 30 min) \u2713\n   - INC-2025-408 (SEV-2): 22 min triage (SLA 30 min) \u2713\n\n3. \u2705 **Post-Mortem Quality**: INC-2025-404 post-mortem exemplifies completeness with 5-Whys RCA, 9 prioritized action items, owner assignment, and detection improvement recommendations.\n\n4. \u2705 **Incident Command Structure**: IC assignments clear; escalation paths functional (Yuki Tanaka as Director of Security effectively led SEV-1 incidents).\n\n5. \u2705 **Evidence Preservation**: Policy requires evidence preservation (Section 6); INC-2025-404 shows forensic process (disk imaging, container image scanning, registry log review).\n\n6. \u2705 **Communication Protocols**: Policy defines internal (15/30-min updates) and external (72-hour breach notification) communications; evidence register confirms timely handling.\n\n7. \u2705 **Detection Capabilities**: Strong EDR (CrowdStrike), SIEM (Splunk), and cloud-native alerting (CloudTrail, S3 anomaly detection) demonstrated in Q4 incidents.\n\n---\n\n## Conclusion\n\nVantage Cloud Systems has established a **mature, documented incident response program** that meets the core requirements of CC7.3. The policy is clear, incident handling is effective, and post-mortems drive improvement. The **three findings identified are gaps in completeness and documentation**, not failures of core incident response execution. \n\n**Remediation of the High-severity action item tracking gap is recommended before year-end** to ensure preventive controls are sustained. The two Medium-severity gaps (triage documentation and concurrent incident policy) should be addressed within Q1 2026."
+}

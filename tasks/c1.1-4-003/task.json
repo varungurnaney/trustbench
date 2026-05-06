@@ -1,0 +1,101 @@
+{
+  "id": "c1.1-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "C1.1",
+  "control_description": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/data-classification-policy.md",
+      "type": "policy",
+      "description": "Pinnacle Analytics Group data classification and handling policy"
+    },
+    {
+      "path": "evidence/database-encryption-report.csv",
+      "type": "report",
+      "description": "Database encryption status report for all production and staging databases showing field-level encryption status"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO-approved exceptions for data protection deviations"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/security-awareness-training-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 security awareness training completion records — not relevant to C1.1 encryption controls"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Pinnacle Analytics Group covering Q4 2025 (October 1 - December 31, 2025). Review all provided evidence and assess compliance with C1.1 (Confidential Information Protection). Cross-reference the data classification policy encryption requirements against the actual database encryption status. Consider whether exceptions adequately address apparent gaps. Not all documents may be relevant to this control. Identify genuine findings only — do not flag properly excepted deviations.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Staging database lacks field-level encryption (valid exception EXC-2025-030)",
+      "description": "The database encryption report shows pag_staging has no field-level encryption on any columns. However, exception EXC-2025-030 is active, CISO-approved, and documents that staging contains only synthetic test data with no real PII. Compensating controls include monthly automated data scans, VPC isolation, and quarterly verification. The December 10 review confirmed synthetic data verification passed. This is NOT a finding — the deviation is appropriately managed and the risk is negligible.",
+      "evidence_sources": ["evidence/database-encryption-report.csv", "evidence/exception-register.csv"],
+      "expected_reasoning": "Staging database has no field encryption → check exception register → EXC-2025-030 active → synthetic data only, no PII → compensating controls verified → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["pag_staging", "EXC-2025-030", "synthetic", "no PII", "approved", "not a finding"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["finding", "gap", "violation", "deficiency"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "pag_prod_support tickets table stores requester_email and requester_name in plaintext with no exception",
+      "description": "The database encryption report shows pag_prod_support.tickets has two PII columns — requester_email and requester_name — stored in plaintext (field_encryption=No, encryption_method=None). Both are classified as Restricted. The notes indicate they are 'PLAINTEXT - stored unencrypted for ticket routing and search' and 'for display in support dashboard.' Policy Section 5.2 requires 'Field-level encryption is required for all Restricted PII columns.' Unlike the staging database (EXC-2025-030) and report cache (EXC-2025-031), there is NO exception in the register covering the support tickets table's unencrypted PII. This is a direct policy violation on a production database.",
+      "evidence_sources": ["evidence/database-encryption-report.csv", "evidence/exception-register.csv", "evidence/data-classification-policy.md"],
+      "expected_reasoning": "Support tickets table has requester_email and requester_name with pii_flag=Yes, field_encryption=No → classified Restricted → policy requires field-level encryption → no exception exists for this table → genuine violation, unlike the excepted staging database.",
+      "detection_criteria": {
+        "required_keywords": ["pag_prod_support", "requester_email", "requester_name", "plaintext", "Restricted", "no exception", "ticket routing", "field-level encryption"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Support ticket description field may contain unprotected PII submitted by users",
+      "description": "The database encryption report notes for pag_prod_support.tickets.description state 'May contain PII submitted by user but not classified as PII column.' The description field is typed as text and classified as Confidential (not Restricted), yet free-text ticket descriptions frequently contain PII such as email addresses, phone numbers, and account details that users include when describing their issues. Policy Section 5.3 prohibits displaying Restricted data in logs, and unstructured PII in ticket descriptions creates a similar exposure. The field is not monitored, encrypted, or scanned for PII content.",
+      "evidence_sources": ["evidence/database-encryption-report.csv", "evidence/data-classification-policy.md"],
+      "expected_reasoning": "Description field is Confidential not Restricted → but notes acknowledge PII may be present → free-text fields commonly contain PII → no scanning or classification mechanism → misclassification risk.",
+      "detection_criteria": {
+        "required_keywords": ["description", "May contain PII", "free-text", "unstructured", "Confidential", "misclassified", "ticket", "support"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Data Asset Inventory appears incomplete — support database PII columns not registered as Restricted requiring encryption",
+      "description": "Policy Section 4.1 requires all systems processing Confidential or Restricted data to be registered in the Data Asset Inventory with encryption status. The support database clearly contains Restricted PII (requester_email, requester_name) that is unencrypted, yet this was not caught by the quarterly Data Asset Inventory review (Section 4.2). Either the inventory is incomplete (support database PII not registered) or the review process is ineffective (registered but not flagged for remediation).",
+      "evidence_sources": ["evidence/database-encryption-report.csv", "evidence/data-classification-policy.md"],
+      "expected_reasoning": "Policy requires Data Asset Inventory for all systems with Restricted data → quarterly review should catch unencrypted PII → support database PII is unencrypted and unexcepted → inventory review either missed it or failed to act.",
+      "detection_criteria": {
+        "required_keywords": ["Data Asset Inventory", "quarterly review", "support", "incomplete", "not registered", "not caught", "Section 4.1", "Section 4.2"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "25 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["data_classification", "field_level_encryption", "database_encryption", "red_herring", "noise_documents", "PII", "support_system", "data_inventory"]
+  }
+}

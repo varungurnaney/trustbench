@@ -1,0 +1,66 @@
+{
+  "task_id": "cc7.2-3-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T11:45:53.924710",
+  "score": {
+    "task_id": "cc7.2-3-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.6666666666666666,
+    "precision": 0.5,
+    "f1": 0.5714285714285715,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "customer-identity-resolution",
+          "CAS-SVC-013",
+          "October 20",
+          "7 business days",
+          "SEC-5892",
+          "Fluent Bit"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "zero alert rules",
+          "CAS-SVC-013",
+          "authentication failures"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "coverage gap"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2713,
+    "output_tokens": 2747
+  },
+  "raw_response": "# CC7.2 Readiness Assessment \u2014 Q4 2025 Observation Period\n**Entity:** Cascade Systems\n**Auditor Review Date:** December 31, 2025\n**Control:** CC7.2 \u2014 Anomaly Monitoring and Security Event Analysis\n\n---\n\n## Executive Summary\n\nEvidence reviewed across three artifacts \u2014 the Security Monitoring Policy (CAS-SEC-POL-009), the SIEM Coverage Tracker, and the Q4 2025 Deployment Log \u2014 reveals **one critical finding and three supporting observations** that collectively represent a material gap in CC7.2 compliance. The primary issue is the absence of SIEM integration for a newly deployed, sensitive production service. Supporting findings address alert coverage, policy SLA adherence, and log type completeness for specific services.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: New Production Service (CAS-SVC-013) Has No SIEM Integration \u2014 72+ Days After Deployment\n\n**Relevant Documents/Sections:**\n- Security Monitoring Policy \u00a73.1 (Coverage Requirement), \u00a73.2 (Integration Validation), \u00a74.1 (Required Alert Categories)\n- SIEM Coverage Tracker \u2014 CAS-SVC-013 row\n- Deployment Log \u2014 DEP-Q4-003\n\n**Severity:** \ud83d\udd34 Critical\n\n**Description:**\n\n`customer-identity-resolution` (CAS-SVC-013) was deployed to production on **October 20, 2025** (DEP-Q4-003). As of December 31, 2025 \u2014 the final day of the audit observation period \u2014 the service remains entirely unintegrated with the SIEM. This represents a gap of at least **72 calendar days**, far exceeding the **7 business day** SLA mandated by Policy \u00a73.1.\n\nThe SIEM Coverage Tracker confirms the service status as \"Pending,\" with zero alert rules configured, no log ingestion occurring, and no `last_ingestion_check` timestamp recorded. The only logging destination is AWS CloudWatch, which is outside the centralized SIEM and not subject to the entity's defined alert rules or correlation logic.\n\nThis gap is particularly significant given the nature of the service:\n- Handles **cross-device customer identity matching and profile unification**\n- Processes **behavioral data and device fingerprints**\n- Ingests approximately **1.2 million events per day**\n- Represents a high-value target for unauthorized access and data exfiltration\n\nPer Policy \u00a73.2, integration is not considered complete without: (a) log ingestion verified in Splunk, (b) at least one service-specific alert rule, and (c) documentation in the Coverage Tracker. None of these conditions are met. Per Policy \u00a74.1, data-handling services require alerts for data access anomalies specifically \u2014 none exist for this service.\n\n**What Is Missing:**\n- SIEM ingestion of any log type from CAS-SVC-013\n- Any alert rules (current count: 0)\n- Integration documentation in the Coverage Tracker\n- Detection capability for authentication failures, data access anomalies, error rate spikes, or availability issues on this service\n\n**Root Cause Indicated in Evidence:**\nThe tracker notes the integration is \"Blocked \u2014 requires custom Fluent Bit parser for service's structured JSON log format,\" with parser development assigned to Security Engineering as a backlog item. A ticket (SEC-5892) was created October 21, but no resolution date is documented, and no interim compensating control is described.\n\n**Auditor Note:** The existence of a ticket does not constitute a compensating control. During the entire Q4 2025 observation period, this service operated in production without any SIEM-based monitoring, anomaly detection, or alerting \u2014 directly contradicting the stated requirements of CC7.2.\n\n---\n\n### Finding 2: Policy SLA Breach \u2014 No Documented Escalation or Exception Process for Integration Delays\n\n**Relevant Documents/Sections:**\n- Security Monitoring Policy \u00a73.1, \u00a75.0 (Monitoring Coverage Audits)\n\n**Severity:** \ud83d\udfe0 High\n\n**Description:**\n\nPolicy \u00a73.1 mandates SIEM integration within 7 business days of production deployment. The CAS-SVC-013 integration has been pending since October 20, 2025 \u2014 a breach of this SLA that persisted through the entire observation period with no documented remediation target, escalation path, or formally approved exception.\n\nCompounding this, Policy \u00a75.0 requires a **quarterly monitoring coverage audit** that reconciles the SIEM service inventory against the deployment registry. The Q4 2025 period covers October through December, and the deployment of an unmonitored service on October 20 should have been surfaced by this process. No evidence of a quarterly coverage audit was provided, and no audit finding or remediation plan referencing CAS-SVC-013 appears in any of the submitted artifacts.\n\n**What Is Missing:**\n- A formal exception or risk acceptance document for the SLA breach\n- Evidence that the quarterly coverage audit was performed in Q4 2025\n- A documented remediation timeline with owner and target date for SEC-5892\n- An escalation record showing Security Engineering's backlog prioritization was formally reviewed\n\n**Auditor Note:** The absence of an exception or audit trail suggests the SLA breach may not have been formally recognized by management, which indicates a process control gap beyond the technical integration gap itself.\n\n---\n\n### Finding 3: Incomplete Log Type Coverage for Two Production Services\n\n**Relevant Documents/Sections:**\n- Security Monitoring Policy \u00a73.2 (Integration Validation), \u00a74.1 (Required Alert Categories)\n- SIEM Coverage Tracker \u2014 CAS-SVC-005, CAS-SVC-009\n\n**Severity:** \ud83d\udfe1 Medium\n\n**Description:**\n\nPolicy \u00a73.2 requires that application logs, access logs, and audit logs be ingested as a baseline for integration completeness. Review of the SIEM Coverage Tracker identifies two services where the ingested log types do not include all three required categories:\n\n| Service | Service ID | Log Types Ingested | Missing Required Types |\n|---|---|---|---|\n| notification-engine | CAS-SVC-005 | delivery_logs, error_logs | access_logs, audit_logs |\n| webhook-processor | CAS-SVC-009 | delivery_logs, error_logs, retry_logs | access_logs, audit_logs |\n\nNeither service ingests **access logs** or **audit logs**, both of which are explicitly required by \u00a73.2 and are necessary to support alert categories under \u00a74.1 (specifically authentication failures and data access anomalies).\n\n`notification-engine` is also notable because DEP-Q4-007 shows it underwent a deployment with a rollback event on November 18, 2025 \u2014 during the audit period. Without audit logs in the SIEM, the rollback activity and any anomalies surrounding it would not have been captured in centralized security monitoring.\n\n**What Is Missing:**\n- Access logs for CAS-SVC-005 and CAS-SVC-009\n- Audit logs for CAS-SVC-005 and CAS-SVC-009\n- Corresponding alert rules that depend on those log types (e.g., access anomaly detection)\n\n**Auditor Note:** Both services have been integrated since 2022\u20132023, suggesting this is not a new gap but a persistent deficiency in the integration baseline. This raises questions about whether the original integration validation (\u00a73.2) was performed rigorously.\n\n---\n\n### Finding 4: Alert Rule Depth for Low-Count Services May Be Insufficient to Satisfy \u00a74.1\n\n**Relevant Documents/Sections:**\n- Security Monitoring Policy \u00a74.1 (Required Alert Categories)\n- SIEM Coverage Tracker \u2014 CAS-SVC-009, CAS-SVC-007, CAS-SVC-014\n\n**Severity:** \ud83d\udfe1 Medium\n\n**Description:**\n\nPolicy \u00a74.1 requires that every production service have alert rules covering at minimum four categories: error rate anomalies, authentication failures, data access anomalies (for data-handling services), and availability/health check failures. Using four required categories as a floor, any service with fewer than four alert rules warrants scrutiny.\n\nThree services have alert rule counts at or near this threshold:\n\n| Service | Service ID | Alert Rules Configured | Concern |\n|---|---|---|---|\n| webhook-processor | CAS-SVC-009 | 6 | Also missing access/audit logs (see Finding 3); some rules may lack required log sources |\n| config-service | CAS-SVC-014 | 5 | Handles configuration changes \u2014 a high-sensitivity operation; low rule count relative to risk |\n| notification-engine | CAS-SVC-005 | 6 | Also missing access/audit logs; alert rules covering auth failures cannot be effective without auth log ingestion |\n\nThe concern is not the raw count in isolation, but the **combination** of low alert counts with incomplete log ingestion. For CAS-SVC-005 and CAS-SVC-009, it is not possible to confirm that all four required alert categories are effectively implemented when two of the three required log source types are absent. For CAS-SVC-014, configuration change logs represent a critical audit surface (unauthorized configuration changes are a common indicator of compromise), and 5 rules may not provide sufficient coverage.\n\n**What Is Missing:**\n- A mapping of each service's alert rules to the four required categories in \u00a74.1 was not provided as evidence; without this, completeness cannot be confirmed\n- For CAS-SVC-005 and CAS-SVC-009, authentication failure alerts cannot be functional without authentication/access log ingestion\n\n**Auditor Note:** The auditor was not provided with alert rule detail (e.g., a Splunk alert inventory). Evidence of the rule-to-category mapping should be requested as a supplemental evidence item. This finding may be upgraded to High if that evidence cannot be produced.\n\n---\n\n## Summary Table\n\n| # | Finding Title | Policy Section | Severity |\n|---|---|---|---|\n| 1 | CAS-SVC-013 has no SIEM integration 72+ days post-deployment | \u00a73.1, \u00a73.2, \u00a74.1 | \ud83d\udd34 Critical |\n| 2 | No documented exception, escalation, or Q4 coverage audit for integration SLA breach | \u00a73.1, \u00a75.0 | \ud83d\udfe0 High |\n| 3 | Incomplete log type ingestion for notification-engine and webhook-processor | \u00a73.2, \u00a74.1 | \ud83d\udfe1 Medium |\n| 4 | Alert rule sufficiency unverifiable for low-count services with log gaps | \u00a74.1 | \ud83d\udfe1 Medium |\n\n---\n\n## Recommended Management Responses\n\n1. **Finding 1:** Implement an interim compensating control for CAS-SVC-013 immediately (e.g., CloudWatch metric alarms forwarded to the SOC, manual log review schedule) and establish a hard remediation deadline for full Fluent Bit parser development and SIEM integration. Escalate SEC-5892 out of the backlog.\n\n2. **Finding 2:** Formalize an exception management process for SIEM integration SLA breaches, including required risk acceptance sign-off by the CISO. Provide evidence that the Q4 2025 quarterly coverage audit was performed or, if not, acknowledge the process gap.\n\n3. **Finding 3:** Remediate missing access and audit log ingestion for CAS-SVC-005 and CAS-SVC-009. Review all other integrated services against the \u00a73.2 baseline to confirm no additional gaps exist.\n\n4. **Finding 4:** Provide a supplemental evidence artifact mapping all service alert rules to the four required categories in \u00a74.1. Address any identified coverage gaps, with priority on services that also have log ingestion deficiencies."
+}

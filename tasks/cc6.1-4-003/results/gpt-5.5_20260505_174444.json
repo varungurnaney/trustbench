@@ -1,0 +1,82 @@
+{
+  "task_id": "cc6.1-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:44:44.075982",
+  "score": {
+    "task_id": "cc6.1-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.2222222222222222,
+    "f1": 0.3333333333333333,
+    "score": 0.3333333333333333,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "root",
+          "BG-2025-041",
+          "break-glass",
+          "dual approval",
+          "post-review"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "routine-maintenance",
+          "ticket",
+          "ServiceNow",
+          "11"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "BG-2025-044",
+          "Pending",
+          "5 business days",
+          "post-review",
+          "INC-2025-2103"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "sarah.okonkwo",
+          "exceeded"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4791,
+    "output_tokens": 4497
+  },
+  "raw_response": "## Findings \u2014 CC6.1 Logical Access Security Readiness Assessment\n\n### 1. Standard privileged access sessions did not evidence required dual approval\n\n**Related document / section:**  \n- Access Control Policy, Section 5.1 \u2014 CyberArk Privileged Access  \n- Q4 2025 Privileged Access Session Log  \n- Exception Register, EXC-2025-050\n\n**Why this is a gap:**  \nPolicy requires dual approval for privileged checkouts: **Manager + CISO**. However, the Q4 CyberArk log shows nearly all standard privileged sessions had:\n\n- `approver_1 = Anil Kapoor`\n- `approver_2 = auto-approved`\n\nNo manager approval is evidenced for those standard privileged sessions.\n\nThe exception register includes EXC-2025-050 for **auto-approval for CISO privileged checkouts**, but that exception appears to apply to privileged sessions initiated by the CISO, not to privileged sessions by other users such as Marcus Webb, Kevin Tran, or Sarah Okonkwo. Therefore, the exception does not appear to justify auto-approval of the second approver for standard privileged access by non-CISO users.\n\n**Severity:** High\n\n---\n\n### 2. Several standard privileged sessions lacked valid ServiceNow ticket references\n\n**Related document / section:**  \n- Access Control Policy, Section 5.1 \u2014 CyberArk Privileged Access  \n- Q4 2025 Privileged Access Session Log\n\n**Why this is a gap:**  \nPolicy requires each privileged checkout to reference an approved ServiceNow ticket, specifically an **RITM or CHG number**. Multiple Q4 standard privileged sessions list the ticket reference as `routine-maintenance` rather than an approved ServiceNow RITM or CHG identifier.\n\nExamples include:\n\n- PAM-Q4-002  \n- PAM-Q4-004  \n- PAM-Q4-007  \n- PAM-Q4-008  \n- PAM-Q4-010  \n- PAM-Q4-011  \n- PAM-Q4-015  \n- PAM-Q4-017  \n- PAM-Q4-019  \n- PAM-Q4-022  \n- PAM-Q4-024  \n- PAM-Q4-026  \n- PAM-Q4-029  \n- PAM-Q4-031\n\nThese sessions involve `prod-rds-admin`, which is a privileged production database credential. Without a valid ticket reference, there is insufficient evidence that access was tied to approved work.\n\n**Severity:** High\n\n---\n\n### 3. One privileged session exceeded the two-hour maximum duration\n\n**Related document / section:**  \n- Access Control Policy, Section 5.1 \u2014 CyberArk Privileged Access  \n- Q4 2025 Privileged Access Session Log\n\n**Why this is a gap:**  \nPolicy limits privileged CyberArk sessions to a maximum duration of **2 hours** and states that CyberArk enforces automatic session termination at the maximum duration.\n\nSession **PAM-Q4-021** shows:\n\n- User: `sarah.okonkwo`\n- Credential: `prod-k8s-admin`\n- Checkout: `2025-11-22T10:15:00`\n- Check-in: `2025-11-22T13:45:00`\n- Duration: `210 minutes`\n\nThis exceeded the two-hour limit by 90 minutes. This indicates either the maximum duration control was not enforced or an override occurred without documented approval or exception.\n\n**Severity:** High\n\n---\n\n### 4. Break-glass sessions were missing from the Q4 CyberArk privileged access log\n\n**Related document / section:**  \n- Access Control Policy, Section 7.2 \u2014 Break-Glass Procedure  \n- Break-glass Emergency Access Log  \n- Q4 2025 Privileged Access Session Log\n\n**Why this is a gap:**  \nThe CyberArk log is presented as showing **all elevated access checkouts** for Q4. Break-glass credentials are required to be retrieved from the CyberArk vault, and break-glass activity should therefore be represented in the privileged access session log.\n\nHowever, the following Q4 break-glass events appear in the break-glass log but are not present in the Q4 CyberArk session log:\n\n- **BG-2025-042** \u2014 `2025-11-15T01:05:00`, Sarah Okonkwo, `prod-k8s-admin`, INC-2025-1923  \n- **BG-2025-043** \u2014 `2025-12-01T18:40:00`, Marcus Webb, `prod-ec2-admin`, INC-2025-2045\n\nOther break-glass events, such as BG-2025-041 and BG-2025-044, do appear in the CyberArk log, which makes the absence of BG-2025-042 and BG-2025-043 a reconciliation issue.\n\nThis creates an audit trail completeness concern for emergency privileged access.\n\n**Severity:** High\n\n---\n\n### 5. Break-glass post-incident review was not completed within the required timeframe\n\n**Related document / section:**  \n- Access Control Policy, Section 7.2 \u2014 Break-Glass Procedure  \n- Break-glass Emergency Access Log  \n- Exception Register, EXC-2025-051\n\n**Why this is a gap:**  \nPolicy requires post-incident review of break-glass actions within **5 business days**. The break-glass log shows:\n\n- **BG-2025-044**\n  - Date invoked: `2025-12-12T03:15:00`\n  - Incident: INC-2025-2103\n  - Post-review status: `Pending`\n  - Post-review date: blank\n  - Post-review reviewer: blank\n\nThis incident occurred before the holiday exception period of December 20 to January 5. Therefore, EXC-2025-051 does not appear to apply. The post-review should have been completed by approximately December 19, 2025, but remained pending in the evidence provided.\n\n**Severity:** Medium\n\n---\n\n### 6. Break-glass approvals included apparent self-approval by the requestor\n\n**Related document / section:**  \n- Access Control Policy, Section 7.2 \u2014 Break-Glass Procedure  \n- Break-glass Emergency Access Log  \n- Q4 2025 Privileged Access Session Log\n\n**Why this is a gap:**  \nPolicy requires dual verbal authorization from the CISO and VP Engineering for break-glass access. In Q4, Marcus Webb was both the requestor and one of the recorded verbal approvers for certain break-glass events.\n\nExamples:\n\n- **BG-2025-041**\n  - Requestor: `marcus.webb`\n  - Verbal approver 1: Anil Kapoor\n  - Verbal approver 2: Marcus Webb\n  - Credential used: `aws-root-account`\n\n- **BG-2025-043**\n  - Requestor: `marcus.webb`\n  - Verbal approver 1: Anil Kapoor\n  - Verbal approver 2: Marcus Webb\n  - Credential used: `prod-ec2-admin`\n\nWhile Marcus Webb may be the VP Engineering, using the requestor as one of the required approvers weakens the intended dual-control safeguard. The policy does not define an alternate approver path when the VP Engineering is the requestor.\n\nThis is especially significant for BG-2025-041 because it involved AWS root account usage.\n\n**Severity:** High\n\n---\n\n### 7. Insufficient evidence that standard privileged credentials were rotated after each session\n\n**Related document / section:**  \n- Access Control Policy, Section 5.1 \u2014 CyberArk Privileged Access  \n- Q4 2025 Privileged Access Session Log  \n- Break-glass Emergency Access Log\n\n**Why this is a gap:**  \nPolicy requires credentials to be rotated after each privileged session checkout. The break-glass log includes explicit fields showing whether credentials were rotated and the rotation timestamp. However, the Q4 standard privileged access session log does not include evidence of credential rotation after standard sessions.\n\nBecause the standard CyberArk log does not include rotation status, rotation timestamp, or related control evidence, there is insufficient evidence to conclude that credential rotation occurred after each standard privileged checkout.\n\n**Severity:** Medium\n\n---\n\n### 8. Insufficient evidence of required monthly privileged access reviews\n\n**Related document / section:**  \n- Access Control Policy, Section 5.2 \u2014 Privileged Access Reviews  \n- Q4 2025 Privileged Access Session Log\n\n**Why this is a gap:**  \nPolicy requires the CISO to perform monthly reviews of all privileged access sessions, including:\n\n- Validation of ticket references\n- Session recording spot-checks of at least 10%\n- Identification of anomalous usage patterns\n\nThe evidence provided includes the Q4 CyberArk session log but does not include monthly review records for October, November, or December 2025. There is no evidence of:\n\n- Review completion dates\n- Reviewer sign-off\n- Ticket validation results\n- Session recording sample selections\n- Anomaly follow-up\n\nThis is a control operation evidence gap. It is also notable because several issues in the Q4 log \u2014 such as `routine-maintenance` ticket references, auto-approved second approvals, and a 210-minute session \u2014 should likely have been identified during monthly review.\n\n**Severity:** Medium"
+}

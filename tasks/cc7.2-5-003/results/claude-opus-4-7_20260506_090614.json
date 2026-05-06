@@ -1,0 +1,89 @@
+{
+  "task_id": "cc7.2-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T09:06:14.374036",
+  "score": {
+    "task_id": "cc7.2-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "claims-adjudication-engine",
+          "90 days",
+          "misclassified",
+          "Application",
+          "audit records",
+          "regulatory",
+          "state insurance",
+          "SOX"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "mixed log stream",
+          "combined",
+          "application",
+          "audit",
+          "classification",
+          "onboarding"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "PII",
+          "SSN",
+          "redaction",
+          "data minimization"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "November 11",
+          "Veterans Day",
+          "retroactive",
+          "daily log review",
+          "holiday"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7350,
+    "output_tokens": 3059
+  },
+  "raw_response": "# CC7.2 Readiness Assessment \u2014 Aether Insurance Log Management & Monitoring\n\n## Overall Assessment\n\nAether Insurance demonstrates a generally mature log management and monitoring program supporting CC7.2. The policy (ATH-SEC-POL-012 v2.8) is comprehensive, daily SIEM reviews are consistently performed by trained personnel with documented sign-off, and 22 of 24 log streams meet retention requirements. Anomalies identified during review (e.g., 10/2 password spray, 10/9 export anomaly, 10/28 IAM role change) show evidence of analysis and disposition, which is the core of CC7.2.\n\nHowever, a material retention gap on a regulated audit log stream and several control weaknesses prevent a clean readiness opinion. Findings below.\n\n---\n\n## Findings\n\n### Finding 1: Claims Adjudication Engine Audit Records Retained Only 90 Days vs. 7-Year Requirement\n\n- **Related to:** Retention Compliance Audit \u2014 `non_compliant_streams`; Policy \u00a73.1 (7-year audit/transaction retention); \u00a74.1 (tamper protection); \u00a75.1 (SIEM onboarding).\n- **Why it's a gap:** The `claims-adjudication-engine-logs` stream commingles application diagnostic data with adjudication decision audit records (approvals/denials, override justifications, model outputs, dispute resolutions) \u2014 clearly regulatory records under state insurance law and SOX. It was misclassified as \"Application\" at onboarding (March 2025), retained for only 90 days, with no S3 cold archive and no Object Lock. This means **~9 months of regulated audit records (\u22481.1 million decisions) have already aged out and are unrecoverable**. This is not a future-dated risk; it is an existing loss of records. The misclassification also bypassed the policy's onboarding review (\u00a75.1) and was not captured in the exception register (\u00a77), indicating the classification/onboarding control itself failed. CC7.2 depends on the availability of logs for anomaly analysis; loss of decision audit trails directly undermines the entity's ability to investigate fraud, errors, or insider misuse on a Restricted-classified system.\n- **Severity:** **Critical**\n\n---\n\n### Finding 2: Onboarding Classification Control Failed to Detect Mixed Log Stream\n\n- **Related to:** Policy \u00a75.1 (SIEM integration within 5 business days); implicit log classification process.\n- **Why it's a gap:** The policy mandates SIEM onboarding but does not define a formal log classification review (e.g., requirement to inspect log content, identify embedded audit/transaction records, or sign-off by a data steward). The Claims Adjudication Engine was onboarded by the infrastructure team as \"Application\" without security or compliance review of log content. This is a systemic design gap: the same misclassification could exist on other services that emit mixed-purpose logs. No periodic recertification of log stream classifications is required.\n- **Severity:** **High**\n\n---\n\n### Finding 3: Quarterly Retention Audit Detected the Issue Late\n\n- **Related to:** Policy \u00a73.2 (\"Retention compliance is verified quarterly via automated audit\").\n- **Why it's a gap:** The non-compliant stream was deployed in March 2025 but only flagged in the Q4 2025 audit (December 28, 2025) \u2014 approximately 9 months after deployment, well past the point at which records could be recovered. Quarterly cadence appears too infrequent for a control whose failure produces irreversible record loss. Earlier detection mechanisms (e.g., automated check at SIEM onboarding, monthly delta scans for new streams) are not implemented. Q1, Q2, and Q3 audit reports for 2025 were also not provided as evidence \u2014 the auditor cannot confirm those audits occurred.\n- **Severity:** **High**\n\n---\n\n### Finding 4: PII in Document OCR Logs \u2014 Data Minimization / Confidentiality Concern\n\n- **Related to:** Retention Audit `informational_items`; Data Classification Quick Reference (Restricted data).\n- **Why it's a gap:** OCR processing logs contain unredacted PII (names, policy numbers, SSNs) in debug snippets. While retention is compliant, log content includes Restricted data without redaction, expanding the blast radius of any log-store compromise and creating a confidentiality control concern adjacent to CC7.2 (and directly relevant to CC6.1/Privacy criteria). The recommendation has been noted but no remediation timeline, owner, or compensating control is documented.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: November 11 Holiday Coverage Gap in Daily Log Review\n\n- **Related to:** Policy \u00a76.1 (\"Security Operations must conduct daily log review\"); Daily Review records 2025-11-11 / 2025-11-12.\n- **Why it's a gap:** The policy requires *daily* review with no holiday exception. On 11/11 (Veterans Day) no review occurred; the 11/12 entry notes retroactive review. The policy does not authorize retroactive review or holiday exemptions, and there is no documented compensating control (e.g., on-call review of high-severity alerts, automated escalation suppression bypass). While 24/7 alerting likely covers actual incidents, the policy is not aligned with operational practice. Either the policy needs an authorized exception process for holidays/weekends or staffing must provide true daily coverage.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: Weekly Privileged Activity Review Evidence Not Provided\n\n- **Related to:** Policy \u00a76.2 (weekly privileged activity, admin changes, data access pattern review).\n- **Why it's a gap:** The evidence package includes daily SIEM dashboard reviews but no separate weekly privileged activity review records. The daily review dashboards include \"Priv activity\" but the policy distinguishes a separate weekly deep-review of privileged accounts. The auditor cannot conclude this control is operating without dedicated evidence (reviewer, date, accounts/changes reviewed, findings, sign-off).\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: Reviewer Concentration / Segregation Concern\n\n- **Related to:** Daily review log; Policy \u00a76.1.\n- **Why it's a gap:** Across ~33 review days, only two reviewers (Alex Nguyen and Maria Costa) are recorded. There is no evidence of independent review, no rotation, no supervisor sampling, and no second-line oversight of review quality. If either reviewer is also responsible for tuning the alerts or operating monitored systems, an independence concern arises. Additionally, review durations are consistently 25\u201335 minutes for 4 dashboards covering all production \u2014 adequacy of depth cannot be confirmed without sampling.\n- **Severity:** **Low**\n\n---\n\n### Finding 8: No Evidence of Anomaly Analysis Procedures or Escalation Thresholds\n\n- **Related to:** CC7.2 (\"anomalies are analyzed to determine whether they represent security events\"); Policy \u00a75.2, \u00a76.\n- **Why it's a gap:** The policy lists alert categories (auth failures, error anomalies, data access anomalies, availability) but does not define analysis criteria, severity classification, escalation thresholds, or SLAs for moving an anomaly to a security event/incident. The 10/2 password spray was escalated to incident response \u2014 good \u2014 but the pathway is not documented. CC7.2 specifically requires that anomalies be *analyzed to determine whether they represent security events*; documented procedures supporting this determination are absent from the evidence.\n- **Severity:** **Low**\n\n---\n\n## Recommended Remediation Priorities\n\n1. **Immediate (Critical):** Reconfigure `claims-adjudication-engine-logs` for 7-year retention with S3 Object Lock; assess regulatory notification obligations for already-lost records; document the exception and remediation in the exception register with CISO/CCO sign-off.\n2. **30 days (High):** Implement automated SIEM onboarding gate that requires log content classification review; perform a one-time recertification of all 24 streams against actual log content.\n3. **30\u201360 days (High/Medium):** Increase retention audit cadence to monthly for new streams; provide Q1\u2013Q3 2025 audit evidence; formalize holiday review procedure or staffing coverage; produce weekly privileged review records.\n4. **90 days (Medium/Low):** Implement PII redaction in OCR logs; document anomaly analysis and escalation procedures; introduce reviewer rotation and supervisory sampling.\n\n## Readiness Opinion\n\n**Not ready for unqualified SOC 2 opinion on CC7.2** for the Q4 2025 observation period due to Finding 1 (Critical \u2014 actual loss of regulated audit records on a Restricted-data system) and the supporting design gaps in Findings 2 and 3. The control as designed is reasonable; the control as operating has a material exception. Remediation of Finding 1, combined with evidence of detective control improvements, would support a clean opinion in a subsequent observation period."
+}

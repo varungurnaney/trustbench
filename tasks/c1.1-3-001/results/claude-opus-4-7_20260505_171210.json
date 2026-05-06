@@ -1,0 +1,94 @@
+{
+  "task_id": "c1.1-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:12:10.625202",
+  "score": {
+    "task_id": "c1.1-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.5714285714285714,
+    "f1": 0.7272727272727273,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "crestline_analytics",
+          "customer_profiles",
+          "plaintext",
+          "email",
+          "phone",
+          "field-level encryption",
+          "ETL",
+          "nightly"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "GraphQL",
+          "DLP",
+          "not yet integrated",
+          "bulk",
+          "pagination",
+          "October 2025",
+          "DLP-API-001",
+          "REST",
+          "known_gaps"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "DLP-DAM-001",
+          "crestline_analytics",
+          "customer_profiles",
+          "engagement_events",
+          "not monitored",
+          "plaintext",
+          "bulk SELECT"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "GraphQL",
+          "October 2025",
+          "DPIA",
+          "DLP rules"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7587,
+    "output_tokens": 3257
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 Control C1.1\n## Crestline Data Systems \u2014 Q4 2025 Review\n\nAfter cross-referencing the Data Classification Policy (POL-DCP-003 v4.0) against the data flow diagram, database encryption status report, and DLP configuration, I have identified the following findings related to the protection of confidential information.\n\n---\n\n## Finding 1: Plaintext PII in Analytics Database Violates Field-Level Encryption Requirement\n\n**Related Section:** Policy Section 3.2 / 4.1 (Database Storage); Database Encryption Status Report (`crestline_analytics.customer_profiles` and `engagement_events`)\n\n**Gap Description:**\nThe Data Classification Policy explicitly classifies email addresses and phone numbers as **Restricted** data requiring **field-level AES-256 encryption** in all database storage. However, the database encryption status report shows the following plaintext PII columns in the `crestline_analytics` database:\n\n- `customer_profiles.email` \u2014 PLAINTEXT (copied via nightly ETL)\n- `customer_profiles.phone` \u2014 PLAINTEXT (copied via nightly ETL)\n- `engagement_events.user_email` \u2014 PLAINTEXT (denormalized for query performance)\n\nThe notes column explicitly acknowledges these fields are stored unencrypted \"for query performance,\" directly contradicting Policy Section 3.2 which states: *\"The following are classified as Restricted and require field-level encryption in all database storage.\"*\n\nThe data flow diagram (Section 3.1) documents this ETL flow but does not flag the encryption downgrade. The Analytics Team is listed as the Data Owner, but no policy exception or DPIA approval is referenced.\n\n**Severity:** **Critical**\n\nThis is a direct, documented violation of the entity's stated confidentiality policy affecting customer PII in a production database.\n\n---\n\n## Finding 2: GraphQL API Not Covered by DLP Bulk Export Controls\n\n**Related Section:** DLP Configuration (`api_gateway.known_gaps`); Data Flow Diagram Section 4.2; Policy Section 5.1\n\n**Gap Description:**\nPolicy Section 5.1 requires DLP coverage for \"API data exports (API Gateway DLP rules).\" The DLP configuration explicitly acknowledges this gap: *\"GraphQL API (api.crestline.com/graphql) launched October 2025 \u2014 not yet integrated with DLP rules. Bulk query capability exists via GraphQL pagination.\"*\n\nThe data flow diagram corroborates the risk: the GraphQL endpoint supports nested queries, batch query aliases, and cursor-based pagination over the users connection \u2014 explicitly noting *\"a single query can retrieve all user PII by paginating through the users connection. Rate limiting is per-query, not per-record, so bulk extraction is possible within rate limits.\"*\n\nDLP-API-001 only covers REST `/api/v2/*` endpoints. The GraphQL endpoint has been live in production for the entire Q4 2025 audit period (October 1 \u2013 December 31) with no compensating bulk-export detection, while simultaneously being designed in a way that defeats the per-query rate limiting model.\n\n**Severity:** **Critical**\n\nThis represents a known, unmitigated PII exfiltration vector that has been operating uncontrolled for the entire audit period.\n\n---\n\n## Finding 3: Database Activity Monitoring Excludes Analytics Database Containing Plaintext PII\n\n**Related Section:** DLP Configuration (`database_activity_monitoring`)\n\n**Gap Description:**\nDLP-DAM-001 monitors bulk SELECT operations only on `users` and `payment_methods` tables in `crestline_prod`. The `crestline_analytics` database \u2014 which contains plaintext email and phone PII (per Finding 1) and is accessed by the Analytics team and Metabase BI tool \u2014 is not monitored for bulk extraction.\n\nGiven that PII in the analytics database is stored in plaintext, bulk SELECT monitoring is even more critical there than in `crestline_prod` (where field-level encryption provides defense-in-depth). The current configuration provides weaker monitoring on the more vulnerable data store.\n\n**Severity:** **High**\n\n---\n\n## Finding 4: Metabase BI Tool Access to PII Not Documented or Controlled\n\n**Related Section:** Data Flow Diagram Section 3.3\n\n**Gap Description:**\nThe data flow diagram shows Metabase (`grafana.crestline.net:3000`) connected to `crestline_analytics` and asserts \"Aggregated reports (no PII in reports).\" However:\n\n- Metabase has direct query access to `customer_profiles` and `engagement_events` tables, which contain plaintext email/phone columns.\n- No technical control is documented to enforce the \"aggregated only\" claim \u2014 it appears to be a procedural expectation.\n- The hostname `grafana.crestline.net:3000` is suspicious (Grafana is a different product than Metabase) and suggests documentation drift or misidentification of the actual tool.\n- No TLS version is specified for the Metabase connection (in contrast to other flows).\n\n**Severity:** **Medium**\n\n---\n\n## Finding 5: Inconsistent TLS Version Enforcement Across Data Flows\n\n**Related Section:** Data Flow Diagram Sections 2.1, 2.2, 3.2, 4.1\n\n**Gap Description:**\nThe Data Classification Policy (Section 3.1) requires \"encryption in transit\" for Internal, Confidential, and Restricted data, but does not specify a minimum TLS version. The data flow diagram shows TLS 1.2 still in use on several legs carrying Restricted data:\n\n- Customer Registration: ALB \u2192 app.crestline.com (TLS 1.2)\n- Payment Processing: payments.crestline.com \u2192 Stripe API (TLS 1.2)\n- Customer Support Access: admin-api.crestline.com (TLS 1.2)\n- REST API Exports: TLS 1.2/1.3 (mixed)\n\nWhile TLS 1.2 is not deprecated, the absence of a stated minimum baseline in the policy creates ambiguity, and the inconsistency across flows (some 1.3, some 1.2) suggests no enforced standard.\n\n**Severity:** **Low**\n\n---\n\n## Finding 6: GDPR/CCPA Deletion Workflow Does Not Address Analytics Database Backups Adequately\n\n**Related Section:** Data Flow Diagram Section 5.1\n\n**Gap Description:**\nThe deletion workflow indicates hard deletes from both `crestline_prod` and `crestline_analytics` with 30-day backup retention. However, because `crestline_analytics` stores PII in plaintext (Finding 1), encrypted backups of that database contain plaintext PII inside the encrypted container \u2014 the cryptographic erasure benefit assumed in the policy (Section 4.1) does not apply with the same strength. This is a downstream consequence of Finding 1 but warrants explicit treatment in the deletion process.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 7: SSN Storage Method Inconsistent with Policy\n\n**Related Section:** Database Encryption Status Report (`users.ssn_hash`); Policy Section 3.2\n\n**Gap Description:**\nThe policy lists SSN as Restricted requiring \"field-level encryption\" (i.e., reversible AES-256). The database stores SSN as `ssn_hash` using SHA-256 + HMAC (a one-way hash, not encryption). \n\nThis is likely a **stronger** control than required (and may indicate Crestline does not need to retrieve the original SSN), but it is technically inconsistent with the policy text. Either the policy should be updated to permit hashing for SSN, or it should be confirmed that no business process requires SSN reversibility. This is a documentation/policy alignment issue rather than a security gap.\n\n**Severity:** **Low**\n\n---\n\n## Summary of Findings\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Plaintext PII in analytics database | **Critical** |\n| 2 | GraphQL API outside DLP coverage | **Critical** |\n| 3 | DAM excludes analytics DB | High |\n| 4 | Metabase access to PII not controlled | Medium |\n| 5 | Inconsistent TLS minimum version | Low |\n| 6 | Deletion workflow / plaintext backup interaction | Medium |\n| 7 | SSN hashing vs. encryption policy mismatch | Low |\n\n## Overall Assessment for Control C1.1\n\n**Readiness Status: NOT READY**\n\nWhile Crestline has a well-structured policy framework and good controls in `crestline_prod`, two critical gaps undermine the control objective:\n\n1. The entity's own evidence documents that confidential data (PII) is stored in plaintext in a production database, in direct violation of stated policy.\n2. The entity's own evidence documents a known, unmitigated bulk-extraction path via the GraphQL API that has been live for the entire audit period.\n\nThese are not control design weaknesses \u2014 they are documented operating effectiveness failures. Both should be remediated before the Type II observation period closes, or the auditor will likely issue a qualified opinion on C1.1.\n\n**Recommended remediation priorities:**\n1. Implement field-level encryption on `crestline_analytics` PII columns OR formally tokenize/pseudonymize these fields and update the policy\n2. Implement DLP coverage for the GraphQL endpoint (query depth/complexity limits, per-record rate limiting, response size monitoring)\n3. Extend DAM coverage to the analytics database\n4. Document Metabase access controls and confirm no PII columns are exposed in BI queries"
+}

@@ -1,0 +1,91 @@
+{
+  "task_id": "cc6.3-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T17:59:20.572198",
+  "score": {
+    "task_id": "cc6.3-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "data-analytics",
+          "EXC-2025-014",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "j.morrison",
+          "billing-service",
+          "segregation of duties"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-Q4-2025-006",
+          "Looker",
+          "21 days"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "r.santos",
+          "contractor",
+          "expiration"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-etl-snowflake",
+          "owner",
+          "revenue_records"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8422,
+    "output_tokens": 4035
+  },
+  "raw_response": "# CC6.3 Access Authorization \u2014 Readiness Assessment\n\n## Executive Summary\n\nAurora Labs demonstrates a generally mature access authorization program with documented policies, quarterly certifications, and an exception process. However, cross-referencing the MongoDB Atlas RBAC export against the Data Access Authorization Policy (POL-DAP-2024-003) reveals several deficiencies \u2014 most notably a **segregation of duties violation**, an **orphaned service account**, a **contractor account lacking an enforced expiration**, and a **certification quality concern** (the Q4 cert for aurora-prod-east-1 reported zero findings despite the issues identified below).\n\nNote on the Encryption Standards Policy (POL-ENC-2024-001): As noted in the evidence description, this document is not relevant to CC6.3 and was excluded from the assessment.\n\n---\n\n## Findings\n\n### Finding 1 \u2014 Segregation of Duties Violation: Finance User with Billing Write Access\n\n- **Evidence Reference:** MongoDB Atlas RBAC export \u2014 user `j.morrison` (James Morrison, Finance) assigned to role `billing-service`; cross-reference POL-DAP-2024-003 \u00a73.2.\n- **Gap:** The `billing-service` role grants `insert` and `update` on `billing`, `invoices`, and `payment_transactions` collections. Policy \u00a73.2 states: *\"Users with write access to financial data collections (`billing`, `invoices`, `revenue_records`, `payment_transactions`) must not simultaneously hold administrative or approval privileges on the same collections.\"* More fundamentally, the `billing-service` role is described as being for the **billing microservice** \u2014 assigning it to a human Finance user is a misuse of a service-account role and bypasses the intended segregation between transaction execution and approval. There is no exception in EXC-2025-008 covering a human user holding this role; that exception covers the *service*, not Finance personnel.\n- **Severity:** **High** \u2014 Direct write access to financial collections by a Finance employee creates fraud risk and violates SoD principles central to CC6.3.\n\n---\n\n### Finding 2 \u2014 Orphaned Service Account (No Designated Human Owner)\n\n- **Evidence Reference:** MongoDB Atlas RBAC export \u2014 `svc-etl-snowflake` shows `\"owner\": null` and `\"owner_email\": null`.\n- **Gap:** POL-DAP-2024-003 \u00a76.1 explicitly requires that all service accounts *\"have a designated human owner documented in the service account registry.\"* This account has access to sensitive financial collections (billing, invoices, revenue_records, payment_transactions) yet has no accountable owner. Additionally, the Q4 certification for MongoDB Atlas (CERT-Q4-2025-001) reported \"0 findings\" and stated \"all access grants verified against RBAC matrix\" \u2014 this is inconsistent with the missing owner attribute and suggests the certification was not performed rigorously.\n- **Severity:** **High** \u2014 Combines a policy violation, an accountability gap on a privileged service account, and evidence of a deficient certification review.\n\n---\n\n### Finding 3 \u2014 Contractor Account Without Enforced Expiration Date\n\n- **Evidence Reference:** MongoDB Atlas RBAC export \u2014 user `r.santos` (Ricardo Santos, TechBridge Consulting) shows `contract_end_date: 2025-12-31` but `expiration_date: null`.\n- **Gap:** POL-DAP-2024-003 \u00a76.2 requires contractor accounts to *\"have a defined expiration date, not to exceed the contract end date or 90 days, whichever is shorter\"* and to be deprovisioned within 24 hours of contract termination. Relying on a manual deprovisioning process rather than a system-enforced expiration creates risk that access will persist beyond the contract end date. The contractor was assigned 2025-09-01 with end date 2025-12-31 \u2014 a 4-month window already exceeds the 90-day cap in the policy.\n- **Severity:** **High** \u2014 Combines a control design gap (no automated enforcement) with a policy violation (>90 days without an exception).\n\n---\n\n### Finding 4 \u2014 Excessive Privilege: Contractor with Production Read-Write Access\n\n- **Evidence Reference:** MongoDB Atlas RBAC export \u2014 `r.santos` assigned `app-backend-readwrite` role.\n- **Gap:** POL-DAP-2024-003 \u00a73.2 states *\"Development personnel must not have direct write access to production databases.\"* While Santos is a contractor in Engineering, granting an external party direct production read-write privileges (insert/update on `users`, `products`, `orders`, plus full CRUD on `sessions`) is inconsistent with least privilege and the spirit of \u00a73.2. There is no documented exception in the register for this access. The role itself is named/scoped for service accounts (\"application backend services\").\n- **Severity:** **Medium** \u2014 Potentially appropriate if Santos is supporting application backend work, but lacks documented justification or exception, and violates the principle that human users should not hold service-account-scoped roles.\n\n---\n\n### Finding 5 \u2014 Q4 Access Certification Quality Deficiency (MongoDB Atlas)\n\n- **Evidence Reference:** Quarterly access certification log CERT-Q4-2025-001; cross-reference Atlas RBAC export.\n- **Gap:** The certification for aurora-prod-east-1, completed by Derek Huang on 2025-10-11 with \"0 findings,\" failed to identify: (a) the orphaned `svc-etl-snowflake` service account, (b) the SoD violation involving `j.morrison`, and (c) the contractor account `r.santos` lacking an enforced expiration date. Per POL-DAP-2024-003 \u00a75.2, the certification process requires owners to *\"review current access grants against the RBAC Matrix\"* \u2014 the evidence suggests this review was perfunctory rather than substantive. Additionally, Derek Huang is both system owner and reviewer for three systems (CERT-001, 004, 005), with no independent secondary review.\n- **Severity:** **High** \u2014 Undermines reliance on the certification control itself, which is the primary detective control for CC6.3.\n\n---\n\n### Finding 6 \u2014 Self-Certification Pattern (Lack of Independent Review)\n\n- **Evidence Reference:** Certification log \u2014 in 7 of 8 certifications, the `system_owner` and `reviewer` are the same person.\n- **Gap:** While system-owner certification is standard practice, the policy (\u00a75.2 step 4) calls for IT Security to validate certifications, but there is no evidence in the log of an independent IT Security validation step or sign-off. Combined with Finding 5 (missed issues on a self-reviewed system), this suggests the validation step is either not occurring or is not effective.\n- **Severity:** **Medium** \u2014 Control design weakness; would benefit from independent attestation or sampling-based IT Security validation.\n\n---\n\n### Finding 7 \u2014 Late Certification Without Documented Mitigation\n\n- **Evidence Reference:** CERT-Q4-2025-006 (Looker, Marcus Chen) \u2014 completed 2025-11-04, 21 days late.\n- **Gap:** POL-DAP-2024-003 \u00a75.3 flags certifications completed beyond 14 days as non-compliant. The comment cites system owner PTO, but the policy does not provide a PTO exemption, nor was a delegated reviewer assigned. There is no evidence of escalation, a backup-reviewer process, or a corrective action plan. Three contractor accounts were revoked upon contract expiration during this delayed review \u2014 meaning those revocations were also delayed.\n- **Severity:** **Medium** \u2014 Single-quarter occurrence (the policy escalates only on two consecutive late quarters), but the absence of a delegate process and the delayed contractor revocations elevate concern.\n\n---\n\n### Finding 8 \u2014 Data Analytics Role Scope Exceeds Documented Exception\n\n- **Evidence Reference:** MongoDB Atlas RBAC export \u2014 `data-analytics` role; Exception EXC-2025-014.\n- **Gap:** EXC-2025-014 documents broad analytics read access with compensating controls (field-level masking, query audit logging, bulk-export alerts). The role grants read on `payment_transactions`, `billing`, `invoices`, and `revenue_records` \u2014 clearly within the scope of the exception. However, the role also includes `audit_log` and `sessions`, which are not financial collections and are not explicitly addressed by the exception's compensating controls. Also, the exception cites \"bulk export alerts configured for >5000 records\" while POL-DAP-2024-003 \u00a74.1 mandates alerts at >10,000 records \u2014 the exception is *more* restrictive, which is acceptable, but the inconsistency should be reconciled.\n- **Severity:** **Low** \u2014 The exception is approved and renewed with verified compensating controls, but the audit_log and sessions access warrants explicit coverage.\n\n---\n\n### Finding 9 \u2014 Service Account Credential Rotation Not Evidenced\n\n- **Evidence Reference:** POL-DAP-2024-003 \u00a76.1; MongoDB Atlas RBAC export.\n- **Gap:** The policy requires service account credentials to be rotated every 90 days. The RBAC export shows `last_authentication` timestamps but no `last_credential_rotation` field. CERT-Q4-2025-007 (Stripe) explicitly notes \"All API keys verified and rotated,\" but no equivalent attestation appears for MongoDB Atlas, Snowflake, Elasticsearch, or Redis service accounts. Auditors will require evidence that the 90-day rotation requirement is being met for all service accounts.\n- **Severity:** **Medium** \u2014 Likely a documentation/evidence gap rather than a control failure, but unverifiable as presented.\n\n---\n\n### Finding 10 \u2014 DBA Role Privilege Scope (Minor Observation)\n\n- **Evidence Reference:** MongoDB Atlas RBAC export \u2014 `dba-admin` role assigned to `k.nakamura`.\n- **Gap:** The DBA role is appropriately scoped to operational actions (`createIndex`, `dropIndex`, `collStats`, `dbStats`, `reIndex`, `compact`, `find`) and excludes write/update/delete on collection data \u2014 consistent with \u00a73.2's prohibition on DBAs holding application-level write access without secondary approval. **No deficiency identified**; noted here as a positive control observation. However, the `find` action grants read across all collections including financial data, which should be acknowledged in the SoD analysis and ideally subject to query audit logging.\n- **Severity:** **Low / Observation only**\n\n---\n\n## Summary Severity Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | SoD violation: Finance user with billing write access | High |\n| 2 | Orphaned service account (svc-etl-snowflake) | High |\n| 3 | Contractor account without enforced expiration | High |\n| 4 | Contractor with production read-write access | Medium |\n| 5 | Q4 certification missed multiple issues | High |\n| 6 | Self-certification without independent validation | Medium |\n| 7 | Late certification without delegate process | Medium |\n| 8 | Analytics role scope vs. exception coverage | Low |\n| 9 | Service account credential rotation not evidenced | Medium |\n| 10 | DBA role scope (observation) | Low |\n\n## Recommendation\n\nCC6.3 should be assessed as having **deficiencies that, in aggregate, may rise to a significant deficiency** for SOC 2 Type II purposes \u2014 particularly Findings 1, 2, 3, and 5, which together suggest the certification control is not operating effectively. Aurora Labs should: (a) immediately remediate the SoD violation and orphaned account, (b) implement system-enforced expiration for contractor accounts, (c) introduce independent IT Security validation of certifications with sampling, and (d) re-perform the Q4 certification for aurora-prod-east-1 with documented evidence."
+}

@@ -1,0 +1,54 @@
+{
+  "task_id": "pi1.1-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:42:22.629999",
+  "score": {
+    "task_id": "pi1.1-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.5,
+    "precision": 0.2,
+    "f1": 0.28571428571428575,
+    "score": 0.5,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "staging",
+          "missing",
+          "Section 4.3",
+          "Section 5.1",
+          "24 hours",
+          "integration tests",
+          "QA sign-off"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "Critical"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2008,
+    "output_tokens": 1424
+  },
+  "raw_response": "Certainly! Below is a gap analysis comparing Pinnacle Cloud Services' **SDLC Policy Section 5** with the provided **deployment pipeline configuration** for the Q4 2025 observation period.\n\n---\n\n## Gap Analysis: Policy vs. Pipeline Implementation\n\n### **Finding 1: Missing Explicit Staging Deployment and Staging Validation Stage**\n\n**Section:**  \n- SDLC Policy, Section 5.1 \"Pipeline Architecture\" (steps 2 and 3)\n- Policy Section 4.3 \"Staging Validation\"  \n \n**Why it\u2019s a gap:**  \n- The policy mandates that **\u201cAll code changes must be deployed to staging and validated before production deployment. Minimum staging validation period is 24 hours before production promotion. The QA team must sign off on staging deployment before production promotion is authorized.\u201d**\n- In the provided pipeline configuration, **there are no pipeline stages labeled \u201cstaging deploy\u201d, \u201cstaging validation\u201d, or \u201cQA sign-off\u201d**:  \n  - The pipeline stages provided go from build \u2192 docker-build \u2192 production-approval \u2192 production-deploy \u2192 post-deploy-verification.\n  - There are **no references to a separate staging environment deployment, integration test execution in staging, validation period, or any QA approval gates before production deployment.**\n- This omits required controls around testing in an isolated environment, ensuring environment parity, integration/QA validation, and a cooling-off period for defect observation.\n\n**Severity:**  \n**Critical**  \n- Bypassing staging/qA sign-off and the 24-hour period before production materially increases the risk of incomplete or defective code being released, directly undermining the completeness, accuracy, and timeliness of processing objectives.\n\n---\n\n### **Finding 2: No QA Sign-Off Control Documented or Enforced**\n\n**Section:**  \n- SDLC Policy, Section 4.3 \"Staging Validation\"  \n- Policy Section 5.1, pipeline step 3\n\n**Why it\u2019s a gap:**  \n- The policy demands **explicit QA team sign-off** prior to production deployment.\n- The pipeline only includes \u201cproduction-approval\u201d by \"release-managers\" but does not mention a QA group or formal QA checkpoint, nor is there metadata or configuration requiring approval from the QA team or confirmation that integration tests in staging have passed with QA acknowledgment.\n- No evidence of a gate that enforces involvement of QA or affirmation that testing is successful and complete, as required by the SDLC policy.\n\n**Severity:**  \n**High**  \n- Lack of QA sign-off reduces assurance that changes have been fully validated for processing integrity prior to production, increasing the risk of undetected errors.\n\n---\n\n### **Finding 3: Missing Enforcement of 24-Hour Staging Validation Period**\n\n**Section:**  \n- SDLC Policy, Section 4.3 \"Staging Validation\"\n- Policy Section 5.1, pipeline step 3\n\n**Why it\u2019s a gap:**  \n- The policy specifies a **\u201cminimum staging validation period of 24 hours before production promotion.\u201d**\n- The pipeline has no technical or documented process to enforce a timed wait/cool-off period between staging validation and production deployment. \u201cProduction-approval\u201d has a \u201ctimeout_hours: 48\u201d but that is for duration of approval (window to approve), not an enforced minimum wait after staging tests or deployment.\n- This means code could hypothetically be approved and shipped to production immediately after build, skipping the intended observation period for defects or regression detection.\n\n**Severity:**  \n**Medium (potentially High)**  \n- While a delay can be imposed by human process, without technical enforcement there is risk that pressure to ship may bypass the observation window, reducing the effectiveness of detection controls built into the SDLC policy.\n\n---\n\n### **Finding 4: No Explicit Integration Test Stage Identified in Pipeline**\n\n**Section:**  \n- SDLC Policy, Section 4.2 \"Integration Testing\"\n- Policy Section 5.1 pipeline steps 2 & 3\n\n**Why it\u2019s a gap:**  \n- The policy requires **integration tests in staging** and a requirement that \u201cAll integration tests must pass before production promotion.\u201d\n- The pipeline implements unit tests and post-deploy \u201csmoke-tests\u201d in production but does not show an integration test stage tied to a staging environment, nor is there a check for results or enforcement before promotion to production.\n\n**Severity:**  \n**Medium**  \n- Lack of integration test automation/validation in a controlled staging environment reduces assurance around the completeness and integrity of changes (e.g., errors that only become apparent when interacting across systems may go undetected).\n\n---\n\n### **Finding 5: No Explicit Hotfix Path Documented in Pipeline**\n\n**Section:**  \n- SDLC Policy, Section 5.3 \"Hotfix Process\"\n\n**Why it\u2019s a gap:**  \n- The policy provides a documented, risk-managed exception for hotfixes, requiring VP Engineering approval and still a deployment to staging for integration tests (if abbreviated).\n- The provided pipeline has no configuration or logic for a \"hotfix\" deployment (no special path, shortened validation, or VP Engineering sign-off gating).\n- As a result, emergency changes may not have special scrutiny, or changes could skip required integrity controls.\n\n**Severity:**  \n**Low**  \n- This is less critical in daily operation but relevant during high-risk/emergency situations; clarity in the pipeline would improve control during exceptions.\n\n---\n\n## **Summary Table**\n\n| # | Title                                             | Section(s)                     | Why it\u2019s a Gap                                                                                                                   | Severity  |\n|---|---------------------------------------------------|--------------------------------|-----------------------------------------------------------------------------------------------------------------------------------|-----------|\n| 1 | Missing Explicit Staging Deployment/Validation    | Policy 4.3, 5.1                | No staging or validation stage before production deploy; skips critical SDLC controls                                             | Critical  |\n| 2 | No QA Sign-Off Control Enforced                   | Policy 4.3, 5.1                | QA approval required by policy but not present in pipeline                                 | High      |\n| 3 | Missing 24-Hour Validation Period Enforcement     | Policy 4.3, 5.1                | No minimum time enforced between staging validation and production deployment                | Medium/High|\n| 4 | No Explicit Integration Test Stage for Staging    | Policy 4.2, 5.1                | Integration testing in staging required, not implemented in pipeline                        | Medium    |\n| 5 | No Explicit Hotfix Process Path                   | Policy 5.3                     | No documented hotfix stage or special approval path seen in pipeline                        | Low       |\n\n---\n\n**Conclusion:**  \n**The current deployment pipeline for the pinnacle-saas-platform does not fully implement the processing integrity controls mandated by the SDLC policy, most notably regarding staging validation, QA sign-off, and enforced validation periods prior to production deployment.**  \nThese gaps are material in the context of SOC 2 PI1.1 and require remediation to ensure policy-to-process alignment and adequate control over change management and deployment integrity."
+}

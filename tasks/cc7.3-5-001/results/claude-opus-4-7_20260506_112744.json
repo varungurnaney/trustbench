@@ -1,0 +1,91 @@
+{
+  "task_id": "cc7.3-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:27:44.570969",
+  "score": {
+    "task_id": "cc7.3-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.4,
+    "precision": 0.25,
+    "f1": 0.3076923076923077,
+    "score": 0.3076923076923077,
+    "gaps_detected": 2,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-705",
+          "Section 4.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-703",
+          "pipeline bug",
+          "Section 4.2"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-705"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-704",
+          "PT-2025-001",
+          "/api/v2/reports/custom",
+          "incomplete remediation",
+          "same endpoint",
+          "SQL injection"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "PT-2025-005",
+          "INC-2025-705",
+          "S3 bucket permissions"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6376,
+    "output_tokens": 3422
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC7.3 Incident Response\n\n**Entity:** Clearpoint Financial Software\n**Control:** CC7.3 \u2014 Incident Response (Understand, Contain, Remediate, Communicate)\n**Period:** Q4 2025\n**Assessor Conclusion:** Control is **partially effective**. Several findings identified, including one that I would classify as a control failure for the period.\n\n---\n\n## Overall Observations (Positive)\n\n- Policy IRP-2025-007 v4.0 is well-structured with severity-tied SLAs, notification authority, and post-mortem requirements appropriate for a financial-data processor.\n- Triage and containment SLAs were met across all 7 incidents reviewed.\n- SEV-1 incidents (INC-2025-701, 704) were notified within the 48-hour post-confirmation SLA, including an SEC Form ADV amendment for INC-2025-704.\n- Post-mortems for SEV-1 and SEV-2 incidents were completed within policy timelines.\n- Notification decision log is well-documented with rationale, decision-maker, and timestamps \u2014 supports auditability.\n\n---\n\n## Findings\n\n### Finding 1 \u2014 Customer Notification Deferral Exceeded Policy Maximum (INC-2025-705)\n**Severity:** **High**\n**Reference:** Policy Section 4.2; NOTIF-2025-045 / NOTIF-2025-046; INC-2025-705\n\n**Gap:** Policy Section 4.2 establishes a hard ceiling: \"After 72 hours of investigation, a notification decision must be made regardless of investigation completion status.\" For INC-2025-705, detection occurred 2025-12-05 01:30 UTC; the 72-hour decision deadline was 2025-12-08 01:30 UTC. The IC continued deferring until breach was confirmed at 2025-12-08 14:00 UTC \u2014 exceeding the policy limit by approximately **12.5 hours**. The notification log itself acknowledges this overrun. This is a documented control deviation during the observation period, not a judgment call within policy. Policy was not followed; the IC continued investigation beyond the mandatory decision point rather than issuing a preliminary \"suspected exposure\" notification per Section 4.1.\n\n**Recommendation:** Issue a management response acknowledging the deviation; implement automated 72-hour notification deadline alerts in the incident ticketing system; require Head of Legal co-sign for any deferral approaching the 72-hour ceiling.\n\n---\n\n### Finding 2 \u2014 Action Items Not Completed for Closed Incidents\n**Severity:** **High**\n**Reference:** Policy Section 5.2; Incident Register\n\n**Gap:** Two SEV-1/SEV-2 incidents have post-mortems marked \"Complete\" but action items remain open:\n- **INC-2025-704 (SEV-1, SQL injection):** 5 of 8 action items completed. Post-mortem due 2025-11-26; assessment performed during Q4 close \u2014 3 items still open.\n- **INC-2025-705 (SEV-2, S3 unauthorized access):** 1 of 5 action items completed. Post-mortem due 2025-12-15.\n- **INC-2025-703 (SEV-2):** 3 of 5 complete.\n\nPolicy Section 5.2 requires weekly review and 14-day CISO escalation / 30-day CEO escalation. No evidence of escalation logs has been provided, and several items appear to be approaching or past escalation thresholds. For a SEV-1 breach involving customer financial data with regulatory (SEC) implications, incomplete remediation is a material concern.\n\n**Recommendation:** Provide evidence of weekly action-item review and escalation logs; remediate or formally accept residual risk for open items; auditor will request Jira CPF-PM extracts as evidence.\n\n---\n\n### Finding 3 \u2014 Recurrence of Previously-Identified Vulnerabilities (Remediation Effectiveness)\n**Severity:** **High**\n**Reference:** Pen Test Report PT-2025-001 and PT-2025-005; INC-2025-704 and INC-2025-705\n\n**Gap:** Two of the four most serious Q4 incidents are direct recurrences of pen test findings from August 2025:\n- **PT-2025-001** (SQL injection in `/api/v2/reports/custom`) was \"remediated\" in August but exploited in **INC-2025-704** in November via a different injection vector in the same endpoint. The pen test report itself notes the August remediation was \"incomplete.\"\n- **PT-2025-005** (excessive S3 bucket permissions on `customer-reports`) was an open High finding with a Nov 30 target; it was exploited in **INC-2025-705** on Dec 5.\n\nWhile CC7.3 focuses on incident response rather than vulnerability management (CC7.1), this pattern suggests the incident response program's \"remediate\" element is failing to comprehensively close root causes. Action items from incidents may be too narrowly scoped (vector-specific rather than class-of-vulnerability).\n\n**Recommendation:** Post-mortem template should require root-cause remediation scope review; verification retests should include adjacent attack vectors, not just the specific exploit path.\n\n---\n\n### Finding 4 \u2014 Notification Deferral Rationale Inconsistent with Policy 4.1 (INC-2025-705)\n**Severity:** **Medium**\n**Reference:** Policy Section 4.1; NOTIF-2025-045\n\n**Gap:** Policy Section 4.1 requires that \"if investigation confirms data was accessed but exposure is uncertain, customers must be notified within 72 hours with a **preliminary assessment**.\" For INC-2025-705, unauthorized IAM role access was confirmed at detection (the \"access\" element was not in dispute \u2014 only the volume/scope of exfiltration). Under a strict reading of 4.1, a preliminary \"suspected exposure\" notification was required within 72 hours. The IC instead invoked Section 4.2 deferral authority, which is intended for cases where breach confirmation itself is uncertain. The policy conflates \"access uncertain\" and \"exposure scope uncertain\" \u2014 but the IC's interpretation favored delay.\n\n**Recommendation:** Clarify Policy Section 4 to distinguish (a) unauthorized access confirmed/scope unknown (preliminary notice required at 72h) from (b) access itself uncertain (deferral permissible). Train ICs on this distinction.\n\n---\n\n### Finding 5 \u2014 Single Incident Commander Concentration Risk\n**Severity:** **Medium**\n**Reference:** Incident Register; Policy Section 4.2\n\n**Gap:** Alex Drummond served as IC for 5 of 7 Q4 incidents, including all 4 SEV-1/SEV-2 incidents involving customer data and **all** notification deferral decisions. Policy 4.2 requires consultation with Head of Legal, but no Legal sign-off is documented in any of the deferral records (NOTIF-2025-042, 045). Single-point decision-making on customer notification \u2014 particularly for a regulated financial services entity \u2014 is a governance weakness. There is no evidence in the notification log that Legal was consulted as required.\n\n**Recommendation:** Add explicit Head of Legal sign-off field to notification decision records; cross-train and rotate IC role; require dual approval for SEV-1 customer notification decisions.\n\n---\n\n### Finding 6 \u2014 INC-2025-703 Resolution SLA Breach\n**Severity:** **Low**\n**Reference:** Policy Section 3 (SEV-2 Resolution: 48 hours)\n\n**Gap:** INC-2025-703 was resolved in 65.75 hours \u2014 exceeding the SEV-2 48-hour resolution SLA by approximately 17.75 hours. The deviation is not flagged or rationalized in the incident notes. While the underlying issue was a benign pipeline bug, the SLA deviation is unrecorded.\n\n**Recommendation:** Add SLA deviation tracking and root-cause notes to the incident register.\n\n---\n\n### Finding 7 \u2014 INC-2025-707 Containment Not Documented\n**Severity:** **Low**\n**Reference:** Incident Register\n\n**Gap:** INC-2025-707 (developer accessed production DB) shows `contained_at = N/A` and 19-hour triage time (1140 minutes). Even for SEV-4, containment status should be affirmatively recorded (\"not applicable \u2014 read-only access\" or equivalent), not blank. Triage of nearly 19 hours is also long for any severity, though within SEV-4's \"next day\" SLA.\n\n**Recommendation:** Standardize containment field to require an affirmative value (date or \"N/A \u2014 rationale\").\n\n---\n\n### Finding 8 \u2014 INC-2025-703 Customer Notification Judgment Call (Informational)\n**Severity:** **Low** (Informational \u2014 no policy violation)\n**Reference:** Policy Section 4.1; INC-2025-703\n\n**Observation:** The incident notes pose the question of whether customers should have been notified of the *suspected* exposure even though investigation confirmed no breach. Per Policy 4.1, notification is required only on confirmed breach or confirmed access with uncertain exposure. The 12,000-query anomaly was investigated and ruled out within 20 hours as an internal pipeline bug; no unauthorized access occurred. Non-notification was consistent with policy. **No finding** \u2014 but the question being raised in incident notes suggests IC team uncertainty that should be addressed via training.\n\n---\n\n## Summary\n\n| Severity | Count |\n|----------|-------|\n| Critical | 0 |\n| High | 3 |\n| Medium | 2 |\n| Low | 3 |\n\n**Readiness Conclusion:** CC7.3 is **not ready for SOC 2 Type II attestation without remediation**. Finding 1 (policy ceiling exceeded) is a documented control deviation during the observation period and should be discussed with management for inclusion as either a remediated deviation or, if uncorrected, a qualification. Findings 2 and 3 indicate systemic weaknesses in the \"remediate\" component of the incident response lifecycle. Findings 4\u20138 are improvement opportunities that should be addressed before the formal Type II window closes."
+}

@@ -1,0 +1,73 @@
+{
+  "task_id": "cc6.3-5-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:34:17.267369",
+  "score": {
+    "task_id": "cc6.3-5-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DS-STG-007",
+          "customer_profiles_qa",
+          "test data",
+          "Production Clone",
+          "47,000",
+          "masking",
+          "PII"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "PII",
+          "Section 4.3",
+          "email",
+          "unmasked"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "TechBridge",
+          "PRA-2025-041",
+          "expiration",
+          "contractor",
+          "staging",
+          "unmasked"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3935,
+    "output_tokens": 3048
+  },
+  "raw_response": "# CC6.3 Compliance Assessment \u2014 Prism Analytics Data Access & Masking Controls\n\n---\n\n## FINDING 1: Unmasked Production PII in Non-Production Environment (DS-STG-007)\n\n**Related Policy Section:** POL-DAM-2025-006, Sections 4.1\u20134.2; Data Masking Pipeline Configuration\n\n**Gap Description:**\n\nDataset DS-STG-007 (`customer_profiles_qa`) is a **production clone containing full, unmasked PII** (full names, SSNs, DOB, phone numbers, physical addresses, email addresses). The dataset inventory explicitly notes: \"Contains real PII\" and \"Classified as test data by QA lead \u2014 no CISO exception on file.\"\n\n**Critical Issues:**\n\n- The masking pipeline configuration explicitly **excludes DS-STG-007 from masking** based solely on a QA lead's classification as \"test data,\" not a documented CISO exception\n- Policy Section 4.1 mandates: \"Non-production environments must not contain unmasked production data\"\n- Policy Section 4.3 defines email addresses and names as PII requiring masking\n- Policy Section 7 requires CISO-approved exceptions with documented compensating controls; none are present\n- The dataset is accessible to 10+ users (all QA and engineering staff with access to \"ALL\" datasets), vastly exceeding least-privilege principles for PII\n- A QA lead's unilateral classification does not satisfy the approval chain in Section 3.3 (Manager + Data Owner + Privacy Officer + CISO for PII/Restricted data)\n\n**Why This Matters for CC6.3:**\n\nAccess authorization (Section 3 of policy) requires multi-level approval for restricted data. Circumventing masking requirements through informal \"test data\" classification defeats both **least privilege** and **segregation of duty** principles. Thirteen users have unnecessary exposure to 47,000 real customer records.\n\n**Severity:** **CRITICAL**\n\n---\n\n## FINDING 2: Overly Broad Access Grants to QA and Contractor Staff\n\n**Related Policy Section:** POL-DAM-2025-006, Section 3.1 (Least Privilege)\n\n**Gap Description:**\n\n**QA staff granted \"ALL\" dataset access:**\n- Jamie Morrison (qa-lead): readwrite access to ALL datasets\n- Sofia Nakamura (qa-engineer): readwrite access to ALL datasets  \n- Lisa Tanaka (qa-engineer): readwrite access to ALL datasets\n\n**Contractor with unrestricted staging access:**\n- Dayo Okonkwo (Engineering contractor, TechBridge Solutions): **readwrite access to ALL datasets** (expiring 2025-12-31)\n\n**Specific Violations:**\n\n- QA engineers do not have a job function requiring write access to datasets like `DS-STG-003` (payment_records) or `DS-STG-004` (contact_history)\n- The contractor's access should be scoped to only those datasets required by SOW PRA-2025-041; \"ALL\" is the inverse of least privilege\n- Policy Section 6.2 requires **monthly review of contractor accounts** by sponsor; no evidence of reviews provided\n- No documented justification for why QA test automation requires read-write access to restricted customer_accounts or payment_records data\n\n**Why This Matters for CC6.3:**\n\nLeast-privilege principles require role-based access aligned to specific job functions. Granting \"ALL\" dataset access to QA engineers and contractors creates unnecessary risk and violates the foundational principle that users receive \"only the minimum permissions necessary for their specific job function.\"\n\n**Severity:** **HIGH**\n\n---\n\n## FINDING 3: Missing Expiration Dates for Employee Data Access\n\n**Related Policy Section:** POL-DAM-2025-006, Section 6 (Access Lifecycle); CC6.3 principle of access modification/removal\n\n**Gap Description:**\n\nNine of thirteen users have **blank expiration dates** in the access grants table:\n\n- Jamie Morrison (QA Lead) \u2014 granted 2024-06-01, no expiration\n- Sofia Nakamura (QA Engineer) \u2014 granted 2024-08-15, no expiration\n- Priya Desai (DBA Admin) \u2014 granted 2024-01-15, no expiration\n- Helena Santos (Data Analyst) \u2014 granted 2025-06-01, no expiration\n- Tanya Williams (Customer Success) \u2014 granted 2025-07-01, no expiration\n- and 4 others\n\n**Why This Matters:**\n\n- The policy does not distinguish between employee and contractor expiration requirements, but best practice (and implied by Section 6.3: \"Quarterly access reviews for all environments\") suggests **periodic re-authorization**\n- Permanent, undocumented access grants prevent automatic removal triggers\n- CC6.3 requires that the entity **authorizes, modifies, or removes** access \u2014 removal requires either manual process or automated expiration\n- No evidence of quarterly reviews reconciling current job functions to access levels\n\n**Severity:** **HIGH**\n\n---\n\n## FINDING 4: Email Addresses in User_Profiles Staging Not Masked Per Policy\n\n**Related Policy Section:** POL-DAM-2025-006, Section 4.3 & 4.4\n\n**Gap Description:**\n\nDataset `DS-STG-002` (user_profiles_staging) dataset inventory notes: **\"Email addresses not masked (see masking config)\"**\n\nThe masking pipeline configuration does **not list an email field masking rule** for DS-STG-002 or any dataset.\n\n**Policy Requirement:**\nSection 4.3 explicitly defines email addresses as PII. Section 4.4 mandates: **\"Email addresses \u2192 Synthetic email generation\"** as the required masking method.\n\n**Why This Matters:**\n\n- 52,000 user email addresses are exposed in staging in unmasked form\n- Email addresses enable account takeover, phishing, and linkage to external data breaches\n- This is a direct policy violation with no documented exception\n- The gap appears to be intentional (\"see masking config\") yet unimplemented\n\n**Severity:** **HIGH**\n\n---\n\n## FINDING 5: Inadequate Masking Validation Scope\n\n**Related Policy Section:** POL-DAM-2025-006, Section 4.5\n\n**Gap Description:**\n\nThe masking validation report (dated 2025-10-15) states:\n\n> \"DS-STG-006 and DS-STG-007 **excluded from validation scope** \u2014 DS-STG-006 is synthetic, DS-STG-007 classified as test data\"\n\n**Issues:**\n\n- Excluding DS-STG-007 from validation is circular reasoning: it is not validated *because* it is classified as test data, yet the test data classification itself lacks a CISO exception (Finding 1)\n- Even if DS-STG-007 were properly exceptions, excluding it from validation removes a control that would catch masking failures\n- The validation methodology (100-record sample) is not clearly tied to a statistical confidence level or documented sampling approach\n- No validation of email masking for DS-STG-002 (because the rule doesn't exist)\n\n**Why This Matters for CC6.3:**\n\nMasking is a compensating control for overly broad access. If validation does not cover all datasets containing PII, the control chain breaks. CC6.3 requires effective authorization of access; without validated masking, the authorization decision is based on incomplete information about actual exposure.\n\n**Severity:** **MEDIUM**\n\n---\n\n## FINDING 6: Contractor Account Sponsorship and Monthly Review Not Evidenced\n\n**Related Policy Section:** POL-DAM-2025-006, Section 6.2\n\n**Gap Description:**\n\nDayo Okonkwo (contractor, TechBridge Solutions) is listed with a sponsor: **\"Elena Vasquez\"** and a SOW reference: **\"PRA-2025-041. Contract runs through December 31, 2025.\"**\n\n**Missing Evidence:**\n- No documentation of monthly reviews by Elena Vasquez\n- No audit trail showing sponsor confirmations that access remains necessary\n- Access grant date is 2025-08-01, suggesting at least 4 months of access history (assuming current date ~late 2025), yet no review documentation provided\n- No compensating control (e.g., activity logs, session audits) provided for contractor access to \"ALL\" datasets\n\n**Why This Matters for CC6.3:**\n\nCC6.3 requires ongoing authorization and modification of access. For contractors, this means active sponsorship verification. The absence of review documentation suggests the control is either not performed or not evidenced.\n\n**Severity:** **MEDIUM**\n\n---\n\n## FINDING 7: Unclear Role-to-Dataset Mapping for Product and Data Science Teams\n\n**Related Policy Section:** POL-DAM-2025-006, Section 3.1 (Least Privilege)\n\n**Gap Description:**\n\n**Nicole Garcia (Product)** \u2014 classified as \"readonly\" with access limited to DS-STG-006 and DS-STG-008 (synthetic test customers and product catalog). The notes specify: \"Synthetic data only.\" This appears appropriate.\n\n**Helena Santos (Data Science)** \u2014 classified as \"data-analyst\" with readonly access to DS-STG-001, DS-STG-002, DS-STG-003, DS-STG-004 (all customer account, user profile, payment records, contact history). These datasets contain customer PII.\n\n**Issue:**\n- No documented job function description or SOD matrix explaining why a data analyst requires access to payment_records and contact_history\n- No data owner approval documented in access grant records\n- Read-only access to masked data is lower risk than read-write, but still requires justification\n\n**Why This Matters for CC6.3:**\n\nAccess authorization should be tied to documented, role-specific job requirements. The access grants table does not provide sufficient context to confirm least-privilege adherence.\n\n**Severity:** **LOW** (access is read-only and masked, but justification is missing)\n\n---\n\n## FINDING 8: Synthetic Data Generator (SynGen v2.1) Not Evaluated for Adequacy\n\n**Related Policy Section:** POL-DAM-2025-006, Section 5\n\n**Gap Description:**\n\nPolicy Section 5 recommends: \"Where possible, non-production environments should use fully synthetic data... rather than masked production data.\"\n\n**Current State:**\n- Only DS-STG-006 uses synthetic data (10,000 records for load testing)\n- All other staging datasets (DS-STG-001 through DS-STG-005) use masked production data\n- No documentation of SynGen v2.1 output quality, coverage, or realism testing\n- No assessment of whether synthetic data is adequate for QA testing needs, or why production clones are preferred\n\n**Why This Matters:**\n\nThis is a low-severity observation because synthetic data is not a hard requirement, but the policy explicitly recommends it as a best practice to further reduce non-production PII exposure. No evidence suggests the organization has evaluated whether synthetic data could replace some masked production datasets, which would strengthen the control posture.\n\n**Severity:** **LOW** (policy recommendation not enforced, but not a direct violation)\n\n---\n\n## Summary Table\n\n| Finding | Title | Severity | Category |\n|---------|-------|----------|----------|\n| 1 | Unmasked Production PII in Non-Production (DS-STG-007) | **CRITICAL** | Data Masking, Authorization, Policy Violation |\n| 2 | Overly Broad Access to QA and Contractor Staff | **HIGH** | Least Privilege, Segregation of Duties |\n| 3 | Missing Expiration Dates for Employee Access | **HIGH** | Access Lifecycle, Removal Automation |\n| 4 | Email Addresses Not Masked (DS-STG-002) | **HIGH** | Data Masking, Policy Violation |\n| 5 | Inadequate Masking Validation Scope | **MEDIUM** | Control Validation, Compensating Controls |\n| 6 | Contractor Account Reviews Not Evidenced | **MEDIUM** | Access Lifecycle, Sponsorship Oversight |\n| 7 | Unclear Role-to-Dataset Mapping (Data Science) | **LOW** | Documentation, Least Privilege Justification |\n| 8 | Synthetic Data Adequacy Not Evaluated | **LOW** | Risk Optimization, Policy Recommendation |\n\n---\n\n## Conclusion\n\n**Control Status: NOT EFFECTIVE**\n\nThe control contains **2 critical and 2 high-severity gaps** that directly contradict policy requirements and SOC 2 CC6.3 principles:\n\n1. **Unmasked PII in staging** violates the foundational requirement that non-production cannot contain unmasked production data\n2. **Overly broad access** contradicts least-privilege principles without compensating controls\n3. **Missing masking controls** for email addresses leave a class of PII unprotected\n4. **Absent expiration dates and reviews** prevent effective access removal and lifecycle management\n\nThese gaps must be remediated before the control can be considered effective for CC6.3 compliance."
+}

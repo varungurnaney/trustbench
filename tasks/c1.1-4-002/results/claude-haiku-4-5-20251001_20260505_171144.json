@@ -1,0 +1,93 @@
+{
+  "task_id": "c1.1-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:11:44.598814",
+  "score": {
+    "task_id": "c1.1-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "Meridian Financial",
+          "PGP-002",
+          "EXC-2025-022",
+          "approved",
+          "compensating",
+          "partner"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "APP-006",
+          "notification",
+          "OVERDUE",
+          "October 2024",
+          "EXC-2025-021",
+          "expired",
+          "email",
+          "phone",
+          "PII"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-021",
+          "expired",
+          "without renewal",
+          "remediation not completed",
+          "no follow-up",
+          "process"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "monthly review",
+          "key inventory",
+          "APP-006",
+          "OVERDUE",
+          "escalation",
+          "monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4246,
+    "output_tokens": 3894
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2013 Encryption Key Management (C1.1 / CC6.7)\n**Period: Q4 2025 (October 1 \u2013 December 31, 2025)**\n\n---\n\n## FINDINGS\n\n### 1. **Overdue Application Key Rotation Without Current Exception**\n\n**Document Reference:**  \nKey Rotation Log (APP-006) + Exception Register (EXC-2025-021)\n\n**Gap Description:**  \nAPP-006 (hcs-prod-notification-key) is **16+ months overdue** for rotation as of the assessment date. The original exception (EXC-2025-021) expired on July 10, 2025, without renewal. The log notes indicate the exception \"Expired without renewal. Remediation not completed. No follow-up exception filed.\"\n\nWhile the exception cited legitimate technical barriers (refactoring requirement for dual-key support), the organization failed to:\n- File a renewal exception before expiration, OR\n- Complete the remediation and rotate the key\n\nThe key encrypts \"customer contact preferences including email and phone\"\u2014data that likely meets the confidentiality threshold. Without a current, valid exception approved by the CISO, this represents an active **control violation**, not an exception.\n\n**Why This Matters:**  \nSOP-KM-001 Section 4.1 mandates annual rotation for application keys. The procedure provides for exceptions but requires CISO approval and documented compensating controls. An expired exception with no follow-up leaves the key rotation failure ungovernance.\n\n**Severity: HIGH**\n\n---\n\n### 2. **Inadequate Compensating Controls Documentation for Expired Exception**\n\n**Document Reference:**  \nException Register (EXC-2025-021)\n\n**Gap Description:**  \nWhile the expired exception listed compensating controls (\"Enhanced monitoring on notification service key usage; monthly access review of key consumers; key has not been exposed or compromised\"), there is **no evidence** in the provided documentation that these controls were:\n- Actually implemented, OR\n- Actively monitored during the exception validity period, OR\n- Continued after expiration\n\nThe last review date (2025-07-05) shows the exception was reviewed but not renewed despite being active through July 10. There is no documented proof that monthly access reviews or enhanced monitoring occurred between July and the assessment date (post-Q4 2025).\n\n**Why This Matters:**  \nCompensating controls are only valid if operating continuously. SOC 2 audits require evidence of execution, not just assertion. Without audit logs, access reviews, or monitoring reports, the claimed compensating controls cannot be verified as effective.\n\n**Severity: HIGH**\n\n---\n\n### 3. **No Documented Remediation Plan or Timeline for APP-006**\n\n**Document Reference:**  \nKey Rotation Log (APP-006 notes field)\n\n**Gap Description:**  \nThe log entry notes: \"Key rotation overdue since October 2024. Notification service encrypts customer contact preferences including email and phone. **Tagged for Q1 2026 remediation** by Derek Owens.\"\n\nThis is insufficient for SOC 2 compliance because:\n- There is no formal remediation plan with specific steps, owners, and milestones\n- Q1 2026 is 3+ months away (if the assessment is early Q1 2026) or has already passed (if later)\n- No documented CAB approval or change control for the remediation effort\n- No commitment to interim compensating controls while remediation is pending\n\nThe tag is informal documentation; SOC 2 requires formalized remediation tracking.\n\n**Severity: HIGH**\n\n---\n\n### 4. **Expired Exception (EXC-2025-020) for AES-128 Not Updated Despite Migration**\n\n**Document Reference:**  \nException Register (EXC-2025-020)\n\n**Gap Description:**  \nException EXC-2025-020 (AES-128 for Event Streaming Pipeline) shows:\n- **Status:** Expired (expired 2025-08-15)\n- **Review Outcome:** \"Not renewed - migrated to AES-256 with optimized implementation\"\n\nWhile the outcome is positive (migration completed), the exception record itself is stale. There is **no evidence** in the Key Rotation Log or change management records that formally documents:\n- When the migration to AES-256 occurred\n- Who performed and verified the migration\n- Which systems/keys were affected\n- Confirmation that the event streaming pipeline is now using AES-256-GCM\n\nThe change management log (CHG-2025-301 through CHG-2025-401) does not include any entry for the Event Streaming Pipeline encryption upgrade.\n\n**Why This Matters:**  \nEven when remediation is successful, SOC 2 requires formal documentation of the control change. The absence of a corresponding change ticket means:\n- No formal CAB review\n- No documented rollback plan\n- No post-implementation verification record\n- Compliance auditors must infer the remediation occurred based on an exception review note\n\n**Severity: MEDIUM**\n\n---\n\n### 5. **Change Management Log Missing Encryption Key Rotation Changes**\n\n**Document Reference:**  \nChange Management Log (CHG-2025-301 through CHG-2025-401) vs. Key Rotation Log\n\n**Gap Description:**  \nThe change management log includes routine infrastructure changes (PostgreSQL upgrade, SSH key rotation, PGP key renewal) but **does not formally document**:\n- The four AWS KMS CMK annual rotations (KMS-001 through KMS-005)\n- Four application key rotations (APP-001, APP-002, APP-003, APP-004, APP-005)\n- The migration from AES-128 to AES-256 for the Event Streaming Pipeline\n- PGP-001 (Acme Bank) key renewal completed December 2025 (CHG-2025-401 does document Acme Bank, but other key rotations are absent)\n\nWhile the Key Rotation Log indicates \"Automatic\" or \"Manual\" rotation methods with verification, the absence of formal change tickets for application key rotations means:\n- No CAB review or approval documented\n- No formalized rollback plans for re-encryption failures\n- No post-implementation review evidence beyond the rotation log signature\n\n**Why This Matters:**  \nSOC 2 CC6.1 and CC6.2 require changes to cryptographic systems to be authorized, tested, and documented through formal change management. The rotation log alone is insufficient; changes must flow through the CAB process.\n\n**Severity: MEDIUM**\n\n---\n\n### 6. **Insufficient Evidence of Re-encryption Verification for Application Keys**\n\n**Document Reference:**  \nKey Rotation Log (APP-001, APP-002, APP-003, APP-004, APP-005)\n\n**Gap Description:**  \nThe rotation log shows entries such as:\n- APP-001: \"Re-encryption batch completed June 20. All 2.3M records re-encrypted. Old key disabled July 15.\"\n- APP-002: \"Re-encryption completed September 8. PCI DSS rotation requirement met.\"\n\nHowever, the log **does not document**:\n- Verification method (how was re-encryption completeness confirmed?)\n- Independent verification by a second party\n- Data sampling or reconciliation checks\n- Rollback evidence if re-encryption failed partway through\n\nSOP-KM-001 Section 4.2 requires:\n> \"Application Owner confirms re-encryption complete\" (Step 4)\n\nThe rotation log does not prove that this confirmation occurred with documented evidence. A note in the log is not equivalent to a sign-off with supporting evidence.\n\n**Why This Matters:**  \nIf re-encryption failed silently (e.g., 5% of records missed), the application would still function but decrypt with mixed keys. Without documented verification, this risk is uncontrolled. SOC 2 requires evidence of control execution, not assertions.\n\n**Severity: MEDIUM**\n\n---\n\n### 7. **PGP-002 Key Exchange \"In Progress\" But No Documented Plan**\n\n**Document Reference:**  \nException Register (EXC-2025-022) + Key Rotation Log (PGP-002)\n\n**Gap Description:**  \nEXC-2025-022 (Meridian Financial PGP key) states:\n- **Status:** Active\n- **Expiration:** 2026-03-05\n- **Current key valid through:** January 2026\n- **Review Outcome (2025-12-01):** \"Active - key exchange coordination in progress for January 2026\"\n\nHowever:\n1. The rotation log shows **no current_rotation date** (marked N/A), and the status is \"Upcoming\"\n2. There is no formal change ticket (CAB approval) for the key exchange\n3. No documented coordination email or partner communication logs provided\n4. \"In progress\" is vague; there should be a formal change request with milestones\n\nIf the key exchange misses the January 2026 deadline, the exception will expire (2026-03-05) with an unrotated key still in use. This risks control failure.\n\n**Why This Matters:**  \nExtended rotation intervals require tighter change management discipline. The lack of a formal CAB-approved change ticket means the key exchange is ungovernanced and could slip without escalation.\n\n**Severity: MEDIUM**\n\n---\n\n### 8. **No Documented Break-Glass Access Audit Trail**\n\n**Document Reference:**  \nSOP-KM-001 Section 5.2\n\n**Gap Description:**  \nThe procedure states:\n> \"Break-glass access procedure requires two-person authorization (Security Engineering + CISO).\"\n\nHowever, the provided evidence does not include:\n- Break-glass access logs or audit trail\n- Examples of break-glass authorizations during Q4 2025\n- Evidence of two-person authorization enforcement\n- Documentation of which keys were accessed and why\n\nWhile this may be logged elsewhere in the organization's systems, **no evidence was provided** to verify this control is operating.\n\n**Why This Matters:**  \nBreak-glass access is a high-risk control requiring strong audit trails. SOC 2 requires evidence that access controls are operating. The absence of evidence is a gap for Type II compliance.\n\n**Severity: MEDIUM** (if systems exist but evidence not provided; would be **HIGH** if no audit trail exists)\n\n---\n\n### 9. **AWS Config Rule Compliance for KMS Not Evidenced**\n\n**Document Reference:**  \nSOP-KM-001 Section 7 + Key Rotation Log\n\n**Gap Description:**  \nThe procedure states:\n> \"AWS Config rule `kms-cmk-rotation-enabled` enforces automatic rotation on all CMKs.\"\n\nThe Key Rotation Log confirms rotations occurred (\"Automated Config Check\" verification), but does not provide:\n- AWS Config rule status or compliance report\n- Evidence that the rule is enabled and enforced across all KMS keys\n- Any non-compliant keys identified during Q4 2025\n- Periodic compliance reports from Security Engineering\n\nVerification status shows \"Automated Config Check,\" but no actual Config rule output or compliance report was provided.\n\n**Why This Matters:**  \nAutomated controls must be verified to be in place and functioning. A reference in the procedure is not evidence of operation. SOC 2 Type II requires proof that automated controls executed continuously throughout the audit period.\n\n**Severity: MEDIUM**\n\n---\n\n### 10. **Monthly Key Inventory Review Not Evidenced**\n\n**Document Reference:**  \nSOP-KM-001 Section 7\n\n**Gap Description:**  \nThe procedure requires:\n> \"Monthly review of key inventory and rotation status by Security Engineering.\"\n\nThe provided evidence does not include:\n- Monthly review reports for October, November, or December 2025\n- Inventory reconciliation records\n- Sign-offs by Security Engineering leads\n- Evidence of anomalies detected or investigated\n\nThe Key Rotation Log itself appears to be the inventory, but there is no documented review meeting notes, approvals, or follow-up actions.\n\n**Why This Matters:**  \nMonthly reviews are control evidence; their execution must be documented and dated. SOC 2 auditors will request review memos for each month of the audit period. The absence of these documents is a compliance gap.\n\n**Severity: MEDIUM**\n\n---\n\n### 11. **Quarterly CISO Key Management Audit Not Evidenced**\n\n**Document Reference:**  \nSOP-KM-001 Section 7\n\n**Gap Description:**  \nThe procedure requires:\n> \"Quarterly key management audit by the CISO.\"\n\nNo audit report for Q4 2025 (or even Q3 2025) was provided. The assessment period covers October 1 \u2013 December 31, 2025, yet there is:\n- No Q4 2025 audit report\n- No Q3 2025 audit report visible\n- No evidence of CISO findings, observations, or sign-off\n\nThe CISO (Jennifer Torres) approved the exceptions and the procedure, but audit execution is unverified.\n\n**Why This Matters:**  \nQuarterly audits by the CISO are a key compensating control for ongoing key management oversight. Their absence during a Type II audit period is a significant gap. SOC 2 requires evidence of management review and evidence of follow-up on findings.\n\n**Severity: HIGH**\n\n---\n\n### 12. **Encryption for PII Not Verified at Data Layer**\n\n**Document Reference:**  \nC1.1 control scope + Key Rotation Log (APP-001)\n\n**Gap Description:**  \nThe control C1.1 requires \"identifies and maintains confidential information to meet the entity's objectives related to confidentiality.\"\n\nWhile the organization rotates keys protecting PII (APP-001 handles 2.3M customer records), there is **no evidence** that:\n- All confidential data (PII) is actually encrypted\n- Unencrypted PII does not exist in backups, logs, or caches\n- Data classification is enforced at the application layer\n- DLP scanning validates that encryption is in place before data leaves the system\n\nThe change management log shows (CHG-2025-378) that DLP rules were deployed for Salesforce data exports, but it does not confirm that DLP covers all confidential data flows or that violations are being detected and remediated.\n\n**Why This Matters:**  \nEncryption key rotation is only effective if all confidential data is actually encrypted. If 20% of customer PII is stored unencrypted, the control objective is not met. C1.1 requires evidence that confidential data is identified and protected.\n\n**Severity: HIGH** (if not otherwise verified outside provided evidence)\n\n---\n\n## SUMMARY OF FINDINGS\n\n| Finding | Severity | Category |\n|---------|----------|----------|\n| 1. Overdue APP-006 key rotation without valid exception | HIGH | Active Control Violation |\n| 2. Inadequate compensating controls documentation | HIGH | Missing Evidence |\n| 3. No remediation plan for APP-006 | HIGH | Missing Evidence |\n| 4. Expired AES-128 exception not formally closed | MEDIUM | Documentation Gap |\n| 5. Missing encryption key changes in CAB log | MEDIUM | Control Procedure Gap |\n| 6. Re-encryption verification not evidenced | MEDIUM | Missing Evidence |\n| 7. PGP-002 key exchange not formally managed | MEDIUM | Control Procedure Gap |\n| 8. Break-glass access audit trail not provided | MEDIUM | Missing Evidence |\n| 9. AWS Config rule compliance not evidenced | MEDIUM | Missing Evidence |\n| 10. Monthly inventory reviews not documented | MEDIUM | Missing Evidence |\n| 11. Quarterly CISO audits not evidenced | HIGH | Missing Evidence |\n| 12. No verification that all PII is encrypted | HIGH | Scope/Design Gap |\n\n---\n\n## REMEDIATION PRIORITIES\n\n**Immediate (Before Type II Fieldwork):**\n1. Rotate APP-006 key or file formal exception with current compensating controls evidence\n2. Obtain and review Q3 and Q4 2025 CISO key management audit reports\n3. Provide evidence of monthly Security Engineering reviews for Oct, Nov, Dec 2025\n4. Document re-encryption verification procedures and provide evidence for recent rotations\n\n**Short-term (During Type II Fieldwork):**\n5. Submit monthly inventory review sign-offs for the full audit period\n6. Provide AWS Config compliance reports and remediate any non-compliant keys\n7. File formal CAB changes for all application key rotations with rollback plans\n8. Establish and document break-glass access audit logs\n\n**Medium-term:**\n9. Formalize PGP-002 key exchange as a change ticket with partner coordination documentation\n10. Conduct a data classification audit to verify all PII is encrypted and no unencrypted confidential data exists in backups or logs\n11. Enhance rotation log to include independent verification evidence, not just attestations"
+}

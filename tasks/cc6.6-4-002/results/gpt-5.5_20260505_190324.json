@@ -1,0 +1,67 @@
+{
+  "task_id": "cc6.6-4-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T19:03:24.988856",
+  "score": {
+    "task_id": "cc6.6-4-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "SEC-EXC-2025-010"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "pcx-0x334455bb",
+          "SEC-EXC-2025-009",
+          "expired",
+          "staging",
+          "production",
+          "all TCP ports"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "pcx-0x001122aa",
+          "management",
+          "route table",
+          "security group"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3558,
+    "output_tokens": 4383
+  },
+  "raw_response": "## Overall readiness assessment for CC6.6\n\nStratos has a defined network boundary and segmentation policy, and the management-to-production peering configuration appears intentionally limited to approved monitoring/logging ports. However, the evidence shows a material boundary enforcement failure: an active staging-to-production VPC peering connection remains in place after the related exception expired, with full bidirectional VPC routing and all TCP ports permitted. This is a significant gap for CC6.6 because staging is outside the production system boundary and could be used as a pivot path into production.\n\n---\n\n## Finding 1 \u2014 Expired staging-to-production peering exception remains active\n\n**Related document / section**\n\n- VPC peering export: `pcx-0x334455bb`\n- Security Exception Register: `SEC-EXC-2025-009`\n- Network Boundary and Segmentation Policy:\n  - Section 3.1 \u2014 VPC Isolation\n  - Section 3.2 \u2014 Cross-Environment Access\n  - Section 3.3 \u2014 VPC Peering Rules\n  - Section 7 \u2014 Exception Process\n\n**Why this is a gap**\n\nThe policy explicitly states that production, staging, and development environments must reside in separate VPCs with no direct network peering between them. It further states that no peering is allowed between Production and Staging/Development, except through a formal, time-bound exception process.\n\nThe VPC export dated **2025-12-20** shows an active peering connection between:\n\n- `stratos-staging` / `10.20.0.0/16`\n- `stratos-production` / `10.10.0.0/16`\n\nThe connection references exception `SEC-EXC-2025-009`; however, that exception:\n\n- Expired on **2025-10-17**\n- Was marked as **Expired**\n- Had a review outcome stating that the migration completed on **2025-10-10**\n- Stated that the peering connection was scheduled for deletion\n\nDespite this, the peering connection remains active more than two months later. This indicates that the exception expiration process did not result in removal of the network pathway.\n\nThis is a direct failure to enforce the production system boundary and creates an unauthorized path from staging into production.\n\n**Severity:** Critical\n\n---\n\n## Finding 2 \u2014 Staging-to-production peering allows full bidirectional VPC access and all TCP ports\n\n**Related document / section**\n\n- VPC peering export: `pcx-0x334455bb`\n- Network Boundary and Segmentation Policy:\n  - Section 3.1 \u2014 VPC Isolation\n  - Section 3.2 \u2014 Cross-Environment Access\n  - Section 3.3 \u2014 VPC Peering Rules\n\n**Why this is a gap**\n\nThe staging-to-production peering connection is not narrowly scoped. The route table entries allow:\n\n- Staging to Production: `10.10.0.0/16`\n- Production to Staging: `10.20.0.0/16`\n\nThe security group rules allow:\n\n- Inbound TCP from staging to production on ports `0-65535`\n- Outbound TCP from production to staging on ports `0-65535`\n\nThis provides full bidirectional network-level connectivity between the staging and production VPCs.\n\nEven if the exception had still been active, the configuration does not appear aligned to least-privilege principles. The stated purpose was database schema migration tooling, but the rules are not limited to specific database hosts, migration hosts, ports, subnets, or scheduled migration windows.\n\nThis significantly increases the risk that a compromise or misconfiguration in staging could be used to access production services.\n\n**Severity:** Critical\n\n---\n\n## Finding 3 \u2014 Exception lifecycle controls are not operating effectively\n\n**Related document / section**\n\n- Security Exception Register:\n  - `SEC-EXC-2025-009`\n  - `SEC-EXC-2025-010`\n- Network Boundary and Segmentation Policy:\n  - Section 3.2 \u2014 Cross-Environment Access\n  - Section 7 \u2014 Exception Process\n\n**Why this is a gap**\n\nThe exception register indicates that exceptions must be documented and reviewed, but the evidence suggests that expiration and remediation are not being enforced consistently.\n\nExamples:\n\n- `SEC-EXC-2025-009` expired on **2025-10-17**, but the associated staging-to-production peering remains active as of **2025-12-20**.\n- The exception outcome stated that the peering connection was scheduled for deletion, but there is no evidence that deletion occurred.\n- `SEC-EXC-2025-010` shows an expiration date of **2025-12-03** but is still marked as **Active** in the register. Although this exception relates to TLS rather than VPC peering, it indicates broader data quality or lifecycle management issues in the exception process.\n\nFor CC6.6, expired exceptions that leave residual access paths in place are especially problematic because they can undermine boundary protections even when policies are well-defined.\n\n**Severity:** High\n\n---\n\n## Finding 4 \u2014 Ingress boundary controls are policy-defined but not evidenced as implemented\n\n**Related document / section**\n\n- Network Boundary and Segmentation Policy:\n  - Section 4.1 \u2014 WAF Requirements\n  - Section 4.2 \u2014 API Gateway\n\n**Why this is a gap**\n\nThe policy requires that all public-facing HTTPS endpoints be protected by AWS WAF and that all external API traffic transit through the Kong API Gateway. Required capabilities include:\n\n- OWASP Core Rule Set\n- Bot detection\n- Rate limiting\n- PCI-related custom rules\n- Authentication and authorization at the API gateway\n- Request validation and logging\n\nHowever, the evidence provided does not include implementation artifacts such as:\n\n- AWS WAF WebACL configurations\n- WebACL-to-ALB/API Gateway/CloudFront associations\n- Public endpoint inventory\n- Kong gateway route/service/plugin configuration\n- Rate limiting or authentication policy evidence\n- Logs demonstrating enforcement\n\nAs a result, the auditor cannot verify that external ingress traffic is consistently routed through approved boundary controls.\n\n**Severity:** Medium\n\n---\n\n## Finding 5 \u2014 Egress allowlist exists, but enforcement is not evidenced\n\n**Related document / section**\n\n- Production Egress Allowlist Registry\n- Network Boundary and Segmentation Policy:\n  - Section 6.1 \u2014 Egress Filtering\n  - Section 6.2 \u2014 Direct Internet Access\n\n**Why this is a gap**\n\nThe egress allowlist registry shows approved destinations for production outbound traffic, which is a positive control artifact. However, the registry alone does not prove enforcement.\n\nThe policy requires that all outbound production traffic pass through the NAT Gateway with:\n\n- DNS-based egress filtering via Route 53 Resolver rules\n- Allowlisted external destinations\n- Egress logging forwarded to the SIEM\n- No direct internet access from production instances\n\nThe evidence provided does not include:\n\n- Production route tables proving outbound traffic is forced through NAT gateways\n- Route 53 Resolver DNS firewall or resolver rule configuration\n- Security group or NACL controls restricting direct egress\n- Evidence that production subnets lack direct internet gateway routes\n- NAT gateway flow logs or VPC Flow Logs\n- SIEM log forwarding evidence\n\nWithout these artifacts, the auditor cannot conclude that the allowlist is technically enforced.\n\n**Severity:** Medium\n\n---\n\n## Finding 6 \u2014 Egress allowlist entries are broad and may not sufficiently restrict outbound access\n\n**Related document / section**\n\n- Production Egress Allowlist Registry\n- Network Boundary and Segmentation Policy:\n  - Section 6.1 \u2014 Egress Filtering\n\n**Why this is a gap**\n\nSome allowlist entries are broad and may not sufficiently constrain outbound traffic to the intended business purpose.\n\nExamples:\n\n- `s3.amazonaws.com` is broadly allowed for backup uploads. Without bucket, account, VPC endpoint, or IAM condition restrictions, this could permit access to unintended S3 destinations.\n- `sqs.us-east-1.amazonaws.com` allows access to the regional SQS endpoint generally, not necessarily only Stratos-approved queues.\n- `ocsp.vault.internal` is included in a registry described as approved external destinations, but the domain appears internal. This may indicate inconsistent classification of egress destinations or unclear boundary definitions.\n\nThe allowlist is reviewed and approved, which is positive, but the destination granularity may be insufficient to prevent unauthorized data movement or misuse if enforcement is purely DNS/domain based.\n\n**Severity:** Medium\n\n---\n\n## Positive observation \u2014 Management-to-production peering appears aligned to policy\n\nThe management-to-production peering connection `pcx-0x001122aa` appears consistent with Policy Section 3.3. It is limited to monitoring and log aggregation use cases and restricts access to expected ports:\n\n- `9090` \u2014 Prometheus metrics\n- `9200` \u2014 Elasticsearch log shipping\n- `5044` \u2014 Logstash forwarding\n\nThe routes are also scoped to specific subnets rather than the full VPC CIDR ranges. No finding is noted for this peering connection based on the evidence provided."
+}

@@ -1,0 +1,282 @@
+{
+  "task_id": "cc6.1-hard-001",
+  "model": "o3",
+  "timestamp": "2026-04-30T18:22:12.225709",
+  "scoring": {
+    "score": 1.0,
+    "detected": 9,
+    "total": 9,
+    "gaps": [
+      {
+        "gap_id": "gap-001",
+        "category": "stale_service_account",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "jenkins",
+          "legacy",
+          "unassigned",
+          "owner",
+          "rotation",
+          "2023",
+          "unused"
+        ],
+        "total_keywords": 10
+      },
+      {
+        "gap_id": "gap-002",
+        "category": "key_rotation_violation",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-monitoring",
+          "rotation",
+          "90 days",
+          "unassigned",
+          "owner"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-003",
+        "category": "direct_iam_user_console",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "david.kim",
+          "direct",
+          "IAM user",
+          "prohibited",
+          "SSO",
+          "console",
+          "federated",
+          "password"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-004",
+        "category": "termination_sla_breach",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Bradley",
+          "4 hours",
+          "SLA",
+          "incomplete",
+          "checklist"
+        ],
+        "total_keywords": 10
+      },
+      {
+        "gap_id": "gap-005",
+        "category": "priya_sharma_termination_delay",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Sharma",
+          "Priya",
+          "4 hours",
+          "SLA"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-006",
+        "category": "okta_default_policy_no_mfa",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "default",
+          "requireFactor",
+          "false",
+          "gap"
+        ],
+        "total_keywords": 9
+      },
+      {
+        "gap_id": "gap-007",
+        "category": "access_review_late_completion",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "late",
+          "flagged",
+          "revoked"
+        ],
+        "total_keywords": 9
+      },
+      {
+        "gap_id": "gap-008",
+        "category": "backup_dual_active_keys",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "backup-s3-sync",
+          "rotation",
+          "both"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-009",
+        "category": "aws_iam_not_in_access_review",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "direct",
+          "outside"
+        ],
+        "total_keywords": 9
+      }
+    ]
+  },
+  "raw_response": "SOC 2 \u2013 CC6.1 Readiness Assessment  \nObservation period: Q4 2025  \n\n----------------------------------------------------------------------\nCONTROL GAPS & FINDINGS\n----------------------------------------------------------------------\n\n1. Human IAM User in AWS\n\u2022 Policy Section: 3.3 Privileged Access ( \u201cDirect IAM user accounts in AWS are prohibited for human users.\u201d )  \n\u2022 Gap: IAM CSV lists \u201cdavid.kim\u201d as an active IAM user with a console password and no access keys; this contradicts the policy requirement that all human access be federated through AWS SSO.  \n\u2022 Severity: HIGH  \n\n2. Root Account Interactive Use\n\u2022 Policy Section: 3.3 Privileged Access (root credentials kept in safe; use requires two-person approval)  \n\u2022 Gap: Root account password is enabled and was last used 2025-11-02. No evidence of the required two-person authorization or CloudTrail extract was provided. Interactive use of the root account without documented approval violates the policy and AWS best practice.  \n\u2022 Severity: HIGH  \n\n3. MFA Not Universally Enforced\n\u2022 Policy Section: 4.2 Multi-Factor Authentication  \n\u2022 Gap: Okta \u201cDefault Policy\u201d (priority 3) explicitly sets requireFactor = false for any app not matched by higher policies. This leaves a technical path to access corporate or new production apps without MFA, conflicting with the policy statement \u201cMFA\u2026 is required for any system accessing production data.\u201d  \n\u2022 Severity: HIGH  \n\n4. Untimely User Off-Boarding \u2013 Tom Bradley & Priya Sharma\n\u2022 Policy Section: 6.1 Termination (Okta disable within 4 hours of notification; checklist within 48 hours)  \n\u2022 Gap:  \n  \u2013 Tom Bradley: HR notice 2025-12-23, Okta disabled 2025-12-27 (\u2248 96 hrs late); checklist still open.  \n  \u2013 Priya Sharma: HR notice 2025-11-24, Okta disabled 2025-11-25 (\u2248 24 hrs late).  \nBoth exceed the 4-hour revocation window and show incomplete documentation, creating lingering access risk.  \n\u2022 Severity: HIGH  \n\n5. Quarterly Access Review for Okta Exceeded 15-Day Window\n\u2022 Policy Section: 5.1 Quarterly Access Reviews (15 business-day completion)  \n\u2022 Gap: Review AR-2025-Q4-008 (Okta) initiated 2025-12-01, completed 2026-01-08 (\u2248 28 business days). The review missed the mandated completion window.  \n\u2022 Severity: MEDIUM  \n\n6. Access Review Remediation Not Fully Executed\n\u2022 Policy Section: 5.2 Review Process ( \u201cFlagged access is revoked within 5 business days.\u201d )  \n\u2022 Gap: In AR-2025-Q4-008, 5 users were flagged but only 3 were revoked. Evidence of disposition for the remaining 2 users is missing, indicating incomplete remediation.  \n\u2022 Severity: MEDIUM  \n\n7. Aged & Unrotated Access Keys (> 90 Days)\n\u2022 Policy Section: 4.3 Password and Credential Standards (automatic rotation every 90 days)  \n\u2022 Gap:  \n  \u2013 backup-s3-sync: Key 1 last rotated 2025-08-20 (\u2248 130 days old).  \n  \u2013 legacy-monitoring: Key 1 last rotated 2024-03-10 (\u2248 659 days old).  \n  \u2013 jenkins-legacy: Key 1 last rotated 2023-07-20 (\u2248 526 days old).  \nKeys exceed the 90-day rotation requirement.  \n\u2022 Severity: MEDIUM  \n\n8. Legacy Service Accounts Missing Owners & Quarterly Review\n\u2022 Policy Section: 8 Service Accounts ( \u201cmust be registered in the CMDB with a designated owner\u201d and \u201cincluded in quarterly access reviews\u201d )  \n\u2022 Gap: CMDB shows \u201clegacy-monitoring\u201d and \u201cjenkins-legacy\u201d with Owner = Unassigned and last review dates 2024-09-15 and 2023-12-10, respectively\u2014outside the observation quarter and lacking accountable ownership.  \n\u2022 Severity: MEDIUM  \n\n9. Service Accounts No Longer in Use but Still Active\n\u2022 Policy Section: 8 Service Accounts / 5.2 Review Process (least privilege; revoke unused accounts)  \n\u2022 Gap: \u201cjenkins-legacy\u201d last used 2024-08-15 but remains active with an aged key; \u201clegacy-monitoring\u201d is slated for migration to Datadog yet is still active. This increases attack surface and violates least-privilege expectations.  \n\u2022 Severity: MEDIUM  \n\n10. Access-Key Rotation Occurring on Only One Key\n\u2022 Policy Section: 4.3 Password and Credential Standards (automatic rotation)  \n\u2022 Gap: \u201cbackup-s3-sync\u201d shows Key 2 active and rotated 2024-01-15, but Key 1 remains active and older than 90 days. Rotation should cover all active keys or old keys should be deactivated.  \n\u2022 Severity: LOW  \n\n11. MFA Prompt Lifetime for Corporate Apps (12 hrs) vs. \u201cAlways\u201d Requirement\n\u2022 Policy Section: 4.2 Multi-Factor Authentication (MFA required for any system accessing production data; factorPromptMode = ALWAYS for production)  \n\u2022 Gap: \u201cCorporate Apps \u2013 Standard MFA\u201d policy sets factorPromptMode = SESSION with a 720-minute (12-hour) lifetime. If these apps (e.g., Jira) host tickets with production credentials or diagrams, the policy may not meet the \u201calways prompt\u201d expectation for sensitive data.  \n\u2022 Severity: LOW  \n\n12. Missing Two-Person Authorization Evidence for Root Credential Storage\n\u2022 Policy Section: 3.3 Privileged Access (root use requires two-person authorization)  \n\u2022 Gap: No artifact (safe log, approval record, or CloudTrail evidence) showing the two-person process for the 2025-11-02 root login.  \n\u2022 Severity: LOW (separate from Finding 2; this is an evidence gap that may escalate severity if unresolved).  \n\n----------------------------------------------------------------------\nSUMMARY\n\nMeridian Cloud Systems has a comprehensive logical-access policy, but actual practice shows notable deviations\u2014particularly around AWS human IAM usage, timely off-boarding, access-key hygiene, and universal MFA enforcement. High-severity items should be remediated before the formal SOC 2 examination period to reduce audit exceptions under CC6.1.",
+  "score": {
+    "task_id": "cc6.1-3-001",
+    "model": "o3",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 1.0,
+    "gaps_detected": 9,
+    "gaps_total": 9,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "jenkins",
+          "legacy",
+          "unassigned",
+          "owner",
+          "rotation",
+          "2023",
+          "unused"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-monitoring",
+          "rotation",
+          "90 days",
+          "unassigned",
+          "owner"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "david.kim",
+          "direct",
+          "IAM user",
+          "prohibited",
+          "SSO",
+          "console",
+          "federated",
+          "password"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Bradley",
+          "4 hours",
+          "SLA",
+          "incomplete",
+          "checklist"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Sharma",
+          "Priya",
+          "4 hours",
+          "SLA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "default",
+          "requireFactor",
+          "false",
+          "gap"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-007",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "late",
+          "flagged",
+          "revoked"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-008",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "backup-s3-sync",
+          "rotation",
+          "both"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-009",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "direct",
+          "outside"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  }
+}

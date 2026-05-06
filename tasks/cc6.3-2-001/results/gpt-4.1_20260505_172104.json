@@ -1,0 +1,76 @@
+{
+  "task_id": "cc6.3-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:21:04.642679",
+  "score": {
+    "task_id": "cc6.3-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "d.martinez",
+          "TRUNCATE",
+          "customers",
+          "row 22",
+          "Restricted",
+          "QA",
+          "destructive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "f.okonkwo",
+          "Finance",
+          "payment_transactions",
+          "INSERT",
+          "UPDATE",
+          "segregation",
+          "write access"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "svc-etl-legacy",
+          "owner",
+          "ALL TABLES",
+          "SELECT",
+          "least privilege",
+          "postgres"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2771,
+    "output_tokens": 1855
+  },
+  "raw_response": "Certainly! Here\u2019s a detailed review of the PostgreSQL production database permission matrix against Zenith Software\u2019s Data Access Authorization Policy, identifying gaps with respect to least privilege, segregation of duties, and RBAC principles.\n\n---\n\n### **Findings:**\n\n---\n\n#### **1. Finance User Granted Write Access to Payment Transactions**\n\n- **Related Policy Section:**  \n  3.3 Segregation of Duties (Finance write access restriction), 3.1 Least Privilege and RBAC\n- **Evidence:**  \n  Row 21: `f.okonkwo` (Finance), `app-readwrite` role, `zenith_prod.payment_transactions`, `SELECT,INSERT,UPDATE`\n- **Why It's a Gap:**  \n  The policy explicitly states \"Finance department personnel must not have direct write access to financial transaction tables (payment_transactions, invoices, revenue_reports).\" Write access to `payment_transactions` is restricted to service accounts only; Finance may only read.\n- **Severity:**  \n  **Critical** \u2014 This is a direct violation of segregation of duties and creates risk for fraud or error without audit logging.\n\n---\n\n#### **2. QA User Granted TRUNCATE on Restricted Table**\n\n- **Related Policy Section:**  \n  3.2 Destructive Operations, 3.1 Least Privilege and RBAC\n- **Evidence:**  \n  Row 22: `d.martinez` (QA), `qa-analyst` role, `zenith_prod.customers`, `SELECT,TRUNCATE`\n- **Why It's a Gap:**  \n  The policy prohibits destructive operations (TRUNCATE) on production tables classified as Restricted except for DBAs, with change management and approval. QA roles are read-only; this permission could irreversibly erase data.\n- **Severity:**  \n  **Critical** \u2014 This directly bypasses controls over destructive operations on a Restricted table.\n\n---\n\n#### **3. Legacy ETL Service Account Has Unscoped SELECT on All Production and Analytics Tables**\n\n- **Related Policy Section:**  \n  3.1 Least Privilege and RBAC, 5.1 Service Account Governance\n- **Evidence:**  \n  Rows 29 & 30: `svc-etl-legacy`, `zenith_prod.ALL TABLES`, `zenith_analytics.ALL TABLES`, `SELECT`\n- **Why It's a Gap:**  \n  The policy requires least privilege: \"Users are granted the minimum permissions required for their job function.\" Unscoped `SELECT` on all tables (including Restricted and Confidential data) is excessive for an ETL pipeline, especially labeled legacy and unspecific in its documentation.\n- **Severity:**  \n  **High** \u2014 Increases surface area for accidental data disclosure or abuse, especially if the actual ETL needs are narrower.\n\n---\n\n#### **4. Engineering Staff (app-readwrite) Granted Write Access on Production Tables**\n\n- **Related Policy Section:**  \n  3.3 Segregation of Duties (Development personnel restriction), 3.1 Least Privilege and RBAC\n- **Evidence:**  \n  Rows 9, 10, 31: `b.nakamura`, `j.rivera` (Engineering), `app-readwrite` role, granted `SELECT,INSERT,UPDATE` on `zenith_prod.products`, `orders`.\n- **Why It's a Gap:**  \n  The policy states: \"Development personnel must not have direct write access to production databases.\" These users are in Engineering, not operating through application or via controlled service accounts; instead, they have direct write-level database permissions in production.\n- **Severity:**  \n  **High** \u2014 Exposes the database to unauthorized changes, bypassing application-level controls and audit mechanisms.\n\n---\n\n#### **5. Service Account Owners Not Consistently Documented**\n\n- **Related Policy Section:**  \n  5.1 Service Accounts\n- **Evidence:**  \n  Multiple service account rows (e.g., `svc-app-api`, `svc-reporting`, `svc-etl-legacy`) sometimes lack documented business owner or have inconsistent owner columns/notes.\n- **Why It's a Gap:**  \n  The policy requires all service accounts have an assigned human owner and business purpose for accountability and review. Absence or inconsistency impairs governance.\n- **Severity:**  \n  **Medium** \u2014 Weakens traceability and could hinder rapid response in case of incident or review.\n\n---\n\n#### **6. Data Masking Controls Not Evident for Restricted Data Access**\n\n- **Related Policy Section:**  \n  3.4 Data Masking\n- **Evidence:**  \n  Rows 22\u201326, 32\u201333 (non-DBA, non-service users accessing Restricted), e.g., `g.hoffman`, `k.williams` with direct `SELECT` on `zenith_prod.customers` (Restricted).\n- **Why It's a Gap:**  \n  The policy requires access to Restricted tables by non-DBAs and non-service accounts (including support, QA, customer success) to go through *masked views*; the permission matrix does not indicate that these users\u2019 `SELECT` are masked, nor is it referenced in notes.\n- **Severity:**  \n  **Medium** \u2014 May expose full PII if not masked in practice, increasing privacy and compliance risk.\n\n---\n\n#### **7. Junior DBA With Full Admin on All Schemas**\n\n- **Related Policy Section:**  \n  3.1 Least Privilege and RBAC\n- **Evidence:**  \n  Rows 27 & 28: `h.tanaka` (Junior DBA), `ALL PRIVILEGES` on all tables in production and analytics.\n- **Why It's a Gap:**  \n  Although dba-admins may have full admin per policy, conferring unrestricted access to junior/less-experienced staff raises risk. The policy does not distinguish seniority, which is standard in many orgs, but it is a potential risk area and should be reviewed (though this isn\u2019t a strict policy violation).\n- **Severity:**  \n  **Low** \u2014 Advisory; would benefit from a risk review or compensating controls, but aligns with current written policy.\n\n---\n\n#### **8. Absence of Masked Views for Data Science Users on Restricted Production Data**\n\n- **Related Policy Section:**  \n  3.4 Data Masking\n- **Evidence:**  \n  Data science users appear to have access to analytics schema tables only (rows 6\u20138, 15\u201316, 35\u201336). However, policy specifically requires any production Restricted data accessed by non-DBAs (including data scientists, which sometimes occurs in analytics environments) to be masked. There is no masking noted for any relevant analytics tables derived from production.\n- **Why It's a Gap:**  \n  If analytics tables contain sourced production Restricted data, privilege/column masking should be evidenced. The matrix does not specify if customer_metrics or similar tables are materialized views with masking/redaction.\n- **Severity:**  \n  **Low** \u2014 Low likelihood given only analytics schema access, but lack of explicit controls may lead to indirect PII exposure.\n\n---\n\n### **Summary Table of Gaps**\n\n| #  | Short Title                                              | Policy Section(s)                | Reason                                                                               | Severity |\n|----|---------------------------------------------------------|----------------------------------|--------------------------------------------------------------------------------------|----------|\n| 1  | Finance Write Access to Payment Transactions             | 3.3, 3.1                         | Direct violation of SoD; finance should not have write access to payment txns         | Critical |\n| 2  | QA User Granted TRUNCATE on Restricted Table             | 3.2, 3.1                         | Only DBAs can perform destructive operations on Restricted tables                     | Critical |\n| 3  | Legacy ETL Service Account Over-permissioned             | 3.1, 5.1                         | Excessive all-tables SELECT permission, likely beyond its function                   | High     |\n| 4  | Engineering Write Access to Production                   | 3.3, 3.1                         | Developers should not have direct write access to production databases                | High     |\n| 5  | Inconsistent Service Account Ownership                   | 5.1                              | Owners not clearly documented for all service accounts                                | Medium   |\n| 6  | Data Masking Controls Not Evident for Restricted Access  | 3.4                              | No evidence that non-DBAs access masked PII columns in Restricted tables              | Medium   |\n| 7  | Junior DBA Full Admin                                   | 3.1                              | Full admin to junior staff may increase risk, not strictly a current policy violation | Low      |\n| 8  | Lack of Explicit Masking for Analytics Derived Data      | 3.4                              | Potential for analytics users to see unmasked PII via analytics schema                | Low      |\n\n---\n\n**Note:**  \nFindings #1 and #2 are **Critical** and should be remediated immediately before the SOC 2 period closes. Others should be tracked and addressed per severity.\n\nLet me know if you need supporting screenshots, policy excerpt references, or example wording for management response."
+}

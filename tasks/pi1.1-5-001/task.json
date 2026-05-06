@@ -1,0 +1,75 @@
+{
+  "id": "pi1.1-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "PI1.1",
+  "control_description": "The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/sdlc-policy.md",
+      "type": "policy",
+      "description": "Nexus Cloud Platform SDLC policy defining 5% drift tolerance, documented exception requirement, and environment parity controls"
+    },
+    {
+      "path": "evidence/configuration-drift-report-q4-2025.csv",
+      "type": "report",
+      "description": "Weekly configuration drift scan results for Q4 2025 showing 11 drifted parameters at 2.1% since November 19"
+    },
+    {
+      "path": "evidence/deployment-pipeline-config.json",
+      "type": "config",
+      "description": "Deployment pipeline configuration showing staging validation with performance tests that compare against production baseline"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II audit of Nexus Cloud Platform for Q4 2025 (October 1 - December 31, 2025). Review the SDLC policy, configuration drift reports, and deployment pipeline configuration. Assess whether PI1.1 requirements for accurate processing are met, particularly regarding environment parity between staging and production. The drift percentage is below the policy threshold — determine whether this technically compliant situation still represents a processing integrity risk. Consider which specific parameters are drifted and whether they affect application behavior beyond scaling.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Behavioral configuration drift at 2.1% is under 5% threshold but includes session timeout, circuit breaker, and retry parameters that affect processing logic",
+      "description": "Configuration drift has been at 2.1% (11 of 527 parameters) since November 19 — technically under the 5% Critical threshold defined in Section 4.2. Platform Engineering characterizes all 11 parameters as 'scaling and performance parameters' that are 'environment-specific.' However, examination of the specific drifted parameters reveals that several directly affect application behavior, not just scaling: SESSION_TIMEOUT_MIN (staging=60, production=30) means sessions expire twice as fast in production; CIRCUIT_BREAKER_THRESHOLD (staging=10, production=5) means production triggers circuit breaking at half the error count; RETRY_BACKOFF_MS (staging=1000, production=200) means production retries 5x faster, potentially causing different failure cascading behavior. These are not pure scaling parameters — they change application behavior in ways that could cause user-visible differences between staging and production. Code validated in staging with 60-minute sessions, 10-error circuit breakers, and 1-second retry backoff may behave differently in production with 30-minute sessions, 5-error circuit breakers, and 200ms retry backoff. The staging performance tests compare against a production baseline, but the configuration differences mean the tests may not reproduce production behavior accurately. This is a judgment call: the drift percentage is within policy tolerance, but the substance of the drift undermines the purpose of the environment parity control.",
+      "evidence_sources": [
+        "evidence/configuration-drift-report-q4-2025.csv",
+        "evidence/sdlc-policy.md",
+        "evidence/deployment-pipeline-config.json"
+      ],
+      "expected_reasoning": "The auditor should recognize that while 2.1% is under the 5% threshold, the policy's purpose (Section 4.2: 'code validated in staging must behave identically in production') is undermined by the specific parameters that are drifted. Pure scaling parameters (DB_POOL_MAX, WORKER_THREAD_COUNT, REDIS_MAX_CONNECTIONS) are arguably environment-specific. But SESSION_TIMEOUT_MIN, CIRCUIT_BREAKER_THRESHOLD, and RETRY_BACKOFF_MS change application behavior in user-visible ways. The 5% threshold is a quantitative measure, but the qualitative nature of the drifted parameters matters for processing integrity.",
+      "detection_criteria": {
+        "required_keywords": ["2.1%", "5% threshold", "SESSION_TIMEOUT_MIN", "CIRCUIT_BREAKER_THRESHOLD", "RETRY_BACKOFF_MS", "behavioral", "environment parity", "staging", "production", "processing integrity"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "11 configuration drift parameters persist 40 days without documented exceptions per policy Section 4.2",
+      "description": "Policy Section 4.2 states that 'Known and documented differences must be recorded in the Environment Parity Exception Register with justification.' The 11 drifted parameters have been in 'Under Review' status since November 19 (CDR-408) through December 29 (CDR-414) — 40 days. CDR-411 explicitly notes 'No Environment Parity Exception Register entries filed' and CDR-412 notes '4th consecutive week without documented exceptions.' Even if all 11 parameters were legitimate environment-specific differences, the policy requires formal documentation in the Exception Register. Platform Engineering has verbally characterized them as 'intentional performance tuning differences' (CDR-410) but has not followed the documented exception process. This means the drift has no formal approval, no documented justification, and no documented review date — it exists in a policy gap.",
+      "evidence_sources": [
+        "evidence/configuration-drift-report-q4-2025.csv",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note the process gap: even if the drift is technically acceptable (under 5%), the policy requires documented exceptions for known differences. After 40 days and multiple weekly scans flagging the same drift, no exceptions have been filed. The verbal justification ('intentional performance tuning') was not formalized. This is a documentation and process compliance gap regardless of whether the drift itself is acceptable.",
+      "detection_criteria": {
+        "required_keywords": ["Exception Register", "not filed", "40 days", "Under Review", "Section 4.2", "documented exceptions", "CDR-411", "CDR-412", "4th consecutive week"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["processing_integrity", "configuration_drift", "environment_parity", "judgment", "behavioral_drift", "staging_production", "exception_management"]
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "task_id": "cc6.1-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:00:34.167412",
+  "score": {
+    "task_id": "cc6.1-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "USR-0179",
+          "USR-0180",
+          "unmatched",
+          "HR",
+          "180",
+          "178"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "James Chen",
+          "self-review",
+          "AWS",
+          "segregation",
+          "reviewer",
+          "manages"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Derek Chung",
+          "weekend",
+          "termination",
+          "SLA",
+          "business hours"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "AR-Q4-001",
+          "AWS review",
+          "late",
+          "2 days",
+          "SLA"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "contractor",
+          "expiration",
+          "missing"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 20829,
+    "output_tokens": 3830
+  },
+  "raw_response": "# SOC 2 CC6.1 Readiness Assessment - Nimbus Health\n\n## Executive Summary\n\nNimbus Health demonstrates a generally well-designed logical access control framework with strong policy documentation, comprehensive MFA enforcement, and largely timely termination procedures. However, my review identified several findings ranging from minor procedural gaps to issues requiring management remediation before a SOC 2 Type II examination. Given the PHI environment, I have weighted findings involving production data access and segregation of duties more heavily.\n\n---\n\n## Finding 1: Self-Review of AWS Production Access (Segregation of Duties)\n\n**Related Section:** Q4 Access Review AR-Q4-001; Policy \u00a75.1 / \u00a75.2\n\n**Gap:** James Chen, the Cloud Infrastructure Lead, performed the access review for AWS Console (Production) \u2014 a system he himself manages and over which he holds the highest privileges. While the policy permits \"the application owner or delegate\" to act as reviewer, this creates a self-review threat: the individual who provisions and manages AWS IAM is reviewing the appropriateness of his own and his team's access. For a healthcare environment hosting PHI, an independent reviewer (e.g., Information Security or Compliance) should validate or co-sign privileged cloud infrastructure access reviews.\n\nThe same pattern appears for AR-Q4-002, AR-Q4-003, AR-Q4-008 (Daniel Brooks reviewing systems his team operates), AR-Q4-005 (David Park, SOC Lead, reviewing CyberArk PAM), and AR-Q4-006 (Lisa Moreno, IAM Analyst, reviewing Okta admin where she herself executes terminations).\n\n**Severity:** **Medium-High** \u2014 This is a recurring design weakness across the most sensitive systems in scope. Auditors will likely flag this as a segregation-of-duties concern. Recommend independent secondary review for production/PHI systems.\n\n---\n\n## Finding 2: Unmatched Service/Functional Accounts Outside CyberArk\n\n**Related Section:** Okta User Report (USR-0179, USR-0180); Policy \u00a73.4\n\n**Gap:** Two accounts (`platform-monitoring` and `demo-environment`) are flagged as having \"no matching HR record.\" Policy \u00a73.4 requires **all** service accounts and non-human identities to be:\n- Managed through CyberArk PAM\n- Assigned to an individual owner\n- Have credentials rotated every 90 days\n\nThese accounts authenticate via API Key in Okta directly (not vaulted in CyberArk based on evidence provided), and `demo-environment` is described as a **\"shared functional account for customer demos\"** \u2014 shared accounts are essentially prohibited by the SSO/individual-account model. Additionally, `platform-monitoring` has existed since November 2023 with no documented credential rotation history.\n\n**Severity:** **High** \u2014 Direct violation of documented policy. Shared accounts and unvaulted service credentials are common SOC 2 exceptions, especially in PHI environments. The `demo-environment` account in particular (shared, last used Dec 18) is a material concern.\n\n---\n\n## Finding 3: TERM-Q4-004 Termination Exceeded 24-Hour SLA\n\n**Related Section:** Termination Log TERM-Q4-004; Policy \u00a76.1\n\n**Gap:** Derek Chung's Okta account was disabled approximately 64 calendar hours after the termination effective date, exceeding the policy's 24-hour SLA. The log marks this as \"Disputed\" and rationalizes the delay using \"business hours.\" However, the policy text states unambiguously: *\"Okta account must be disabled within 24 hours of the termination effective date\"* \u2014 there is no business-hours carve-out. The compensating analysis (no login activity over the weekend) is good practice but does not cure the SLA breach.\n\nThis is also a control documentation/integrity concern: the termination log applying a self-serving \"Disputed\" status rather than acknowledging the exception undermines auditor confidence in the control's evidence.\n\n**Severity:** **Medium** \u2014 One exception out of five (20% exception rate in the sample) is statistically meaningful for a SOC 2 sample. Recommend either (a) updating the policy to define the SLA in business hours with monitoring compensating controls, or (b) implementing automated/on-call termination capability for off-hours separations, and re-classifying this entry as an exception with root-cause remediation.\n\n---\n\n## Finding 4: Inconsistent Access Review Coverage vs. Policy\n\n**Related Section:** Q4 Access Review (AR-Q4-001 through AR-Q4-012); Policy \u00a75.2\n\n**Gap:** Policy \u00a75.2 enumerates 12 systems for quarterly review, and 12 reviews were completed \u2014 coverage matches. However, the GitLab CI system identified in Policy \u00a72 (Scope) as a CI/CD pipeline platform is **not listed** in \u00a75.2's review schedule and was not included in Q4 reviews. CI/CD platforms typically have access to production secrets and deployment capability and should be in scope.\n\n**Severity:** **Medium** \u2014 Scope gap that should be addressed before the Type II audit window.\n\n---\n\n## Finding 5: AWS Access Review Completed Late\n\n**Related Section:** AR-Q4-001; Policy \u00a75.1\n\n**Gap:** The AWS production access review was completed 17 business days after initiation, exceeding the 15-business-day policy SLA by 2 days. While management documented this transparently, it represents a control deviation. Combined with Finding 1 (self-review), the AWS review is the weakest of the twelve.\n\n**Severity:** **Low-Medium** \u2014 Single 2-day overrun is a minor procedural exception, but combined with the self-review issue on the same control, it warrants attention.\n\n---\n\n## Finding 6: Two Terminated Employees Retained Active Accounts in Multiple Systems\n\n**Related Section:** AR-Q4-009, AR-Q4-010\n\n**Gap:** The Q4 access reviews discovered 2 employees terminated in September still had active accounts in Jira/Confluence and Google Workspace at the time of the October review. Per policy \u00a76.1, the Okta-driven deprovisioning process should have cascaded to revoke or disable application access. This indicates either:\n- SCIM provisioning is not configured for these applications, OR\n- Application-level account cleanup is not occurring upon Okta disable, OR\n- These specific terminations were not processed correctly through the standard workflow\n\nThe fact that the same two accounts surfaced in two separate reviews suggests a systemic deprovisioning gap, not an isolated incident. This is a direct CC6.1 / HIPAA 164.312(a)(1) concern as terminated employees retained access to potentially confidential information for ~30+ days.\n\n**Severity:** **High** \u2014 This is the most concrete operating effectiveness failure in the evidence package. Auditors will want root-cause analysis, identification of who the terminated employees were, confirmation no PHI/confidential data was accessed during the gap, and remediation evidence (e.g., SCIM configuration, monitoring).\n\n---\n\n## Finding 7: Contractor Monthly Review Evidence Missing\n\n**Related Section:** Policy \u00a73.3; Evidence package\n\n**Gap:** Policy \u00a73.3 requires contractor accounts to be **\"reviewed monthly by the contractor's Nimbus Health sponsor.\"** No monthly contractor review evidence was provided in the package \u2014 only the quarterly system reviews. With 6 active contractors (USR-0173 through USR-0178), several with access to sensitive environments (Information Security pen tester, HIPAA compliance consultant, database migration specialist), monthly review evidence is essential.\n\n**Severity:** **Medium** \u2014 Likely an evidence-gathering gap rather than a true control failure, but auditors will request these records. Also, contractor expiration dates are referenced in policy but not visible in the user report \u2014 recommend adding them to the Okta export.\n\n---\n\n## Finding 8: Quarterly Review Did Not Identify Unmatched Service Accounts\n\n**Related Section:** AR-Q4-006 (Okta review); Finding 2\n\n**Gap:** Lisa Moreno's Okta admin review (AR-Q4-006) reviewed only 8 admin accounts and concluded \"all admin accounts appropriate.\" However, the broader Okta tenant contains the two unmatched service/shared accounts (Finding 2) which were not flagged. The access review program is not effectively catching policy violations within its scope. This calls into question the rigor of \"All accounts appropriate. No changes needed.\" conclusions across multiple reviews.\n\n**Severity:** **Medium** \u2014 Indicates the access review may be a checkbox exercise rather than a substantive control.\n\n---\n\n## Finding 9: TERM-Q4-003 Device Collection Delay (Minor)\n\n**Related Section:** TERM-Q4-003\n\n**Gap:** Monica Restrepo's laptop was returned 3 days after termination (Nov 15 \u2192 Nov 18). For a remote employee using shipping, this is reasonable, and Okta access was disabled within SLA. Documenting the device-encryption-at-rest control as a compensating control during the in-transit period would strengthen this evidence.\n\n**Severity:** **Low** \u2014 Acceptable practice but recommend documenting compensating controls.\n\n---\n\n## Finding 10: Policy Reference to GitLab CI vs. GitHub Enterprise Inconsistency\n\n**Related Section:** Policy \u00a72 vs \u00a75.2\n\n**Gap:** Policy \u00a72 lists \"CI/CD pipelines (GitLab CI)\" but \u00a75.2 lists \"GitHub Enterprise\" for source code review. There appears to be inconsistency about whether the company uses GitHub, GitLab, or both. This is a documentation hygiene issue but matters because auditors will trace scope.\n\n**Severity:** **Low** \u2014 Documentation cleanup needed.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---|---|\n| 1 | AWS/production reviewers reviewing their own systems (SoD) | Medium-High |\n| 2 | Shared/unvaulted service accounts violate \u00a73.4 | **High** |\n| 3 | Derek Chung termination exceeded 24-hour Okta SLA | Medium |\n| 4 | GitLab CI / CI-CD platform not in review scope | Medium |\n| 5 | AWS access review completed 2 days late | Low-Medium |\n| 6 | Terminated employees retained app access for ~30+ days | **High** |\n| 7 | No evidence of monthly contractor reviews | Medium |\n| 8 | Access reviews not catching policy violations | Medium |\n| 9 | Laptop return delay (remote employee) | Low |\n| 10 | GitLab/GitHub policy inconsistency | Low |\n\n## Overall Readiness Opinion\n\nNimbus Health is **not yet ready** for a clean SOC 2 Type II opinion on CC6.1 without remediation. The two **High** findings (shared service accounts and the multi-application deprovisioning gap revealed by Q4 reviews) are likely to result in exceptions. The Medium findings around segregation of duties in access reviews are remediable through process redesign before the audit window, and represent the highest-leverage area for management attention. The control framework is well-designed; the gaps are primarily in operating effectiveness and evidentiary completeness rather than fundamental control absence."
+}

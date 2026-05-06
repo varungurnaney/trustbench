@@ -1,0 +1,95 @@
+{
+  "task_id": "c1.1-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:20:16.046393",
+  "score": {
+    "task_id": "c1.1-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.8,
+    "precision": 0.6666666666666666,
+    "f1": 0.7272727272727272,
+    "score": 0.7272727272727272,
+    "gaps_detected": 4,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "DB-ADP-004",
+          "tolerance",
+          "EXC-2025-041",
+          "corrective actions",
+          "disk space",
+          "Restricted"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "pattern",
+          "tolerance boundary",
+          "buffer",
+          "re-encryption",
+          "process",
+          "fragile"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "tolerance",
+          "pattern",
+          "manual"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "resilience"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "quarterly review",
+          "recommendations",
+          "governance"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3860,
+    "output_tokens": 4160
+  },
+  "raw_response": "## Overall readiness assessment\n\nArbor\u2019s key lifecycle control appears **designed and generally operating**, with evidence of an approved policy, a key inventory/rotation tracker, CISO review, exception handling, and documented corrective actions. I would **not treat DB-ADP-004\u2019s 2-day tolerance overage as a material deficiency by itself** because it was identified, escalated to the CISO, covered by an exception, remediated, and reviewed.\n\nHowever, there are readiness gaps indicating the process is **operating with limited margin**, especially for manual database field-encryption rotations protecting Restricted data. The CISO\u2019s quarterly review is a positive governance indicator, not an admission of failure, but the observations need to be converted into tracked remediation.\n\n## Findings\n\n| # | Short title | Related document / section | Why it\u2019s a gap | Severity |\n|---|---|---|---|---|\n| 1 | Database key rotations are consistently at the tolerance boundary | **Quarterly Encryption Posture Review \u2014 Sections 2.1, 2.3, 3**; **Key Rotation Tracker \u2014 DB-ADP-001, DB-ADP-002, DB-ADP-003** | Three Restricted database field-encryption keys completed exactly at the 14-day tolerance limit. While technically compliant, this indicates the tolerance window is being consumed as standard operating time rather than used as contingency buffer. The one database rotation with complications, DB-ADP-004, immediately exceeded tolerance. This suggests the control is operating, but with fragile operational capacity and limited resilience to predictable issues such as holidays, batch contention, disk space, or maintenance windows. | **Medium** |\n| 2 | Rotation completion criteria are not clearly evidenced for database keys | **Encryption Key Lifecycle Policy \u2014 Sections 4.2 and 4.3**; **Key Rotation Tracker \u2014 `actual_rotation` and `re_encryption_completed` fields**; **Exception EXC-2025-041** | The tracker treats `actual_rotation` as the date used to calculate compliance, but several database keys show `re_encryption_completed` occurring days later. For example, DB-ADP-001 was marked rotated on 2025-11-29, but re-encryption completed on 2025-12-05. The policy\u2019s database rotation procedure includes re-encryption and verification, so it is unclear whether a rotation is considered complete when the new key is generated/deployed or when all protected data has been re-encrypted and verified. DB-ADP-004 also has inconsistent evidence: the exception states re-encryption completed November 17, while the tracker lists November 22. This ambiguity could cause overstatement of compliance. | **Medium** |\n| 3 | DB-ADP-004 exceeded tolerance for a Restricted database key | **Key Rotation Tracker \u2014 DB-ADP-004**; **Encryption Key Lifecycle Policy \u2014 Section 4.2**; **Exception Register \u2014 EXC-2025-041** | DB-ADP-004 exceeded the 14-day tolerance by 2 days for a Restricted database field-encryption key. The issue was caused by disk space exhaustion and table deadlock during re-encryption, both of which are foreseeable operational risks. The organization did follow the required escalation path: CISO notification, exception filing, documented root cause, corrective actions, and post-incident review. Therefore, this is best characterized as an isolated control deviation rather than a material deficiency. | **Low** |\n| 4 | Corrective actions for systemic rotation strain are not formally tracked | **Quarterly Encryption Posture Review \u2014 Section 3 Recommendations**; **Policy \u2014 Section 6.2 Quarterly Key Management Audit** | The CISO review identifies appropriate recommendations, including re-encryption performance optimization, pre-flight checks, automation, and tolerance window evaluation. However, the evidence does not show assigned owners, target dates, remediation status, or risk acceptance for these recommendations. Identifying the pattern is strong governance, but without formal remediation tracking the same issue may recur and become a control deficiency in a future period. | **Low** |\n| 5 | Exception duration appears inconsistent with policy maximum | **Encryption Key Lifecycle Policy \u2014 Section 7 Exceptions**; **Exception Register \u2014 EXC-2025-040** | Policy states that exceptions require CISO approval and have a maximum 6-month duration. EXC-2025-040 was approved on 2025-01-20 and expires on 2026-07-20, approximately 18 months later. Even if the HealthFirst PGP exception is low risk and reviewed, the approved exception period appears to exceed the entity\u2019s own policy. This weakens exception governance and could normalize long-running exceptions. | **Medium** |\n| 6 | C1.1 evidence shows key classification but not a complete confidential information inventory | **Encryption Key Lifecycle Policy \u2014 Section 2 Scope**; **Key Rotation Tracker \u2014 `data_classification`, `service`, `key_category` fields** | The key tracker maps keys to classifications such as Confidential, Restricted, and Internal, which supports confidentiality management. However, for C1.1 specifically, the evidence does not demonstrate a complete maintained inventory of confidential information, including data owners, data locations, systems of record, retention requirements, or mapping of confidential datasets to encryption controls. This may be sufficient for key management testing, but additional evidence would be needed to fully support C1.1. | **Low** |\n\n## Professional judgment summary\n\n- **DB-ADP-004:** Not a material deficiency on its own. It was a properly handled variance, but still a documented control deviation.\n- **Boundary rotations:** Technically compliant, but operationally weak. The control is operating, but \u201cbarely operating\u201d for manual database field-encryption keys.\n- **CISO review:** Positive governance evidence. The issue is not that the CISO identified the pattern; the gap is whether those observations are remediated through formal action tracking.\n- **Overall severity:** No Critical or High findings based on the evidence provided. The main readiness concern is **Medium-rated operational fragility in database key rotation and exception governance**."
+}

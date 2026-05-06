@@ -1,0 +1,92 @@
+{
+  "task_id": "cc7.2-5-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T19:03:00.520878",
+  "score": {
+    "task_id": "cc7.2-5-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "RULE-SCM-021",
+          "dependency confusion",
+          "DET-307",
+          "0% false positive",
+          "expired",
+          "still disabled",
+          "compensating control",
+          "incomplete",
+          "supply chain"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RULE-SCM-018",
+          "DET-303",
+          "pipeline configuration",
+          "88% false positive",
+          "CISO approval",
+          "supply chain",
+          "compensating controls",
+          "downstream"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "198 active",
+          "Section 3.2",
+          "supply chain"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "DET-301",
+          "RULE-SCM-014",
+          "threshold",
+          "artifact",
+          "exfiltration",
+          "false positive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3055,
+    "output_tokens": 3246
+  },
+  "raw_response": "# SOC 2 CC7.2 Compliance Assessment \u2014 Cobalt Labs Security Monitoring and Detection\n\n---\n\n## FINDINGS\n\n### 1. **Unapproved Rule Disablement Without CISO Authorization**\n\n**Document Reference:** Detection Engineering Log (DET-307); Policy Section 3.3\n\n**Gap Description:**\n\nRULE-SCM-021 (\"Dependency confusion \u2014 internal package name published to public registry\") was disabled on 2025-12-10 by Nina Zhao with approval only from Jessica Torres (SecOps Lead), **not the CISO as required by policy**.\n\nThe policy explicitly states: \"Rule disablement: Requires CISO approval, documented compensating control, 60-day maximum.\"\n\nThis is a material control violation. The rule detected 2 true positive supply chain attacks in Q3 2025 and has a 0% false positive rate, meaning it was disabled not due to accuracy issues but due to a technical infrastructure problem (Chronicle API rate limiting). The disablement was made outside the established governance process.\n\n**Severity:** **Critical**\n\nThe rule detects a high-consequence attack vector (dependency confusion) directly relevant to Cobalt Labs' threat model as a CI/CD platform provider. Disablement without CISO approval represents a breakdown in the change control process for security detection.\n\n---\n\n### 2. **Expired Rule Disablement Not Re-evaluated**\n\n**Document Reference:** Detection Engineering Log (DET-307); Policy Section 3.3\n\n**Gap Description:**\n\nRULE-SCM-021 was disabled on 2025-12-10 with an expiration date of 2025-12-31 (21-day window). The matrix report is dated 2025-12-31 and explicitly notes: \"Status as of report date: still disabled.\" This indicates the rule remained disabled past its expiration date without documented re-evaluation, re-enabling, or explicit extension.\n\nThe policy mandates a maximum 60-day disablement window and implies that disabled rules must be actively managed\u2014either re-enabled, extended with justification, or retired through threat model review.\n\nNo evidence is provided that:\n- The CISO re-approved an extension beyond 2025-12-31\n- A threat model review was conducted to retire the rule permanently\n- The technical issue (Chronicle API optimization) was resolved and the rule was restored\n\n**Severity:** **High**\n\nThis represents a lapsed control. A high-fidelity supply chain detection rule expired from the active detection arsenal without documented remediation. The compensating control (RULE-SCM-022) is acknowledged as insufficient\u2014it detects *resolution* from public registries but not the initial *publication* of confusingly-named internal packages to public registries.\n\n---\n\n### 3. **Inadequate Compensating Controls for Disabled Supply Chain Rules**\n\n**Document Reference:** Detection Engineering Log (DET-303 and DET-307); Policy Section 5.2\n\n**Gap Description:**\n\nTwo critical supply chain detection rules have been disabled with stated compensating controls that do not fully replicate their coverage:\n\n**DET-303 (RULE-SCM-018 \u2014 Build pipeline configuration change):**\n- Compensating controls focus on detecting *artifacts* (signing verification, integrity checks) and audit logs\n- Do NOT detect unauthorized *configuration* changes to the CI/CD pipeline itself\n- An attacker could modify pipeline logic (e.g., add exfiltration steps, bypass security gates) without triggering artifact integrity checks\n- This is a different attack surface than artifact tampering\n\n**DET-307 (RULE-SCM-021 \u2014 Dependency confusion publication):**\n- Stated compensating control (RULE-SCM-022) detects public registry *resolution* during builds\n- Does NOT detect when a malicious actor first publishes an internal package name to a public registry\n- The detection gap is the *publication event itself*, not the downstream resolution\n\nFor a CI/CD platform provider, these gaps are material. The policy explicitly elevates supply chain detection to \"critical priority\" (Section 5.2), yet compensating controls are incomplete.\n\n**Severity:** **High**\n\nThese disabled rules address distinct attack vectors that are not fully mitigated by the stated compensating controls. The organization has acknowledged this gap (DET-307 notes the compensating control \"detects resolution but not the initial publication\").\n\n---\n\n### 4. **High False Positive Rate Drove Disablement of Rule Rather Than Resolution**\n\n**Document Reference:** Detection Engineering Log (DET-303); Policy Section 4.2\n\n**Gap Description:**\n\nRULE-SCM-018 was disabled due to an 88% false positive rate and \"overwhelming the security queue (approximately 2,400 alerts/day).\" While the disablement decision itself had CISO approval, the approach raises a policy compliance concern:\n\nThe policy states (Section 4.2): \"Rules exceeding 30% false positive rate must be tuned within 10 business days. **No rule may be disabled solely to reduce alert volume.**\"\n\nThe engineering log documents that the rule was disabled explicitly to prevent alert fatigue. This appears to violate the spirit of the policy\u2014rather than invest engineering effort in tuning a high-fidelity detection (pipeline configuration changes are legitimate security indicators), the organization chose to remove the detection entirely.\n\nThe 10 business day tuning window is meant to prevent exactly this scenario. The rule likely required a more sophisticated tuning strategy (e.g., baselining legitimate config changes per customer, excluding minor YAML formatting changes, machine learning-based anomaly detection) rather than disablement.\n\n**Severity:** **High**\n\nWhile CISO approval was obtained (mitigating the governance gap), this decision prioritizes operational convenience over detection coverage for a critical supply chain attack vector. It sets a precedent that alert volume can justify disabling rules rather than improving detection quality.\n\n---\n\n### 5. **Incomplete MITRE ATT&CK Coverage Documentation**\n\n**Document Reference:** Policy Section 5.1; Coverage Matrix\n\n**Gap Description:**\n\nThe policy requires coverage for specific MITRE ATT&CK techniques, but the provided matrix does not explicitly map the 198 active rules to the listed techniques. The policy lists these tactics as minimum coverage requirements:\n\n- Initial Access (T1190, T1078)\n- Execution (T1059, T1204)\n- Persistence (T1098, T1136)\n- Privilege Escalation (T1068, T1548)\n- Defense Evasion (T1562, T1070)\n- Credential Access (T1110, T1528)\n- Lateral Movement (T1021, T1534)\n- Exfiltration (T1041, T1567)\n\nThe matrix provides categorical counts (authentication_anomalies: 34, etc.) and technique IDs only for the supply chain rules, but does not demonstrate that all 8 required tactics are covered by at least one active rule, or how many rules address each technique.\n\nFor audit purposes, there is no evidence-based mapping confirming that the organization meets its own stated detection coverage requirements.\n\n**Severity:** **Medium**\n\nThis is a documentation/traceability gap rather than a coverage gap (the organization likely has coverage, but hasn't documented it). However, CC7.2 requires the entity to monitor for anomalies, and demonstrating that coverage aligns with threat modeling is part of showing that monitoring is appropriate and complete.\n\n---\n\n### 6. **Supply Chain Detection Rule Threshold Tuning Creates Coverage Gap**\n\n**Document Reference:** Detection Engineering Log (DET-301); Policy Section 3.2\n\n**Gap Description:**\n\nRULE-SCM-014 (\"Artifact registry bulk download\") had its threshold adjusted from 50 artifacts/hour to 200 artifacts/hour, reducing false positives from 35% to 11%. While this is a legitimate tuning decision, it creates a detection gap:\n\nAn attacker performing slower exfiltration (e.g., 100 artifacts/hour sustained over multiple hours) would no longer trigger an alert. The justification cites \"enterprise customers with large monorepos legitimately download 100-150 artifacts during CI runs,\" but this is a *peak* rate, not a sustained pattern.\n\nThe rule should ideally incorporate:\n- Time-window analysis (sustained over hours, not just per-hour peaks)\n- Deviation from customer baseline (normal CI artifact usage per account)\n- Destination anomaly (artifacts downloaded to an unusual location)\n\nInstead, the organization chose a single threshold that allows 200 artifacts/hour. For a supply chain monitoring tool, this is a significant gap.\n\n**Severity:** **Medium**\n\nArtifact exfiltration is a high-consequence attack in the organization's threat model (Section 3.2 lists \"bulk downloads\" as a data exfiltration indicator). The tuning creates a measurable coverage gap. This should be documented as a risk or addressed through additional compensating controls (e.g., machine learning-based anomaly detection, baseline profiling per customer).\n\n---\n\n### 7. **No Documented Threat Model Review for Rule Coverage Alignment**\n\n**Document Reference:** Policy Section 3.3; Policy Section 5.2\n\n**Gap Description:**\n\nThe policy requires that rule retirement be justified through \"threat model review confirming the attack vector is no longer relevant.\" However, no evidence is provided of:\n\n1. A documented threat model for Cobalt Labs that explicitly prioritizes attack vectors\n2. Periodic review (e.g., annual or per major incident) of whether the 198 active detection rules align with current threats\n3. Threat model analysis justifying the selection of MITRE ATT&CK techniques in Section 5.1\n4. Risk-based prioritization of the 8 rule categories (authentication, authorization, exfiltration, supply chain, etc.)\n\nFor an organization operating a CI/CD platform, the threat model is critical to determining whether the right detections are active. For example:\n- Is code injection (T1059, T1204) equally important to supply chain attacks?\n- Are there emerging threats (AI model poisoning, supply chain to SaaS customers) that aren't represented in current coverage?\n\nWithout documented threat modeling, the rule set is reactive rather than proactive.\n\n**Severity:** **Medium**\n\nCC7.2 requires monitoring and detection to be commensurate with the entity's objectives and risk profile. Cobalt Labs' objectives include providing a secure CI/CD platform. The detection architecture should be explicitly tied to a documented threat model. This is present in operational decision-making but not formally documented for audit purposes.\n\n---\n\n### 8. **Medium-Severity Alert SLA Not Met During Business Hours**\n\n**Document Reference:** Policy Section 4.1\n\n**Gap Description:**\n\nThe policy defines a 4-hour SLA for Medium-severity alerts, but only during business hours. This creates a gap:\n\n- An alert triggered at 17:00 (5 PM, end of business) with a 4-hour SLA would not need investigation until 21:00 the next business day (9 AM + 4 hours), a 28-hour window\n- For a CI/CD platform, Medium-severity events (e.g., unauthorized privilege escalation, failed authentication after 5 failed attempts) could represent active compromise\n\nThe policy lacks guidance on:\n- Whether Medium-severity alerts during off-business hours are monitored at all\n- Whether response time SLAs are based on alert trigger time or on time of human awareness\n- Whether Medium-severity supply chain or infrastructure alerts receive higher priority\n\n**Severity:** **Low**\n\nThis is a SLA definition gap rather than a detection gap. However, it reflects tension between the alerting posture and the operational reality of a platform provider supporting global developers (Section 2 mentions operations in us-central1 and europe-west1, spanning 8+ time zones).\n\n---\n\n## SUMMARY\n\n| Finding | Severity | Remediation Priority |\n|---------|----------|----------------------|\n| Unapproved rule disablement (DET-307) | **Critical** | Immediate \u2014 Re-enable or re-approve with CISO authority |\n| Expired rule disablement not re-evaluated | **High** | Immediate \u2014 Re-evaluate RULE-SCM-021 status or re-enable |\n| Inadequate compensating controls | **High** | 30 days \u2014 Assess impact of disabled rules; implement additional controls or restore rules |\n| Alert fatigue driving rule disablement | **High** | 60 days \u2014 Invest in rule tuning/ML for RULE-SCM-018 rather than permanent disablement |\n| MITRE ATT&CK coverage documentation | **Medium** | 30 days \u2014 Provide explicit mapping of 198 rules to required techniques |\n| Bulk download threshold creates gap | **Medium** | 60 days \u2014 Implement time-window and baseline analysis for RULE-SCM-014 |\n| No documented threat model | **Medium** | 90 days \u2014 Develop and maintain formal threat model; tie detection coverage to risk |\n| Medium-severity SLA gap | **Low** | 30 days \u2014 Clarify SLA applicability for after-hours events |\n\n---\n\n## CONCLUSION\n\n**Overall Assessment: Not Yet Compliant**\n\nCobalt Labs has implemented a comprehensive detection framework with 198 active rules, strong policy documentation, and supply chain-specific focus aligned with its business model. However, three material control gaps prevent a compliant CC7.2 assessment:\n\n1. **Governance Violation**: RULE-SCM-021 was disabled without required CISO approval, and the disablement has expired without re-evaluation.\n2. **Detection Gap**: Two disabled critical supply chain rules have incomplete compensating controls, creating blind spots for supply chain attacks.\n3. **Policy Violation**: RULE-SCM-018 was disabled to reduce alert volume, contrary to explicit policy language.\n\n**Recommendation**: Remediate the three Critical/High findings before the next audit period. Specifically:\n- Immediately obtain CISO re-approval or re-enable RULE-SCM-021\n- Assess and close the compensating control gaps for supply chain rules\n- Invest in tuning/ML for RULE-SCM-018 rather than maintaining its disabled status\n- Document explicit mapping of detection rules to formal threat model"
+}

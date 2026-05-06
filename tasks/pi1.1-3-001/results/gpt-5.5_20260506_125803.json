@@ -1,0 +1,54 @@
+{
+  "task_id": "pi1.1-3-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T12:58:03.840376",
+  "score": {
+    "task_id": "pi1.1-3-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.5,
+    "precision": 0.14285714285714285,
+    "f1": 0.22222222222222224,
+    "score": 0.42857142857142855,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "staging",
+          "missing",
+          "Section 4.3",
+          "Section 5.1",
+          "24 hours",
+          "integration tests",
+          "QA sign-off"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "Critical"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2007,
+    "output_tokens": 2119
+  },
+  "raw_response": "## Readiness Assessment \u2014 PI1.1 Deployment Process vs. SDLC Policy Section 5\n\nBased on the SDLC Policy and the GitHub Actions deployment pipeline configuration, the pipeline implementation does **not fully align** with the mandatory deployment controls defined in Policy Section 5. The most significant gaps relate to the absence of staging deployment, staging validation, QA sign-off, and the 24-hour validation period before production deployment.\n\n---\n\n## Findings\n\n### 1. Missing Mandatory Staging Deployment Stage\n\n**Related section:**  \n- SDLC Policy Section 5.1 \u2014 Pipeline Architecture  \n- SDLC Policy Section 4.3 \u2014 Staging Validation\n\n**Why it\u2019s a gap:**  \nThe SDLC policy requires a mandatory **Staging Deploy** stage before production deployment. Specifically, Section 5.1 states the deployment pipeline must include:\n\n1. Build  \n2. Staging Deploy  \n3. Staging Validation  \n4. Production Approval  \n5. Production Deploy  \n6. Post-Deploy Verification\n\nHowever, the provided GitHub Actions pipeline proceeds from:\n\n- Build  \n- Docker Build  \n- Production Approval  \n- Production Deploy  \n- Post-Deploy Verification\n\nThere is no stage that deploys the application to a staging environment before production. This is a direct deviation from the documented SDLC policy and weakens the entity\u2019s ability to validate changes in a production-like environment prior to release.\n\n**Severity:** High\n\n---\n\n### 2. Missing 24-Hour Staging Validation Period\n\n**Related section:**  \n- SDLC Policy Section 4.3 \u2014 Staging Validation  \n- SDLC Policy Section 5.1 \u2014 Pipeline Architecture\n\n**Why it\u2019s a gap:**  \nThe policy requires a **minimum 24-hour staging validation period** before production promotion. The pipeline configuration does not include any enforced wait period, timer, validation gate, or other mechanism to ensure that code remains in staging for at least 24 hours before production deployment.\n\nThe production approval stage has a 48-hour approval timeout, but that is not equivalent to a mandatory 24-hour staging validation period. Since there is no staging deployment stage, the 24-hour validation requirement is not implemented.\n\n**Severity:** High\n\n---\n\n### 3. QA Sign-Off Requirement Not Implemented in Pipeline\n\n**Related section:**  \n- SDLC Policy Section 4.3 \u2014 Staging Validation  \n- SDLC Policy Section 5.1 \u2014 Pipeline Architecture\n\n**Why it\u2019s a gap:**  \nThe SDLC policy requires the **QA team to sign off on staging deployment before production promotion is authorized**. The pipeline includes a `production-approval` stage requiring approval from `release-managers`, but there is no evidence of a QA approval gate, QA group requirement, or QA sign-off record.\n\nThe current approval configuration only requires:\n\n```json\n\"required_approvers\": [\"release-managers\"],\n\"minimum_approvals\": 1\n```\n\nThis does not satisfy the policy\u2019s explicit QA sign-off requirement.\n\n**Severity:** High\n\n---\n\n### 4. Integration Testing Against Staging Is Not Evidenced\n\n**Related section:**  \n- SDLC Policy Section 4.2 \u2014 Integration Testing  \n- SDLC Policy Section 5.1 \u2014 Pipeline Architecture\n\n**Why it\u2019s a gap:**  \nThe SDLC policy requires integration tests to run against the staging environment after each staging deployment, and all integration tests must pass before production promotion.\n\nThe pipeline contains:\n\n- Unit tests during the build stage\n- Smoke tests after production deployment\n- Health check after production deployment\n\nHowever, it does not include an integration testing stage against staging before production deployment. Post-production smoke tests are not a substitute for pre-production integration testing.\n\nThis gap increases the risk that defects affecting processing completeness, accuracy, or timeliness could be introduced into production without adequate validation.\n\n**Severity:** High\n\n---\n\n### 5. Environment Parity Control Not Evidenced in Pipeline\n\n**Related section:**  \n- SDLC Policy Section 5.2 \u2014 Environment Parity\n\n**Why it\u2019s a gap:**  \nThe policy requires staging and production environments to maintain configuration parity, with Infrastructure-as-Code used to ensure consistency and configuration drift reviewed and resolved within 48 hours.\n\nThe pipeline configuration does not include any step to verify environment parity, check Terraform drift, compare staging and production configurations, or enforce drift remediation before production deployment.\n\nWhile the policy states that Terraform ensures environment consistency, the provided pipeline evidence does not demonstrate that this requirement is operationalized as part of the deployment process.\n\n**Severity:** Medium\n\n---\n\n### 6. Hotfix Approval Requirements Not Reflected in Pipeline\n\n**Related section:**  \n- SDLC Policy Section 5.3 \u2014 Hotfix Process\n\n**Why it\u2019s a gap:**  \nThe policy allows critical hotfixes to bypass the standard 24-hour staging validation period but still requires:\n\n- Deployment to staging first\n- Passing integration tests\n- VP Engineering approval\n\nThe pipeline does not show a separate hotfix path, conditional logic, VP Engineering approval gate, or evidence that hotfixes are still deployed to staging and tested before production.\n\nIf hotfixes are managed outside this pipeline, additional evidence would be needed. Based on the provided configuration, the hotfix control requirements are not implemented or evidenced.\n\n**Severity:** Medium\n\n---\n\n### 7. Production Deployment May Be Triggered by Pull Request Events\n\n**Related section:**  \n- SDLC Policy Section 5.1 \u2014 Pipeline Architecture  \n- SDLC Policy Section 3.1 \u2014 Version Control  \n- SDLC Policy Section 3.2 \u2014 Code Review\n\n**Why it\u2019s a gap:**  \nThe pipeline trigger includes both `push` and `pull_request` events on the `main` branch:\n\n```json\n\"trigger\": {\n  \"branches\": [\"main\"],\n  \"events\": [\"push\", \"pull_request\"]\n}\n```\n\nThe pipeline also includes production approval and production deployment stages. If not further restricted by workflow conditions, this could allow production deployment logic to be invoked from pull request events before code is merged to `main`.\n\nThe SDLC policy requires changes to be reviewed and merged through approved pull requests before promotion. Production deployment should generally be restricted to controlled release events, such as pushes to `main`, release tags, or manually approved deployment workflows.\n\nBecause the provided configuration does not show conditional safeguards preventing deployment on pull request events, this is a potential implementation gap.\n\n**Severity:** Medium\n\n---\n\n## Areas That Appear Aligned\n\nThe following policy requirements appear to be partially or fully implemented in the pipeline:\n\n| Policy Requirement | Evidence in Pipeline | Assessment |\n|---|---|---|\n| Build stage | `compile`, `unit-tests`, `sast-scan` | Implemented |\n| Unit test coverage threshold | `coverage_below: 80` causes failure | Implemented |\n| SAST scan | SonarQube strict quality gate, fail on critical | Implemented |\n| Production approval | `production-approval` requires release manager approval | Partially implemented |\n| Production deployment | ECS deployment step | Implemented |\n| Post-deploy verification | Smoke tests and health check | Implemented |\n| Rollback on post-deploy failure | `on_failure: trigger_rollback` | Implemented |\n\n---\n\n## Overall Conclusion\n\nThe deployment pipeline does **not fully conform** to the SDLC Policy Section 5 requirements. The most significant readiness gaps are the absence of:\n\n- Staging deployment\n- 24-hour staging validation period\n- QA sign-off\n- Staging integration testing before production\n- Evidence of environment parity checks\n\nThese gaps are relevant to **PI1.1** because processing integrity depends on defined and consistently executed deployment controls that help ensure production changes are complete, accurate, and timely. Without the required staging and validation controls, there is increased risk that defective or incomplete code could be promoted to production and affect customer-facing processing."
+}

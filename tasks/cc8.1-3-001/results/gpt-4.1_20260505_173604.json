@@ -1,0 +1,57 @@
+{
+  "task_id": "cc8.1-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:36:04.849130",
+  "score": {
+    "task_id": "cc8.1-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-306",
+          "webhook",
+          "security review",
+          "High risk",
+          "partner"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "November 5",
+          "quorum",
+          "NOT MET",
+          "Security Lead",
+          "absent",
+          "CHG-306"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2742,
+    "output_tokens": 1120
+  },
+  "raw_response": "Certainly! Here\u2019s a list of findings based on your evidence review for SOC 2 readiness, referencing the policy, change log, and CAB minutes.\n\n---\n\n### 1. **High-Risk Change Deployed Without Required Security Review**\n\n- **Section:** Change Management Policy \u00a73.2 Security Review; Change Request Log (CHG-306); CAB Minutes (Nov 5, Nov 12, Dec 10, Dec 17).\n- **Why it's a gap:** Policy mandates that all High/Critical risk changes must have a security review by Security Engineering before CAB approval and deployment. CHG-306 (Webhooks endpoint, High risk) was approved and deployed without a pre-implementation security review because the security team was unavailable; post-deployment review remained incomplete as of year-end.\n- **Severity:** **High**\n  - High-risk functionality affecting external partners was released to production without required security validation, increasing the risk of vulnerabilities being introduced without mitigation.\n\n---\n\n### 2. **CAB Quorum Not Met for High-Risk Change Approval**\n\n- **Section:** Change Management Policy \u00a73.3 CAB Approval; CAB Minutes (Nov 5); Change Request Log (CHG-306).\n- **Why it's a gap:** Per policy, all \"Normal\" changes (including High risk) require CAB approval with quorum: VP Engineering, Security Lead, and at least one other member. On November 5, only 2 of 3 required were present (Security Lead absent); the change was still approved and deployed.\n- **Severity:** **Medium**\n  - Approving a high-risk change without full CAB quorum weakens governance and bypasses a key safeguard designed to prevent incomplete review of significant risks.\n\n---\n\n### 3. **Delayed and Incomplete Post-Implementation Security Review**\n\n- **Section:** Change Management Policy \u00a73.6 Post-Implementation; CAB Minutes (Nov 12, Dec 10, Dec 17); Change Request Log (CHG-306).\n- **Why it's a gap:** An action item was set for a post-deployment security review of CHG-306, but status updates across successive CAB meetings (Nov 12, Dec 10, Dec 17) confirm it was not scheduled or completed by the end of Q4, leaving the risk unremediated.\n- **Severity:** **Medium**\n  - The delay in post-implementation review means known process deviations were not quickly remediated, increasing exposure to potential undetected vulnerabilities.\n\n---\n\n### 4. **Inconsistent Documentation of Security Reviewer for Some High-Risk Changes**\n\n- **Section:** Change Management Policy \u00a73.2 Security Review; Change Request Log.\n- **Why it's a gap:** While most High/Critical changes list the specific Security reviewer (e.g., \"priya.sharma (Security Eng)\"), for CHG-306 this field lists \"N/A\", and the emergency change (CHG-307) documents a reviewer post-facto only. Best practice is to always explicitly document the reviewer or note deviations for traceability.\n- **Severity:** **Low**\n  - This is largely subsumed under Findings 1\u20133, but the lack of explicit reviewer documentation reduces auditability and can complicate incident response or root-cause analysis in case of issues.\n\n---\n\n### 5. **Emergency Change Process Correctly Followed with Timely CAB Review**\n\n- **Section:** Change Management Policy \u00a72 Change Categories; \u00a73.3 CAB Approval (Emergency); Change Request Log (CHG-307); CAB Minutes (Nov 12).\n- **Why it's a gap:** **Not a gap.** Emergency change (CHG-307, OpenSSL patch) followed policy: received prompt verbal approval, deployed, and had retrospective CAB review within 48 hours per policy.\n- **Severity:** **N/A** (Good control operation; included here for completeness).\n\n---\n\n## Summary Table\n\n| Ref | Title                                            | Policy Section(s)        | Gap Description                                                                           | Severity |\n|-----|--------------------------------------------------|-------------------------|-------------------------------------------------------------------------------------------|----------|\n| 1   | High-Risk Change Deployed Without Security Review| \u00a73.2, Change Log, CAB   | High-risk change CHG-306 deployed without required security review                        | High     |\n| 2   | CAB Quorum Not Met for High-Risk Change Approval | \u00a73.3, CAB, Change Log   | CAB approved CHG-306 with only 2 of 3 required members (Security Lead absent)             | Medium   |\n| 3   | Delayed/Incompleted Post-Impl Security Review    | \u00a73.6, CAB, Change Log   | Post-implementation security review for CHG-306 not scheduled/completed by period end     | Medium   |\n| 4   | Inconsistent Documentation of Security Reviewer  | \u00a73.2, Change Log        | Lacks explicit Security reviewer record for CHG-306; only post-facto for CHG-307          | Low      |\n| 5   | Emergency Change Process Correctly Followed      | \u00a72, \u00a73.3, Change Log    | No gap: process followed for CHG-307                                                      | N/A      |\n\n---\n\n**Conclusion:** The primary risk centers on CHG-306, a high-risk change deployed outside of policy both in terms of pre-deployment security review and CAB quorum. Remediation should focus on preventing recurrence of these exceptions and ensuring compensating controls are triggered and completed promptly when deviations occur (with clear documentation)."
+}

@@ -1,0 +1,92 @@
+{
+  "task_id": "c1.1-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:12:47.025000",
+  "score": {
+    "task_id": "c1.1-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-011",
+          "VPC",
+          "no PII",
+          "approved",
+          "compensating",
+          "not a finding"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "partner-data-sync",
+          "CBC",
+          "AES-128",
+          "Restricted",
+          "PII",
+          "no exception",
+          "customer names",
+          "account numbers"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "bft-prod-ml-training",
+          "SSE-S3",
+          "SSE-KMS",
+          "EXC-2025-013",
+          "PII",
+          "remediation",
+          "pending",
+          "derived"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "partner-data-sync",
+          "HSTS",
+          "Restricted",
+          "production"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7850,
+    "output_tokens": 2291
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 C1.1 & CC6.7\n**Bridgeport Financial Technologies | Q4 2025 (Oct 1 \u2013 Dec 31, 2025)**\n\n## Scope of Review\nAssessment of the Data Protection and Encryption Policy (POL-ENC-002 v3.0) and supporting evidence covering data classification, encryption at rest, encryption in transit, key management, and exception handling. Documents reviewed for relevance:\n\n- **Highly relevant:** Encryption Policy, S3 Bucket Audit, TLS Configuration Audit, Security Exceptions Register\n- **Limited relevance:** Q4 IR Summary (operational, not encryption-focused), Vendor Assessments (third-party scope)\n\n---\n\n## Findings\n\n### Finding 1: Partner Data Sync API Uses Weak Cipher (CBC mode) for Restricted PII\n- **Evidence:** TLS Configuration Audit \u2014 `partner-data-sync.bridgeportft.com`\n- **Gap:** Endpoint handles Restricted-classified PII (customer names, account numbers) but uses `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256`. This violates Section 4.3 (AES-256 required for Restricted data; AES-128 only acceptable for non-Restricted with documented justification). CBC-mode ciphers are also generally deprecated in favor of GCM/AEAD ciphers. No exception is recorded for this endpoint.\n- **Severity:** **High**\n\n### Finding 2: ML Training Bucket Non-Compliance \u2014 Exception Risk Mismatch\n- **Evidence:** S3 Audit (`bft-prod-ml-training`), Exception EXC-2025-013\n- **Gap:** While an exception exists with compensating controls, the bucket contains derived PII (income brackets and zip codes linked to customer IDs) \u2014 which is re-identifiable PII and arguably Restricted, not Confidential as classified. The S3 audit explicitly marks this **Non-Compliant**, and the audit note states it was \"flagged in Q3 review but remediation still pending.\" The exception was approved Aug 2025 with a Q1 2026 remediation target, but data classification appears understated, weakening the compensating control rationale.\n- **Severity:** **Medium**\n\n### Finding 3: Customer Export Service Missing HSTS\n- **Evidence:** TLS Audit \u2014 `customer-export.internal.bridgeportft.com`\n- **Gap:** Internal service handling Restricted PII (customer data exports to analytics) does not have HSTS enabled. While the policy doesn't explicitly mandate HSTS for internal endpoints, leading practice and consistency with other Restricted-data endpoints (api/app/payments all have HSTS) suggest this is a gap. Combined with the partner-data-sync endpoint (also no HSTS, Restricted), this indicates inconsistent hardening of Restricted-data endpoints.\n- **Severity:** **Low**\n\n### Finding 4: Overdue Vendor Assessment (Jira)\n- **Evidence:** Vendor Security Assessment Register\n- **Gap:** Jira assessment was due 2025-12-15 and is 7 days overdue as of report. While Jira is Tier 3 and holds only project metadata (Internal classification), the overdue status reflects a process control weakness in vendor governance. Tangential to C1.1 but worth noting.\n- **Severity:** **Low**\n\n### Finding 5: Salesforce Custom Field Encryption Unverified for PII\n- **Evidence:** Vendor Assessment \u2014 Salesforce\n- **Gap:** Open finding from vendor assessment notes: \"Custom field encryption not verified for all PII fields.\" Salesforce holds Confidential customer contact data. Per Section 4.2, Confidential data requires encryption at rest. Lack of verification is a compliance evidence gap.\n- **Severity:** **Medium**\n\n### Finding 6: Datadog API Key Rotation Not Documented\n- **Evidence:** Vendor Assessment \u2014 Datadog\n- **Gap:** Vendor assessment identifies that API key rotation for Datadog is not documented. Section 4.4 of the policy requires application-level encryption keys to be rotated every 12 months; while API keys are not strictly encryption keys, the absence of documented rotation indicates a key/secret management hygiene gap (related to Section 5).\n- **Severity:** **Low**\n\n---\n\n## Items Reviewed and NOT Flagged (with rationale)\n\n| Apparent Gap | Why Not a Finding |\n|---|---|\n| Prometheus metrics endpoint over HTTP | Covered by **EXC-2025-011** \u2014 VPC-only, no PII, system metrics only, compensating controls verified Dec 2025. Policy Section 4.1 explicitly permits this with approved exception. |\n| AES-128 webhook encryption | Covered by **EXC-2025-012** \u2014 webhook data is Confidential (not Restricted), policy Section 4.3 permits AES-128 for non-Restricted with justification. Active and within review cycle. |\n| Dev sandbox bucket unencrypted | No real data; synthetic only. Prior exception (EXC-2025-010) closed via remediation. |\n| Production logs/staging buckets using SSE-S3 | Internal classification \u2014 policy permits SSE-S3 (SSE-KMS specifically required only for Confidential/Restricted per Section 4.2). |\n| Payments/admin/webhooks on TLS 1.2 (not 1.3) | Policy Section 4.1 requires TLS 1.2 **or higher** \u2014 compliant. |\n| Internal endpoints without HSTS (grafana, vault, jenkins) | Internal-classification data; HSTS not explicitly mandated. |\n\n---\n\n## Overall Readiness Assessment\n\n**C1.1 (Confidential information identified and maintained):** Largely effective. Data classification scheme is documented and applied consistently across S3 and TLS inventories. Primary concern is the ML training bucket where data classification appears understated (Finding 2).\n\n**CC6.7 (Encryption / Data Protection):** Substantially effective with one notable gap. The partner data sync endpoint (Finding 1) is a genuine policy violation without exception coverage and represents the most material deficiency in this review. The exception management process itself is well-documented, with appropriate compensating controls and review cadences.\n\n**Recommended priority actions before Type II audit window:**\n1. Remediate or formally except the partner-data-sync TLS cipher (Finding 1)\n2. Reassess ML training bucket data classification and accelerate SSE-KMS migration (Finding 2)\n3. Close Salesforce field-level encryption verification gap (Finding 5)"
+}

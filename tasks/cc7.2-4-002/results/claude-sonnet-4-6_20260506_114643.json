@@ -1,0 +1,88 @@
+{
+  "task_id": "cc7.2-4-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T11:46:43.202383",
+  "score": {
+    "task_id": "cc7.2-4-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.5,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "TUNE-303",
+          "GuardDuty",
+          "cryptocurrency",
+          "SEC-EXC-2025-020",
+          "CISO approval",
+          "compensating controls",
+          "100% false positive"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "TUNE-305",
+          "RULE-055",
+          "database privilege escalation",
+          "CISO approval NOT obtained",
+          "no expiration",
+          "Section 4.3"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "November 23",
+          "December 21",
+          "Thanksgiving",
+          "holiday",
+          "weekly review",
+          "Section 5.2",
+          "privileged activity",
+          "sign-off"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "alert tuning"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3108,
+    "output_tokens": 2574
+  },
+  "raw_response": "# SOC 2 CC7.2 Readiness Assessment \u2014 Polaris Financial\n**Audit Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Control:** CC7.2 \u2014 System Component Monitoring and Anomaly Detection\n**Auditor Review Date:** January 2026\n\n---\n\n## Executive Summary\n\nThe evidence reviewed demonstrates a generally mature security monitoring program with documented policies, active SIEM coverage, formal exception management, and consistent privileged activity review. However, four control gaps were identified that require remediation before a clean opinion can be rendered on CC7.2. Two gaps are particularly significant: a rule disablement that bypassed required CISO approval, and two consecutive weeks of missed privileged activity reviews without compensating coverage. The system uptime report was reviewed and determined to be not materially relevant to the effectiveness of CC7.2 controls.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Database Privilege Escalation Alert Disabled Without CISO Approval\n\n**Severity: HIGH**\n\n**Document Reference:** Alert Tuning Log \u2014 TUNE-305; Policy POL-SEC-MON-003 Section 4.3\n\n**Observation:**\nTUNE-305 documents the disablement of RULE-055 (Database privilege escalation) on November 20, 2025. The tuning log explicitly notes: *\"Security Operations Lead approved \u2014 CISO approval NOT obtained.\"* The policy at Section 4.3 unambiguously requires CISO approval as a mandatory condition for disabling any alert rule, alongside documented justification, a compensating detection control, and a 90-day maximum disable period.\n\n**Why This Is a Gap:**\nThis is not an exception that was improperly characterized \u2014 it is an outright policy violation acknowledged in the evidence itself. Three additional deficiencies compound the primary approval failure:\n\n- **No expiration date** has been set. The policy mandates a maximum 90-day disable period; this rule has been active with no defined end date since November 20, meaning it would already be approaching or exceeding that limit by the end of Q4.\n- **The compensating controls are materially weaker** than those required for a disabled detection rule covering database privilege escalation, which is a high-risk activity class. \"Basic CloudTrail monitoring for RDS API calls\" and \"manual weekly review of RDS audit logs by DBA team\" do not provide equivalent real-time detection capability for unauthorized privilege escalation events.\n- **Database admin operations are explicitly enumerated** in Section 5.1 as a privileged activity class requiring real-time alerting, creating a direct conflict between TUNE-305's current state and the privileged activity monitoring requirements.\n\nThe false positive rate of 45% is a legitimate operational concern, but the appropriate remediation path was threshold adjustment or a properly approved exception \u2014 not an unapproved disablement with no sunset date.\n\n**Recommendation:** Immediately escalate for CISO review and either re-enable the rule with a maintenance-window exclusion filter, formally document a policy exception through the SEC-EXC process with CISO approval and an expiration date, or implement an equivalent compensating control that provides real-time detection. Document corrective action.\n\n---\n\n### Finding 2: Two Consecutive Weeks of Privileged Activity Reviews Not Conducted\n\n**Severity: MEDIUM**\n\n**Document Reference:** Weekly Privileged Activity Review Reports \u2014 Weeks ending November 23 and December 21, 2025; Policy POL-SEC-MON-003 Section 5.2\n\n**Observation:**\nThe privileged activity review log shows two unreviewed weeks during Q4 2025:\n- **Week ending November 23, 2025:** Noted as \"Thanksgiving week \u2014 review not conducted\"\n- **Week ending December 21, 2025:** Noted as \"Holiday week \u2014 review not conducted\"\n\nSection 5.2 requires weekly review of privileged activity reports with sign-off documentation, with no carve-out for holidays or reduced staffing periods.\n\n**Why This Is a Gap:**\nPrivileged activity monitoring is a continuous control requirement. Threat actors and unauthorized insiders do not observe holiday schedules; in fact, reduced staffing periods are a commonly exploited window for malicious activity. The following deficiencies are noted:\n\n- **No evidence of a coverage delegation plan.** There is no documentation showing that an alternate reviewer was assigned, that coverage was handed off, or that management formally acknowledged the review would be skipped.\n- **No compensating review was performed retroactively.** The November 30 and December 28 reviews do not reference any catch-up review of the skipped weeks' activity, leaving a documented gap in oversight for those periods.\n- **Two occurrences in a single quarter** suggests this is a systemic planning gap rather than an isolated incident, which increases the likelihood of a pattern finding if the pattern persists.\n\nIt is noted that these are medium rather than high severity because the surrounding weeks showed no anomalous activity, and the gaps are documented transparently rather than concealed. However, the absence of a formal holiday coverage procedure represents a process design deficiency.\n\n**Recommendation:** Establish a documented coverage rotation or backup reviewer procedure for holiday and reduced-staffing periods. For the Q4 gaps, perform and document a retrospective review of the November 16\u201323 and December 14\u201321 privileged activity data. Update the policy or an associated procedure to address planned coverage continuity.\n\n---\n\n### Finding 3: Expired Exception for trade-reconciliation-service SIEM Integration \u2014 Confirm Closure Evidence Is Complete\n\n**Severity: LOW**\n\n**Document Reference:** Security Exception Register \u2014 SEC-EXC-2025-021; Policy POL-SEC-MON-003 Section 3.1\n\n**Observation:**\nException SEC-EXC-2025-021 covered a delayed SIEM integration for the `trade-reconciliation-service`, rated **High** risk, with an expiration date of December 15, 2025. The exception register records that the exception expired and notes: *\"SIEM integration completed December 12. Parser deployed and validated. 14 alert rules configured.\"*\n\nThis finding is substantially resolved. The integration was completed three days before expiration, within the authorized window, and the exception register reflects a closed status with a documented outcome.\n\n**Why This Warrants Attention:**\nWhile the closure is documented in the exception register, the following corroborating evidence was not provided for audit review:\n\n- No change ticket, deployment record, or SIEM onboarding confirmation independently verifying that the Fluent Bit parser is actively ingesting logs into Splunk Enterprise Security.\n- No evidence that the 14 configured alert rules were tested and validated as producing expected outputs for the `trade-reconciliation-service` log format.\n- The service was deployed September 10 and operated outside SIEM coverage for approximately 93 days. Given the High risk rating and the service's role in trade reconciliation (a financially sensitive function), auditors would expect to see evidence that the retrospective log review conducted during the exception period was documented and that no anomalies were identified.\n\n**Recommendation:** Provide supplemental evidence of SIEM integration completion \u2014 specifically a Splunk source confirmation, a sample of ingested events from the service, and the validation record for the 14 alert rules. Confirm that compliance team log reviews conducted during the exception period are retained.\n\n---\n\n### Finding 4: GuardDuty Cryptocurrency Mining Alert Disable \u2014 Properly Controlled, Minor Documentation Observation\n\n**Severity: LOW (Observation Only)**\n\n**Document Reference:** Alert Tuning Log \u2014 TUNE-303; Exception Register \u2014 SEC-EXC-2025-021; Policy POL-SEC-MON-003 Section 4.3\n\n**Observation:**\nRULE-088 (GuardDuty cryptocurrency mining) was disabled on November 1, 2025 via TUNE-303, with CISO approval obtained (Andre Williams), an expiration date of January 30, 2026 (90 days, policy-compliant), and a corresponding formal exception SEC-EXC-2025-021 with documented compensating controls. The December 15 review noted no anomalous GPU activity and confirmed CrowdStrike found no unauthorized processes.\n\nThis disablement is **well-controlled and does not constitute a gap.** The policy requirements at Section 4.3 are met: documented justification exists (100% false positive rate on ML GPU workloads), CISO approval was obtained, compensating controls are specific and operational, the 90-day limit is respected, and the exception was formally re-evaluated before the audit period ended.\n\n**Minor Observation:**\nThe compensating controls reference \"ML training jobs tagged with job-type=ml-training for audit\" but no evidence was provided confirming that tag compliance is enforced (e.g., via an AWS Config rule or SCP preventing untagged GPU instance launches). Without enforcement, the tagging-based audit trail is advisory rather than reliable. This does not rise to a gap but should be addressed to strengthen the compensating control.\n\n**Recommendation:** Confirm that tag enforcement for `job-type=ml-training` on GPU instances is implemented as a preventive control (AWS Config or SCP). Retain documentation of the January 2026 re-evaluation to confirm whether the rule is re-enabled or the exception is renewed.\n\n---\n\n## Summary Table\n\n| # | Finding Title | Source Document | Policy Section | Severity |\n|---|---------------|-----------------|----------------|----------|\n| 1 | Database privilege escalation alert disabled without CISO approval and no expiration date | Alert Tuning Log (TUNE-305) | POL-SEC-MON-003 \u00a74.3, \u00a75.1 | **High** |\n| 2 | Two consecutive privileged activity reviews not conducted during holiday weeks | Privileged Activity Reports | POL-SEC-MON-003 \u00a75.2 | **Medium** |\n| 3 | Expired SIEM integration exception lacks independent closure evidence | Exception Register (SEC-EXC-2025-021) | POL-SEC-MON-003 \u00a73.1 | **Low** |\n| 4 | GuardDuty disable compensating control relies on unenforced tagging | Alert Tuning Log (TUNE-303), Exception Register (SEC-EXC-2025-020) | POL-SEC-MON-003 \u00a74.3 | **Low (Observation)** |\n\n---\n\n## Documents Reviewed\n\n| Document | Relevance to CC7.2 |\n|---|---|\n| Security Monitoring and Event Management Policy (POL-SEC-MON-003 v4.0) | **Primary** \u2014 defines control requirements |\n| Weekly Privileged Activity Review Reports Q4 2025 | **Primary** \u2014 evidence of operating effectiveness |\n| Security Exception Register | **Primary** \u2014 evidence of deviation management |\n| Alert Tuning Log Q4 2025 | **Primary** \u2014 evidence of anomaly detection maintenance |\n| System Uptime Report Q4 2025 | **Not material** \u2014 availability metrics do not demonstrate monitoring control effectiveness |\n\n---\n\n*Assessment prepared for readiness purposes. Findings reflect the auditor's evaluation of evidence provided as of the review date and do not constitute a final audit opinion.*"
+}

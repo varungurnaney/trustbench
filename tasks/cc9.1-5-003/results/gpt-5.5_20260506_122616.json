@@ -1,0 +1,67 @@
+{
+  "task_id": "cc9.1-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T12:26:16.787538",
+  "score": {
+    "task_id": "cc9.1-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.3333333333333333,
+    "f1": 0.4444444444444444,
+    "score": 0.4444444444444444,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Segment",
+          "subservice",
+          "AWS to GCP",
+          "independent assessment"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "subservice",
+          "monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Snowflake",
+          "Azure",
+          "carve-out",
+          "independent assessment",
+          "Critical"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2915,
+    "output_tokens": 3867
+  },
+  "raw_response": "## Overall CC9.1 Readiness Assessment\n\nNovaBridge has a defined vendor risk management policy and evidence of recurring SOC 2 reviews, SLA monitoring, and subservice organization change tracking. However, CC9.1 is **not fully met** for the Q4 2025 observation period due to incomplete subservice organization assessment, inaccurate vendor inventory records, and insufficient follow-up on vendor change notification failures.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Snowflake Azure carve-out assessment is overdue and incomplete** | Vendor Risk Management Policy \u00a7\u00a7 4.2, 4.3; Subservice Change Notification Log SCN-2025-001; SOC 2 Review Notes NB-V-002 | Snowflake notified NovaBridge on **July 20, 2025** that Azure was being added as a **carved-out** subservice organization. Policy requires independent assessment of carved-out subservice organizations within **60 days of identification**. As of the SOC 2 review on **Nov. 22, 2025**, the assessment was still marked **Pending**, well beyond the expected due date. Snowflake is a **Critical** vendor processing customer PII and analytics data, so the unassessed Azure dependency represents an unresolved third-party risk. | **High** |\n| 2 | **Vendor inventory does not accurately reflect current subservice organizations** | Vendor Risk Management Policy \u00a7 4.1; Q4 2025 Vendor Inventory; SOC 2 Review Notes NB-V-002, NB-V-006, NB-V-008 | The Q4 vendor inventory contains multiple discrepancies compared to SOC 2 review evidence and change notifications: Snowflake inventory lists only AWS, but SOC 2 notes identify **Azure carve-out**; CrowdStrike inventory lists only AWS, but change notification and SOC 2 notes identify **Azure inclusive**; Segment inventory lists AWS, but SOC 2 notes identify **GCP inclusive** after migration. Policy requires subservice organizations identified during SOC 2 reviews to be compared against inventory and discrepancies investigated. While some issues were noted, the inventory was not updated, reducing NovaBridge\u2019s ability to reliably track vendor dependencies and trigger required assessments. | **Medium** |\n| 3 | **Segment subservice organization migration was not communicated within contractual notification requirements** | Vendor Risk Management Policy \u00a7\u00a7 4.2, 5; SOC 2 Review Notes NB-V-008; Q4 2025 Vendor Inventory | Segment migrated from AWS to GCP in **August 2025**, but NovaBridge did not receive a subservice organization change notification. Policy and contract requirements require vendors to notify NovaBridge of subservice organization changes within **30 days**. The issue was only identified during the SOC 2 review on **Nov. 15, 2025** and escalated to the CISO on **Nov. 18, 2025**. There is no evidence of completed remediation, contractual enforcement, or inventory update during Q4. Segment is a **High** vendor processing customer behavioral data, making the lack of timely notification and follow-up a significant vendor risk management gap. | **High** |\n| 4 | **SLA monitoring report contains an inaccurate conclusion for Twilio** | Vendor SLA Performance Summary \u2013 Q4 2025; CC9.1 business disruption risk mitigation | The SLA report states that \u201call vendor SLAs met or exceeded targets\u201d and that Twilio \u201cremained above threshold.\u201d However, Twilio\u2019s SLA target was **99.9%**, while Q4 actual performance was **99.88%**, with two SMS delivery delay incidents. This is below the stated SLA target. There is no documented escalation, remediation plan, or risk acceptance. This weakens NovaBridge\u2019s ability to identify and mitigate risks arising from vendor-related business disruptions. | **Medium** |\n| 5 | **Medium vendor with employee PII and carved-out subservice organization lacks clear assessment evidence** | Vendor Risk Management Policy \u00a7\u00a7 2, 3, 4.3; Q4 2025 Vendor Inventory NB-V-013 | Lattice is classified as **Medium**, processes **Employee PII**, and has AWS listed as a **carved-out** subservice organization, but its SOC 2 status is marked **N/A** and there is no evidence of a subservice organization assessment or periodic review. Policy requires subservice organizations to be identified and assessed during onboarding, and carved-out subservice organizations require independent assessment when identified. The policy\u2019s tiering criteria also do not clearly address vendors processing employee PII, which may result in under-classification and insufficient monitoring. | **Medium** |\n| 6 | **SOC 2 review tracking lacks issuance dates needed to demonstrate timeliness** | Vendor Risk Management Policy \u00a7 4.4; SOC 2 Report Review Notes | Policy requires Critical vendor SOC 2 reports to be reviewed within **90 days of issuance** and High vendor reports within **120 days of issuance**. The SOC 2 review notes include report periods and review dates but do not include report issuance dates. Without issuance dates, NovaBridge cannot demonstrate that reviews were completed within policy timelines. For example, Segment\u2019s report period ended June 30, 2025, and the review was completed Nov. 15, 2025; whether this met the 120-day requirement cannot be confirmed from the evidence provided. | **Low** |\n\n---\n\n## Summary Conclusion\n\nNovaBridge has several components of a vendor risk management program in place, including SOC 2 report reviews, subservice organization tracking, change notification logging, and SLA monitoring. However, for CC9.1 readiness, the control is **partially operating but not fully effective**.\n\nThe most significant issues are:\n\n- Failure to complete the required independent assessment for Snowflake\u2019s Azure carve-out.\n- Failure to receive and remediate Segment\u2019s subservice organization change notification breach.\n- Inaccurate vendor inventory for known subservice organization changes.\n- Inaccurate SLA reporting for Twilio\u2019s below-target availability.\n\nThese gaps should be remediated before the SOC 2 audit period or formally risk-accepted with documented compensating controls."
+}

@@ -1,0 +1,73 @@
+{
+  "task_id": "cc8.1-2-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T20:04:08.783122",
+  "score": {
+    "task_id": "cc8.1-2-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "recommended",
+          "not required",
+          "staging",
+          "testing",
+          "should",
+          "mandatory",
+          "gap",
+          "permissive"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SC-009",
+          "standard change",
+          "security",
+          "review"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "standard change",
+          "testing",
+          "evidence",
+          "SC-007",
+          "SC-005"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1241,
+    "output_tokens": 2785
+  },
+  "raw_response": "# Compliance Audit Assessment: CC8.1 Readiness\n## NovaCrest Technologies Change Management Policy (POL-CHG-009)\n\n---\n\n## FINDINGS SUMMARY\n**Total Findings:** 8  \n**Critical:** 2 | **High:** 3 | **Medium:** 2 | **Low:** 1\n\n---\n\n## DETAILED FINDINGS\n\n### 1. Insufficient Testing Requirements for Production Changes\n**Section:** 4.3 Testing  \n**Severity:** Critical\n\n**Gap Description:**  \nThe policy states testing in staging is \"recommended\" rather than mandatory. The language \"should be validated\" is permissive and does not establish a firm control requirement. This is particularly problematic for:\n- Normal and Emergency changes that bypass rigorous approval workflows\n- High and Critical risk changes that only require Security review (not mandatory testing confirmation)\n- Standard changes (SC-004) that rely solely on CI tests, which may not catch production-environment-specific issues\n\n**SOC 2 CC8.1 Requirement:**  \nCC8.1 requires that changes be \"tested\" before implementation. \"Recommended\" testing is insufficient to demonstrate control over this critical design objective.\n\n**Recommendation:**  \nRevise section 4.3 to state: \"All changes must be validated in a staging environment that mirrors production configuration prior to deployment, with documented evidence of test results. Emergency changes are exempt; testing documentation must be completed within 24 hours post-deployment.\"\n\n---\n\n### 2. Inadequate Documentation of Configuration Changes\n**Section:** 4.1 Submission & 4.6 Post-Implementation Review  \n**Severity:** Critical\n\n**Gap Description:**  \nThe policy lacks requirements for documenting infrastructure and configuration changes (as distinct from code changes). Specifically:\n- No requirement to document \"as-built\" configuration post-deployment\n- No requirement to maintain updated system documentation or configuration baselines\n- Standard changes (SC-001, SC-003, SC-007, SC-008, SC-009) reference configuration updates but do not require documentation of what was changed, by whom, or when\n- Post-implementation review only requires \"verification of successful deployment\" but not evidence of configuration documentation\n\n**SOC 2 CC8.1 Requirement:**  \nCC8.1 explicitly requires changes to be \"designed,\" \"documented,\" and \"approved.\" Infrastructure and configuration changes must be documented to demonstrate the control is operating effectively.\n\n**Recommendation:**  \nAdd requirement: \"All changes must be documented in the configuration management database (CMDB) or equivalent system within 4 hours of deployment, including: change description, changed components, change timestamp, changed-by identity, and verification evidence. Standard changes must include template documentation at the time of catalog approval.\"\n\n---\n\n### 3. Emergency Change Approval Process Lacks Preventive Controls\n**Section:** 4.4 Approval (Emergency category)  \n**Severity:** High\n\n**Gap Description:**  \nEmergency changes require only \"VP Engineering verbal approval\" with retrospective CAB review within 72 hours. This creates risks:\n- Verbal approval is not auditable without documentation requirements\n- No requirement to record the VP Engineering approval decision or rationale\n- Retrospective review (72 hours later) cannot prevent problematic changes from entering production\n- No documented criteria for what qualifies as \"Severity 1/2 incident\" requiring emergency change authority\n- During change freezes, emergency changes need CISO approval, but this is stated separately without integration into the emergency approval workflow\n\n**SOC 2 CC8.1 Requirement:**  \nCC8.1 requires changes be \"approved\" with implicit documentation of the approval decision and authority. Retrospective approvals do not satisfy the requirement for pre-implementation authorization.\n\n**Recommendation:**  \nRevise section 4.4: \"Emergency changes require documented approval from VP Engineering before deployment, including: incident ticket reference, justification for emergency classification, and approval timestamp. Verbal approval must be followed by ServiceNow ticket creation within 15 minutes. CAB review must occur within 24 hours (not 72) to confirm appropriateness. Emergency changes during code freeze additionally require CISO email approval before deployment.\"\n\n---\n\n### 4. Vague Rollback Plan Requirements\n**Section:** 8. Rollback  \n**Severity:** High\n\n**Gap Description:**  \nThe policy requires a \"documented rollback plan\" but does not define what constitutes an adequate plan. Missing elements:\n- No requirement for testing rollback procedures\n- No specification of rollback authorization or execution authority\n- No requirement to verify rollback capability before deployment\n- 30-minute threshold for rollback initiation is defined but with no authority/decision-making criteria for when health checks have \"failed\"\n- Standard changes (e.g., SC-001 auto-rollback) assume rollback capability exists, but no verification requirement is stated\n\n**SOC 2 CC8.1 Requirement:**  \nCC8.1 requires changes be \"approved\" and their \"impact\" assessed. Rollback plans are a critical component of impact assessment and approval readiness.\n\n**Recommendation:**  \nRevise section 8: \"All changes must include a detailed rollback plan containing: (1) rollback procedure steps; (2) rollback success criteria; (3) estimated time-to-rollback; (4) rollback testing evidence (must be tested in staging, documented in change request); (5) identified rollback authority. Rollback capability must be verified before change approval. For automated rollback (SC-001), rollback mechanism must be tested within 30 days of deployment and results documented.\"\n\n---\n\n### 5. Missing Security Review for All High-Risk Changes\n**Section:** 4.3 Testing  \n**Severity:** High\n\n**Gap Description:**  \nThe policy states \"For High and Critical risk changes, Security team review is required\" but:\n- Does not define what constitutes \"High\" or \"Critical\" risk (beyond the Risk classification field mentioned in 4.1)\n- Security review is mentioned only in the Testing section, not formally in the Approval section (4.4)\n- No SLA for Security team review is specified\n- Unclear whether Security review blocks change approval or is merely advisory\n- No requirement for Security review of infrastructure/configuration changes (only code changes have peer review requirement in 4.2)\n\n**SOC 2 CC8.1 Requirement:**  \nCC8.1 requires changes be \"approved\" with appropriate authority and review. Security implications of changes must be formally reviewed and documented as part of the approval process.\n\n**Recommendation:**  \nRevise section 4.4 Approval: \"High and Critical risk changes require documented Security Engineering Lead approval before CAB approval. Security review must be completed within 24 hours of submission. Changes affecting authentication, data protection, network access, or encryption require Security review regardless of risk classification. Security approval (or documented waiver with CAB sign-off) is a prerequisite for CAB voting.\"\n\n---\n\n### 6. Insufficient Controls Over Standard Change Catalog\n**Section:** 5. Standard Change Catalog  \n**Severity:** Medium\n\n**Gap Description:**  \nStandard changes bypass approval workflows based on pre-approval, but the policy lacks controls to ensure the catalog remains appropriate:\n- No requirement to review/update the Standard Change Catalog periodically\n- No change request required for updates to the catalog itself (how is SC-001 updated if rollback mechanism changes?)\n- Conditions for standard changes (e.g., \"auto-rollback enabled\" for SC-001) are assumed but not verified per change instance\n- SC-005 (Feature flag toggles) requires \"30-minute monitoring\" but no criteria for passing/failing monitoring are specified\n- No audit trail requirement for standard changes executed (they bypass ServiceNow approval workflow)\n\n**SOC 2 CC8.1 Requirement:**  \nCC8.1 requires changes be \"designed,\" \"documented,\" and \"approved.\" Standard changes must include evidence of execution and verification, not just assumption of pre-approval.\n\n**Recommendation:**  \nAdd to Section 5: \"The Standard Change Catalog must be reviewed and approved by CAB annually and updated whenever control procedures change. Each standard change instance must be logged in ServiceNow with: (1) catalog item reference; (2) change timestamp; (3) executed-by identity; (4) verification that all conditions were met (e.g., confirmation auto-rollback was enabled for SC-001); (5) post-implementation evidence. SC-005 monitoring must include documented pass/fail criteria and monitoring evidence retained for 30 days post-toggle. Non-conformance with catalog conditions requires reclassification as Normal change and CAB approval.\"\n\n---\n\n### 7. Missing Change Monitoring and Observability Requirements\n**Section:** 4.6 Post-Implementation Review  \n**Severity:** Medium\n\n**Gap Description:**  \nPost-implementation review is limited to \"verification of successful deployment within 2 hours.\" This is insufficient:\n- No requirement to monitor change impact on system performance, error rates, or user-facing functionality\n- No definition of \"successful deployment\" (does it mean deployment completed, or system operating normally?)\n- No requirement for extended monitoring window (2 hours is brief for detecting latent issues)\n- No integration with observability platforms (Datadog, mentioned in SC-008, but not required for verification)\n- No requirement to document anomalies or partial failures discovered during monitoring\n\n**SOC 2 CC8.1 Requirement:**  \nCC8.1 requires changes be \"implemented\" effectively, implying successful operation and achievement of intended objectives. Post-implementation verification must confirm actual system behavior, not merely deployment completion.\n\n**Recommendation:**  \nRevise section 4.6: \"Change owner must verify successful deployment and operational effectiveness within 2 hours. Verification must include: (1) automated health checks passing (HTTP endpoints, critical services responding); (2) error rate and performance metrics baseline-aligned via Datadog; (3) no new alerts or anomalies in PagerDuty; (4) spot verification of intended functionality. Extended monitoring must occur for High and Critical changes (8 hours post-deployment). Any anomalies must be documented and escalated; if rollback criteria are not met, SRE must determine whether extended observation or immediate rollback is warranted. All verification evidence must be attached to the ServiceNow ticket.\"\n\n---\n\n### 8. Undefined Change Advisory Board Authority and Decision-Making\n**Section:** 6. Change Advisory Board (CAB)  \n**Severity:** Low\n\n**Gap Description:**  \nCAB composition and quorum are defined, but the policy lacks clarity on:\n- What constitutes a CAB decision (majority vote, consensus, chair decision?)\n- Authority to reject changes and escalation path if CAB rejects a business-critical normal change\n- Conflict resolution if CAB members disagree\n- No requirement for CAB meeting minutes or documented decision rationale\n- No specification of how \"Product Manager (for customer-impacting changes)\" is determined for attendance\n\n**SOC 2 CC8.1 Requirement:**  \nCC8.1 requires changes be \"approved\" with documented evidence of authorization. CAB decisions must be recorded with clear accountability.\n\n**Recommendation:**  \nRevise section 6: \"The CAB operates by consensus. In case of disagreement, VP Engineering (Chair) makes final decision. All CAB meetings must be documented with: (1) attendees and absent members; (2) changes discussed; (3) approval/rejection decision and rationale; (4) any conditions imposed. Meeting minutes must be retained with the change records for audit purposes. Changes rejected by CAB must include documented feedback; requestor may resubmit with risk mitigation changes or escalate to VP Engineering within 5 business days for reconsideration.\"\n\n---\n\n## OVERALL ASSESSMENT\n\n**Current State:** The policy provides a foundation for change management but contains **significant gaps in documentation, testing enforcement, and approval controls** that would likely result in audit findings under SOC 2 CC8.1.\n\n**Risk Level:** **HIGH** \u2013 The policy lacks sufficient rigor to demonstrate that changes are reliably designed, tested, documented, approved, and monitored before implementation.\n\n**Recommended Priority:** Address Critical findings (1, 2, 3) immediately; plan remediation of High findings (4, 5, 6) within 30 days."
+}

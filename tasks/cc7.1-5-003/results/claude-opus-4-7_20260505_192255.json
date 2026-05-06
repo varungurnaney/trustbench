@@ -1,0 +1,82 @@
+{
+  "task_id": "cc7.1-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T19:22:55.532486",
+  "score": {
+    "task_id": "cc7.1-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.25,
+    "f1": 0.3333333333333333,
+    "score": 0.3333333333333333,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "High-severity",
+          "Unknown",
+          "VULN-10005",
+          "VULN-10011"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "post-patch rescan",
+          "Section 6.2",
+          "48 hours",
+          "Not performed",
+          "CHG-2025-1203",
+          "CHG-2025-1207",
+          "High-severity"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "VULN-10014",
+          "VULN-10020",
+          "SLA Breached",
+          "no risk acceptance"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "systemic"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 10800,
+    "output_tokens": 3464
+  },
+  "raw_response": "# SOC 2 Type II Audit Assessment \u2014 CC7.1 Vulnerability Management\n\n**Auditee:** Cascade Systems\n**Control:** CC7.1 \u2014 Detection and monitoring procedures for configuration changes and vulnerabilities\n**Period:** October 1 \u2013 December 31, 2025\n\n---\n\n## Executive Summary\n\nWhile Cascade Systems demonstrates strong scan coverage (100%), schedule adherence (13/13 weekly scans), and excellent Critical vulnerability remediation discipline, the Q4 evidence reveals **systemic SLA tracking failures for High-severity vulnerabilities** and **repeated non-compliance with the 48-hour post-patch rescan requirement** for emergency changes. These gaps undermine the operational effectiveness of the detection and monitoring control for CC7.1.\n\nThe penetration test executive summary is acknowledged but is not directly probative of operational vulnerability management controls and is not relied upon for these findings.\n\n---\n\n## Findings\n\n### Finding 1: Systemic SLA Tracking Failure for High-Severity Vulnerabilities\n\n**Document Section:** Q4 2025 Remediation SLA Dashboard (VULN-10005 through VULN-10011); Vulnerability Management Policy \u00a74.2\n\n**Gap:** All seven (7) High-severity vulnerabilities in the Q4 dashboard have empty `remediated_date`, `sla_status`, `days_to_remediate`, `assigned_owner`, and `escalation_status` fields, with status marked \"Unknown\" and notes stating \"SLA tracking fields empty.\" Policy \u00a74.2 explicitly states: \"SLA tracking is not optional for any severity tier. All vulnerabilities from Critical through Low must have trackable remediation timelines.\"\n\nIn several cases (VULN-10006, 10007, 10008, 10009, 10010, 10011), patch management change records confirm remediation likely occurred \u2014 yet the vulnerability tracker was never updated. This represents a complete breakdown of the closeout/reconciliation process between change management and vulnerability management, making it impossible to demonstrate SLA compliance for the entire High-severity tier during the audit period.\n\nFurthermore, policy \u00a74.3 requires Security Manager notification within 48 hours of any High-severity SLA breach with weekly status updates \u2014 this escalation cannot occur because breach status is undetermined.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: 48-Hour Post-Patch Rescan Requirement Not Met for Emergency Changes\n\n**Document Section:** Patch Management Change Records (CHG-2025-1203, 1207, 1208, 1210, 1211, 1212); Vulnerability Management Policy \u00a76.2\n\n**Gap:** Policy \u00a76.2 mandates: \"Vulnerability rescan within 48 hours of patch deployment to confirm remediation.\" Six (6) of the eleven (11) emergency changes in Q4 explicitly note `post_scan_date = Not performed`:\n\n| Change ID | System | Patch | Rescan Status |\n|---|---|---|---|\n| CHG-2025-1203 | fw-internal-08 | PAN-OS 11.1.6 | Not performed (waited for weekly cycle) |\n| CHG-2025-1207 | pam-ha-02 | BeyondTrust PRA 24.3.2 | Not performed |\n| CHG-2025-1208 | fw-branch-08 | FortiOS 7.4.7 | Not performed |\n| CHG-2025-1210 | jump-srv-06 | KB5044295 RDS | Not performed |\n| CHG-2025-1211 | fortimanager-03 | FortiManager 7.6.2 | Not performed |\n| CHG-2025-1212 | vpn-backup-01 | Ivanti 22.7R2.5 | Not performed |\n\nThis is a 55% failure rate for post-patch validation on emergency changes \u2014 precisely the changes most needing rapid confirmation because they address actively exploited or internet-facing vulnerabilities. Without timely rescan, Cascade cannot demonstrate that patches were effective and could not have detected failed remediation within the policy timeframe.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Disconnect Between Change Management and Vulnerability Tracker\n\n**Document Section:** Cross-reference between Patch Records (CHG-2025-1207, 1208, 1210, 1211, 1212) and SLA Dashboard (VULN-10007, 10010, 10009, 10008, 10011)\n\n**Gap:** Multiple change records explicitly reference uncompleted ticket updates (e.g., CHG-2025-1207: \"ticket VULN-10007 not updated\"; CHG-2025-1211: \"ticket VULN-10008 not updated\"). This indicates Cascade is aware of the disconnect at the change-management level but has no compensating reconciliation process. There is no evidence of a periodic reconciliation control between Jira VULN project and the change management system to ensure remediation events are recorded against open vulnerabilities.\n\nThis is a process design gap distinct from Finding 1 \u2014 even if individual analysts updated tickets, no detective control would catch missed updates.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Medium-Severity SLA Breaches Lacking Documented Risk Acceptance\n\n**Document Section:** SLA Dashboard (VULN-10014, VULN-10020); Policy \u00a75.1\n\n**Gap:** Two Medium-severity vulnerabilities are recorded as \"SLA Breached\" with notes referencing future migrations/retirements (\"App retirement H1 2026 \u2014 no risk acceptance\"; \"migration planned\"). Policy \u00a75.1 requires formal risk acceptance with business justification, compensating controls, CISO approval (for Critical/High; documented approval implied appropriate for Medium under steering committee), and 90-day revalidation. The note for VULN-10014 explicitly states \"no risk acceptance\" \u2014 meaning the SLA breach is uncovered by formal exception. These vulnerabilities are therefore in unmanaged breach status.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: Asset Discovery Gap Without Remediation Process\n\n**Document Section:** Q4 Scan Coverage Report \u00a74 and \u00a75\n\n**Gap:** While 100% subnet coverage is achieved, 18 assets (1.8%) were not discovered and 22 assets (2.3%) had authentication failures. The report identifies root causes (offline workstations, ephemeral containers, scan-window timing, stopped agents, Vault sync delays) but provides no evidence of:\n- A follow-up scan procedure to capture missed assets\n- Remediation tracking for the 15 workstations with stopped local scan agents (potential CrowdStrike/Qualys agent failure indicator)\n- A change to scan windows or CMDB sync timing to address the recurring ephemeral-container gap\n\nWithout a defined re-scan or compensating procedure, these assets effectively go unscanned each cycle, creating recurring blind spots in vulnerability detection.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: CHG-2025-1203 Post-Patch Rescan Performed But Outside Policy Window\n\n**Document Section:** CHG-2025-1203 notes\n\n**Gap:** The change record explicitly acknowledges policy non-compliance: \"Post-patch vulnerability rescan was not performed within 48 hours per policy Section 6.2. Scan occurred at next weekly cycle (Oct 12).\" This is a self-identified deviation on an internet-facing firewall (PAN-OS authentication bypass \u2014 High severity) but no corrective action, root-cause analysis, or policy exception is documented. Self-identifying a deviation without follow-through indicates the deviation tracking process exists but lacks closure controls.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Spot-Check Validation Methodology for Fleet Patches Not Risk-Justified\n\n**Document Section:** CHG-2025-1201, 1214, 1220, 1223, 1224\n\n**Gap:** Standard fleet patch deployments (145 endpoints) are validated via \"spot check 10-15 endpoints\" \u2014 approximately a 7-10% sample. While Qualys/CrowdStrike subsequently confirms patches at the fleet level, the change-record-level validation methodology is not documented in policy, no statistical basis is provided for the sample size, and the policy is silent on acceptable validation sampling for fleet changes. This is a documentation/policy gap rather than a clear control failure.\n\n**Severity:** **Low**\n\n---\n\n### Finding 8: SLA Compliance Reporting Cannot Be Produced for High Tier\n\n**Document Section:** Policy \u00a74.4\n\n**Gap:** Policy \u00a74.4 requires monthly SLA compliance dashboards including per-tier metrics: SLA compliance rate, MTTR by severity, breach count, and aging distribution. Because all High-severity tickets have empty tracking fields (Finding 1), the High-tier metrics required by \u00a74.4 are mathematically impossible to produce accurately for Q4 2025. No evidence of monthly dashboards covering Q4 was provided.\n\n**Severity:** **High**\n\n---\n\n## Overall Control Assessment\n\n**CC7.1 Status: Control Operating with Significant Deficiencies**\n\nDetection mechanisms (scanning tools, coverage, schedule) are operating effectively. However, the **monitoring and remediation tracking** elements of the control \u2014 equally required by CC7.1 \u2014 exhibit material weaknesses, particularly for the High-severity tier and post-patch validation of emergency changes. The combination of Findings 1, 2, 3, and 8 creates a reasonable possibility that vulnerabilities introduced by configuration changes could go undetected, unremediated, or unverified within policy timeframes.\n\n**Recommended Priority Remediation:**\n1. Immediate retroactive update of all VULN-10005 through VULN-10011 tickets with actual remediation dates from change records\n2. Implement automated reconciliation between Jira VULN project and change management system\n3. Make post-patch rescan a mandatory closeout step for emergency change tickets (system-enforced, not procedural)\n4. Document risk acceptance or remediate VULN-10014 and VULN-10020"
+}

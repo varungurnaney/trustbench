@@ -1,0 +1,70 @@
+{
+  "task_id": "pi1.1-1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:46:32.840697",
+  "score": {
+    "task_id": "pi1.1-1-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 0.6666666666666666,
+    "precision": 0.13333333333333333,
+    "f1": 0.2222222222222222,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 15,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "Definition of Done"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "input validation",
+          "output verification",
+          "processing integrity",
+          "Section 6",
+          "complete",
+          "accurate"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "completeness",
+          "reconciliation",
+          "record count",
+          "batch",
+          "processing",
+          "Section 3.6",
+          "monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2303,
+    "output_tokens": 2809
+  },
+  "raw_response": "# Compliance Readiness Assessment: SOC 2 PI1.1\n\n## Control Reviewed\n**PI1.1**: The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.\n\n## Overall Assessment\n\nThe SDLC policy provided is a reasonably mature document for governing **how software is built and released**, but it is fundamentally misaligned with the intent of PI1.1. PI1.1 is concerned with **processing integrity of the system in operation** \u2014 i.e., defining what \"complete,\" \"accurate,\" and \"timely\" mean for the data being processed by Meridian's services for its customers. The SDLC policy addresses software quality assurance, not transaction/data processing objectives.\n\nAn auditor would almost certainly flag this evidence as **insufficient on its face** to demonstrate PI1.1 compliance. Specific findings below.\n\n---\n\n## Findings\n\n### Finding 1 \u2014 No Definition of Processing Objectives for Production Data\n- **Section:** Entire document (notably absent from Section 1 Purpose and Section 3 Development Phases)\n- **Gap:** PI1.1 requires the entity to *define* what constitutes complete, accurate, and timely processing for the data it processes on behalf of customers. The policy never defines processing objectives \u2014 it defines software quality objectives (test coverage, build gates, etc.). There is no statement of what the system is supposed to do with input data, expected outputs, or service-level processing expectations.\n- **Severity:** **Critical**\n\n### Finding 2 \u2014 Absence of Completeness Criteria\n- **Section:** Section 3 (Development Phases), Section 4 (Quality Assurance)\n- **Gap:** No mention of completeness controls such as input validation requirements, record counts, batch reconciliation, mandatory field enforcement, or end-to-end transaction tracking. \"Definition of Done\" (4.1) addresses completion of *user stories*, not completeness of *processing*.\n- **Severity:** **Critical**\n\n### Finding 3 \u2014 Absence of Accuracy Criteria\n- **Section:** Section 3.1 (Requirements Gathering), Section 4\n- **Gap:** Requirements are captured as Jira user stories with acceptance criteria, but the policy does not require requirements to define data accuracy controls (validation rules, calculation correctness, data type/format constraints, edge case handling, or expected error rates). There is no traceability from processing accuracy objectives to test cases.\n- **Severity:** **High**\n\n### Finding 4 \u2014 No Timeliness/Processing SLA Definitions\n- **Section:** Section 3.6 (Maintenance), Section 5 (Release Management)\n- **Gap:** Timeliness language exists only for bug triage (24h) and rollback (30 min). There are no defined processing SLAs (e.g., latency targets, batch completion windows, queue lag thresholds, freshness requirements). PI1.1 specifically requires \"timely\" processing to be defined.\n- **Severity:** **High**\n\n### Finding 5 \u2014 No Linkage to System/Service Specifications\n- **Section:** Section 3.2 (Design)\n- **Gap:** ADRs are referenced, but there is no requirement that customer-facing services have documented functional specifications describing inputs, processing logic, and expected outputs. Without these, \"complete and accurate\" cannot be objectively measured.\n- **Severity:** **High**\n\n### Finding 6 \u2014 Quality Gates Do Not Address Functional Correctness\n- **Section:** Section 4.2 (Quality Gates)\n- **Gap:** All blocking gates (Build, Unit Tests w/ coverage, SAST) are technical hygiene checks. None verify that processing produces complete and accurate outputs. Coverage thresholds measure test breadth, not correctness. Integration tests are mentioned (3.4.2) but are not a quality gate and run only nightly.\n- **Severity:** **High**\n\n### Finding 7 \u2014 Integration Testing Not a Release Blocker\n- **Section:** Section 3.4.2, Section 4.2\n- **Gap:** Integration tests run nightly against staging and publish results to a dashboard, but the policy does not require integration test results to pass before promotion to production. End-to-end processing correctness is therefore not enforced as a release criterion.\n- **Severity:** **High**\n\n### Finding 8 \u2014 No User Acceptance Testing (UAT) or Functional Regression Requirement\n- **Section:** Section 3.4 (Testing)\n- **Gap:** The testing taxonomy includes unit, integration, and security testing only. UAT, functional regression, and data validation testing are absent. Product owner acceptance (4.1) is mentioned but not tied to a structured testing protocol.\n- **Severity:** **Medium**\n\n### Finding 9 \u2014 No Production Processing Monitoring for Integrity\n- **Section:** Section 3.6 (Maintenance)\n- **Gap:** Datadog APM provides performance monitoring, but the policy does not require monitoring of processing-integrity signals (failed transactions, dead-letter queues, reconciliation discrepancies, data quality alerts). Without this, complete/accurate/timely processing cannot be detected or evidenced post-deployment.\n- **Severity:** **High**\n\n### Finding 10 \u2014 No Error Handling and Exception Management Standards\n- **Section:** Section 3.3 (Development), Section 6 (Security)\n- **Gap:** The policy does not require standards for error handling, retry logic, idempotency, or exception logging. These are foundational to ensuring that processing is complete (no silent drops) and accurate (no partial updates).\n- **Severity:** **High**\n\n### Finding 11 \u2014 Data Migration/Schema Changes Lack Integrity Controls\n- **Section:** Section 5.4 (Rollback)\n- **Gap:** The policy requires migrations to be backward-compatible for rollback purposes but does not require pre/post migration data validation, row count reconciliation, or integrity verification.\n- **Severity:** **Medium**\n\n### Finding 12 \u2014 No Defined Inputs/Outputs Inventory\n- **Section:** Not present\n- **Gap:** PI series controls expect the entity to identify the system's inputs (sources, formats) and outputs (destinations, formats) to scope processing integrity. The SDLC policy does not require maintenance of such inventories.\n- **Severity:** **Medium**\n\n### Finding 13 \u2014 Hotfix Process Bypasses Standard Quality Evidence\n- **Section:** Section 5.3 (Hotfix Process)\n- **Gap:** Hotfixes are \"tested\" but the policy does not specify which test gates apply or are waivable. Hotfixes are a known risk path for processing-integrity defects entering production.\n- **Severity:** **Medium**\n\n### Finding 14 \u2014 No Linkage Between Policy and Customer Commitments\n- **Section:** Section 1 (Purpose), Section 2 (Scope)\n- **Gap:** PI1.1 expects processing objectives to align with the entity's commitments and service-level agreements made to customers. The policy makes no reference to customer commitments, contractual SLAs, or service descriptions.\n- **Severity:** **High**\n\n### Finding 15 \u2014 Policy Ownership Does Not Include Data/Processing Stewardship\n- **Section:** Section 7 (Roles and Responsibilities)\n- **Gap:** No role is assigned ownership of processing integrity objectives, data quality, or output verification. Roles are limited to development, QA, release, and security functions.\n- **Severity:** **Medium**\n\n---\n\n## Recommendation Summary\n\nThe SDLC policy alone is **not sufficient evidence** for PI1.1. The auditor will likely request:\n\n1. A **Processing Integrity Policy** or **Service/Data Processing Specification** that explicitly defines completeness, accuracy, and timeliness criteria per service.\n2. Documented **processing SLAs/SLOs** for production services.\n3. **Input/output inventories** and data flow diagrams.\n4. Evidence of **production monitoring** for processing-integrity metrics (not just APM).\n5. **Reconciliation procedures** for batch/transactional processing.\n6. Updates to the SDLC to require functional specifications, integration test pass as a release gate, and error-handling standards.\n\n**Overall Readiness for PI1.1: Not Ready** \u2014 Critical gaps must be remediated before audit fieldwork."
+}

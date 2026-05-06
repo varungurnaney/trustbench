@@ -1,0 +1,48 @@
+---
+layout: default
+title: "cc8.1-4-002"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>cc8.1-4-002</h2>
+    <p class="section-subtitle">CC8.1 · D4 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D4</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">2</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">2</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">44%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are auditing Crestline SaaS's SOC 2 Type II compliance for control CC8.1 (Change Management) covering Q4 2025 (October 1 - December 31, 2025). Review all provided evidence including the change management policy, change log, CAB meeting minutes, and incident report. Assess whether changes were properly authorized, tested, and deployed. Some changes may appear problematic but were handled correctly per policy. Focus on genuine control gaps rather than operational events that were managed appropriately.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/change-management-policy.md</code> — Crestline SaaS change management policy defining testing requirements, rollback criteria, and CAB process</li>
+<li><code>evidence/change-log-q4-2025.csv</code> — Change log for Q4 2025 (12 changes) including test pass rates, rollback events, and deployment status</li>
+<li><code>evidence/cab-meeting-minutes-q4.md</code> — CAB meeting minutes for Q4 2025 documenting approvals and rollback reviews</li>
+<li><code>evidence/incident-report-change503.md</code> — Incident report for CHANGE-503 rollback with root cause analysis and corrective actions <span style="color:var(--orange)">[noise]</span></li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="difficulty d4">red_herring</span></td><td>low</td><td><strong>CHANGE-503 failed in production and was rolled back -- but rollback followed policy correctly</strong><br><span style="font-size:13px;color:var(--text-dim)">CHANGE-503 (GraphQL subscriptions) was deployed on October 21 and rolled back 30 minutes later when the error rate reached 4.7%, exceeding the 2% rollback threshold in policy Section 3.6. The rollback...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="difficulty d4">red_herring</span></td><td>low</td><td><strong>CHANGE-510 rolled back due to node affinity conflict -- but rollback followed policy correctly</strong><br><span style="font-size:13px;color:var(--text-dim)">CHANGE-510 (K8s node pool scaling) was rolled back on December 9 due to pod scheduling failures caused by node affinity misconfiguration. The rollback was completed in 6 minutes. The root cause was do...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>CHANGE-506 deployed to production with no testing evidence</strong><br><span style="font-size:13px;color:var(--text-dim)">CHANGE-506 (SCIM provisioning endpoint) is classified as High risk. Policy Section 3.2 requires all Normal changes to include testing evidence including staging environment validation, automated test ...</span></td></tr>
+<tr><td><strong>F-004</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Two rollbacks in Q4 suggest staging environment does not adequately mirror production</strong><br><span style="font-size:13px;color:var(--text-dim)">Both Q4 rollbacks (CHANGE-503 and CHANGE-510) occurred because of issues that were not detectable in the staging environment: CHANGE-503 failed due to WebSocket connection pooling at production scale ...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-low">57%</td><td>100%</td><td>40%</td><td>57%</td><td>2/2</td><td>5</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-low">50%</td><td>100%</td><td>33%</td><td>50%</td><td>2/2</td><td>6</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-low">50%</td><td>100%</td><td>33%</td><td>50%</td><td>2/2</td><td>4</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-low">57%</td><td>100%</td><td>40%</td><td>57%</td><td>2/2</td><td>5</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-low">40%</td><td>100%</td><td>25%</td><td>40%</td><td>2/2</td><td>6</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-bad">11%</td><td>50%</td><td>6%</td><td>11%</td><td>1/2</td><td>15</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc8.1-4-002">GitHub</a></p></footer>
+</div>

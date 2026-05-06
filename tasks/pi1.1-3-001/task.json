@@ -1,0 +1,68 @@
+{
+  "id": "pi1.1-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "PI1.1",
+  "control_description": "The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/sdlc-policy.md",
+      "type": "policy",
+      "description": "Pinnacle Cloud Services SDLC policy defining mandatory staging deployment, 24-hour validation period, and QA sign-off requirements"
+    },
+    {
+      "path": "evidence/deployment-pipeline-config.json",
+      "type": "config",
+      "description": "GitHub Actions deployment pipeline configuration for the pinnacle-saas-platform showing build, approval, and deployment stages"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Pinnacle Cloud Services' deployment process for the Q4 2025 observation period. Review the SDLC policy and the deployment pipeline configuration. Assess whether the pipeline implementation matches the policy requirements for ensuring processing integrity during software deployments. Cross-reference the pipeline stages against policy Section 5 to identify any gaps between stated policy and actual implementation.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Deployment pipeline skips staging deployment entirely — code goes directly from build to production",
+      "description": "The SDLC policy Section 4.3 states 'All code changes must be deployed to staging and validated before production deployment' with a 'minimum staging validation period of 24 hours.' Section 5.1 defines the pipeline as having 6 mandatory stages: Build, Staging Deploy, Staging Validation, Production Approval, Production Deploy, Post-Deploy Verification. However, the actual deployment pipeline configuration (deployment-pipeline-config.json) contains only 5 stages: build (order 1), docker-build (order 2), production-approval (order 3), production-deploy (order 4), and post-deploy-verification (order 5). There is no staging-deploy stage and no staging-validation stage. Code is built, containerized, approved by a release manager, and deployed directly to production without any staging environment validation. This means integration tests that Section 4.2 requires to 'run against the staging environment after each staging deployment' are never executed, the 24-hour staging validation period never occurs, and the QA team sign-off required by Section 4.3 is never obtained.",
+      "evidence_sources": [
+        "evidence/deployment-pipeline-config.json",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The auditor should map the pipeline config stages against policy Section 5.1's six mandatory stages. The config has 5 stages (build, docker-build, production-approval, production-deploy, post-deploy-verification) while the policy requires 6 (Build, Staging Deploy, Staging Validation, Production Approval, Production Deploy, Post-Deploy Verification). The staging-deploy and staging-validation stages are entirely missing. The pipeline goes from docker-build (order 2) directly to production-approval (order 3), skipping staging entirely. This is a fundamental control failure for processing integrity.",
+      "detection_criteria": {
+        "required_keywords": ["staging", "missing", "Section 4.3", "Section 5.1", "24 hours", "integration tests", "QA sign-off", "directly to production", "staging-deploy", "staging-validation"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Container vulnerability scan configured to never fail the pipeline regardless of findings",
+      "description": "The docker-build stage includes a Trivy container scan but the exit_code is set to 0, meaning the scan will never fail the pipeline regardless of Critical or High vulnerabilities found in the container image. While the scan runs and logs results, it is purely advisory and cannot prevent a vulnerable container from being deployed to production. The SAST scan in the build stage correctly uses fail_on_critical: true, but the container scan does not enforce the same standard. This creates an inconsistency where source code vulnerabilities block deployment but container-level vulnerabilities (base image CVEs, dependency vulnerabilities) do not.",
+      "evidence_sources": [
+        "evidence/deployment-pipeline-config.json"
+      ],
+      "expected_reasoning": "The auditor should examine the container-scan step configuration: severity is set to 'CRITICAL,HIGH' (correct) but exit_code is 0 (incorrect). An exit_code of 0 means Trivy always exits successfully regardless of findings. Compared to the sast-scan which has fail_on_critical: true, the container scan is non-blocking. This means containers with known Critical vulnerabilities can be deployed to production.",
+      "detection_criteria": {
+        "required_keywords": ["Trivy", "container scan", "exit_code", "non-blocking", "advisory", "Critical", "container image", "vulnerability"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "18 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["processing_integrity", "deployment_pipeline", "staging", "cross_reference", "policy_mismatch", "CI_CD"]
+  }
+}

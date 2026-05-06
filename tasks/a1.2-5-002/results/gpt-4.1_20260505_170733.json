@@ -1,0 +1,67 @@
+{
+  "task_id": "a1.2-5-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:07:33.774791",
+  "score": {
+    "task_id": "a1.2-5-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.3333333333333333,
+    "f1": 0.4444444444444444,
+    "score": 0.4444444444444444,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "332 minutes",
+          "container image",
+          "Kubernetes",
+          "scaling",
+          "warm standby"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "CDN cache",
+          "runbook"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "warm standby",
+          "2 nodes",
+          "container image",
+          "scaling"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3459,
+    "output_tokens": 1464
+  },
+  "raw_response": "Certainly! Below is a control assessment of Zenith Cloud Inc.\u2019s A1.2 control for the Q4 2025 observation period, based on the provided evidence. Each gap or notable issue is formatted per your instructions.\n\n---\n\n### 1. **RTO Not Met During Q4 2025 DR Failover Test**\n- **Document Section:** Availability and Disaster Recovery Policy (\u00a73.1 Recovery Targets, \u00a75.1 Quarterly DR Failover Tests) and Q4 2025 DR Failover Test Report (`rto_assessment`)\n- **Gap:** The DR test documented an actual restoration time of 332 minutes (5h 32m), exceeding the RTO objective of 240 minutes (4 hours) as specified in policy. While all Tier 1 services were eventually restored and validated (and RPO was met), the RTO overage indicates the current DR processes are not sufficient to consistently meet the organization\u2019s stated availability commitments in a real disaster scenario.\n- **Severity:** **High**  \n  _(This impacts the organization's contractual availability objectives and may expose clients to longer-than-expected downtime.)_\n\n---\n\n### 2. **Incomplete DR Runbook: Missing CDN Cache Invalidation Steps**\n- **Document Section:** Q4 2025 DR Failover Test Report (`issues_and_remediation`) and Availability and Disaster Recovery Policy (\u00a75.1 Quarterly DR Failover Tests)\n- **Gap:** The test revealed CDN (CloudFront) cache invalidation was not included in the DR runbook. This omission caused additional delay during failover and required manual intervention, which is not aligned with the control objective of having comprehensive, approved, and operational DR procedures.\n- **Severity:** **Medium**  \n  _(This procedural gap increases response time and risk of prolonged downtime during actual incidents.)_\n\n---\n\n### 3. **Insufficient DR Infrastructure Readiness (Container Image Caching and Warm Standby Sizing)**\n- **Document Section:** Q4 2025 DR Failover Test Report (`issues_and_remediation`) and Availability and Disaster Recovery Policy (\u00a73.3 DR Environment)\n- **Gap:** The test identified two main infrastructure constraints:\n    - Container images were not pre-cached in DR region ECR, causing unforeseen delays during node provisioning.\n    - The warm standby Kubernetes cluster had only 2 nodes (vs. 8 production), requiring time-consuming autoscaling during the incident and contributing to the RTO breach.\n  While both issues have remediation plans, they reflect a gap between policy intent (DR environment \"capable of assuming full production load within the RTO window\") and operational reality.\n- **Severity:** **Medium**  \n  _(These limitations directly contributed to the RTO failure and may impact future DR readiness.)_\n\n---\n\n### 4. **DR Test Provides Value and Evidence of Control Operation Despite RTO Breach**\n- **Document Section:** Availability and Disaster Recovery Policy (\u00a75.1 Quarterly DR Failover Tests), Q4 2025 DR Failover Test Report (`sign_off`, whole document)\n- **Gap:** The organization conducted a rigorous, transparent, and well-documented DR failover test and fully disclosed its shortcomings, along with specific remediation plans and timelines. This is a *strength*, not a gap, and provides assurance that the control is operating (testing is occurring, issues are identified, and remediations are tracked). There is no attempt to conceal the missed RTO, and improvement is clearly planned.\n- **Severity:** **N/A (Strength)**  \n  _(This transparency, continuous improvement, and testing discipline is in line with SOC 2 expectations.)_\n\n---\n\n### 5. **Consistent and Verified Backup Operations**\n- **Document Section:** Backup Monitoring Logs, Availability and Disaster Recovery Policy (\u00a74.1 Daily Full Backups, \u00a74.2 WAL Archiving)\n- **Gap:** **No gap identified.** Backups are performed daily as per policy, pass checksum verification, are automated, and show successful completion throughout the quarter (including on the DR test day). WAL archiving and backup retention are not detailed in the logs, but no exceptions are noted.\n- **Severity:** **N/A (Meets Requirement)**  \n  _(Current evidence shows this aspect of the control is functioning as intended.)_\n\n---\n\n### 6. **Remediation Timelines and Accountability Assigned, But Not Yet Implemented**\n- **Document Section:** Q4 2025 DR Failover Test Report (`issues_and_remediation`)\n- **Gap:** While remediation owners and target dates are clearly assigned for each major issue (ECR replication by Dec 15, DR runbook update by Dec 1, standby capacity pending), as of the observation period end (Dec 31), these improvements were not yet implemented/evidenced. This is not an immediate control breakdown, but it does increase risk until closed.\n- **Severity:** **Low**  \n  _(Remediation in progress, but auditor should validate that changes are implemented in subsequent periods.)_\n\n---\n\n## Summary Table\n\n| # | Short Title                                 | Section(s)                              | Gap/Why It's an Issue                                                                                                                                  | Severity |\n|---|---------------------------------------------|-----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------|----------|\n| 1 | RTO Not Met During Q4 DR Test               | \u00a73.1, \u00a75.1, Test Report                 | Failed to restore within policy RTO. Clients may experience longer downtime than committed.                                                           | High     |\n| 2 | Incomplete DR Runbook (CDN Invalidation)    | Issues/Remediation, \u00a75.1                | CDN cache steps not documented; led to manual work and RTO miss.                                                                                      | Medium   |\n| 3 | DR Infra Gaps (Container Caching, Scaling)  | Issues/Remediation, \u00a73.3                | Required infra improvements and image caching were missing, contributing to restoration delays.                                                        | Medium   |\n| 4 | DR Test Provides Value Despite RTO Miss     | Test Report, \u00a75.1                       | Organization performed a comprehensive test, found issues, and is driving improvement. Evidence of operating, not a failure.                          | N/A      |\n| 5 | Consistent Backup Operations                | Backup Logs, \u00a7\u00a74.1/4.2                  | No gaps: Backups were done, validated, and successful per log review.                                                                                  | N/A      |\n| 6 | Remediations Not Yet Implemented            | Issues/Remediation                      | Improvement projects are in progress; risk remains until completed.                                                                                   | Low      |\n\n\n---\n\n## Professional Judgment/Conclusion\n\nZenith Cloud\u2019s backup and DR controls are **operating with some key deficiencies**. The RTO breach is a high-severity issue and considered a gap under the A1.2 control. However, the rigorous DR testing, visible ownership, and remediation in progress mean this is not a systemic failure \u2014 but rather an area actively under improvement. Backups themselves are robust, but the DR process, as of Q4 2025, **does not currently meet the stated RTO objective** due to technical and procedural gaps. Follow-up should focus on verifying completion and retesting of remediations in the next assessment period."
+}

@@ -1,0 +1,47 @@
+---
+layout: default
+title: "a1.2-4-002"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>a1.2-4-002</h2>
+    <p class="section-subtitle">A1.2 · D4 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D4</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">2</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">1</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">31%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are a SOC 2 auditor evaluating Orion Cloud's backup and recovery controls under A1.2 for the Q4 2025 observation period (October 1 - December 31, 2025). Review the backup policy, backup execution log, and exception register. Identify genuine control gaps while distinguishing between failures that have been properly mitigated through compensating controls and those that represent unaddressed risks. Not all documents may be relevant.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/backup-policy.md</code> — Orion Cloud backup and recovery policy defining RPO/RTO targets, backup schedules, and failure response procedures</li>
+<li><code>evidence/backup-log-q4.csv</code> — Q4 2025 backup execution log showing 92 days of operations including 3 failure events</li>
+<li><code>evidence/exception-register.csv</code> — Exception register with CISO-approved exceptions for backup failures including compensating controls</li>
+<li><code>evidence/cloud-infrastructure-summary.md</code> — Cloud infrastructure overview covering AWS architecture and redundancy design <span style="color:var(--orange)">[noise]</span></li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="difficulty d4">red_herring</span></td><td>low</td><td><strong>October 22 backup failure with no re-run — but WAL compensating control and CISO exception documented</strong><br><span style="font-size:13px;color:var(--text-dim)">The October 22 daily backup (BKP-2025-1022) failed due to a storage controller firmware issue and no re-run was executed. This appears to create a 48-hour gap between full backups (October 21 to Octob...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>December 14 backup failure — 7.5-hour re-run delay with no exception and no WAL confirmation</strong><br><span style="font-size:13px;color:var(--text-dim)">The December 14 daily backup (BKP-2025-1214) failed at 02:47 UTC due to a TLS certificate expiration on the backup target. The re-run did not begin until 10:18 UTC — a 7.5-hour gap between failure and...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>November 28 backup failure re-run succeeded but checksum verification skipped</strong><br><span style="font-size:13px;color:var(--text-dim)">The November 28 backup (BKP-2025-1128) failed at 02:35 UTC due to a network timeout. The re-run was initiated at 04:10 UTC (within the 2-hour SLA) and completed at 05:52 UTC. However, the checksum_ver...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-bad">22%</td><td>50%</td><td>14%</td><td>22%</td><td>1/2</td><td>7</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-bad">18%</td><td>50%</td><td>11%</td><td>18%</td><td>1/2</td><td>9</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-bad">29%</td><td>50%</td><td>20%</td><td>29%</td><td>1/2</td><td>5</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-bad">29%</td><td>50%</td><td>20%</td><td>29%</td><td>1/2</td><td>5</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-high">80%</td><td>100%</td><td>67%</td><td>80%</td><td>2/2</td><td>3</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-bad">11%</td><td>50%</td><td>6%</td><td>11%</td><td>1/2</td><td>16</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/a1.2-4-002">GitHub</a></p></footer>
+</div>

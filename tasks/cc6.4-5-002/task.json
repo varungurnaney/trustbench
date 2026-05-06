@@ -1,0 +1,122 @@
+{
+  "id": "cc6.4-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.4",
+  "control_description": "The entity restricts physical access to facilities and protected information assets to meet the entity's objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/physical-security-policy.md",
+      "type": "policy",
+      "description": "Prism Analytics physical security policy covering multi-site operations, colocation oversight, and quarterly access review requirements"
+    },
+    {
+      "path": "evidence/badge-access-log-q4-2025.csv",
+      "type": "log",
+      "description": "Badge access log for Q4 2025 with 55 entries across corporate office access points"
+    },
+    {
+      "path": "evidence/quarterly-access-review-q3-2025.csv",
+      "type": "spreadsheet",
+      "description": "Q3 2025 quarterly badge access review showing review actions and completion status"
+    },
+    {
+      "path": "evidence/data-center-audit-report.md",
+      "type": "report",
+      "description": "Colocation provider physical security audit report with audit dates and Prism-specific findings"
+    },
+    {
+      "path": "evidence/visitor-log-q4-2025.csv",
+      "type": "log",
+      "description": "Visitor sign-in log for Q4 2025 with 30 entries showing visitor management compliance"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/fire-suppression-test-report.md",
+      "type": "report",
+      "description": "Annual FM-200 fire suppression test report — passed all tests, no findings relevant to physical access"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II audit of Prism Analytics for the Q4 2025 observation period (October 1 - December 31, 2025). Review all evidence related to their physical security program and assess CC6.4 compliance. Prism operates a corporate office and uses a third-party colocation data center. Examine badge access controls, quarterly review process, data center oversight, and visitor management. Pay close attention to dates, process completeness, and subtle gaps. Not all documents may be relevant to the assessment.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Q4 2025 quarterly badge access review not completed — only Q3 review on file",
+      "description": "Policy Section 4.6 requires quarterly badge access reviews to be completed within 15 business days of each quarter's end. The evidence provided includes only the Q3 2025 quarterly access review (completed October 8, 2025, covering the July-September period). No Q4 2025 review is available as of December 31, 2025. While the Q4 review deadline would technically fall in January 2026 (15 business days after December 31), the Q3 review itself reveals a concern: 3 of 4 flagged access revocations from the Q3 review (REV-003 for contractor CTR-0191 and REV-004 for employee B-8009) show status 'Pending — Facilities ticket open' as of the October 8 completion date. Policy Section 4.6 requires revocations to be completed within 5 business days of the review. With no Q4 review and unresolved Q3 revocations, there is a cumulative gap in the access review process. The auditor cannot verify that stale access was removed during the observation period.",
+      "evidence_sources": [
+        "evidence/quarterly-access-review-q3-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should check for quarterly review completeness across the observation period. Q4 runs October-December, so a Q4 review would be expected by mid-January 2026 — technically not yet overdue. However, the Q3 review shows unresolved revocations. The auditor must judge whether the combination of unresolved Q3 items and the pending Q4 review constitutes a finding. The key insight is that the access review process is incomplete even when conducted — flagged items are not resolved within the required 5 business days.",
+      "detection_criteria": {
+        "required_keywords": ["Q3 review", "Q4 review", "Section 4.6", "quarterly", "revocation", "Pending", "CTR-0191", "5 business days", "stale access"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Colocation data center physical audit 6 months overdue — provider SOC 2 bridge letter does not cover Prism-specific controls",
+      "description": "Policy Section 8.2 requires annual physical audits of the colocation provider. The data center audit report shows the last audit was conducted June 10, 2024, covering the period June 2023 – May 2024. The next audit was due by June 10, 2025. As of December 31, 2025, the audit is 6 months overdue. The audit report's Section 7 notes that the provider (Citadel Colo) issued a SOC 2 Type II bridge letter for the gap period, but Section 8.2 of Prism's policy explicitly requires 'an independent Prism-initiated audit that verifies Prism-specific controls including authorized access list accuracy, cabinet lock rotation, and Prism-dedicated CCTV coverage.' The provider's SOC 2 bridge letter covers general facility controls but does not verify Prism-specific items. During the 6-month gap, Prism cannot demonstrate it verified: (a) that only authorized Prism employees are on the provider's access list, (b) that cabinet locks were rotated per the semi-annual schedule, or (c) that CCTV coverage of Prism's cabinet row is maintained.",
+      "evidence_sources": [
+        "evidence/data-center-audit-report.md",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should check the audit report date (June 10, 2024) against the annual requirement. The audit is 6 months past due. The provider's SOC 2 bridge letter is a partial mitigation but does not address Prism-specific control verification. The auditor must distinguish between general facility controls (covered by provider SOC 2) and Prism-specific controls (only verifiable through Prism's independent audit). This requires understanding the difference between relying on a service provider's report vs. performing entity-specific verification.",
+      "detection_criteria": {
+        "required_keywords": ["June 10 2024", "6 months overdue", "annual audit", "Citadel Colo", "bridge letter", "Section 8.2", "Prism-specific", "access list", "cabinet lock", "independent"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Visitor pre-registration requirement bypassed for 4 walk-in visits without Security Manager approval",
+      "description": "Policy Section 6.1 requires all visitors to be pre-registered at least 24 hours in advance. Walk-in visitors require 'real-time approval from the Security Manager' per Section 6.1.1. The visitor log shows 4 entries with pre_registered = 'No': VIS-0312 (October 18, vendor), VIS-0319 (November 8, vendor), VIS-0324 (November 28, client), and VIS-0329 (December 19, vendor). Of these 4 walk-in visits, only VIS-0324 has a notes entry referencing Security Manager approval ('Walk-in approved by Security Manager K. Yamamoto'). The other 3 walk-in visits have no evidence of Security Manager approval. While all 4 visitors were escorted and ID-verified, the pre-registration bypass without required approval indicates the receptionist is admitting walk-in visitors without following the exception process. This is a procedural compliance gap rather than an access control failure — the visitors were properly managed once admitted.",
+      "evidence_sources": [
+        "evidence/visitor-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should filter the visitor log for pre_registered = 'No' entries and check whether each has documented Security Manager approval. Only 1 of 4 walk-in visits has proper approval. The auditor must exercise judgment: the visitors were all escorted and ID-verified, so the actual access control was maintained. The gap is procedural — the pre-registration exception process is not being followed consistently. This is a lower-severity finding because the compensating controls (escort, ID verification) were in place.",
+      "detection_criteria": {
+        "required_keywords": ["pre-registered", "walk-in", "Section 6.1", "Security Manager approval", "VIS-0312", "VIS-0319", "VIS-0329", "4 visits", "exception process"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Badge access log shows gap in logging — no entries for November 27-28 (Thanksgiving holiday) but server room environmental alerts triggered",
+      "description": "The badge access log shows no entries for November 27-28, 2025 (Thanksgiving holiday). This is expected for a holiday. However, the data center audit report's Appendix B references that environmental alerts were triggered on Meridian's on-premises server room on November 28 (temperature spike to 79°F due to HVAC shutdown for building maintenance). If an SRE responded to this alert in person, their badge swipe should appear in the log. The absence of badge entries could mean: (a) the alert was handled remotely (acceptable), (b) someone entered without badging (tailgating or propped door — concerning), or (c) the alert was not responded to on-site (acceptable if remote response is documented). Without corroborating evidence of how the alert was resolved, this is an ambiguous gap. The auditor should request the incident response record for the November 28 environmental alert.",
+      "evidence_sources": [
+        "evidence/badge-access-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "This is a subtle finding that requires connecting a holiday gap in badge logs with an environmental event. The auditor should notice the 2-day gap in badge swipes and consider whether it is expected (holiday) or concerning. The temperature alert on November 28 adds context — if someone responded in person, their badge should appear. This requires the auditor to request additional evidence rather than draw a definitive conclusion. It tests the ability to identify investigative threads rather than making definitive findings.",
+      "detection_criteria": {
+        "required_keywords": ["November 27", "November 28", "Thanksgiving", "no entries", "environmental alert", "temperature", "badge log gap", "investigate"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 6,
+    "relevant_documents_count": 5,
+    "tags": ["physical_security", "judgment", "quarterly_review", "colocation_audit", "visitor_management", "pre_registration", "access_review", "bridge_letter"]
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "task_id": "a1.2-4-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:07:21.623088",
+  "score": {
+    "task_id": "a1.2-4-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.2,
+    "f1": 0.28571428571428575,
+    "score": 0.28571428571428575,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "2 tables",
+          "partition pruning",
+          "PostgreSQL version"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "application functionality",
+          "deferred",
+          "January",
+          "Section 5.1",
+          "incomplete",
+          "holiday"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "RTO",
+          "data growth"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3575,
+    "output_tokens": 2671
+  },
+  "raw_response": "# SOC 2 A1.2 Compliance Assessment \u2013 Apex Digital Backup & Recovery Controls\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n\n---\n\n## Summary\nApex Digital maintains a comprehensive backup and recovery policy with defined RPO/RTO targets, documented procedures, and quarterly restore testing. However, the Q4 2025 restore test reveals a material control gap: **application functionality validation was deferred and remains incomplete**, directly violating the stated testing requirements. Additionally, a concerning trend in RTO margins and incomplete data integrity findings in prior quarters require mitigation.\n\n---\n\n## Findings\n\n### 1. **Incomplete Restore Testing \u2013 Application Validation Deferred**\n\n**Policy Section:** 5.1 \u2013 Quarterly Restore Tests (Requirement 4)  \n**Evidence:** Q4 2025 Restore Test Report, \"phase_4_application_validation\" section\n\n**Gap Description:**  \nPolicy Section 5.1 explicitly requires that each quarterly restore test validate \"Application functionality validation post-restore (API health checks, background job processing, user authentication flow).\" The Q4 2025 test (conducted December 20, 2025) deferred Phase 4 application validation entirely to January 8, 2026, citing \"engineering team unavailability during holiday period.\"\n\nAs of the Q4 2025 observation period end (December 31, 2025), this validation remains **incomplete and unexecuted**. The organization has not demonstrated that data and systems restored to the DR environment actually support critical business functions\u2014only that the database layer can be restored and checksums match.\n\nThis directly violates control A1.2's requirement to verify recovery procedures \"meet the entity's availability commitments and system requirements.\" Without application-layer validation, the organization cannot confirm that a real recovery scenario would succeed.\n\n**Severity:** **Critical**\n\n**Compensating Factor Assessment:** None identified. Engineering team availability is a scheduling issue, not a technical compensating control.\n\n---\n\n### 2. **Declining RTO Safety Margin with Accelerating Restore Times**\n\n**Policy Section:** 3 \u2013 Recovery Objectives; 5.1 \u2013 Restore Testing documentation  \n**Evidence:** Q3 and Q4 2025 Restore Test Reports (quarter-over-quarter analysis)\n\n**Gap Description:**  \nThe restore test reports document a concerning trend:\n\n| Metric | Q3 2025 | Q4 2025 | Change |\n|--------|---------|---------|--------|\n| Actual Restore Time | 192 min | 235 min | +43 min (+22.4%) |\n| RTO Target | 240 min | 240 min | \u2014 |\n| Safety Margin | 48 min | 5 min | -43 min (-89.6%) |\n| Data Volume | 156.2 GB | 186.0 GB | +29.8 GB (+19.1%) |\n\nThe Q4 test report explicitly flags this risk: *\"RTO margin reduced from 48 minutes to 5 minutes\"* and *\"RTO margin concerning -- recommend capacity planning review.\"* The test still **passes** (235 < 240), but the organization is operating at the edge of its recovery objective with minimal buffer for variability.\n\nThe policy does not establish:\n- **Trigger thresholds** for RTO margin degradation requiring remediation\n- **Monitoring controls** to track restore performance trends between quarterly tests\n- **Escalation procedures** when margins compress below acceptable levels\n\nWith 19.1% data growth in a single quarter and 22.4% increase in restore time, extrapolation suggests the organization may breach its RTO target within 1\u20132 quarters without intervention. The policy's recommendations section acknowledges this but lacks mandatory remediation timelines.\n\n**Severity:** **High**\n\n**Compensating Factor Assessment:** \n- The Q4 test still met the RTO target (235 min < 240 min), so the current control is not yet failed\n- Change log CHG-2025-0412 shows the organization proactively upgraded the DR PostgreSQL environment in October to resolve Q3 performance issues, demonstrating responsiveness\n- However, this did not arrest the trend; restore time still increased Q3\u2192Q4\n- The policy lacks enforcement mechanisms if margins continue to erode\n\n---\n\n### 3. **Incomplete Data Integrity Results in Prior Quarter Unresolved in Policy Context**\n\n**Policy Section:** 5.1 \u2013 Restore Testing (data integrity verification requirement)  \n**Evidence:** Q3 2025 Restore Test Report\n\n**Gap Description:**  \nThe Q3 2025 test (September 18, 2025) failed data integrity checks for 2 of 512 tables due to a PostgreSQL version mismatch between prod (15.4) and DR (15.3) affecting partition pruning behavior:\n\n- **Tables failed:** audit_log_archive, session_cache\n- **Status:** \"Checksum_match: partial\" \u2013 510 of 512 tables passed\n- **Resolution:** Manual verification confirmed data was actually intact; root cause was identified as version mismatch\n\nThe policy's Section 5.1 integrity requirement states: *\"Data integrity verification via SHA-256 checksum comparison.\"* This was not fully satisfied in Q3\u2014the checksum process flagged anomalies requiring manual override and investigation.\n\n**While remediation (DR upgrade to PostgreSQL 15.4 in October via CHG-2025-0412) was properly executed and the Q4 test confirmed all 512 tables passed checksums**, the policy does not define:\n- **Failure escalation procedures** when checksums don't match\n- **Manual verification authorization protocols** (who approves manual override of failed checksums?)\n- **Documentation standards** for root cause analysis and data validation exceptions\n\nThis creates procedural ambiguity if similar partial failures occur in future tests.\n\n**Severity:** **Medium**\n\n**Compensating Factor Assessment:**\n- Root cause was identified and remediated before Q4 testing\n- Q4 test confirmed successful resolution (512/512 tables passed)\n- Manual verification procedures were applied and documented\n- However, the policy does not formally authorize or govern these exception procedures\n\n---\n\n### 4. **Missing Monitoring Controls Between Quarterly Restore Tests**\n\n**Policy Section:** 4 \u2013 Backup Schedule; 6 \u2013 Failure Handling  \n**Evidence:** Change log and restore test reports\n\n**Gap Description:**  \nThe policy defines backup execution and failure alerts (Section 6: \"PagerDuty alert within 5 minutes. On-call re-run within 2 hours\"), but does not establish **ongoing monitoring controls** to validate backup integrity or recoverability outside of quarterly restore windows.\n\nThe organization knows:\n- Daily full backups complete at 02:00 UTC\n- WAL archiving has 15-minute lag\n- Incremental backups run every 4 hours\n- Backup encryption key rotation occurs quarterly (CHG-2025-0445)\n\nBut the policy does not document:\n- **Synthetic restore testing** or backup integrity checks (e.g., monthly \"dry-run\" restores of specific tables)\n- **Metrics for backup validation** (e.g., checksum verification logs, backup file integrity scans)\n- **Alerting on backup performance degradation** (the change log shows monitoring enhancements for cross-region replication lag, but not backup completeness or size anomalies)\n\nThe 3-month gap between quarterly tests means the organization operates with limited visibility into whether backups taken in October or November are actually recoverable until December testing.\n\n**Severity:** **Medium**\n\n**Compensating Factor Assessment:**\n- The change log shows CloudWatch alarm thresholds were adjusted (CHG-2025-0425) and replication monitoring enhanced (CHG-2025-0452), demonstrating operational monitoring in some dimensions\n- Emergency failover (CHG-2025-0431) completed successfully with no data loss, suggesting backup/replication infrastructure is functional\n- However, these are indirect indicators; formal backup validation controls are absent from the policy\n\n---\n\n### 5. **No Defined Procedure for Quarterly Test Scheduling Conflicts**\n\n**Policy Section:** 5 \u2013 Restore Testing  \n**Evidence:** Q4 2025 Restore Test Report, \"phase_4_application_validation\" section\n\n**Gap Description:**  \nThe Q4 2025 test deferred critical validation work (Phase 4 \u2013 application functionality) due to team unavailability during the holiday period. While the test was ultimately executed, a required component was unilaterally deferred without documented exception procedures or approval from the CISO/policy owner.\n\nThe policy states that tests \"must validate\" four specific requirements (Section 5.1, numbered 1\u20134), but does not address:\n- **Scheduling procedures** to minimize unavailability conflicts\n- **Exception approval workflows** if components must be deferred\n- **Completion deadlines** for deferred work\n- **Whether a quarterly test with incomplete phases still satisfies the control requirement**\n\nThe test report documents the deferral and re-schedules Phase 4 for January 8, 2026, but this is outside the Q4 2025 observation period and represents a de facto extension of the test cycle.\n\n**Severity:** **Medium**\n\n**Compensating Factor Assessment:**\n- The deferral was documented transparently in the test report\n- The Infrastructure Lead (Maria Santos) identified the issue and noted it as an impact\n- Phase 4 was re-scheduled with a specific date (January 8, 2026)\n- Phases 1\u20133 (database restore, data integrity, RTO validation) were completed successfully\n- However, the policy does not explicitly authorize such deferrals or define acceptance criteria\n\n---\n\n## Summary Table\n\n| Finding | Section | Severity | Status |\n|---------|---------|----------|--------|\n| Incomplete application validation in Q4 test | 5.1 (Req. 4) | **Critical** | Unresolved as of Dec 31, 2025 |\n| Declining RTO safety margin (48\u21925 min) | 3, 5.1 | **High** | Trend ongoing; no policy mitigation threshold |\n| Unresolved data integrity failure procedures (Q3) | 5.1 | **Medium** | Remediated in practice; policy gap remains |\n| Missing inter-test backup validation controls | 4, 6 | **Medium** | Operational monitoring gaps |\n| No procedure for test scheduling conflicts | 5 | **Medium** | Deferral handled informally; policy silent |\n\n---\n\n## Recommendations\n\n1. **Immediate (Critical):** Execute Phase 4 application validation for Q4 2025 restore test by January 8, 2026. Obtain CISO sign-off confirming all four Section 5.1 requirements are satisfied before closing Q4 testing.\n\n2. **Near-term (High Priority):**\n   - Define RTO margin thresholds (e.g., escalate if margin < 30 min) and mandatory remediation actions\n   - Implement quarterly trend monitoring; establish capacity planning reviews tied to restore time increases > 10%\n\n3. **Near-term (Medium Priority):**\n   - Add synthetic restore testing (e.g., monthly table-level restore validation) between quarterly full tests\n   - Document data integrity failure escalation procedures and manual verification authorization controls\n   - Formalize test scheduling procedures and exception approval workflows in policy\n\n4. **Ongoing:** Assess whether RTO target of 4 hours remains achievable given 19%+ quarterly data growth. If growth trajectory continues, consider updating RTO or implementing data archival/tiering strategy."
+}

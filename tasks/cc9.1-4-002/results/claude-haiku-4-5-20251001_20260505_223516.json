@@ -1,0 +1,74 @@
+{
+  "task_id": "cc9.1-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T22:35:16.092805",
+  "score": {
+    "task_id": "cc9.1-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "Cohere AI",
+          "SOC 2",
+          "exception",
+          "VEXC-2025-003",
+          "compensating",
+          "new vendor",
+          "Q2 2026"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Elastic Cloud",
+          "VEXC-2025-001",
+          "expired",
+          "October 31",
+          "SOC 2",
+          "September 2025"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Cohere AI",
+          "Critical",
+          "quarterly business review",
+          "September 2025",
+          "onboarded"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2635,
+    "output_tokens": 2495
+  },
+  "raw_response": "# CC9.1 Compliance Assessment \u2013 Risk Mitigation for Vendors and Business Partners\n## Prism Data Inc. | Q4 2025 Readiness Review\n\n---\n\n## FINDINGS\n\n### Finding 1: Expired SOC 2 Exception \u2013 Elastic Cloud (PD-V-008)\n**Related Document:** Exception Register (VEXC-2025-001) & Vendor Inventory\n\n**Gap Description:**  \nElastic Cloud's SOC 2 exception expired on October 31, 2025, and remains in active status without renewal. According to the Third-Party Vendor Risk Management Policy (Section 4.3), \"Expired exceptions must be renewed or the vendor must provide the required assessment before continued operation.\" The vendor inventory shows PD-V-008 as \"Active\" despite the expired exception. The policy requires that High-tier vendors provide SOC 2 Type II reports within 120 days of issuance, yet there is no evidence of renewal action, corrective SOC 2 report receipt, or documented decision to discontinue the vendor.\n\n**Why This Is a Gap:**  \n- Elastic Cloud processes security event data including authentication logs with user identifiers (High-tier criticality).\n- The compensating controls documented in the expired exception (encryption, SSO, quarterly access review) are not independently validated outside the exception framework.\n- No evidence of either: (a) exception renewal with updated risk assessment, or (b) transition to SOC 2 compliance.\n- The vendor continues to operate without explicit current authorization.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Incomplete Business Review Coverage for High-Tier Vendors\n**Related Document:** Third-Party Vendor Risk Management Policy (Section 4.2) & Vendor Inventory\n\n**Gap Description:**  \nThe policy states that \"Critical vendors: quarterly business review covering SLA performance, incident history, and security posture.\" However, the vendor inventory shows that six of seven High-tier vendors (PD-V-005, PD-V-006, PD-V-007, PD-V-008, PD-V-009, PD-V-010) have \"N/A\" recorded for \"last_business_review.\" The policy does not explicitly define business review requirements for High-tier vendors, creating ambiguity about whether they should receive quarterly, semi-annual, or annual reviews.\n\n**Why This Is a Gap:**  \n- While the policy explicitly mandates quarterly reviews only for Critical vendors, High-tier vendors process sensitive data (customer phone numbers, security telemetry, customer PII, incident data) and warrant documented ongoing monitoring.\n- No evidence of documented business reviews, SLA performance assessments, or incident history reviews for High-tier vendors in the observation period.\n- This represents a gap in the \"ongoing monitoring\" component of risk mitigation activities (CC9.1).\n\n**Severity:** **High**\n\n---\n\n### Finding 3: SOC 2 Review Timeline \u2013 Okta (PD-V-004) Beyond Policy Window\n**Related Document:** Vendor Inventory & Policy Section 4.1\n\n**Gap Description:**  \nOkta Inc. (PD-V-004, Critical tier) received its SOC 2 Type II review on June 25, 2025, covering the period April 1, 2025 to March 31, 2025. The policy requires Critical-tier SOC 2 reports to be \"reviewed annually within 90 days of issuance.\" The review was conducted 86 days after report issuance (April 1 to June 25), which is technically within the 90-day window. However, the current observation period (Q4 2025) extends more than 180 days past the review date with no evidence of a subsequent SOC 2 report being received or reviewed. Given the report period ended March 31, 2025, a new report should have been received and reviewed by June 30, 2025.\n\n**Why This Is a Gap:**  \n- The most recent SOC 2 report on file covers April 1, 2024 to March 31, 2025 (reviewed June 25, 2025).\n- For a Critical-tier vendor managing customer PII and identity systems, current SOC 2 coverage is essential.\n- No evidence of a subsequent SOC 2 Type II report (October 2024 \u2013 September 2025 or April 2025 \u2013 March 2026) in the inventory.\n- This creates a control gap in the ongoing monitoring and risk assessment required by CC9.1.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Cohere AI Exception \u2013 Missing Documented Risk Assessment Details\n**Related Document:** Exception Register (VEXC-2025-003) & Vendor Inventory\n\n**Gap Description:**  \nThe exception for Cohere AI (PD-V-011, Critical tier) is documented with a risk assessment classification of \"Medium\" despite the vendor processing customer text data. The exception register notes that the SOC 2 report is \"expected Q2 2026\" (6+ months away from the exception approval date of September 5, 2025). While compensating controls are listed, the risk assessment does not adequately justify why a Critical-tier vendor processing customer data with a 6-month SOC 2 gap should be classified as \"Medium\" risk. The policy requires exceptions to document \"reason for the exception\" and \"risk assessment,\" but the risk justification is insufficient.\n\n**Why This Is a Gap:**  \n- Cohere AI processes customer text data (Customer PII classification per inventory), meeting the Critical-tier threshold.\n- A 6-month window without independent SOC 2 verification represents significant residual risk for a new vendor (onboarded September 2025).\n- The \"Medium\" risk rating appears inconsistent with the data sensitivity and vendor maturity profile.\n- The compensating controls (encryption, API key rotation, quarterly review calls) are reasonable but do not substitute for third-party assurance on a Critical-tier vendor during the first year of operation.\n\n**Severity:** **High**\n\n---\n\n### Finding 5: Figma Exception \u2013 Scope Creep Not Reflected in Tier Classification\n**Related Document:** Exception Register (VEXC-2025-002) & Vendor Inventory\n\n**Gap Description:**  \nFigma is classified as Medium-tier in the vendor inventory (no customer data), but the exception register documents that \"Figma briefly accessed a staging dataset with pseudonymized customer data during a design sprint.\" The exception (VEXC-2025-002) was approved to cover this temporary scope change, expiring December 15, 2025. However, there is no evidence in the vendor inventory or policy documentation of a re-assessment to determine if Figma should be reclassified to High-tier based on demonstrated customer data access, or clear controls confirming that access has been permanently revoked and cannot recur.\n\n**Why This Is a Gap:**  \n- Tier classification is a foundational control that drives assessment requirements (policy Section 2).\n- Unauthorized access to customer data, even pseudonymized and temporary, indicates either: (a) inadequate access controls, or (b) misalignment between policy and practice.\n- The exception does not reference a technical control implemented to prevent recurrence.\n- Absence of documented re-classification decision or preventive control indicates incomplete risk mitigation.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: No Evidence of Risk Mitigation Selection and Development Process\n**Related Document:** All documents; CC9.1 requirement\n\n**Gap Description:**  \nCC9.1 requires the entity to \"identify, select, and develop risk mitigation activities.\" The evidence provided includes a vendor risk management policy and a business continuity plan, but there is no documented process or evidence showing *how* Prism Data identifies, prioritizes, and selects specific mitigation activities in response to identified vendor or business continuity risks. For example:\n- No documented risk register linking vendor risks to mitigation strategies.\n- No evidence of risk assessment methodology or scoring used to justify tier assignments.\n- No documented incident response or remediation process for vendor control failures (e.g., the Elastic Cloud exception expiration).\n- No evidence of risk-based prioritization among compensating controls.\n\n**Why This Is a Gap:**  \n- The policy describes *monitoring and assessment* activities but not the upstream process of risk identification, analysis, and mitigation *selection*.\n- CC9.1 explicitly requires demonstration of \"develop[ment]\" of mitigation activities, implying active design and implementation decisions.\n- The exception register shows compensating controls are documented post-hoc, but there is no evidence of a structured process for identifying which controls are necessary or evaluating alternatives.\n\n**Severity:** **Medium**\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Title | Severity | Status | Immediate Action Required |\n|---------|-------|----------|--------|---------------------------|\n| 1 | Expired SOC 2 Exception \u2013 Elastic Cloud | Critical | Active vendor, expired exception | Renew exception with updated risk assessment OR obtain SOC 2 report OR discontinue vendor by Jan 31, 2026 |\n| 2 | Incomplete Business Review Coverage \u2013 High-Tier Vendors | High | 6 of 7 High-tier vendors lack reviews | Establish High-tier business review cadence and conduct overdue reviews by Feb 28, 2026 |\n| 3 | SOC 2 Review Timeline Gap \u2013 Okta | High | Most recent review June 2025 | Obtain and review updated SOC 2 report (April 2025 \u2013 March 2026 cycle) by Jan 31, 2026 |\n| 4 | Cohere AI Exception Risk Assessment Insufficiency | High | Exception expires March 5, 2026 | Revise risk assessment and document justification for Medium rating; confirm compensating control effectiveness |\n| 5 | Figma Scope Creep \u2013 No Reclassification or Preventive Control | Medium | Exception expires Dec 15, 2025 | Document access revocation and preventive control; confirm tier classification remains appropriate |\n| 6 | No Documented Risk Identification/Mitigation Selection Process | Medium | Systemic gap | Develop and document vendor risk identification, assessment, and mitigation selection methodology |\n\n---\n\n## OBSERVATIONS \u2013 NON-FINDINGS\n\n**Business Continuity**: The BCP summary demonstrates adequate RTO/RPO objectives and recent successful DR testing (August 2025, within policy window). This element of CC9.1 is adequately addressed.\n\n**Critical-Tier SOC 2 Compliance (Partial)**: Four of four Critical-tier vendors with current SOC 2 reports (AWS, Snowflake, Stripe, Okta) have been reviewed, though Okta's is aging (noted in Finding 3). \n\n**DPA Coverage**: All 14 vendors show \"Yes\" for DPA signed, meeting contractual baseline."
+}

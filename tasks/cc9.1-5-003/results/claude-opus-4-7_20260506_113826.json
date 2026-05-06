@@ -1,0 +1,67 @@
+{
+  "task_id": "cc9.1-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:38:26.637803",
+  "score": {
+    "task_id": "cc9.1-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.18181818181818182,
+    "f1": 0.28571428571428575,
+    "score": 0.28571428571428575,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Segment",
+          "subservice",
+          "AWS to GCP",
+          "independent assessment"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "subservice",
+          "monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Snowflake",
+          "Azure",
+          "carve-out",
+          "independent assessment",
+          "Critical"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4781,
+    "output_tokens": 3184
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 CC9.1 Vendor Risk Management\n\n**Auditor:** Independent Compliance Review\n**Control:** CC9.1 \u2014 Risk Mitigation for Business Disruptions and Vendor/Partner Use\n**Observation Period:** October 1 \u2013 December 31, 2025\n\n---\n\n## Summary Assessment\n\nNovaBridge has a documented vendor risk management framework (POL-VRM-008 v3.5) with appropriate vendor tiering, subservice organization monitoring procedures, and contractual requirements. SOC 2 reviews are being performed, change notifications are being logged, and SLA monitoring is in place.\n\nHowever, several gaps exist in the **execution** of subservice organization monitoring and assessment, particularly around timeliness, vendor inventory accuracy, and contractual breach response. Findings are detailed below.\n\n---\n\n## Findings\n\n### Finding 1: Snowflake Azure Carve-Out Independent Assessment Overdue\n\n- **Related Section:** Policy \u00a74.3 (Independent Assessment of Carved-Out Subservice Organizations); Evidence: SCN-2025-001; SOC 2 Review NB-V-002\n- **Gap:** Snowflake notified NovaBridge of the Azure carve-out addition on July 20, 2025. Per Policy \u00a74.3, an independent assessment must be completed within **60 days of identification** (i.e., by approximately September 18, 2025). As of the SOC 2 review on November 22, 2025 \u2014 and through the close of the observation period (Dec 31, 2025) \u2014 the assessment status remains \"Pending.\" This represents a policy violation of approximately **100+ days overdue** for a Critical-tier vendor handling customer PII.\n- **Severity:** **High**\n\n---\n\n### Finding 2: Vendor Inventory Inaccurate \u2014 Snowflake Subservice Orgs Not Updated\n\n- **Related Section:** Policy \u00a74.1 (Subservice Organization Identification); Evidence: Vendor Inventory NB-V-002 vs. SOC 2 Review NB-V-002\n- **Gap:** The Q4 2025 vendor inventory lists Snowflake's subservice organizations as \"AWS (inclusive)\" only, despite (a) Snowflake's July 20, 2025 notification adding Azure and (b) the November 22, 2025 SOC 2 review explicitly noting that \"vendor inventory only shows AWS \u2014 needs update to include Azure.\" The inventory was not corrected before quarter-end. This undermines the integrity of the vendor inventory used as the source of truth for risk management.\n- **Severity:** **Medium**\n\n---\n\n### Finding 3: Segment Failed to Provide Required Subservice Change Notification (Contractual Breach)\n\n- **Related Section:** Policy \u00a74.2 and \u00a75 (Contractual Requirements); Evidence: SOC 2 Review NB-V-008\n- **Gap:** Segment migrated its subservice infrastructure from AWS to GCP in **August 2025**, but no change notification was received within the contractually required 30 days. The change was only discovered via the November 15, 2025 SOC 2 report review \u2014 approximately **3 months late**. While the issue was appropriately escalated to the CISO on Nov 18, 2025, there is no evidence of:\n  - Formal contractual breach notice issued to Segment\n  - Remediation plan or compensating control\n  - Independent assessment of the new subservice configuration\n  - Update to the vendor inventory (still shows \"AWS (inclusive)\")\n- **Severity:** **High**\n\n---\n\n### Finding 4: Vendor Inventory Inaccurate \u2014 Segment Subservice Org Not Updated\n\n- **Related Section:** Policy \u00a74.1; Evidence: Vendor Inventory NB-V-008 vs. SOC 2 Review NB-V-008\n- **Gap:** Despite the SOC 2 reviewer identifying the AWS\u2192GCP migration on November 15, 2025, the Q4 2025 vendor inventory continues to list \"AWS (inclusive)\" for Segment. The inventory was not corrected during the observation period.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: Lattice Carve-Out Subservice Organization Not Assessed\n\n- **Related Section:** Policy \u00a74.3; Evidence: Vendor Inventory NB-V-013\n- **Gap:** Lattice is listed in the vendor inventory with \"AWS (carve-out)\" as its subservice organization. There is no entry in the SCN log or SOC 2 review notes indicating that an independent assessment of AWS as a carved-out subservice has been performed for the Lattice relationship. While Lattice is Medium-tier, Policy \u00a74.3 does not exempt Medium-tier vendors from carve-out assessment requirements. Lattice processes employee PII, increasing risk exposure.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: Subservice Notification Method Inconsistency / Lack of Formal Channel\n\n- **Related Section:** Policy \u00a74.2; Evidence: SCN Log\n- **Gap:** Of the three notifications logged in 2025, methods varied (Account Manager email, Security Team email, Trust Center). The policy does not specify required notification channels, and there is no evidence of a proactive subservice change monitoring mechanism (e.g., Trust Center subscriptions for all Critical/High vendors). The Segment incident (Finding 3) demonstrates that reliance on vendor-initiated email notifications has failed at least once. NovaBridge should implement compensating monitoring (e.g., quarterly Trust Center checks) rather than relying solely on vendor push notifications.\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: Stripe GCP Carve-Out Assessment Documentation Insufficient\n\n- **Related Section:** Policy \u00a74.3; Evidence: SOC 2 Review NB-V-003\n- **Gap:** The NB-V-003 review notes state the GCP carve-out was \"assessed via NovaBridge direct GCP relationship and GCP SOC 2 report review completed May 2025.\" However, there is no linked artifact, ticket, or assessment record demonstrating: (a) the scope of the May 2025 GCP SOC 2 review, (b) the reviewer, (c) the date completed, or (d) whether trust services criteria coverage was confirmed. This is a documentation/evidence gap rather than a substantive control failure.\n- **Severity:** **Low**\n\n---\n\n### Finding 8: Twilio SLA Threshold Breach Not Reflected in Risk Response\n\n- **Related Section:** Vendor SLA Performance Summary Q4 2025\n- **Gap:** Twilio's Q4 2025 actual uptime was 99.88%, **below the 99.9% SLA target**. The SLA report narrative incorrectly states \"All vendor SLAs met or exceeded targets\" and characterizes Twilio as \"above threshold.\" There is no documented escalation, service credit claim, or risk reassessment for Twilio (a High-tier vendor handling customer PII). The misstatement in the Operations summary suggests SLA monitoring lacks an adequate review/challenge process.\n- **Severity:** **Medium**\n\n---\n\n### Finding 9: Business Continuity / Disruption Risk Mitigation Not Evidenced\n\n- **Related Section:** CC9.1 (broader scope \u2014 business disruption risks)\n- **Gap:** CC9.1 covers risks from **both** business disruptions **and** vendor/partner use. The evidence package focuses heavily on vendor management but provides no artifacts for business disruption risk mitigation activities (e.g., BCP/DR testing, business impact analysis, redundancy assessment for Critical vendors like AWS, Stripe, Okta). For full CC9.1 coverage, additional evidence is needed.\n- **Severity:** **High**\n\n---\n\n### Finding 10: No Evidence of Vendor Risk Reporting to Management\n\n- **Related Section:** Policy \u00a72 (Vendor Classification); General governance\n- **Gap:** There is no evidence that vendor risk issues (overdue Snowflake assessment, Segment contractual breach, Twilio SLA shortfall) were aggregated and reported to management or the risk committee during Q4 2025. CC9.1 expects identified risks to flow into an organizational risk response process. The CISO was engaged on the Segment issue in isolation, but a programmatic reporting mechanism is not evidenced.\n- **Severity:** **Medium**\n\n---\n\n## Overall Conclusion\n\n**Control CC9.1 is partially effective with significant deficiencies.** The policy framework is sound, but execution gaps \u2014 particularly the overdue Snowflake assessment (Critical vendor), the unaddressed Segment contractual breach, and stale vendor inventory data \u2014 indicate that designed controls are not consistently operating. Combined with the absence of business disruption evidence, this control is **not ready for an unqualified opinion** without remediation.\n\n### Recommended Remediation Priorities\n1. Complete the Snowflake/Azure independent assessment immediately.\n2. Issue formal breach notice to Segment and complete subservice assessment of GCP for Segment.\n3. Update vendor inventory (Snowflake, Segment) and implement quarterly inventory reconciliation.\n4. Provide BCP/DR and business disruption evidence to support full CC9.1 scope.\n5. Establish a vendor risk reporting cadence to management."
+}

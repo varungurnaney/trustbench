@@ -1,0 +1,76 @@
+{
+  "task_id": "cc7.1-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T19:04:25.324730",
+  "score": {
+    "task_id": "cc7.1-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CVE-2025-22224",
+          "RA-2025-017",
+          "esxi-prod-07",
+          "compensating controls",
+          "risk acceptance",
+          "revalidation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "CVE-2025-24472",
+          "fw-internal-03",
+          "9.8",
+          "authentication bypass",
+          "FortiOS",
+          "no risk acceptance",
+          "136 days",
+          "Board Risk Committee",
+          "Section 4.2"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Medium",
+          "90-day SLA",
+          "remediation",
+          "CVE-2024-11680",
+          "pattern"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7995,
+    "output_tokens": 2733
+  },
+  "raw_response": "# CC7.1 Readiness Assessment \u2014 Apex Digital Vulnerability Management Program\n\n## Observation Period: October 1 \u2013 December 31, 2025\n\n## Overall Assessment\n\nThe vulnerability management program demonstrates substantial design adequacy: a documented policy with defined SLAs, multiple complementary scanning tools (Qualys, Snyk, AWS Inspector), a structured risk acceptance process with compensating controls and revalidation, and independent validation via penetration testing. However, evidence review reveals **operating effectiveness gaps**, primarily centered on a Critical vulnerability that has aged well past SLA without a risk acceptance filed.\n\n---\n\n## Findings\n\n### Finding 1: Critical Vulnerability Past SLA Without Risk Acceptance\n**Related to:** Qualys Scan Report (QID 376588, CVE-2025-24472) / Policy Sections 4 & 5\n\n**Gap:** FortiOS CSF Authentication Bypass (CVSS 9.8, Critical) on `fw-internal-03` was first detected **August 15, 2025**. Per Policy Section 4, Critical vulnerabilities must be remediated within 15 calendar days (i.e., by August 30, 2025). As of December 29, 2025, the vulnerability is still **Open** \u2014 approximately **136 days overdue (over 800% past SLA)**. The remediation note explicitly states \"No risk acceptance filed,\" meaning the policy's mandatory process for SLA exceptions (Section 5) has been bypassed. This vulnerability also should have triggered both CISO escalation (>50% over SLA) and Board Risk Committee reporting (>100% over SLA) per Section 4.2 \u2014 no evidence of either is provided. This is the most significant gap given the Critical severity, internet-adjacent firewall asset, and absence of any documented compensating controls.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Escalation Procedures Not Demonstrated\n**Related to:** Policy Section 4.2 (Escalation)\n\n**Gap:** Policy requires escalation to CISO at 50% SLA breach and Board Risk Committee reporting at 100% SLA breach. Multiple open vulnerabilities appear past SLA (e.g., CVE-2025-24472 well past 100%; CVE-2024-11053 Low at ~103 days but within 180-day SLA \u2014 within tolerance; CVE-2024-11680 Medium first detected Oct 3 \u2014 within 90-day SLA). However, no evidence of escalation logs, CISO notifications, or Board Risk Committee reports has been provided. The control's monitoring/escalation arm cannot be validated.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Penetration Test Finding Overlaps Risk Acceptance Without Update\n**Related to:** Risk Acceptance RA-2025-014 / Pen Test Finding PT-H-001\n\n**Gap:** The November 2025 penetration test identified a **High-severity SQL injection** (PT-H-001) in the legacy CRM application \u2014 the same asset (`legacy-crm`) covered by risk acceptance RA-2025-014. The risk acceptance cites \"WAF rules blocking known Struts exploitation patterns\" and \"input validation layer at reverse proxy\" as compensating controls, but the pen test demonstrated these controls can be bypassed via direct API call. The risk acceptance has not been updated, re-evaluated, or escalated despite this material change in residual risk. Per Section 5.3, compensating controls must be validated as operational; the pen test contradicts the operational effectiveness claim. Additionally, the residual risk classification of \"Low\" appears understated given a now-confirmed exploitable High-severity SQLi.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Pen Test High Findings Lack Documented Remediation Plan with SLA Tracking\n**Related to:** Pen Test Report Section 4.1 / Policy Section 4\n\n**Gap:** Two High-severity pen test findings (PT-H-001 SQL injection; PT-H-002 admin portal session timeout) are listed as \"Remediation in progress\" as of December 5, 2025, but no Jira tickets, owners, target dates, or SLA clock alignment have been provided. Policy Section 4.1 states the SLA clock starts \"on the date of first detection.\" Without evidence that pen test findings are tracked under the same SLA framework as scanner findings, the consistency and completeness of the detection-to-remediation lifecycle cannot be verified.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: Asset Inventory Reconciliation Not Evidenced\n**Related to:** Policy Section 3.2 (Scan Coverage)\n\n**Gap:** Policy states scan coverage is \"validated quarterly against the asset inventory.\" No evidence of the Q4 2025 coverage validation has been provided. Without this reconciliation, it cannot be confirmed that the 33 findings represent the complete vulnerability landscape across all in-scope assets, or whether any assets are silently omitted from scanning.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: SLA Clock Risk for Risk-Accepted but Eventually Reopened Items\n**Related to:** Policy Section 4.1 / RA-2025-017\n\n**Gap:** RA-2025-017 (CVE-2025-22224 Critical on esxi-prod-07) was first detected August 28, 2025; risk acceptance approved September 12 (15 days later \u2014 already at the Critical SLA boundary on the day of approval, leaving no margin). While the risk acceptance and quarterly compensating control revalidation are well-documented and represent good practice, the policy is silent on whether the SLA clock pauses upon risk acceptance approval. This ambiguity does not impair this specific finding but represents a documentation/control design weakness that could affect future audits.\n\n**Severity:** **Low**\n\n---\n\n### Finding 7: Executive macOS Patch Deferral Without Formal Risk Acceptance\n**Related to:** Qualys Scan QID 376466 / Policy Section 5\n\n**Gap:** CVE-2025-24085 (Medium, CVSS 5.9) on `exec-mbp-05` is annotated \"Exec deferred macOS update \u2014 forced push scheduled.\" First detected November 1, 2025 \u2014 currently within the 90-day Medium SLA (until ~Jan 30, 2026), so not yet a breach. However, the executive deferral represents an informal, undocumented exception to standard patch management without going through the Section 5 risk acceptance process. If the forced push does not occur before SLA expiration, this becomes a breach. Pattern indicates risk acceptance process is not consistently invoked when remediation is deferred.\n\n**Severity:** **Low**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Critical FortiOS vuln 136+ days past SLA, no risk acceptance | Critical |\n| 2 | Escalation/Board reporting procedures not evidenced | High |\n| 3 | Pen test invalidates RA-2025-014 compensating controls; not re-evaluated | High |\n| 4 | Pen test findings not tied to SLA tracking framework | Medium |\n| 5 | Quarterly asset inventory reconciliation not evidenced | Medium |\n| 6 | Policy ambiguity on SLA clock during risk acceptance | Low |\n| 7 | Informal patch deferrals bypass risk acceptance process | Low |\n\n## Auditor Conclusion\n\nCC7.1 is **not currently operating effectively** for the Q4 2025 observation period. The control design is sound, but Finding 1 alone (an unaddressed Critical vulnerability with no documented exception) constitutes a material control failure. Findings 2 and 3 compound this by indicating that the program's exception-handling and feedback-loop mechanisms are not consistently operating. Recommend remediation of Finding 1 immediately, formal evidence collection for Findings 2 and 5, and a re-evaluation of RA-2025-014 before issuing a clean opinion."
+}

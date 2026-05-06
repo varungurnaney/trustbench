@@ -1,0 +1,77 @@
+{
+  "task_id": "cc7.3-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:36:51.524310",
+  "score": {
+    "task_id": "cc7.3-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.3333333333333333,
+    "precision": 0.16666666666666666,
+    "f1": 0.2222222222222222,
+    "score": 0.2222222222222222,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-405",
+          "concurrent",
+          "INC-2025-404",
+          "approved exception"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-404",
+          "41.5 hours",
+          "24-hour resolution target",
+          "SEV-1",
+          "ransomware"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-404",
+          "root cause",
+          "ransomware"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5608,
+    "output_tokens": 5324
+  },
+  "raw_response": "## Overall Assessment\n\nVantage Cloud Systems has a defined incident response program and Q4 evidence shows the team generally identified, triaged, contained, and remediated incidents in accordance with the policy. The incident register and INC-2025-404 post-mortem demonstrate active execution of the IR process.\n\nHowever, CC7.3 is **partially met, not fully ready**, because several required elements of the defined IR program are either not evidenced or were not consistently met during the Q4 2025 observation period.\n\nNotably, the delayed triage for **INC-2025-405** should **not** be treated as a control failure because the exception was documented, risk-assessed, approved by the CISO, and justified by a concurrent SEV-1 ransomware incident.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Incident communication execution is not evidenced | Incident Response Policy \u00a75 \u2014 Communication; Q4 Incident Register | The policy requires internal updates for P1/P2 incidents, status page updates within 30 minutes for SEV-1/SEV-2 service disruptions, customer notification within 72 hours of confirmed data breach, and regulatory notifications as applicable. The Q4 incident register does not track communication decisions, customer notification status, regulatory assessment, status page updates, or internal war-room update cadence. This is especially relevant for **INC-2025-401**, which involved unauthorized bulk download of customer file storage and likely required a documented breach/customer notification assessment. Without communication evidence, Vantage cannot demonstrate the \u201ccommunicate security incidents, as appropriate\u201d element of CC7.3. | High |\n| 2 | Post-mortem completion and timeliness cannot be verified for all SEV-1/SEV-2 incidents | Incident Response Policy \u00a74.1 and \u00a74.2 \u2014 Post-Mortem Requirements; Q4 Incident Register | The policy requires SEV-1 post-mortems within 3 business days of resolution and SEV-2 post-mortems within 5 business days. The incident register marks post-mortems as complete for SEV-1/SEV-2 incidents, but only the post-mortem for **INC-2025-404** was provided. The register also lacks post-mortem completion dates. As a result, timeliness and completeness cannot be verified for **INC-2025-401, 402, 405, 407, and 408**. This is an evidence gap in demonstrating consistent execution of the defined IR program. | Medium |\n| 3 | SEV-1 resolution targets were missed without documented exception or management acceptance | Incident Response Policy \u00a73.3 \u2014 Resolution Targets; Q4 Incident Register; Exception Register | The policy sets a 24-hour resolution target for SEV-1 incidents. **INC-2025-401** was resolved in 27.6 hours and **INC-2025-404** was resolved in 41.5 hours. Both exceeded the SEV-1 resolution target. The exception register includes an approved exception for INC-2025-405, but no documented exception, risk acceptance, or management approval was provided for the missed SEV-1 resolution targets. While containment SLAs were met, the remediation/resolution target was not consistently met or formally dispositioned. | Medium |\n| 4 | Required incident response testing evidence was not provided; BCP test does not satisfy IR testing requirement | Incident Response Policy \u00a77 \u2014 Plan Testing; BCP-TEST-2025 | The IR policy requires an annual tabletop exercise with the full IR team and a semi-annual purple team exercise with an external firm. The provided BCP test was a disaster recovery/failover exercise simulating an AWS region outage. It does not test core incident response activities such as security incident triage, forensic handling, evidence preservation, breach decisioning, containment of attacker activity, or regulatory/customer communications. No IR tabletop or purple team results were provided. | Medium |\n| 5 | Evidence preservation requirements are not demonstrated for SEV-1/SEV-2 incidents | Incident Response Policy \u00a76 \u2014 Evidence Preservation; INC-2025-404 Post-Mortem; Q4 Incident Register | The policy requires full disk images, memory dumps, 90-day log exports, SHA-256 hashes, collector attribution, and chain of custody for SEV-1/SEV-2 incidents. The INC-2025-404 post-mortem references investigation activities, log review, and containment actions, but does not evidence required forensic preservation steps or chain-of-custody records. No evidence preservation records were provided for the other Q4 SEV-1/SEV-2 incidents. This weakens Vantage\u2019s ability to demonstrate that incidents were fully understood and investigated in accordance with the defined program. | Medium |\n| 6 | Preventive action item tracking evidence is incomplete | Incident Response Policy \u00a74.3 \u2014 Action Item Tracking; INC-2025-404 Post-Mortem; Q4 Incident Register | The policy requires post-mortem action items to be entered in Jira within 2 business days, reviewed weekly, and escalated to the CISO if overdue by more than 14 days. The evidence shows action item counts and completion status, but does not include Jira records, weekly review evidence, or escalation evidence. For INC-2025-404, several high-priority preventive actions were open with Q4 due dates, but the evidence does not show whether overdue items were escalated as required. | Low |\n\n---\n\n## Items Reviewed That Are Not Findings\n\n- **INC-2025-405 triage delay:** Not a finding. The SEV-2 triage SLA was missed by 13 minutes, but the exception was documented, justified by the concurrent SEV-1 ransomware incident, approved by the CISO, and supported by compensating controls.\n- **INC-2025-409 apparent triage duration:** Not a finding based on the policy\u2019s business-hours coverage for SEV-3 incidents. The alert occurred outside business hours and was triaged before the business day began.\n- **INC-2025-404 post-mortem content:** The provided post-mortem includes the required major sections: timeline, root cause, impact, remediation, preventive actions, and detection improvements.\n- **BCP annual test:** Useful for business continuity, but not sufficient evidence for incident response control testing.\n- **Vendor risk assessment summary:** Relevant to third-party risk management, but not direct evidence of incident response execution under CC7.3."
+}

@@ -1,0 +1,91 @@
+{
+  "task_id": "cc6.6-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T17:59:24.724463",
+  "score": {
+    "task_id": "cc6.6-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "sg-0a1b2c3d4e5f60008",
+          "EXC-NET-2025-003",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "prod-webhook-receiver",
+          "waf_association"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "notification service",
+          "unencrypted HTTP",
+          "TLS-008"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "sgr-032",
+          "prod-batch-processing",
+          "9200"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "TLS-014",
+          "Elasticsearch",
+          "TLS 1.2",
+          "PII"
+        ],
+        "total_keywords": 4,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 12733,
+    "output_tokens": 4165
+  },
+  "raw_response": "# CC6.6 Readiness Assessment \u2014 Prism Cloud\n\n## Executive Summary\n\nPrism Cloud demonstrates a generally mature posture for system boundary protection: VPC segmentation by environment is established, WAF is deployed on most public endpoints, TLS 1.3 is widely adopted, and a functioning exception process exists with documented compensating controls. However, the evidence reveals several material gaps \u2014 most notably an unencrypted internal service handling production traffic, a public-facing webhook endpoint without WAF, and an overly permissive cross-VPC peering rule that exceeds the scope of its approved exception.\n\nThe incident response contact list (DOC-IR-CONTACTS-2025) was reviewed and confirmed not relevant to CC6.6 boundary protection controls; it has been excluded from the findings below.\n\n---\n\n## Findings\n\n### Finding 1 \u2014 Unencrypted HTTP on Production Notification Service\n\n- **Title:** Internal production service operates without TLS, violating encryption-in-transit policy\n- **Document Reference:** TLS audit endpoint TLS-008 (Notification Service); Security group `sg-0a1b2c3d4e5f60006` rule `sgr-015`; Policy POL-NET-2024-012 Section 5.2\n- **Gap:** The notification service listener on port 8080 is configured without TLS (\"None\" / \"N/A\" in TLS audit). Policy Section 5.2 explicitly states: *\"Unencrypted HTTP is prohibited for any inter-service communication in production.\"* The security group export confirms the issue (\"no TLS configured on this listener\"). No exception is recorded in the exception register for this service. While the PII flag is \"No,\" the policy makes no PII-based carve-out \u2014 all inter-service production traffic must be encrypted. Additionally, the notification service handles email/SMS payloads, which routinely contain customer-identifiable content even if not formally classified as PII in this register.\n- **Severity:** **High**\n\n---\n\n### Finding 2 \u2014 Public Webhook Endpoint Lacks WAF Protection\n\n- **Title:** `prod-webhook-receiver` exposes 0.0.0.0/0:443 without WAF association\n- **Document Reference:** Security group `sg-0a1b2c3d4e5f60011` (waf_association: null); Policy POL-NET-2024-012 Section 4.1\n- **Gap:** Policy Section 4.1 mandates that *\"all public-facing HTTP/HTTPS endpoints must be protected by AWS WAF\"* with CRS, Known Bad Inputs, SQL injection rules, and rate limiting. The webhook receiver accepts unauthenticated inbound HTTPS from the entire internet (it must, as it receives third-party webhooks from Stripe/GitHub/Twilio), making WAF protection more \u2014 not less \u2014 critical. The configuration explicitly notes \"No WAF association configured.\" No exception exists in the register. By contrast, the partner API gateway and production ALB both have WAF associations as required.\n- **Severity:** **High**\n\n---\n\n### Finding 3 \u2014 Cross-VPC Security Group Rule Exceeds Approved Exception Scope\n\n- **Title:** `prod-data-sync-cross-vpc` permits all-protocol/all-port traffic to/from entire staging VPC, broader than EXC-NET-2025-003 authorizes\n- **Document Reference:** Security group `sg-0a1b2c3d4e5f60008` rules `sgr-021` and `sgr-022`; Exception EXC-NET-2025-003\n- **Gap:** Exception EXC-NET-2025-003 authorizes cross-VPC connectivity *\"restricted to specific IP allowlist (10.1.4.0/24 staging ML subnet to 10.0.8.0/24 production data export subnet).\"* However, the actual security group rules permit **all protocols, all ports** to and from the **entire staging VPC CIDR (10.1.0.0/16)** \u2014 a /16 covering 65,536 addresses rather than the /24 (256 addresses) authorized. This is a material deviation from the compensating controls used to justify the exception's \"High\" risk rating. The exception's October 2025 review claims compensating controls were \"verified effective,\" but the security group configuration contradicts this assertion. The renewal review process did not catch the drift.\n- **Severity:** **High**\n\n---\n\n### Finding 4 \u2014 Bastion Host Permits SSH to Entire Production VPC\n\n- **Title:** `prod-bastion` outbound rule allows SSH to 10.0.0.0/16 (entire production VPC), violating least privilege\n- **Document Reference:** Security group `sg-0a1b2c3d4e5f60010` rule `sgr-026`; Policy POL-NET-2024-012 Section 3.3\n- **Gap:** Policy Section 3.3 requires *\"least privilege \u2014 rules must specify the minimum required ports and source IP ranges.\"* The bastion's outbound SSH rule targets the full production VPC CIDR rather than specific application/management subnets or security groups. Combined with the corresponding inbound rule on the application tier (`sgr-005`) accepting SSH from the bastion SG, this enables broader-than-necessary lateral SSH reach. Recommend restricting to specific target security groups or subnet CIDRs.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5 \u2014 Batch Processing Worker Has Unrestricted Outbound to Internet on Port 9200\n\n- **Title:** `prod-batch-processing` permits outbound Elasticsearch traffic to 0.0.0.0/0\n- **Document Reference:** Security group `sg-0a1b2c3d4e5f60012` rule `sgr-032`; Policy POL-NET-2024-012 Section 3.3\n- **Gap:** The rule allows TCP/9200 outbound to the entire internet, described as \"legacy configuration pending migration.\" Elasticsearch on port 9200 is a well-known data exfiltration vector and historically has been targeted in supply-chain and insider-risk scenarios. There is no documented exception (EXC-NET-*) for this rule, no migration deadline, and no compensating controls listed. The endpoint TLS-014 indicates the production Elasticsearch handles PII, raising the data-loss risk profile. Egress should be restricted to the specific Elasticsearch security group/CIDR.\n- **Severity:** **High**\n\n---\n\n### Finding 6 \u2014 Prometheus Scrape Rule Uses Broad CIDR Source Rather Than Security Group References\n\n- **Title:** Monitoring SG accepts inbound from full production VPC CIDR\n- **Document Reference:** Security group `sg-0a1b2c3d4e5f60007` rule `sgr-018`; Policy POL-NET-2024-012 Section 3.3\n- **Gap:** The Prometheus inbound rule allows TCP/9090 from `10.0.0.0/16` (entire production VPC). While operationally convenient for scraping, AWS best practice and the policy's least-privilege principle favor security-group references over CIDR ranges for intra-VPC traffic. This is a minor deviation but should be tightened to specific source SGs (app tier, internal API, etc.).\n- **Severity:** **Low**\n\n---\n\n### Finding 7 \u2014 Legacy Elasticsearch Deployment Handling PII on TLS 1.2 Without Documented Exception\n\n- **Title:** TLS-014 (Elasticsearch) handles PII at TLS 1.2 with no exception on file\n- **Document Reference:** TLS audit TLS-014; Policy POL-NET-2024-012 Section 5.1 / 5.3; Exception register\n- **Gap:** The TLS audit notes Elasticsearch is a \"legacy deployment\" using TLS 1.2 and explicitly handles customer PII (user profiles and activity data). Policy Section 5.3 sets minimum TLS 1.2 for existing services, so the TLS version itself is technically within tolerance. However, given PII handling, the legacy designation, and the absence of any remediation timeline, this deployment warrants either (a) a formal documented exception in the register similar to EXC-NET-2025-004, or (b) an upgrade plan to TLS 1.3. Comparable legacy/non-compliant items (Redis ElastiCache TLS 1.2) are formally tracked via EXC-NET-2025-004; Elasticsearch is not.\n- **Severity:** **Medium**\n\n---\n\n### Finding 8 \u2014 HTTP Port 80 Listener on Production ALB Without Documented Redirect Enforcement\n\n- **Title:** Production ALB accepts inbound HTTP/80 from 0.0.0.0/0; redirect behavior asserted but not evidenced\n- **Document Reference:** Security group `sg-0a1b2c3d4e5f60001` rule `sgr-002`\n- **Gap:** The rule description states the listener \"redirects to HTTPS,\" but no evidence (ALB listener configuration, redirect rule, or scan) was provided to verify enforced 301/308 redirect behavior. If misconfigured, the listener could accept and process unencrypted HTTP traffic. Recommend providing ALB listener configuration or HTTP scan output as supporting evidence.\n- **Severity:** **Low**\n\n---\n\n### Finding 9 \u2014 Exception Register Review Process Did Not Detect Configuration Drift\n\n- **Title:** Quarterly network audit and exception renewal failed to catch SG misconfiguration described in Finding 3\n- **Document Reference:** Policy POL-NET-2024-012 Section 7.2; Exception EXC-NET-2025-003 (review_outcome 2025-10-01)\n- **Gap:** The exception register entry for EXC-NET-2025-003 was renewed in October 2025 with the assertion that \"compensating controls verified effective.\" The actual security group configuration (10.1.0.0/16 \u2194 10.1.0.0/16 all-protocols) does not match the documented compensating controls (10.1.4.0/24 \u2194 10.0.8.0/24 only). This indicates the quarterly network security audit (Section 7.2) is not actually reconciling exception terms against deployed configurations. This is a control-design weakness independent of the underlying configuration issue.\n- **Severity:** **Medium**\n\n---\n\n### Finding 10 \u2014 No Evidence of Quarterly Network Security Audit Execution\n\n- **Title:** Policy mandates quarterly network audits; no audit reports provided as evidence\n- **Document Reference:** Policy POL-NET-2024-012 Section 3.3 (\"reviewed quarterly\") and Section 7.2\n- **Gap:** The policy commits to a quarterly review of all security group rules, WAF configurations, TLS scans, and cross-environment connectivity verification. The TLS audit (dated 2025-12-14) provides partial evidence for the TLS-scan component, but no quarterly audit report, security group review attestation, or cross-environment verification artifact was provided. For SOC 2 Type II, operating effectiveness over the audit period must be evidenced by recurring control execution. Findings 1\u20133 also suggest that even if the audits occurred, they did not detect known issues.\n- **Severity:** **Medium**\n\n---\n\n## Summary of Findings by Severity\n\n| Severity | Count | Findings |\n|----------|-------|----------|\n| Critical | 0 | \u2014 |\n| High | 3 | 1, 2, 3, 5 (4 total \u2014 corrected) |\n| Medium | 4 | 4, 7, 9, 10 |\n| Low | 2 | 6, 8 |\n\n**Corrected count:** High = 4 (Findings 1, 2, 3, 5); Medium = 3 (Findings 4, 7, 9, 10 \u2014 Finding 4 is Medium); Low = 2.\n\n## Overall Readiness Conclusion\n\n**Not Ready** for CC6.6 attestation without remediation. The combination of (a) an unencrypted production service, (b) an unprotected public webhook endpoint, and (c) a cross-VPC rule that exceeds its approved exception scope represents tangible boundary-protection weaknesses. Additionally, the apparent gap between policy-mandated quarterly audits and the issues that should have been caught by them suggests a design weakness in the monitoring control itself. Recommend remediation of High-severity findings and provision of quarterly audit evidence prior to formal Type II testing."
+}

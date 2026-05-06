@@ -1,0 +1,113 @@
+{
+  "api_version": "3.1.0",
+  "last_updated": "2025-11-20",
+  "updated_by": "jessica.park@horizondata.io",
+  "validation_framework": "OpenAPI 3.1 + custom middleware",
+  "endpoints": [
+    {
+      "path": "/api/v2/orders",
+      "method": "POST",
+      "validation": {
+        "content_type": "application/json",
+        "max_body_size": "1MB",
+        "schema_ref": "$ref: schemas/order-create.yaml",
+        "fields": [
+          {"name": "customer_id", "type": "string", "format": "uuid", "required": true},
+          {"name": "items", "type": "array", "min_items": 1, "max_items": 100, "required": true},
+          {"name": "items[].product_id", "type": "string", "format": "uuid", "required": true},
+          {"name": "items[].quantity", "type": "integer", "minimum": 1, "maximum": 9999, "required": true},
+          {"name": "items[].unit_price", "type": "number", "format": "decimal", "minimum": 0.01, "maximum": 999999.99, "required": true},
+          {"name": "currency", "type": "string", "enum": ["USD", "EUR", "GBP", "CAD"], "required": true},
+          {"name": "shipping_address", "type": "object", "required": true},
+          {"name": "notes", "type": "string", "max_length": 500, "required": false, "sanitize": true}
+        ],
+        "rate_limit": "100/min per API key"
+      }
+    },
+    {
+      "path": "/api/v2/orders/{order_id}",
+      "method": "GET",
+      "validation": {
+        "path_params": [
+          {"name": "order_id", "type": "string", "format": "uuid", "required": true}
+        ],
+        "query_params": [
+          {"name": "include", "type": "string", "enum": ["items", "shipping", "payments", "all"], "required": false}
+        ]
+      }
+    },
+    {
+      "path": "/api/v2/payments",
+      "method": "POST",
+      "validation": {
+        "content_type": "application/json",
+        "max_body_size": "512KB",
+        "schema_ref": "$ref: schemas/payment-create.yaml",
+        "fields": [
+          {"name": "order_id", "type": "string", "format": "uuid", "required": true},
+          {"name": "amount", "type": "number", "format": "decimal", "minimum": 0.01, "maximum": 999999.99, "required": true},
+          {"name": "currency", "type": "string", "enum": ["USD", "EUR", "GBP", "CAD"], "required": true},
+          {"name": "payment_method", "type": "string", "enum": ["credit_card", "ach", "wire"], "required": true},
+          {"name": "idempotency_key", "type": "string", "format": "uuid", "required": true}
+        ],
+        "rate_limit": "50/min per API key"
+      }
+    },
+    {
+      "path": "/api/v2/reports/generate",
+      "method": "POST",
+      "validation": {
+        "content_type": "application/json",
+        "max_body_size": "256KB",
+        "schema_ref": "$ref: schemas/report-generate.yaml",
+        "fields": [
+          {"name": "report_type", "type": "string", "enum": ["daily_summary", "monthly_revenue", "customer_activity", "inventory"], "required": true},
+          {"name": "date_range.start", "type": "string", "format": "date", "required": true},
+          {"name": "date_range.end", "type": "string", "format": "date", "required": true},
+          {"name": "filters", "type": "object", "required": false},
+          {"name": "format", "type": "string", "enum": ["csv", "xlsx", "pdf"], "required": true}
+        ],
+        "rate_limit": "10/min per API key"
+      }
+    },
+    {
+      "path": "/api/v2/webhooks",
+      "method": "POST",
+      "validation": {
+        "content_type": "application/json",
+        "max_body_size": "64KB",
+        "schema_ref": "$ref: schemas/webhook-create.yaml",
+        "fields": [
+          {"name": "url", "type": "string", "format": "uri", "required": true, "note": "VALIDATION GAP: No URL scheme restriction or domain allowlist enforced. Accepts any URI including internal network addresses."},
+          {"name": "events", "type": "array", "min_items": 1, "items_enum": ["order.created", "order.updated", "payment.completed", "payment.failed"], "required": true},
+          {"name": "secret", "type": "string", "min_length": 32, "required": true}
+        ],
+        "rate_limit": "10/min per API key"
+      }
+    },
+    {
+      "path": "/api/v2/bulk-import",
+      "method": "POST",
+      "validation": {
+        "content_type": "multipart/form-data",
+        "max_body_size": "50MB",
+        "schema_ref": "$ref: schemas/bulk-import.yaml",
+        "fields": [
+          {"name": "file", "type": "file", "allowed_types": ["text/csv", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"], "max_size": "50MB", "required": true},
+          {"name": "entity_type", "type": "string", "enum": ["customers", "products", "orders"], "required": true},
+          {"name": "mode", "type": "string", "enum": ["insert", "upsert"], "required": true},
+          {"name": "dry_run", "type": "boolean", "default": false, "required": false}
+        ],
+        "rate_limit": "5/min per API key",
+        "note": "File contents are not validated against entity schema before processing. Only MIME type is checked."
+      }
+    }
+  ],
+  "global_settings": {
+    "reject_unknown_fields": true,
+    "sanitize_strings": true,
+    "max_request_size": "50MB",
+    "timeout_seconds": 30,
+    "cors_origins": ["https://app.horizondata.io", "https://admin.horizondata.io"]
+  }
+}

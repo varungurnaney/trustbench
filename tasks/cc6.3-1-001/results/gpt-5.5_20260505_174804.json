@@ -1,0 +1,80 @@
+{
+  "task_id": "cc6.3-1-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:48:04.005313",
+  "score": {
+    "task_id": "cc6.3-1-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 0.75,
+    "precision": 0.21428571428571427,
+    "f1": 0.3333333333333333,
+    "score": 0.75,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 14,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "least privilege",
+          "department",
+          "missing",
+          "not defined"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "classification",
+          "sensitive",
+          "not defined",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "segregation",
+          "duties",
+          "write",
+          "approval",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "modify"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 872,
+    "output_tokens": 1833
+  },
+  "raw_response": "## Readiness Assessment \u2014 SOC 2 CC6.3 Data Access Authorization\n\nThe policy includes several foundational elements for CC6.3, including role-based access, documented access requests, approvals, termination revocation, contractor offboarding, and quarterly access reviews. However, several elements are either missing or insufficiently defined to fully support authorization, modification, and removal of access based on roles, responsibilities, segregation of duties, and least privilege.\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Least Privilege Is Not Explicitly Defined or Enforced | Sections 3.1, 3.2, 4.1 | The policy references role-based access but does not explicitly define least privilege or require that users receive only the minimum access necessary to perform their job duties. It also does not describe how access requests are evaluated against least privilege, such as limiting scope, duration, environment, data type, or privilege level. | High |\n| 2 | No Data Classification-Based Access Model | Sections 2, 4 | The policy lists systems and notes that production data may include sensitive customer information, but it does not define data classification levels or map access requirements to data sensitivity. There is no distinction between public, internal, confidential, restricted, customer, financial, or regulated data, nor are approval levels tied to those classifications. | High |\n| 3 | Segregation of Duties Requirements Are Missing | Sections 3.1, 3.2 | The policy does not define segregation of duties principles or incompatible access combinations. For example, it does not address conflicts such as developers having production database write access, users approving their own access, administrators reviewing their own privileges, or individuals having both request approval and provisioning authority. | High |\n| 4 | Access Modification Process Is Not Defined | Sections 3, 5, 6 | The policy addresses initial access requests and termination revocation, but it does not define how access is modified when an employee changes roles, departments, managers, projects, or responsibilities. CC6.3 expects access to be modified based on changing roles and responsibilities, not only granted and removed. | High |\n| 5 | Role Definitions Are Too Broad and Not System-Specific | Section 3.1 | The policy defines generic roles such as Standard User, Power User, Administrator, and Service Account, but it does not provide system-specific entitlement definitions. It is unclear what exact permissions each role grants in Salesforce, Jira, databases, AWS S3, analytics platforms, or file repositories. Broad role definitions may lead to excessive or inconsistent access. | Medium |\n| 6 | Data Owner Approval Is Limited | Sections 3.2, 4.2 | Access requests require manager approval, and data exports require data owner approval, but the policy does not require data owner approval for access to sensitive systems or datasets generally. Managers may not be the appropriate authority to approve access to protected information assets owned by another business function. | Medium |\n| 7 | Privileged and Administrative Access Controls Are Insufficiently Detailed | Sections 3.1, 4.1, 7 | Administrator access is listed as requiring VP and IT Director approval, but the policy does not define additional controls for privileged access, such as separate admin accounts, just-in-time access, time-bound elevation, MFA requirements, privileged session logging, or periodic privileged access review. | Medium |\n| 8 | Service Account Governance Is Incomplete | Section 3.1 | The policy identifies service accounts as a role but does not define requirements for ownership, business justification, credential rotation, least-privilege scoping, non-human account review, expiration, monitoring, or prohibition of interactive login where applicable. Service accounts can create significant access risk if not governed separately. | Medium |\n| 9 | Quarterly Access Reviews Lack Ownership and Remediation Requirements | Section 5 | The policy states that IT performs quarterly access reviews, but it does not require review by managers, data owners, or system owners. It also does not define review scope, evidence requirements, required remediation timelines, or procedures for removing inappropriate access identified during reviews. | Medium |\n| 10 | Temporary and Emergency Access Are Not Addressed | Sections 3, 8 | The policy does not define how temporary, emergency, or break-glass access is requested, approved, monitored, time-limited, and revoked. Exceptions require IT Director approval, but this is not sufficient to govern urgent or elevated access scenarios. | Medium |\n| 11 | Contractor Access Controls Need More Specificity | Section 3.3, 6.2 | Contractor access is based on the Statement of Work and removed at engagement end, but the policy does not require contractor access to be time-bound in systems, periodically reviewed, approved by a business owner, or limited to specific systems and data required for the engagement. | Medium |\n| 12 | Access Revocation Timing Depends on HR Notification Only | Section 6.1 | The policy requires IT to disable accounts within 24 hours of HR notification, but it does not define expectations for timely HR notification, immediate revocation for involuntary terminations, or coordination with managers and system owners. This may create a delay in removing access. | Medium |\n| 13 | Monitoring Requirements Are High-Level | Section 7 | The policy states that access patterns are monitored for anomalies, but it does not define what systems are monitored, what events are reviewed, who performs monitoring, how often alerts are reviewed, or how investigations and remediation are documented. | Low |\n| 14 | Exception Process Does Not Require Risk Acceptance or Expiration | Section 8 | Exceptions require written approval and business justification, but the policy does not require documented risk acceptance, compensating controls, expiration dates, periodic reapproval, or tracking of open exceptions. | Low |\n\n## Overall Assessment\n\nThe policy partially addresses CC6.3 by establishing a basic access request, approval, review, and revocation framework. However, it does not yet fully demonstrate that access is consistently authorized, modified, and removed based on least privilege, segregation of duties, data sensitivity, and lifecycle events.\n\nThe most significant readiness gaps are:\n\n- Lack of explicit least privilege requirements  \n- No data classification-based access control model  \n- No segregation of duties framework  \n- No defined process for modifying access after role or responsibility changes  \n- Insufficient governance over privileged access and service accounts"
+}

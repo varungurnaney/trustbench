@@ -1,0 +1,101 @@
+{
+  "task_id": "cc6.3-3-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-01T18:24:24.496401",
+  "score": {
+    "task_id": "cc6.3-3-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.8,
+    "precision": 0.5,
+    "f1": 0.6153846153846154,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "developer_debug",
+          "write access",
+          "CISO",
+          "approval",
+          "ALL TABLES",
+          "least privilege",
+          "charlie",
+          "diana"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "evan",
+          "dual",
+          "segregation",
+          "etl_pipeline",
+          "developer_debug",
+          "TRUNCATE",
+          "no expiration",
+          "indefinite"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "production",
+          "masking",
+          "PII",
+          "bypass",
+          "clearview_production"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "marketing",
+          "CISO",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "postgres"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2262,
+    "output_tokens": 2517
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2013 CC6.3 Compliance Audit\n## ClearView Analytics \u2013 Q4 2025\n\n---\n\n## FINDINGS\n\n### **Finding 1: Missing CISO Approval for Write Access Requests**\n\n**Related Policy Section:** POL-DAA-001, Section 3.1 \u2013 Database Access\n\n**Gap Description:**  \nThe policy explicitly requires CISO approval for write access to any customer database. However, the following access requests were granted with write privileges without documented CISO approval:\n\n- **DAR-403** (charlie.wong, read-write to ALL TABLES) \u2013 Only Manager approval documented\n- **DAR-405** (diana.jones, read-write to ALL TABLES) \u2013 Only Manager approval documented  \n- **DAR-407** (evan.smith, read-write to ALL TABLES) \u2013 Only Manager and VP Engineering approval documented\n\n**Why This Is a Gap:**  \n- The authorization matrix in the policy is not being enforced consistently\n- CISO approval is a mandatory control for write access; absence of this approval represents unauthorized privilege escalation\n- No compensating control evidence is provided to justify bypassing this requirement\n\n**Severity:** **CRITICAL**\n\n---\n\n### **Finding 2: Overly Broad Role Grants for Developer Access**\n\n**Related Policy Section:** POL-DAA-001, Section 1 (Purpose) & CC6.3 concept of least privilege\n\n**Gap Description:**  \nThe `developer_debug` role grants SELECT, INSERT, UPDATE, DELETE privileges on ALL TABLES in the production database. This role is assigned to:\n- charlie.wong\n- diana.jones  \n- evan.smith\n\n**Why This Is a Gap:**  \n- The role violates the principle of least privilege by granting all DML privileges across all tables regardless of individual job responsibilities\n- DAR-403 and DAR-405 reference specific use cases (debugging, performance testing) yet the underlying role grants unrestricted production access\n- No evidence of role-based segregation; a developer debugging a single feature has equivalent access to the ETL pipeline user\n- Creates excessive privilege surface area inconsistent with SOC 2 CC6.3 intent\n\n**Severity:** **CRITICAL**\n\n---\n\n### **Finding 3: No Expiration Configured for Highest-Risk Access Request**\n\n**Related Policy Section:** POL-DAA-001, Section 3.1 & 4 (Review and Audit)\n\n**Gap Description:**  \nDAR-407 (evan.smith \u2013 read-write to ALL TABLES for ETL maintenance) has **no expiration date** configured. All other requests have explicit expiration dates between 30\u2013120 days.\n\n**Why This Is a Gap:**  \n- Permanent standing access to production write privileges is antithetical to SOC 2 principles and time-limited access controls\n- No quarterly review mechanism documented for standing access; policy mandates quarterly authorization reviews but permanent grants bypass this cadence\n- Creates indefinite privilege that can drift or become stale as roles change\n- Violates best practice for privileged access management (PAM)\n\n**Severity:** **CRITICAL**\n\n---\n\n### **Finding 4: Unmasked PII Access Granted Beyond Policy Constraints**\n\n**Related Policy Section:** POL-DAA-001, Section 3.4 \u2013 Analytics and Reporting\n\n**Gap Description:**  \nDAR-406 (alice.chen \u2013 unmasked PII access) was granted with a 30-day expiration (2025-12-15), which aligns with the policy time limit. However:\n\n- **alice.chen is assigned to the `data_science_team` role**, which in the PostgreSQL configuration has SELECT privileges on customer tables in `clearview_production` but no explicit masking controls defined in the database layer\n- The policy states \"unmasked access requires Privacy Officer approval **and is time-limited to 30 days**,\" but there is **no technical control in the database configuration** to enforce masking/unmasking\n- No evidence of query-level audit logging to track use of unmasked data or field-level access controls\n\n**Why This Is a Gap:**  \n- Access controls are partially enforced through the request workflow but lack technical enforcement at the database layer\n- If alice.chen queries via her `data_science_team` role (which has SELECT on customers), the system cannot distinguish between masked and unmasked queries\n- After expiration of DAR-406, there is no automated revocation or masking enforcement mechanism\n- Creates audit and control gaps for Restricted/PII data handling\n\n**Severity:** **HIGH**\n\n---\n\n### **Finding 5: Segregation of Duties Issue \u2013 ETL and Debug Combined**\n\n**Related Policy Section:** CC6.3 \u2013 Segregation of Duties (SOD)\n\n**Gap Description:**  \nevan.smith is assigned to both:\n- `etl_pipeline` (SELECT, INSERT, UPDATE, DELETE, TRUNCATE on ALL TABLES)\n- `developer_debug` (SELECT, INSERT, UPDATE, DELETE on ALL TABLES)\n\nThis dual role assignment means evan.smith can:\n1. Run ETL jobs (legitimate pipeline operation)\n2. Directly modify production data via debug access (legitimate debugging)\n3. Perform both actions simultaneously without separation\n\n**Why This Is a Gap:**  \n- Violates segregation of duties; the same user can both modify data AND execute pipelines that depend on that data's integrity\n- No evidence of compensating controls (e.g., code review, approval gates, separate credential vaults)\n- If evan.smith either intentionally or accidentally corrupts data via debug access, the subsequent ETL job could propagate the corruption without detection\n- Creates audit trail ambiguity: unclear if a data change was from ETL or manual debug access\n\n**Severity:** **HIGH**\n\n---\n\n### **Finding 6: Marketing Team Access Not Linked to Individual Authorization**\n\n**Related Policy Section:** POL-DAA-001, Section 3.1 & 3.3 \u2013 Database Access & API Access\n\n**Gap Description:**  \nDAR-404 approves access for \"marketing-team\" (a team/group) rather than individual users. However:\n\n- The PostgreSQL configuration shows a `marketing_integration` role (likely the technical implementation)\n- The policy requires \"all customer database access requires an approved Jira ticket with business justification,\" implying individual accountability\n- No role membership mapping provided for which specific users are in the marketing-team or marketing_integration role\n- The policy does not explicitly address group-level access requests\n\n**Why This Is a Gap:**  \n- Cannot audit which individuals actually accessed customer data\n- Violates principle of individual accountability and non-repudiation\n- Difficult to revoke access for a single team member without affecting the entire team\n- Inconsistent with SOC 2 CC6.3 requirement for \"roles, responsibilities\" as a basis for authorization\n\n**Severity:** **MEDIUM**\n\n---\n\n### **Finding 7: No Evidence of Quarterly Access Review Execution**\n\n**Related Policy Section:** POL-DAA-001, Section 4 \u2013 Review and Audit\n\n**Gap Description:**  \nThe policy mandates: *\"Data access authorizations are reviewed quarterly.\"*\n\nEvidence provided:\n- Q4 2025 access request tickets (Oct\u2013Nov 2025)\n- Current database configuration snapshot (as of 2025-12-28)\n- **No documentation of any access review** in Q1, Q2, Q3, or Q4 2025\n\n**Why This Is a Gap:**  \n- No audit trail of reviews, approvals, or revocations\n- Cannot demonstrate that stale or excessive access has been identified and remediated\n- Standing access (DAR-407) has no review mechanism\n- Policy intent unverifiable; creates a control failure at the review and monitoring layer\n\n**Severity:** **HIGH**\n\n---\n\n### **Finding 8: Policy vs. Implementation Misalignment \u2013 Approval Chain**\n\n**Related Policy Section:** POL-DAA-001, Section 2 \u2013 Data Classification\n\n**Gap Description:**  \nThe policy defines approval requirements by data classification:\n\n| Data Level | Required Approvals |\n|---|---|\n| Confidential | Data Owner + Manager + Privacy Officer |\n| Restricted | Data Owner + CISO + Legal |\n\nHowever, DAR-403, DAR-405, and DAR-407 (write access to Confidential data) are missing:\n- Data Owner approval (only shown for read requests)\n- CISO approval (explicitly required by Section 3.1 for ANY write access)\n\nMeanwhile, read-only requests (DAR-401, DAR-402, DAR-404, DAR-406) correctly follow the Confidential approval chain.\n\n**Why This Is a Gap:**  \n- Inconsistent enforcement of approval requirements based on access type (read vs. write)\n- Write access to sensitive data is approved with insufficient review\n- Policy distinction between \"Data Owner approval\" (shown in read requests) and \"CISO approval\" (required for writes) is not operationalized\n- Creates audit finding of non-compliance with own stated policy\n\n**Severity:** **CRITICAL**\n\n---\n\n## SUMMARY OF FINDINGS\n\n| # | Title | Severity | Count |\n|---|-------|----------|-------|\n| 1 | Missing CISO Approval for Write Access | CRITICAL | 3 requests |\n| 2 | Overly Broad Developer Role | CRITICAL | 1 role design |\n| 3 | No Expiration on Highest-Risk Access | CRITICAL | 1 request |\n| 4 | Unmasked PII Lacks Technical Controls | HIGH | 1 request |\n| 5 | SOD Violation \u2013 ETL + Debug Roles | HIGH | 1 user |\n| 6 | Group-Level Access Lacks Accountability | MEDIUM | 1 request |\n| 7 | Missing Quarterly Review Documentation | HIGH | Entity-level |\n| 8 | Policy vs. Implementation Misalignment | CRITICAL | 3 requests |\n\n**Critical Findings:** 4  \n**High Findings:** 3  \n**Medium Findings:** 1\n\n---\n\n## COMPLIANCE ASSESSMENT: **NOT READY FOR SOC 2 TYPE II**\n\nClearView Analytics demonstrates significant gaps in authorization controls under CC6.3. Key remediation priorities:\n\n1. **Immediate:** Obtain retroactive CISO approval for DAR-403, DAR-405, DAR-407, or revoke write access\n2. **Immediate:** Add expiration to DAR-407 and implement quarterly review schedule\n3. **Urgent:** Refactor `developer_debug` role to follow least privilege (granular table/function access)\n4. **Urgent:** Segregate evan.smith's ETL and debug roles\n5. **High:** Implement technical PII masking controls in database layer\n6. **High:** Convert group access requests to named individual authorizations\n7. **High:** Document and evidence quarterly access reviews going forward"
+}

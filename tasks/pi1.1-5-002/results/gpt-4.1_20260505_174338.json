@@ -1,0 +1,55 @@
+{
+  "task_id": "pi1.1-5-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:43:38.745894",
+  "score": {
+    "task_id": "pi1.1-5-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.2,
+    "f1": 0.28571428571428575,
+    "score": 0.28571428571428575,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "PR-7813",
+          "rounding",
+          "no post-deploy review",
+          "24 hours",
+          "Tier 1",
+          "VP Engineering"
+        ],
+        "total_keywords": 12,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "$3.17",
+          "REC-9034",
+          "rounding error"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5454,
+    "output_tokens": 1363
+  },
+  "raw_response": "Below are the findings from the review of Quantum Data Solutions\u2019 controls for PI1.1, focusing on processing objectives (completeness, accuracy, timeliness), with attention to normal and emergency change procedures as well as daily reconciliation.\n\n---\n\n### 1. **Lapse in Emergency Post-Deploy Review for Settlement Rounding Fix**  \n**Section:** SDLC Policy \u00a73.2 Emergency Change Process; PR Records (PR-7813); Reconciliation Logs (REC-9034)  \n**Gap:**  \n- The SDLC Policy mandates that all emergency Tier 1 changes must have a post-deploy review within 24 hours, including correctness verification, regression risk, and sign-off by an independent Senior Engineer.  \n- PR-7813 (EMERGENCY: Fix transaction rounding error in settlement totals) was deployed to production on Nov 28, 2025, to address a $3.17 reconciliation discrepancy detected through bank settlement batch processes (REC-9034).\n- The record for PR-7813 explicitly states, \"No post-deploy review performed as of Dec 29.\" This is over a month later.\n- While a post-mortem (PM-2025-0912) was filed, there is no evidence the required post-deploy code review or any formal sign-off was executed for a critical, customer-impacting fix.  \n**Severity:** **Critical**  \n- Failure to perform this review undermines the compensating control intended to catch regression or correctness issues in code pushed without pre-merge review. It introduces elevated risk that the emergency fix could itself introduce new errors or incomplete processing, directly contradicting PI1.1 objectives.\n\n---\n\n### 2. **Consistent Execution of Processing Integrity Controls Outside One Emergency**  \n**Section:** SDLC Policy \u00a73.2 Emergency Change Process; PR Records (PR-7808); Reconciliation Logs (REC-9026)  \n**Gap:**  \n- Of the two emergency changes in Tier 1 systems, only PR-7808 (payment settlement batch deadlock fix, Nov 5, 2025) followed all SDLC requirements: \n    - VP-level authorization  \n    - Deployment with post-deploy review (done by Senior Engineer Bob Chen same day)  \n    - Post-mortem filed  \n    - Reconciliation logs confirm correct batch output after fix\n- No gap noted here, but this demonstrates that the procedures are feasible and provide timely compensating control when followed.  \n**Severity:** None (positive evidence; not a gap)  \n\n---\n\n### 3. **SDLC Policy Clearly Defines Processing Objectives for Tier 1 Data**  \n**Section:** SDLC Policy \u00a76 Processing Integrity (input validation, reconciliation, audit trail); Reconciliation Logs  \n**Gap:**  \n- Policy requirements directly support completeness, accuracy, and timeliness:\n    - Input validation against schema and business rules\n    - Daily source-to-destination reconciliation with actionable triggers for discrepancies >$0.01\n    - Immutable audit trails\n    - Segregation of duties in approval/review\n- Actual logs show consistent, timely reconciliation; incidents are investigated and resolved\n- No evidence of unaddressed discrepancies or delayed reconciliations\n**Severity:** None (meets PI1.1 requirements, no gap)\n\n---\n\n### 4. **Delayed RCA/Corrective Action for Missed Emergency Review**  \n**Section:** SDLC Policy \u00a73.3 Consequences; PR Records (PR-7813)  \n**Gap:**  \n- The SDLC Policy requires escalation to VP Engineering for overdue reviews, and CTO corrective action if more than three such lapses occur in a quarter.\n- Only one lapse identified (PR-7813), and it is not clear from the records if this instance (over a month late) was escalated and discussed at the CTO review as per policy.\n- There\u2019s no evidence in records (PRs or logs) of the escalation route for this missed review, nor is there evidence that steps were taken to prevent recurrence.\n- On the positive side, this is the only observed lapse for the quarter.\n**Severity:** **Medium**  \n- A single miss may not trigger automatic CTO review, but (especially for a critical control like this) even one may warrant investigation/documented discussion with management.\n\n---\n\n### 5. **Policy Provides for Detection and Investigation of Processing Completeness Gaps**  \n**Section:** Reconciliation Logs; SDLC Policy \u00a76.2 Data Reconciliation  \n**Gap:**  \n- Daily settlement batch logs verify that all processing completeness objectives (record counts and amounts) were met or discrepancies were detected and promptly escalated (seen for Nov 28, 2025).\n- For both failed batches (deadlock, rounding), incident investigations, emergency fix deployment, and batch reprocessing are documented.\n- No uninvestigated discrepancies were left open.\n**Severity:** None (no gap; practice matches policy and PI1.1)\n\n---\n\n## **Summary Table**\n\n| Finding Title | Section | Gap Description | Severity |\n|---------------|---------|----------------|----------|\n| 1. Lapse in Emergency Post-Deploy Review for Settlement Rounding Fix | SDLC Policy \u00a73.2; PR-7813 | Emergency code change lacked required post-deploy code review for over a month | **Critical** |\n| 2. Consistent Execution of Processing Integrity Controls Outside One Emergency | SDLC Policy \u00a73.2; PR-7808 | Controls followed correctly on other emergencies; no gap | N/A |\n| 3. SDLC Policy Clearly Defines Processing Objectives for Tier 1 Data | SDLC Policy \u00a76; reconciliation logs | Policy supports PI1.1 \u2014 completeness, accuracy, timeliness | N/A |\n| 4. Delayed RCA/Corrective Action for Missed Emergency Review | SDLC Policy \u00a73.3; PR-7813 | No evidence the missed emergency review was escalated, reviewed, or followed up per policy | **Medium** |\n| 5. Policy Provides for Detection and Investigation of Processing Completeness Gaps | Reconciliation logs; SDLC Policy \u00a76.2 | All data discrepancies promptly detected, investigated, and resolved | N/A |\n\n---\n\n**Summary Judgment:**  \n- **Policy and daily practice generally meet PI1.1 requirements for complete, accurate, and timely processing.**  \n- **However, the unremediated lapse in the post-deploy review for a critical emergency fix is a critical control failure that must be addressed immediately and may constitute a reportable exception.**  \n- **Management should review root causes for this omission, ensure escalation paths are working, and retrain/reinforce emergency change compliance expectations for Tier 1 systems.**"
+}

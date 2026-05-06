@@ -1,0 +1,123 @@
+{
+  "id": "cc7.3-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.3",
+  "control_description": "The entity responds to identified security incidents by executing a defined incident response program to understand, contain, remediate, and communicate security incidents, as appropriate.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/incident-response-policy.md",
+      "type": "policy",
+      "description": "Helix Collaboration incident response policy with detailed post-mortem quality standards and reviewer sign-off requirements"
+    },
+    {
+      "path": "evidence/incident-log-q4-2025.csv",
+      "type": "log",
+      "description": "Q4 2025 incident register with 7 incidents including post-mortem reviewer status and sign-off tracking"
+    },
+    {
+      "path": "evidence/post-mortem-inc-2025-803.md",
+      "type": "report",
+      "description": "Post-mortem for INC-2025-803 (SEV-2 API rate limiting bypass) — a 3-sentence summary returned for revision by reviewer"
+    },
+    {
+      "path": "evidence/post-mortem-inc-2025-804.md",
+      "type": "report",
+      "description": "Post-mortem for INC-2025-804 (SEV-1 ransomware on file processing cluster) — comprehensive report with CISO sign-off"
+    },
+    {
+      "path": "evidence/post-mortem-inc-2025-806.md",
+      "type": "report",
+      "description": "Post-mortem for INC-2025-806 (SEV-2 DDoS attack) — adequate report with only 2 action items"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/security-metrics-dashboard-q4.md",
+      "type": "report",
+      "description": "Q4 2025 security operations metrics dashboard — aggregate metrics that may provide useful context but are not direct evidence of individual control effectiveness"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Helix Collaboration covering Q4 2025. Review the incident response policy, incident log, and all post-mortem reports. Assess whether post-mortem quality and completeness meet the requirements of CC7.3 and the organization's own policy. Exercise professional judgment on whether post-mortems adequately capture lessons learned and drive corrective action. Not all documents may be relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-803 post-mortem is a 3-sentence summary that fails to meet Section 4.2 quality standards",
+      "description": "The post-mortem for INC-2025-803 (SEV-2 API rate limiting bypass enabling cross-tenant document listing) consists of a single paragraph with 3 sentences describing the issue, the fix, and the conclusion — plus 3 action items listed without Jira ticket references. Policy Section 4.2 requires: complete incident timeline with UTC timestamps, 5-Whys root cause analysis, quantified impact assessment, remediation actions, minimum 3 action items with owner/priority/date/Jira reference, and detection improvement recommendations. The post-mortem is missing: the timeline (when was it detected? when was the researcher notified? when was the fix deployed?), root cause analysis (the description explains *what* happened but not *why* the rate limiter was designed this way), quantified impact (how many tenants were affected? how many document IDs were enumerable?), and detection improvements. The reviewer (Marco DeLuca) appropriately returned it for revision on November 14 with specific feedback. However, the incident log still shows only 2 of 3 action items completed, and there is no evidence that a revised post-mortem was submitted. This is a judgment call: the reviewer process worked (the inadequate post-mortem was caught), but the lack of a revised version means the final post-mortem on record is the inadequate one.",
+      "evidence_sources": ["evidence/post-mortem-inc-2025-803.md", "evidence/incident-response-policy.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "The auditor should compare the 3-sentence post-mortem against Section 4.2 requirements and note multiple missing elements. The reviewer correctly flagged it (which shows the quality control process exists), but no revised version is in the evidence package. The auditor must determine: (1) is the quality control process sufficient (since the reviewer caught the issue), or (2) is the lack of a revised post-mortem a finding (since the final version on record is inadequate)? A strict auditor would say the post-mortem is non-compliant until revised. The unresolved revision request — combined with only 2 of 3 action items complete — suggests the IC (Carlos Mendez) may not have followed through on the revision.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-803", "3-sentence", "Section 4.2 quality standards", "missing timeline", "missing 5-Whys", "returned for revision", "Marco DeLuca", "no revised version"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "INC-2025-806 post-mortem has only 2 action items — minimum is 3 per policy Section 4.2",
+      "description": "The post-mortem for INC-2025-806 (SEV-2 DDoS attack) lists only 2 preventive action items. Policy Section 4.2 requires a minimum of 3 action items for SEV-2 post-mortems. The reviewer (Marco DeLuca) signed off on December 17 without flagging this. The post-mortem is otherwise well-structured — it has a proper timeline, 5-Whys root cause analysis, quantified impact, and detection improvement assessment. The judgment call: is the minimum-3 requirement a strict rule that must be met regardless of incident type, or is it acceptable to have fewer action items when the incident was effectively mitigated by existing controls (Cloudflare auto-engaged within 8 minutes) and the root cause was addressed? The 5-Whys analysis identifies a deeper issue (no security review gate in the feature launch process) which PM-806-AI-02 addresses. Could a third action item have been identified (e.g., DDoS runbook creation, load testing for DDoS resilience)?",
+      "evidence_sources": ["evidence/post-mortem-inc-2025-806.md", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "Policy says 'Minimum of 3 action items' for SEV-2. Post-mortem has 2. Reviewer approved it anyway. The auditor must weigh: is this a material non-compliance (policy says 3, they delivered 2), or is it reasonable given the DDoS was well-handled (8-minute detection, 30-minute customer impact, no data exposure)? The 5-Whys identified a systemic gap (no security review in feature launches) which was addressed. A forced third action item might be low-value. But the policy is explicit, and the reviewer should have caught it.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-806", "2 action items", "minimum of 3", "Section 4.2", "DDoS", "Marco DeLuca approved", "reviewer did not flag"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-804 (SEV-1 ransomware) resolution exceeded 24-hour target at 35.8 hours",
+      "description": "INC-2025-804 (ransomware on file processing cluster) was resolved in 35.8 hours, exceeding the 24-hour SEV-1 resolution target by 49%. Containment was rapid (0.75 hours), but full resolution — including forensic analysis of node-07, customer impact assessment, and processing backlog clearance — took 35.8 hours. The post-mortem is thorough and the CISO signed off, but no exception was documented for the SLA miss. The judgment element: should 'resolution' for a ransomware incident include the full forensic and recovery cycle, or should it be declared at the point where customer service is restored (which was approximately at the 12-hour mark when clean nodes were deployed)?",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md", "evidence/post-mortem-inc-2025-804.md"],
+      "expected_reasoning": "Resolution at 35.8 hours vs. 24-hour target. The post-mortem timeline shows clean nodes rebuilt and pipeline restarted by 14:00 UTC Nov 18 (~12 hours). Customer impact assessment completed at 18:00 (~16 hours). Final resolution at 14:00 Nov 19 (~36 hours) after forensic analysis of node-07 was complete. The auditor should consider whether 'resolution' should be measured at service restoration (~12 hours) or at investigation completion (~36 hours). If the former, the SLA was met; if the latter, it was exceeded.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-804", "35.8 hours", "24-hour resolution target", "ransomware", "containment rapid", "forensic analysis", "service restoration", "SLA definition"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-804 has 4 of 9 action items not started — including critical supply chain security measures",
+      "description": "The post-mortem for INC-2025-804 (November 18 ransomware) lists 9 action items. As of end of Q4 (per incident log), only 5 are completed. Cross-referencing the post-mortem: PM-804-AI-01, AI-02, AI-03 are complete; PM-804-AI-04 and AI-05 are in progress; PM-804-AI-06 (container image provenance), PM-804-AI-07 (supply chain training), PM-804-AI-08 (network egress restrictions), and PM-804-AI-09 (CI/CD pipeline hardening) are not started. PM-804-AI-08 (network egress restrictions on processing nodes) directly addresses the attack vector — if processing nodes could only communicate with approved registries, the ransomware download would have been blocked. This is 6+ weeks after the incident with critical preventive measures not started.",
+      "evidence_sources": ["evidence/post-mortem-inc-2025-804.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "9 action items, 5 complete, 4 not started. PM-804-AI-08 (network egress restrictions) would have prevented the ransomware download — it is the most impactful preventive measure and is not started 6 weeks later. Policy Section 4.4 requires 14-day escalation to CISO for overdue items. Items with January due dates are approaching, but the ones with no start date and due in late January/February risk being late.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-804", "PM-804-AI-08", "network egress restrictions", "not started", "4 of 9 action items", "supply chain", "ransomware", "6 weeks"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "INC-2025-805 post-mortem has 2 of 5 action items incomplete for former contractor unauthorized access",
+      "description": "INC-2025-805 (former contractor's VPN credentials used to access analytics database 14 days after termination) has 3 of 5 action items complete. The root cause — contractor VPN credentials not revoked during offboarding — is a systemic issue. Without seeing the post-mortem report (not provided as evidence), the auditor cannot verify whether the 2 incomplete items address the core offboarding gap. If the remaining items relate to contractor offboarding process improvements, leaving them incomplete means the same vulnerability persists for future contractor terminations.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "INC-2025-805: former contractor accessed analytics database 14 days post-termination. 3 of 5 action items complete. Post-mortem was reviewed and signed off by Marco DeLuca on Dec 11. The root cause (VPN credential retention after termination) is a process gap that affects all contractor offboarding. Without the post-mortem report, the auditor should request it and specifically review whether the 2 incomplete items address the offboarding process.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-805", "former contractor", "VPN credentials", "14 days after termination", "2 of 5 action items", "offboarding", "post-mortem not provided"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 6,
+    "relevant_documents_count": 5,
+    "tags": ["incident_response", "judgment", "post_mortem_quality", "3_sentence_post_mortem", "reviewer_process", "action_item_tracking", "minimum_action_items", "ransomware"]
+  }
+}

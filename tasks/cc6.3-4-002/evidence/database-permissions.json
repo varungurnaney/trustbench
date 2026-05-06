@@ -1,0 +1,161 @@
+{
+  "export_metadata": {
+    "database": "orion_prod",
+    "platform": "PostgreSQL 15.4 (Amazon RDS)",
+    "exported_by": "it-security-automation",
+    "export_timestamp": "2025-12-20T08:00:00Z"
+  },
+  "roles": [
+    {
+      "role_name": "app-readonly",
+      "privileges": [
+        {"schema": "orion_clinical", "table": "patient_records", "actions": ["SELECT"]},
+        {"schema": "orion_clinical", "table": "appointments", "actions": ["SELECT"]},
+        {"schema": "orion_clinical", "table": "treatment_plans", "actions": ["SELECT"]}
+      ]
+    },
+    {
+      "role_name": "app-readwrite",
+      "privileges": [
+        {"schema": "orion_clinical", "table": "appointments", "actions": ["SELECT", "INSERT", "UPDATE"]},
+        {"schema": "orion_clinical", "table": "treatment_plans", "actions": ["SELECT", "INSERT", "UPDATE"]},
+        {"schema": "orion_billing", "table": "invoices", "actions": ["SELECT", "INSERT", "UPDATE"]}
+      ]
+    },
+    {
+      "role_name": "bi-reporting",
+      "privileges": [
+        {"schema": "orion_clinical", "table": "patient_records", "actions": ["SELECT"]},
+        {"schema": "orion_clinical", "table": "appointments", "actions": ["SELECT"]},
+        {"schema": "orion_clinical", "table": "treatment_plans", "actions": ["SELECT"]},
+        {"schema": "orion_clinical", "table": "prescriptions", "actions": ["SELECT"]},
+        {"schema": "orion_clinical", "table": "lab_results", "actions": ["SELECT"]},
+        {"schema": "orion_clinical", "table": "referrals", "actions": ["SELECT"]},
+        {"schema": "orion_billing", "table": "billing", "actions": ["SELECT"]},
+        {"schema": "orion_billing", "table": "invoices", "actions": ["SELECT"]},
+        {"schema": "orion_billing", "table": "insurance_claims", "actions": ["SELECT"]},
+        {"schema": "orion_analytics", "table": "patient_metrics", "actions": ["SELECT"]},
+        {"schema": "orion_analytics", "table": "provider_metrics", "actions": ["SELECT"]},
+        {"schema": "orion_analytics", "table": "revenue_dashboard", "actions": ["SELECT"]}
+      ]
+    },
+    {
+      "role_name": "clinical-ops-write",
+      "privileges": [
+        {"schema": "orion_clinical", "table": "patient_records", "actions": ["SELECT", "INSERT", "UPDATE"]},
+        {"schema": "orion_clinical", "table": "appointments", "actions": ["SELECT", "INSERT", "UPDATE"]},
+        {"schema": "orion_clinical", "table": "treatment_plans", "actions": ["SELECT", "INSERT", "UPDATE"]}
+      ]
+    },
+    {
+      "role_name": "data-scientist",
+      "privileges": [
+        {"schema": "orion_analytics", "table": "patient_metrics_masked", "actions": ["SELECT"]},
+        {"schema": "orion_analytics", "table": "provider_metrics", "actions": ["SELECT"]},
+        {"schema": "orion_analytics", "table": "revenue_dashboard", "actions": ["SELECT"]}
+      ]
+    },
+    {
+      "role_name": "dba-admin",
+      "privileges": [
+        {"schema": "ALL", "table": "ALL", "actions": ["ALL PRIVILEGES"]}
+      ]
+    }
+  ],
+  "user_assignments": [
+    {
+      "username": "svc-orion-api",
+      "account_type": "service_account",
+      "roles": ["app-readwrite"],
+      "owner": "James Chen",
+      "owner_email": "j.chen@orionhealth.io",
+      "assigned_date": "2024-06-01"
+    },
+    {
+      "username": "svc-legacy-sync",
+      "account_type": "service_account",
+      "roles": ["app-readwrite"],
+      "owner": "James Chen",
+      "owner_email": "j.chen@orionhealth.io",
+      "assigned_date": "2024-09-15",
+      "notes": "Legacy EHR synchronization — write access per EXC-2025-065"
+    },
+    {
+      "username": "r.patel",
+      "full_name": "Ravi Patel",
+      "department": "BI Reporting",
+      "account_type": "employee",
+      "roles": ["bi-reporting"],
+      "assigned_date": "2025-02-01"
+    },
+    {
+      "username": "m.garcia",
+      "full_name": "Maria Garcia",
+      "department": "BI Reporting",
+      "account_type": "employee",
+      "roles": ["bi-reporting"],
+      "assigned_date": "2025-03-15"
+    },
+    {
+      "username": "t.brooks",
+      "full_name": "Tyler Brooks",
+      "department": "Clinical Operations",
+      "account_type": "employee",
+      "roles": ["clinical-ops-write"],
+      "assigned_date": "2025-10-28"
+    },
+    {
+      "username": "k.shah",
+      "full_name": "Karen Shah",
+      "department": "Data Science",
+      "account_type": "employee",
+      "roles": ["data-scientist"],
+      "assigned_date": "2025-11-05",
+      "notes": "Also has direct SELECT on patient_records and prescriptions per DAR-Q4-2025-017"
+    },
+    {
+      "username": "k.shah",
+      "full_name": "Karen Shah",
+      "department": "Data Science",
+      "account_type": "employee",
+      "additional_grants": [
+        {"schema": "orion_clinical", "table": "patient_records", "actions": ["SELECT"]},
+        {"schema": "orion_clinical", "table": "prescriptions", "actions": ["SELECT"]}
+      ],
+      "granted_by": "db_admin",
+      "grant_date": "2025-11-08"
+    },
+    {
+      "username": "n.wright",
+      "full_name": "Nicole Wright",
+      "department": "Database Administration",
+      "account_type": "employee",
+      "roles": ["dba-admin"],
+      "assigned_date": "2024-01-15"
+    },
+    {
+      "username": "d.okafor",
+      "full_name": "Daniel Okafor",
+      "department": "Engineering",
+      "account_type": "employee",
+      "roles": ["app-readonly"],
+      "assigned_date": "2025-06-01"
+    },
+    {
+      "username": "svc-monitoring",
+      "account_type": "service_account",
+      "roles": ["app-readonly"],
+      "owner": "Victor Santos",
+      "owner_email": "v.santos@orionhealth.io",
+      "assigned_date": "2024-08-01"
+    },
+    {
+      "username": "l.johnson",
+      "full_name": "Lisa Johnson",
+      "department": "Clinical Operations",
+      "account_type": "employee",
+      "roles": ["app-readonly"],
+      "assigned_date": "2025-04-10"
+    }
+  ]
+}

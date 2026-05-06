@@ -1,0 +1,58 @@
+{
+  "task_id": "cc7.1m-4-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T09:45:55.172819",
+  "score": {
+    "task_id": "cc7.1m-4-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.16666666666666666,
+    "f1": 0.2857142857142857,
+    "score": 0.2857142857142857,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "core-switch-01",
+          "285 minutes",
+          "hardware failure",
+          "EML-509"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "GEN-DC-01",
+          "generator",
+          "86 days",
+          "quarterly",
+          "deferred",
+          "January",
+          "5-minute self-test",
+          "EML-514"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3134,
+    "output_tokens": 4427
+  },
+  "raw_response": "## Overall Assessment\n\nBastion Technologies **partially meets CC7.1** for Q4 2025. The evidence shows a defined maintenance policy and generally adequate preventive maintenance for several physical infrastructure components, including UPS, HVAC, fire suppression, and some network equipment. However, there are gaps in demonstrating that **all system components**, including application, database, operating system, network, and facilities infrastructure, are properly maintained in accordance with policy.\n\n---\n\n## Findings\n\n| # | Finding | Related Document / Section | Why This Is a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Insufficient evidence of application, database, and operating system maintenance** | CC7.1; Maintenance Policy \u00a74.1 Patch SLAs and \u00a74.2 Patch Testing; Q4 uptime reports | CC7.1 explicitly covers system components including application, database, and operating system software. The evidence provided includes uptime reports and physical equipment maintenance logs, but does not include patch records, system inventories, OS/database/application version reports, vulnerability-to-patch tracking, staging test evidence, or production deployment approvals. Notes such as \u201cplanned maintenance,\u201d \u201cbrief restart,\u201d or \u201cpatching\u201d in uptime reports are not sufficient to demonstrate that software components were maintained in accordance with the defined patch SLAs. | **High** |\n| 2 | **Generator preventive maintenance was deferred/pending despite normal operation** | Maintenance Policy \u00a75.1 Diesel Generators, \u00a75.2 Maintenance Records, \u00a76 Change Management; Equipment Log EML-514; December uptime report for `gen-dc-01` | EML-514 states that the full quarterly generator maintenance was pending/deferred and that only automated weekly 5-minute self-tests were passing. The policy requires quarterly generator maintenance including a 30-minute test run, fuel level check, oil and filter change. A generator functioning normally or passing a brief self-test is not equivalent to completing required preventive maintenance. The record also lacks a technician, vendor, completed result, and change ticket. The December uptime report confirms the full quarterly maintenance was deferred to January. | **Medium** |\n| 3 | **Core switch failure and replacement lack supporting maintenance/change documentation** | Maintenance Policy \u00a75.2 Maintenance Records and \u00a76 Change Management; November uptime report for `core-switch-01`; Equipment Log EML-509 | The November uptime report shows `core-switch-01` had a complete hardware failure, 285 minutes of unplanned downtime, and missed its SLA. The switch was reportedly replaced, but no corresponding maintenance record, emergency change ticket, approval, technician details, validation results, or post-incident maintenance record were provided. Under the policy, all maintenance requires a change ticket, and emergency maintenance requires CISO or IT Director approval. The evidence does not demonstrate that the replacement was controlled, documented, or reviewed. | **Medium** |\n| 4 | **Maintenance records contain chronology and status inconsistencies** | Maintenance Policy \u00a75.2 Maintenance Records; Equipment Logs EML-509 and EML-514 | EML-509 is dated November 8 and states fan cleaning was performed on `core-switch-01` \u201cpost-replacement,\u201d but the uptime report states the hardware failure and replacement occurred on November 13. EML-514 is labeled \u201cOVERDUE,\u201d while its own notes state the generator was 86 days since last full maintenance and not yet past the 90-day quarterly interval. These inconsistencies reduce confidence in the accuracy and reliability of the maintenance records used to demonstrate CC7.1 compliance. | **Low** |\n| 5 | **Maintenance program does not fully demonstrate complete component coverage** | Maintenance Policy \u00a72 Scope and \u00a75.1 Preventive Maintenance Schedule; Equipment Logs EML-512 and EML-513 | The policy scope states that all production systems, network infrastructure, and physical equipment are covered, but the preventive maintenance schedule does not define requirements for all maintained components shown in the logs, such as PDUs. PDUs were maintained in Q4, but their maintenance interval, required activities, and overdue handling are not formally defined in the policy. Additionally, no complete asset inventory or maintenance schedule was provided to demonstrate that all in-scope production components have assigned maintenance requirements and due dates. | **Medium** |\n\n---\n\n## Conclusion\n\nBastion has a maintenance policy and evidence of routine maintenance for several infrastructure components, but the control is **not fully ready** for CC7.1 reliance due to missing software maintenance evidence, incomplete or inconsistent maintenance records, and insufficient proof that all in-scope components are covered by a formal maintenance schedule. The most significant gap is the absence of evidence for application, database, and operating system maintenance."
+}

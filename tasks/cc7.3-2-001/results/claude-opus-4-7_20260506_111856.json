@@ -1,0 +1,69 @@
+{
+  "task_id": "cc7.3-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:18:56.536418",
+  "score": {
+    "task_id": "cc7.3-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 0.6666666666666666,
+    "precision": 0.16666666666666666,
+    "f1": 0.26666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "P2",
+          "after-hours",
+          "next business day",
+          "unauthorized access",
+          "compromised SSH key",
+          "queued",
+          "coverage gap",
+          "weekend"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "after-hours",
+          "correlation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Tomoko Ishida",
+          "Marcus Webb",
+          "bi-weekly rotation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3912,
+    "output_tokens": 3321
+  },
+  "raw_response": "# CC7.3 Readiness Assessment \u2014 Crestfield Data Solutions Incident Response Plan\n\n## Overall Assessment\n\nThe IRP is generally well-structured and addresses most CC7.3 requirements: it defines severity levels, roles, response procedures, communication protocols, evidence preservation, and post-incident activities. However, several operational gaps \u2014 particularly in alert routing \u2014 could materially undermine the entity's ability to respond to incidents in a timely manner. Findings below are ordered by severity.\n\n---\n\n## Findings\n\n### Finding 1: After-hours P2 alerts are not actively monitored\n\n**Section:** 5.2 Alert Routing and On-Call (P2 Alerts)\n\n**Gap:** The plan states that \"After-hours P2 alerts are queued and reviewed at the start of the next business day.\" P2 incidents include **unauthorized access to production systems, suspected data exposure, and compromised engineer SSH keys used to access production**. Deferring response on such events until the next business morning could allow an attacker 12\u201360+ hours of dwell time (e.g., an alert fired Friday at 6:01 PM ET would not be reviewed until Monday 8:00 AM ET). This directly contradicts the 4-hour P2 containment SLA in Section 6.2 \u2014 the SLA cannot be met if no one is paged. It also conflicts with the 72-hour GDPR notification clock, which begins at \"awareness,\" and creates unacceptable risk for a B2B platform processing customer PII.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Severity definition for P2 conflates security incidents with availability events\n\n**Section:** 3 Severity Levels (P2 row); 5.2 Alert Routing\n\n**Gap:** The P2 definition mixes \"unauthorized access to production systems\" and \"suspected data exposure\" (security events demanding immediate response) with \"service degradation affecting >25% of customers\" and \"primary database failover\" (availability events). Because all P2s share the same business-hours-only paging treatment, a confirmed compromised SSH key against production is treated identically to a benign database failover. Severity definitions should distinguish security-impact P2s (which warrant 24/7 paging) from availability-only events. As written, an auditor cannot conclude that the entity will respond to confirmed unauthorized access \"as appropriate.\"\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Security on-call rotation has no redundancy / single-point-of-failure risk\n\n**Section:** 5.2 Alert Routing and On-Call (P1 Alerts)\n\n**Gap:** The Security on-call rotation consists of only two engineers (Tomoko Ishida and Marcus Webb) on a bi-weekly rotation. With only two people, any vacation, illness, departure, or simultaneous unavailability creates a coverage gap with no documented failover. Additionally, Marcus Webb is listed as both Forensic Analyst backup and IC backup, further concentrating dependency. The SRE rotation (4 engineers) demonstrates a healthier model. The plan should define a minimum rotation size and explicit coverage handoff procedures.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: No defined detection-to-declaration SLA\n\n**Section:** 5.2 and 6.1 Incident Declaration\n\n**Gap:** The plan defines acknowledgment SLAs (5 minutes for P1) and containment SLAs but does not define how quickly an alert must be triaged into a declared incident. There is a gap between \"alert acknowledged\" and \"incident declared\" where the 1-hour P1 containment clock has not yet started. Without a triage-to-declaration SLA, attackers can operate in a window that is procedurally invisible to the response process.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: P1 customer notification timing is ambiguous and may violate contractual SLAs\n\n**Section:** 7.2 Customer Communication; 7.3 Regulatory Notification\n\n**Gap:** The plan commits to notifying affected customers within 72 hours of \"breach confirmation,\" but customer contracts often specify notification windows measured from **discovery** or **awareness**, not \"confirmation.\" The language gives Crestfield latitude to delay the clock by deferring \"confirmation,\" which may breach contractual obligations and create regulatory exposure. The plan also does not address coordination with the 72-hour GDPR clock when both clocks could be running concurrently from different start points.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: Communications Lead has no documented security or breach-notification training requirement\n\n**Section:** 4.1 Roles and Responsibilities\n\n**Gap:** Rachel Torres (VP Customer Success) holds the Communications Lead role, which is \"Accountable/Responsible\" for external communication including breach notifications. The plan does not require breach-communication training, legal review workflows, or pre-approved templates. For a role that represents the company in a regulated breach-notification context, there should be defined training, template library, and a mandatory legal sign-off step before external communication.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Tabletop exercise does not cover all severity scenarios or after-hours response\n\n**Section:** 10.1 Testing Schedule\n\n**Gap:** The plan requires one annual tabletop and a bi-annual purple team exercise but does not specify that scenarios must include the after-hours response gap, regulatory notification workflows, or P2-level scenarios. Without prescribed scenario coverage, testing may not validate the most failure-prone procedures (notably the after-hours P2 gap identified in Finding 1).\n\n**Severity:** **Medium**\n\n---\n\n### Finding 8: No defined criteria for engaging external incident response or law enforcement\n\n**Section:** 6 Response Procedures (general)\n\n**Gap:** The plan does not address when external IR firms (retainer), law enforcement (FBI/Secret Service), or cyber insurance carriers are engaged. For a P1 incident involving ransomware or large-scale exfiltration, the absence of pre-established triggers and contacts can delay specialized response and may void cyber insurance coverage if carriers are not notified promptly.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 9: Evidence access controls do not enforce dual-control or separation of duties\n\n**Section:** 8.2 Storage and Chain of Custody\n\n**Gap:** Evidence is stored in S3 with IAM-restricted access logged via CloudTrail, but the plan does not require dual-control (two-person integrity) for evidence access, deletion protection beyond versioning (e.g., S3 Object Lock with compliance mode), or separation of duties between collectors and custodians. For a 7-year legal-hold artifact, this is below industry expectations and could undermine evidentiary admissibility.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 10: P3 alerts have no after-hours or weekend coverage path\n\n**Section:** 5.2 Alert Routing (P3 Alerts)\n\n**Gap:** P3 alerts are reviewed only at the 10:00 AM ET weekday standup. A P3 alert posted Friday afternoon would not be reviewed for ~64 hours. While P3 events are lower severity, they sometimes represent the early stages of a P1/P2 (e.g., \"unusual CloudTrail activity\"). There should be an automated mechanism for P3-to-P2 escalation based on volume, recurrence, or correlation patterns.\n\n**Severity:** **Low**\n\n---\n\n### Finding 11: No requirement to validate backups before declaring recovery\n\n**Section:** 6.4 Recovery\n\n**Gap:** The plan says systems are restored from \"verified backups,\" but the plan does not define what \"verified\" means in the recovery context (e.g., backup integrity verification, scan for persistence/IOCs in backup before restore, validation that backup predates compromise). This is particularly critical for ransomware scenarios where backups may also be compromised.\n\n**Severity:** **Low**\n\n---\n\n### Finding 12: Action item closure has no audit/verification step\n\n**Section:** 9.2 Action Item Tracking\n\n**Gap:** Post-mortem action items are tracked in Jira and escalated when overdue, but there is no requirement that action items be independently verified as effective (e.g., by Internal Audit, or via a follow-up tabletop). \"Closed\" status in Jira is not equivalent to remediated risk.\n\n**Severity:** **Low**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | After-hours P2 alerts not monitored | Critical |\n| 2 | P2 severity conflates security and availability | High |\n| 3 | Security on-call rotation lacks redundancy | High |\n| 4 | No detection-to-declaration SLA | Medium |\n| 5 | P1 notification timing ambiguous vs. contracts | Medium |\n| 6 | Comms Lead lacks training/template requirement | Medium |\n| 7 | Testing scope not prescriptive | Medium |\n| 8 | No external IR / law enforcement engagement criteria | Medium |\n| 9 | Evidence handling lacks dual-control / Object Lock | Medium |\n| 10 | P3 alerts have no weekend coverage | Low |\n| 11 | \"Verified backups\" undefined for recovery | Low |\n| 12 | No verification of action item effectiveness | Low |\n\n## Conclusion\n\nThe plan is largely conformant with CC7.3 in **structure**, but Finding 1 alone is sufficient to conclude that the control is **not operating as designed** for a meaningful share of incidents. Findings 1\u20133 should be remediated prior to attestation. Recommend the auditor request evidence of: (a) actual after-hours P2 response history from PagerDuty/Splunk, (b) on-call schedules demonstrating coverage continuity, and (c) the most recent tabletop exercise report to validate that these gaps have not already manifested operationally."
+}

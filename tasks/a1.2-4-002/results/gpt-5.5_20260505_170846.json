@@ -1,0 +1,72 @@
+{
+  "task_id": "a1.2-4-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:08:46.078903",
+  "score": {
+    "task_id": "a1.2-4-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.2,
+    "f1": 0.28571428571428575,
+    "score": 0.28571428571428575,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "October 22",
+          "WAL",
+          "CISO",
+          "EXC-2025-051",
+          "compensating",
+          "firmware"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "December 14",
+          "TLS certificate",
+          "Section 6.1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "November 28",
+          "checksum",
+          "skipped",
+          "false",
+          "verification",
+          "data integrity",
+          "Section 3.5"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5897,
+    "output_tokens": 4462
+  },
+  "raw_response": "## A1.2 Readiness Assessment Findings \u2014 Backup and Recovery, Q4 2025\n\n### Overall assessment\n\nThe evidence shows that daily full backups for `oc-db-prod-01` generally operated throughout Q4 2025, with three failure events. The October 22 failure appears to have been formally risk-accepted with documented compensating controls and CISO approval. However, several control gaps remain, particularly around evidence coverage, restore testing, checksum enforcement, and incident response execution.\n\n---\n\n## Finding 1: Backup evidence does not cover all in-scope systems or required backup types\n\n**Related document section:**  \n- `POL-BKP-006` Section 2 \u2014 Scope  \n- `POL-BKP-006` Sections 3.1, 3.2, 3.3 \u2014 Daily Full Backups, Incremental Backups, WAL Archiving  \n- Q4 2025 backup execution log\n\n**Why it\u2019s a gap:**  \nThe backup policy applies to multiple production systems, including:\n\n- PostgreSQL clusters `oc-db-prod-01` through `oc-db-prod-06`\n- S3 production asset and upload buckets\n- HashiCorp Vault\n- Certificate store\n- Daily full backups\n- Incremental backups every 4 hours\n- Continuous WAL archiving with maximum 15-minute lag\n\nHowever, the provided execution log only evidences **daily full backups for `oc-db-prod-01`**. There is no operating evidence for:\n\n- Other production database clusters\n- S3 buckets\n- Vault backups\n- Certificate store backups\n- Incremental backup execution\n- Ongoing WAL archive monitoring or lag compliance\n\nAs a result, the evidence does not demonstrate that backup controls operated for the full population of systems and backup types required by the policy.\n\n**Severity:** High\n\n---\n\n## Finding 2: Quarterly restore testing evidence was not provided\n\n**Related document section:**  \n- `POL-BKP-006` Section 7 \u2014 Restore Testing\n\n**Why it\u2019s a gap:**  \nThe policy requires a **quarterly full restore test in the DR environment** validating:\n\n- Restoration success\n- Data integrity\n- RTO compliance\n\nNo Q4 2025 restore test evidence was provided. Backup success and checksum verification alone do not demonstrate that systems, data, and infrastructure can actually be restored within the entity\u2019s stated RTO of 4 hours.\n\nThis is a key A1.2 requirement because the control is not only about creating backups, but also about maintaining and validating recovery procedures to meet availability commitments.\n\n**Severity:** High\n\n---\n\n## Finding 3: Backup was marked successful despite checksum verification being skipped\n\n**Related document section:**  \n- `POL-BKP-006` Section 3.5 \u2014 Backup Verification  \n- `POL-BKP-006` Section 6.2 \u2014 Exception Process  \n- Backup log entry `BKP-2025-1128R`\n\n**Why it\u2019s a gap:**  \nOn November 28, the original backup failed due to a network timeout. A manual re-run was completed:\n\n- Backup ID: `BKP-2025-1128R`\n- Status: `success`\n- Checksum verified: `false`\n- Notes: \u201cChecksum verification skipped to meet maintenance window deadline.\u201d\n\nThe policy states that **all backups must have SHA-256 checksum verification completed before being marked successful**. It also states that backups failing checksum verification must be re-run.\n\nBecause checksum verification was skipped, this backup should not have been marked as fully successful without either:\n\n- Completing checksum verification later,\n- Re-running the backup, or\n- Recording a formal approved exception with compensating controls.\n\nNo corresponding exception was included in the exception register.\n\n**Severity:** Medium\n\n---\n\n## Finding 4: Backup failure response procedure was not met for the December 14 failure\n\n**Related document section:**  \n- `POL-BKP-006` Section 6.1 \u2014 Response Procedures  \n- Backup log entries `BKP-2025-1214` and `BKP-2025-1214R`\n\n**Why it\u2019s a gap:**  \nThe December 14 backup failed at 02:47 UTC due to an expired TLS certificate on backup target `oc-bkp-target-02`. The alert was sent at 02:48 UTC, but the successful re-run did not start until 10:18 UTC and completed at 12:05 UTC.\n\nThis does not align with the policy requirement that the on-call engineer investigate and initiate a re-run within 2 hours of failure.\n\nThe log also states that the delay occurred because the on-call engineer did not have access to the certificate renewal process and had to escalate to the security team. This indicates a procedural and access gap for recovery-related infrastructure dependencies.\n\nAlthough the backup was eventually completed successfully with checksum verification, the response process did not operate as designed.\n\n**Severity:** Medium\n\n---\n\n## Finding 5: Remediation tracking for the October 22 exception is not evidenced\n\n**Related document section:**  \n- Exception register entry `EXC-2025-051`  \n- `POL-BKP-006` Section 6.2 \u2014 Exception Process\n\n**Why it\u2019s a gap:**  \nThe October 22 backup failure was appropriately documented in the exception register and approved by the CISO. The exception included compensating controls, including continuous WAL archiving with an effective RPO of approximately 12 minutes. Therefore, the missed full backup itself appears to be properly risk-accepted and mitigated.\n\nHowever, the exception notes remediation actions, including:\n\n- Implementing firmware auto-update policy for all backup storage controllers\n- Configuring NetApp AutoSupport monitoring by November 15, 2025\n\nNo evidence was provided showing that these remediation actions were completed by the stated date. The exception status remains \u201cAccepted,\u201d with the next review scheduled for January 2026.\n\nThe gap is not the October 22 missed backup itself, but the lack of evidence that remediation activities tied to the accepted exception were completed or tracked to closure during Q4.\n\n**Severity:** Low\n\n---\n\n## Properly mitigated item \u2014 No finding\n\n### October 22 backup failure\n\n**Related evidence:**  \n- Backup log entry `BKP-2025-1022`  \n- Exception register entry `EXC-2025-051`\n\nThe October 22 backup failure was caused by a storage controller firmware crash. Although no re-run was performed, the event was documented in the exception register, included root cause and compensating controls, and was approved by the CISO.\n\nThe compensating controls included continuous WAL archiving every 10\u201312 minutes to `us-west-2`, maintaining point-in-time recovery capability and an effective RPO of approximately 12 minutes. The next scheduled full backup succeeded on October 23.\n\nAccordingly, the October 22 failure appears to be appropriately mitigated through the formal exception process."
+}

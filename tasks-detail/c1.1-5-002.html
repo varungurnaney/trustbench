@@ -1,0 +1,48 @@
+---
+layout: default
+title: "c1.1-5-002"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>c1.1-5-002</h2>
+    <p class="section-subtitle">C1.1 · D5 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D5</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">4</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">62%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are a SOC 2 auditor evaluating Nextera Health Analytics' data protection controls under C1.1 and CC6.7. Nextera is a healthcare analytics company processing PHI under BAA agreements with healthcare providers. Review all evidence to assess encryption controls for confidential data protection. This assessment requires professional judgment on several issues: the materiality of internal network encryption gaps when compensating controls exist, the adequacy of HIPAA risk assessment findings for SOC 2 purposes, and whether identified gaps with remediation plans represent current control deficiencies or managed risks. Consider the heightened sensitivity of PHI data when making materiality assessments.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/data-protection-policy.md</code> — Nextera Health Analytics data protection policy with HIPAA-specific requirements</li>
+<li><code>evidence/tls-endpoint-audit.csv</code> — TLS endpoint audit showing all internal and external endpoints including the de-identification service on HTTP</li>
+<li><code>evidence/certificate-inventory.csv</code> — Certificate inventory showing CERT-NHA-005 has no certificate for the de-identification service</li>
+<li><code>evidence/hipaa-risk-assessment-excerpt.md</code> — Independent HIPAA risk assessment identifying the de-identification service PHI transmission gap with compensating controls and remediation timeline</li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>De-identification service receives raw PHI over unencrypted HTTP despite policy requiring TLS for Restricted data</strong><br><span style="font-size:13px;color:var(--text-dim)">The TLS audit shows deidentification-svc.internal.nextera-health.com runs on HTTP (port 8080) with no TLS. The certificate inventory confirms no certificate exists (CERT-NHA-005 shows 'No Certificate'...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>HIPAA addressable specification implemented but not fully enforced — internal inconsistency</strong><br><span style="font-size:13px;color:var(--text-dim)">The policy (Section 5.4) explicitly states that Nextera has determined encryption is 'reasonable and appropriate' for all PHI transmissions and that the HIPAA encryption addressable specification is '...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Policy uses weak 'should' and 'where technically feasible' language for Confidential data internal encryption</strong><br><span style="font-size:13px;color:var(--text-dim)">Policy Section 5.2 states 'Confidential data internal communications should use TLS where technically feasible' — using advisory rather than mandatory language. In a healthcare context where the bound...</span></td></tr>
+<tr><td><strong>F-004</strong></td><td><span class="badge badge-blue">gap</span></td><td>low</td><td><strong>Grafana monitoring certificate (CERT-NHA-007) requires manual renewal without auto-renewal</strong><br><span style="font-size:13px;color:var(--text-dim)">The certificate inventory shows CERT-NHA-007 for grafana.internal.nextera-health.com has auto_renewal set to 'No' while all other internal certificates have auto-renewal enabled. The policy (Section 7...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-high">89%</td><td>100%</td><td>80%</td><td>89%</td><td>4/4</td><td>5</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-mid">67%</td><td>75%</td><td>60%</td><td>67%</td><td>3/4</td><td>5</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-low">50%</td><td>50%</td><td>50%</td><td>50%</td><td>2/4</td><td>4</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-mid">67%</td><td>75%</td><td>60%</td><td>67%</td><td>3/4</td><td>5</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-high">80%</td><td>100%</td><td>67%</td><td>80%</td><td>4/4</td><td>6</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-bad">20%</td><td>50%</td><td>12%</td><td>20%</td><td>2/4</td><td>16</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/c1.1-5-002">GitHub</a></p></footer>
+</div>

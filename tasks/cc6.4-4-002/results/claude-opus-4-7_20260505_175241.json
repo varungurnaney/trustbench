@@ -1,0 +1,70 @@
+{
+  "task_id": "cc6.4-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:52:41.480103",
+  "score": {
+    "task_id": "cc6.4-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.1,
+    "f1": 0.16666666666666669,
+    "score": 0.16666666666666669,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Andrea Walsh",
+          "B-5088",
+          "Denied",
+          "deactivated"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "Luis Ortega",
+          "CTR-0145",
+          "NexGen Consulting",
+          "contract start date"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Janet Yee",
+          "CTR-0139",
+          "Brightworks Electric",
+          "deactivation",
+          "Active",
+          "1 business day"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 9741,
+    "output_tokens": 3368
+  },
+  "raw_response": "# CC6.4 Physical Access Controls \u2014 Readiness Assessment\n\n**Entity:** Solaris Tech Group\n**Observation Period:** October 1 \u2013 December 31, 2025\n**Control:** CC6.4 \u2014 Restriction of physical access to facilities and protected information assets\n\n---\n\n## Summary of Assessment\n\nThe physical security policy (POL-PS-015 v3.4) is well-structured and addresses the key elements of CC6.4: zone-based access, badge lifecycle management, visitor controls, CCTV, environmental monitoring, and after-hours exceptions. Evidence demonstrates the control is generally operating, including a clean termination case (Andrea Walsh \u2014 badge deactivated on termination date 2025-11-01; the 2025-11-12 denied swipe in ACL-4038 confirms the deactivation worked).\n\nHowever, review of provisioning records and access logs identified several control gaps requiring remediation.\n\n---\n\n## Findings\n\n### Finding 1: Contractor badge activated before contract start date\n- **Related to:** Policy \u00a74.6 (Contractor Badge Activation); Provisioning record PROV-0083\n- **Gap:** Luis Ortega (CTR-0145, NexGen Consulting) was provisioned and activated on **2025-10-08**, but his contract start date was **2025-10-20**. Policy \u00a74.6 explicitly states: *\"Contractor badges shall be activated on or after the contract start date, not before.\"* The access log confirms exploitation of this gap \u2014 entries ACL-4012 (2025-10-10) and ACL-4015 (2025-10-14) show badge swipes by Ortega 10 and 6 days before his authorized contract start. The provisioning record itself flags the discrepancy in the notes field but no remediation occurred. The approver (Nina Vasquez, Infrastructure team) is a peer rather than a manager-level approver, which is a secondary concern.\n- **Severity:** **High** \u2014 direct policy violation with confirmed unauthorized facility access and weak approval chain.\n\n---\n\n### Finding 2: Contractor badge not deactivated within required timeframe after contract end\n- **Related to:** Policy \u00a74.7 (Contractor Badge Deactivation); Provisioning record PROV-0081\n- **Gap:** Janet Yee (CTR-0139, Brightworks Electric) had a contract end date of **2025-11-30**. Policy \u00a74.7 requires deactivation within 1 business day of contract end, with weekly validation by the Facilities Coordinator. As of the evidence provided, the badge remains in **Active** status with no deactivation date recorded. The provisioning record explicitly notes: *\"Contract ended Nov 30 \u2014 badge still active.\"* The weekly validation control failed to detect or remediate this within the required window.\n- **Severity:** **High** \u2014 active credential exists for an off-contract individual; weekly validation control did not function.\n\n---\n\n### Finding 3: Contractor granted access to unauthorized zone (Restricted) without documented approval path\n- **Related to:** Policy \u00a73.2 (Security Zones), \u00a74.3 (Access Level Modifications); Access log ACL-4026, ACL-4032, ACL-4042; Provisioning record PROV-0083\n- **Gap:** Two contractor zone-access concerns:\n  1. **CTR-0145 (Luis Ortega)** is provisioned for *\"General Office, Network Closet\"* (PROV-0083), but the zones table in \u00a73.2 does not define a \"Network Closet\" zone \u2014 the closest defined zone is \"Restricted,\" which requires Infrastructure Director approval. PROV-0083 was approved only by Nina Vasquez (Infrastructure team member, not Director). Log entries ACL-4032 and ACL-4042 show swipes at AP-NET-01 in the Restricted zone.\n  2. **CTR-0139 (Janet Yee)** was authorized for \"General Office, Restricted\" with approval by Natalie Frost (VP Operations) \u2014 but per \u00a73.2, Restricted access requires **Infrastructure Director** approval, not VP Operations. ACL-4026 confirms Restricted-zone access by this contractor.\n- **Severity:** **Medium** \u2014 Restricted-zone authorizations were granted outside the policy-defined approval authority, undermining segregation of approval responsibility.\n\n---\n\n### Finding 4: Inconsistent zone taxonomy between policy and provisioning records\n- **Related to:** Policy \u00a73.2; Provisioning record PROV-0083\n- **Gap:** Provisioning records use the term \"Network Closet\" (PROV-0083) which does not appear in the policy's defined zone classifications (Public / General Office / Restricted / Data Center). This creates ambiguity about which approval authority applies and whether the access is correctly scoped. Standardized zone naming is a foundational requirement for effective zone-based access control.\n- **Severity:** **Low** \u2014 administrative/documentation issue, but contributes to enforcement risk.\n\n---\n\n### Finding 5: Approval authority for Restricted zone access not consistently enforced\n- **Related to:** Policy \u00a73.2, \u00a74.3\n- **Gap:** Across the provisioning sample, Restricted-zone access was approved by varying authorities \u2014 Harrison Cole (CISO) for some, Nina Vasquez (Infrastructure team) for CTR-0145, and Natalie Frost (VP Operations) for CTR-0139. Per \u00a73.2, Restricted access requires **Infrastructure Director** approval. The control design appears understood but is inconsistently executed, indicating insufficient enforcement at the provisioning workflow level (e.g., no system-enforced approval routing).\n- **Severity:** **Medium** \u2014 systemic weakness rather than a single instance.\n\n---\n\n### Finding 6: No evidence of quarterly access review for Q4 2025\n- **Related to:** Policy \u00a74.4 (Quarterly Access Reviews)\n- **Gap:** Policy \u00a74.4 requires the Security Manager to conduct quarterly reviews of all active badges, with stale access deactivated within 5 business days. No quarterly review report, attestation, or evidence of review activity was provided for Q3 or Q4 2025. Had a Q3 review been performed, the CTR-0145 pre-contract activation should have been flagged; a year-end review would catch CTR-0139's continued active status.\n- **Severity:** **Medium** \u2014 required detective control for which no operating evidence was produced.\n\n---\n\n### Finding 7: Visitor management evidence not provided\n- **Related to:** Policy \u00a76.1 (Visitor Procedures)\n- **Gap:** The policy requires pre-registration, photo ID verification, and continuous escort for all visitors, with VIS- prefix red badges. No visitor log, visitor sign-in records, or sample visitor badge issuance evidence was included for the observation period. Without this evidence, the operating effectiveness of the visitor control cannot be confirmed.\n- **Severity:** **Medium** \u2014 control design exists but operating effectiveness is unsubstantiated.\n\n---\n\n### Finding 8: CCTV operating evidence not provided\n- **Related to:** Policy \u00a75.1, \u00a75.2 (CCTV and Monitoring)\n- **Gap:** No evidence was provided to demonstrate CCTV is operational throughout the observation period \u2014 no Milestone XProtect retention reports, no health/uptime confirmation for the Axis cameras, no after-hours alert logs, and no documentation of reception's live monitoring duties. Auditor cannot confirm 90-day retention is being achieved or that motion-detection alerting functions.\n- **Severity:** **Low/Medium** \u2014 likely an evidence-collection gap rather than a true control failure, but must be addressed before a Type II audit.\n\n---\n\n### Finding 9: After-hours exception register does not reconcile to access log\n- **Related to:** Policy \u00a77 (After-Hours Access); After-Hours Exception Register\n- **Gap:** The exception register documents approved after-hours and on-call exceptions, but the badge access log provided contains no after-hours entries (all swipes occur between ~07:48 and ~10:08 local time, within business hours of 7 AM \u2013 7 PM). The auditor cannot reconcile whether after-hours access actually occurred per the approved exceptions, nor can the auditor test for unauthorized after-hours access. The access log appears to be filtered or incomplete for this purpose.\n- **Severity:** **Low** \u2014 likely a sampling/evidence completeness issue; recommend full access log extract for testing.\n\n---\n\n## Items Reviewed and Found Acceptable\n\n- **Termination handling (Andrea Walsh, B-5088):** Properly executed. Termination notice 2025-11-01, badge deactivated same day at 16:30 per PROV-0078, physical badge collected at exit interview. Subsequent attempted swipe on 2025-11-12 (ACL-4038) was correctly denied \u2014 strong evidence the deactivation was effective.\n- **On-call rotation exceptions:** Documented monthly with appropriate Infrastructure Director (Harrison Cole) approval, consistent with \u00a77.3.\n- **One-time after-hours requests:** Approved by appropriate manager-level personnel in advance of the access date, consistent with \u00a77.2.\n- **Environmental monitoring:** All readings within thresholds (<77\u00b0F, <55% humidity); no alerts triggered. Note: environmental data is tangential to CC6.4 (more relevant to A1.2).\n\n---\n\n## Overall Conclusion\n\nCC6.4 is **partially effective** for the Q4 2025 observation period. Control design is generally sound, but operating effectiveness shows recurring weaknesses in **contractor badge lifecycle management** (Findings 1, 2) and **inconsistent enforcement of zone-approval authority** (Findings 3, 5). The absence of operating evidence for the **quarterly access review** (Finding 6), **visitor management** (Finding 7), and **CCTV** (Finding 8) creates additional Type II audit risk. Remediation of Findings 1\u20133 should be prioritized before formal SOC 2 examination."
+}

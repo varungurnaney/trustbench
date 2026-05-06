@@ -1,0 +1,64 @@
+{
+  "audit_metadata": {
+    "title": "Aether Insurance — Log Retention Compliance Audit Q4 2025",
+    "audit_date": "2025-12-28",
+    "auditor": "Automated Retention Compliance Scanner v2.3",
+    "reviewed_by": "Security Operations Team",
+    "scope": "All production log storage across Splunk, S3, and CloudWatch"
+  },
+  "overall_compliance": {
+    "total_log_streams": 24,
+    "compliant": 22,
+    "non_compliant": 1,
+    "informational": 1,
+    "compliance_rate": "91.7%"
+  },
+  "compliant_streams": [
+    {"stream": "cloudtrail-us-east-1", "category": "Infrastructure", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "cloudtrail-eu-west-1", "category": "Infrastructure", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "vpc-flow-logs-us-east-1", "category": "Infrastructure", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "vpc-flow-logs-eu-west-1", "category": "Infrastructure", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "okta-authentication-logs", "category": "Authentication", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "policy-management-app-logs", "category": "Application", "required_retention": "1 year", "actual_retention": "1 year", "storage_tier": "Hot: 90d, Warm: remainder", "status": "Compliant"},
+    {"stream": "policy-management-audit-logs", "category": "Audit", "required_retention": "7 years", "actual_retention": "7 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "policy-management-transaction-logs", "category": "Transaction", "required_retention": "7 years", "actual_retention": "7 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "claims-processing-app-logs", "category": "Application", "required_retention": "1 year", "actual_retention": "1 year", "storage_tier": "Hot: 90d, Warm: remainder", "status": "Compliant"},
+    {"stream": "claims-processing-audit-logs", "category": "Audit", "required_retention": "7 years", "actual_retention": "7 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "claims-processing-transaction-logs", "category": "Transaction", "required_retention": "7 years", "actual_retention": "7 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "underwriting-app-logs", "category": "Application", "required_retention": "1 year", "actual_retention": "1 year", "storage_tier": "Hot: 90d, Warm: remainder", "status": "Compliant"},
+    {"stream": "underwriting-audit-logs", "category": "Audit", "required_retention": "7 years", "actual_retention": "7 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "underwriting-transaction-logs", "category": "Transaction", "required_retention": "7 years", "actual_retention": "7 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "api-gateway-access-logs", "category": "Authentication", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "waf-logs", "category": "Security Event", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "guardduty-findings", "category": "Security Event", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "splunk-alert-logs", "category": "Security Event", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "customer-portal-app-logs", "category": "Application", "required_retention": "1 year", "actual_retention": "1 year", "storage_tier": "Hot: 90d, Warm: remainder", "status": "Compliant"},
+    {"stream": "customer-portal-access-logs", "category": "Authentication", "required_retention": "3 years", "actual_retention": "3 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "admin-portal-audit-logs", "category": "Audit", "required_retention": "7 years", "actual_retention": "7 years", "storage_tier": "Hot: 90d, Warm: 1yr, Cold: remainder", "status": "Compliant"},
+    {"stream": "notification-service-logs", "category": "Application", "required_retention": "1 year", "actual_retention": "1 year", "storage_tier": "Hot: 90d, Warm: remainder", "status": "Compliant"}
+  ],
+  "non_compliant_streams": [
+    {
+      "stream": "claims-adjudication-engine-logs",
+      "category": "Application + Audit (mixed)",
+      "required_retention": "7 years (contains audit data)",
+      "actual_retention": "90 days",
+      "storage_tier": "Hot: 90d only — no warm or cold configured",
+      "status": "Non-Compliant",
+      "details": "The claims adjudication engine (deployed March 2025) writes a single combined log stream containing both application diagnostic logs and adjudication decision audit records (claim decisions, approval/denial rationale, adjuster actions, override justifications). The Splunk index for this stream has a 90-day retention lifecycle policy — the default for 'Application' category logs. However, the stream contains audit records of claims adjudication decisions which are regulatory records requiring 7-year retention. No S3 cold storage archive is configured for this stream. The infrastructure team classified this stream as 'Application' during onboarding, missing the embedded audit data. No exception exists in the exception register.",
+      "data_at_risk": "Claims adjudication decisions including: claim approval/denial with rationale, adjuster override actions with justification, automated decision model outputs, and policyholder dispute resolution records. Approximately 4,200 adjudication decisions per day.",
+      "regulatory_impact": "State insurance regulations require 7-year retention of claims adjudication records. SOX requires 7-year retention of financial decision audit trails. Loss of these records could result in regulatory penalties during state examinations."
+    }
+  ],
+  "informational_items": [
+    {
+      "stream": "document-ocr-processing-logs",
+      "category": "Application",
+      "required_retention": "1 year",
+      "actual_retention": "1 year",
+      "storage_tier": "Hot: 90d, Warm: remainder",
+      "status": "Informational",
+      "details": "Document OCR processing logs include extracted text snippets for debugging purposes. Some snippets may contain PII from insurance documents (names, policy numbers, SSNs). While the retention period is compliant, the PII content in log entries may create a data minimization concern. Recommendation: implement PII redaction in log output."
+    }
+  ]
+}

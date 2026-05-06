@@ -1,0 +1,74 @@
+{
+  "task_id": "pi1.1-5-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:43:57.839277",
+  "score": {
+    "task_id": "pi1.1-5-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "loyalty_tier",
+          "preferred_language",
+          "silently dropped",
+          "schema evolution",
+          "44 days",
+          "record count",
+          "field-level",
+          "DIC-6028",
+          "business team",
+          "not available"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-9112",
+          "floating point",
+          "reconciliation",
+          "false positive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-9101",
+          "SchemaEvolutionHandler",
+          "DIC-6028",
+          "schema evolution"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6721,
+    "output_tokens": 2120
+  },
+  "raw_response": "Below are findings related to PI1.1 (\u201cThe entity uses processing objectives to define what constitutes complete, accurate, and timely processing\u201d), with evidence drawn from the SDLC policy, the integrity check logs, and SAST scan results. The aim is to identify gaps where \"Pass\" on operational checks may mask incompleteness or inaccuracy in processing, especially during schema evolution.\n\n---\n\n### **Finding 1: Processing Logic Silently Drops Valid Data on Schema Change**\n\n**1. Title:**  \n**Silently Dropped Fields on Partner Schema Evolution**\n\n**2. Section(s):**  \n- Data integrity logs (Gamma feed, Nov 15 onward: DIC-6028, DIC-6032, DIC-6035, etc.)  \n- SDLC Policy 6.2, 6.1 (Data Reconciliation, Input Validation)  \n- SAST Finding SQ-9101, SQ-9109\n\n**3. Why it\u2019s a Gap:**  \nThe record counts and reconciliation checks all show \u201cPass\u201d (source = destination, no field-level validation errors). However, when partner 'Gamma' added two new optional fields (loyalty_tier, preferred_language), those fields were present in the feed but dropped (\u201csilently ignored\u201d per log details) because the pipeline schema hadn\u2019t been updated. Neither the automated checks nor the policy detected or surfaced this as an integrity issue.  \n**There is no operational alert, and the business team was unaware this data was now available, so critical partner-provided information is lost for at least 44 days.** This demonstrates that current processing objectives (and their technical enforcement) only measure record counts, not data **completeness** at the field level.\n\n**4. Severity:**  \n**High**  \nProcessing integrity is undermined if the system discards valid incoming data without detection or escalation. There\u2019s a clear disconnect between the *definition* of complete processing (all relevant data received should be processed and available downstream) and the *actual controls* in place (which measure record volume only).\n\n---\n\n### **Finding 2: Static Analysis Reveals Unaddressed Bugs in Schema Evolution Handling**\n\n**1. Title:**  \n**Open Schema Evolution and Null Handling Bugs**\n\n**2. Section(s):**  \n- SAST Scan (SQ-9101, SQ-9109, SQ-9116)\n- SDLC Policy 4.1 (SAST Quality Gate), 6.1 (Input Validation)\n\n**3. Why it\u2019s a Gap:**  \nThe SAST scan highlights an open **High** severity bug in schema evolution (`SchemaEvolutionHandler.java`), where unhandled null values can lead to NPEs when new fields appear. Another bug (SQ-9109) notes TODOs in schema validation specifically related to handling optional fields, and yet another (SQ-9116) points to null assignment on non-null fields. These are known defects directly affecting the pipeline's ability to adapt correctly to changes in source schemas and handle new or null-valued fields robustly.  \n**Although the SDLC policy mandates \u201cschema conformance\u201d as a control, it does not specify field-level completeness or safe evolution handling.** The control as implemented allows drops (\u201cunknown fields are dropped not rejected\u201d), and SAST bugs related to these behaviors remain open well into Q4.\n\n**4. Severity:**  \n**High**  \nOpen bugs in core schema handling pose immediate risk for loss of data integrity every time a partner changes their feed\u2014even when record-level checks pass. Controls for 'complete processing' are technically insufficient and not effectively enforced or monitored.\n\n---\n\n### **Finding 3: Operational Record Counts Equate \u201cCompleteness\u201d with Source=Destination Without Field Validation**\n\n**1. Title:**  \n**Record Count Reconciliation Overlooks Field-Level Data Loss**\n\n**2. Section(s):**  \n- Data integrity logs  \n- SDLC Policy 6.2 (Data Reconciliation)\n- SDLC Policy 5.2 (Staging Validation)\n\n**3. Why it\u2019s a Gap:**  \nThe core processing integrity metrics in use (source_count = destination_count, tolerance 0.01%) only check that each source record yields a destination record. **There is no check that the records themselves contain all available/envisioned fields or that when upstream adds fields, these propagate or are at least flagged.**  \nThe business team asks for loyalty_tier in December and is told \u201cnot available in feed\u201d (DIC-6038), even though it's been supplied since November\u2014nobody noticed that data was needlessly dropped.  \nThe SDLC policy also only requires \u201cschema conformance\u201d in the technical sense (are expected fields present and correctly typed), not that **all relevant data** from partners is preserved or surfaced to downstream systems.\n\n**4. Severity:**  \n**Medium**  \nThis is a design/monitoring gap: \u201ccompleteness\u201d is too narrowly defined, failing to detect meaningful losses in real situations.\n\n---\n\n### **Finding 4: No Escalation or Issue Tracking for Missed Data Due to Schema Drift**\n\n**1. Title:**  \n**No Policy Escalation for Schema Drift or Dropped Fields**\n\n**2. Section(s):**  \n- Data integrity logs (DLQ and schema_conformance events)  \n- SDLC Policy 6.3 (Dead Letter Queue), 3.1 (Code Review)\n\n**3. Why it\u2019s a Gap:**  \nWhile malformed or rejected records go to DLQ and trigger an alert if >100, scenarios where new fields appear (and are silently dropped by Avro) do **not** trigger the DLQ or any alerting/escalation. The logs show the data ops team \u201cacknowledged\u201d the alert only when DLQ thresholds were met\u2014for validation passes, there is no requirement to flag dropped or superfluous fields, nor a workflow to coordinate schema updates with business/data stakeholders.  \n**Schema drift is treated as a non-event by current controls, regardless of impact.** Issue tracking (e.g. JIRA, policy-mandated ticketing for incidents) does not appear to be triggered in these cases.\n\n**4. Severity:**  \n**Medium**  \nThis is a monitoring/workflow gap which enables ongoing undetected loss of information, impacting both data availability and accuracy for business users.\n\n---\n\n### **Finding 5: Dead Letter Queue (DLQ) Policy Adequately Manages Malformed Data But Not Loss Due to Schema Evolution**\n\n**1. Title:**  \n**DLQ Controls Do Not Address Structural Data Loss**\n\n**2. Section(s):**  \n- SDLC Policy 6.3 (Dead Letter Queue)\n- Data integrity log DLQ incidents (DIC-6008, -6017, etc.)\n\n**3. Why it\u2019s a Gap:**  \nThe DLQ is effective for handling and alerting on malformed or explicitly rejected records (e.g., malformed dates, invalid currency)\u2014these cases are reviewed and resolved promptly, in accordance with policy. However, the **DLQ is not used for, nor does it alert on, cases where records are technically valid but contain new fields that are discarded as \u201cunknown\u201d by the pipeline.**  \nThis leaves a substantial blind spot for data loss due to upstream schema change, as long as old required fields are present and valid.\n\n**4. Severity:**  \n**Low**  \nThe stated controls work as designed for \u201cbad records,\u201d but the design does not contemplate more subtle forms of incompleteness (e.g., loss of value from silently dropped fields).\n\n---\n\n### **Finding 6: Known Bugs in Amount Reconciliation Algorithm Might Permit Silent Reconciliation Errors**\n\n**1. Title:**  \n**Amount Reconciliation Uses Inexact Comparison**\n\n**2. Section(s):**  \n- SAST Scan (SQ-9112: Floating point equality)\n- SDLC Policy 6.2 (Data Reconciliation)\n\n**3. Why it\u2019s a Gap:**  \nA medium severity bug (SQ-9112) indicates the amount reconciliation process compares floating point numbers with \"==\", rather than using safe decimal comparison. This could cause false positives (passing reconciliation for values that are \u201calmost equal\u201d due to floating point imprecision) or false negatives. This is a gap in the fidelity of the \u201caccurate processing\u201d objective, not completeness per se, but still impacts assurance.\n\n**4. Severity:**  \n**Medium**  \nWhile record counts may match, monetary amounts may not always be reliably reconciled\u2014potentially hiding financial accuracy issues.\n\n---\n\n## **Summary Table**\n\n| #  | Title                                                 | Section(s)                               | Gap / Issue Summary                                                | Severity |\n|----|-------------------------------------------------------|------------------------------------------|-------------------------------------------------------------------|----------|\n| 1  | Silently Dropped Fields on Partner Schema Evolution   | Logs, Policy 6.2/6.1, SAST SQ-9101/9109 | New fields from partners dropped silently; not detected or alerted | High     |\n| 2  | Open Schema Evolution and Null Handling Bugs          | SAST Scan, Policy 4.1/6.1               | High/medium SAST bugs in schema evolution not urgently addressed   | High     |\n| 3  | Record Count Reconciliation Overlooks Field Loss      | Logs, Policy 6.2/5.2                    | \u201cCompleteness\u201d is record-based; field-level data loss undetected   | Medium   |\n| 4  | No Escalation for Schema Drift or Dropped Fields      | Logs, Policy 6.3/3.1                    | No process for alerting/escalating schema drift/data loss          | Medium   |\n| 5  | DLQ Misses Structural Data Loss                       | Policy 6.3, Logs                        | DLQ only covers malformed records, not schema evolutions           | Low      |\n| 6  | Amount Reconciliation Inexactness                     | SAST Scan, Policy 6.2                   | Float comparison bug may hide reconciliation errors                | Medium   |\n\n---\n\n**Key Remediation Directions:**  \n- Processing objectives must go beyond record counts to require field-level capture and business-level notification when schema changes occur.\n- SAST bugs impacting processing integrity and schema evolution must be prioritized and tracked to closure.\n- DLQ or equivalent monitoring should be redefined to flag silent data loss due to schema drift, not just outright malformed records.\n\n---"
+}

@@ -1,0 +1,89 @@
+{
+  "task_id": "cc6.3-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:44:29.958947",
+  "score": {
+    "task_id": "cc6.3-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "h.nguyen",
+          "9,500",
+          "9,200",
+          "76,000",
+          "OFFSET",
+          "LIMIT",
+          "threshold",
+          "evasion",
+          "customer_profiles"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "auto-resolved",
+          "svc-bi-dashboard",
+          "human review",
+          "4 hours",
+          "Section 5.3"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "EXP-Q4-2025-008",
+          "retroactive",
+          "25,000",
+          "client_engagement_metrics"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "per-query",
+          "threshold",
+          "10,000",
+          "cumulative",
+          "Section 5.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 9676,
+    "output_tokens": 4198
+  },
+  "raw_response": "# CC6.3 Readiness Assessment \u2014 Meridian Insights DLP Controls\n\n## Overall Assessment\n\nThe DLP control framework is well-designed on paper (Policy POL-DLP-2025-002 v2.8) with clear thresholds, approval chains, and automated alerting. However, evidence review reveals **several material control failures**, most notably an export executed prior to approval, a paginated extraction that appears designed to evade DLP thresholds, and systemic weaknesses in service account governance and alert review timeliness.\n\n---\n\n## Finding 1: Export Executed Prior to Approval (Policy Bypass)\n\n**Title:** Bulk export of 25,000 rows executed before required CISO approval was obtained\n\n**Policy Reference:** Section 5.1 (\"Approval must be obtained prior to export execution\") and Section 4.3 (Confidential data approval chain)\n\n**Gap:** \n- DLP-Q4-2025-021 / EXP-Q4-2025-008: User `c.mendez` executed a `SELECT INTO s3://...` export of 25,000 rows from `client_engagement_metrics` (Confidential) on **2025-12-08 16:30**.\n- Manager approval: 2025-12-08; Data Owner approval: 2025-12-10; CISO approval: **2025-12-11** \u2014 three days *after* the data had already left the production database.\n- Despite this being a clear policy violation, the DLP disposition was recorded as \"Under Review \u2014 Ticket Pending\" rather than escalated as a confirmed unauthorized export. The notes acknowledge the issue but no remediation, access suspension, or incident ticket is referenced.\n- Section 5.3 requires escalation to CISO when \"no approval exists\" at the time of review \u2014 that condition was met on Dec 8, yet the alert was not escalated.\n\n**Severity:** **Critical** \u2014 Confidential client data was exfiltrated to S3 prior to authorization, and the control responded by retroactively rubber-stamping the export rather than treating it as an incident.\n\n---\n\n## Finding 2: Paginated Query Pattern Evading DLP Threshold\n\n**Title:** User extracted 76,000 rows of customer_profiles via 8 paginated queries, none of which triggered DLP alerts; no export approval ticket exists\n\n**Policy Reference:** Section 5.1 (Bulk Export Authorization, >10,000 row tier) and Section 5.2 (DLP Alerting threshold)\n\n**Gap:**\n- On 2025-11-12, user `h.nguyen` executed 8 sequential `SELECT * FROM customer_profiles LIMIT 9500 OFFSET ...` queries within session SES-1012 over ~90 minutes, totaling ~76,000 rows of customer data (note: customer_profiles is treated as Restricted-class based on EXP-Q4-2025-006).\n- Each query returned 9,200\u20139,500 rows \u2014 deliberately beneath the 10,000-row DLP alert threshold.\n- **No DLP alert was generated** because the rule (Section 5.2) is per-query, not per-session or cumulative.\n- **No export approval ticket exists** for this activity. EXP-Q4-2025-004 (h.nguyen's only Q4 ticket prior) covered 10,500 rows from a different table (`client_engagement_metrics`).\n- This pattern is either intentional evasion or, at minimum, demonstrates that the DLP rule design is trivially defeatable. The audit log notes (\"batch X of 8\") indicate the user was aware they were performing a bulk extraction.\n\n**Severity:** **Critical** \u2014 Demonstrable circumvention of bulk export controls with no detection, no approval, and no follow-up review.\n\n---\n\n## Finding 3: Service Account Auto-Resolution Without Human Review\n\n**Title:** Service account DLP alerts auto-resolved within 2 minutes with no human verification\n\n**Policy Reference:** Section 5.3 (\"All DLP alerts must be reviewed by a Security Analyst within 4 hours\u2026 Verify\u2026 Check for\u2026 export approval ticket\u2026 Document disposition\")\n\n**Gap:**\n- 19 of 27 Q4 DLP alerts were auto-resolved against service accounts (`svc-bi-dashboard`, `svc-etl-pipeline`) within 2 minutes, all marked \"Auto-Resolved \u2014 Known Service Account.\"\n- The policy makes **no provision for an auto-resolution exception**. Section 5.3 mandates Security Analyst review of *all* alerts.\n- `svc-etl-pipeline` performs a weekly `SELECT * FROM customer_profiles` (47,000 rows) \u2014 a recurring high-volume export of Restricted data with no corresponding approval ticket on file. There is no documented business owner, scope justification, or periodic recertification of this service account's privileges.\n- This represents both a **policy compliance gap** (auto-resolution not authorized) and a **least-privilege gap** (CC6.3 requires periodic justification of access; no evidence provided).\n\n**Severity:** **High**\n\n---\n\n## Finding 4: Alert Review SLA Exceeded for Multiple High-Severity Alerts\n\n**Title:** Several DLP alerts reviewed within 4 hours but disposition documentation suggests rushed/insufficient review\n\n**Policy Reference:** Section 5.3 (4-hour SLA and required review steps)\n\n**Gap:**\n- Reviews of `a.santos`, `m.chen`, and `h.nguyen` alerts ranged from ~90 minutes to 2.5 hours \u2014 within SLA \u2014 but in several cases the export approval ticket was *cited* as verification when the ticket was approved on the same day or after the query (e.g., DLP-Q4-2025-002 cites EXP-Q4-2025-001, but the export ticket Data Owner approval is 2025-10-04, **one day after** the query on 2025-10-03).\n- Similar timing inconsistencies appear for DLP-Q4-2025-006 (query 2025-10-17; CISO approval 2025-10-17 same day \u2014 appears OK but ticket submitted 2025-10-15, suggesting query may have preceded final approval).\n- Reviewers do not appear to be validating the *temporal sequence* required by Section 5.1.\n\n**Severity:** **High**\n\n---\n\n## Finding 5: Inadequate Segregation of Duties in Approval Chain\n\n**Title:** Patricia Wolfe serves as both Data Owner and CISO for the same export approvals\n\n**Policy Reference:** Section 4.3 (Approval Chain) and CC6.3 segregation-of-duties principle\n\n**Gap:**\n- On EXP-Q4-2025-003, EXP-Q4-2025-006, EXP-Q4-2025-007, EXP-Q4-2025-008, and EXP-Q4-2025-010, **Patricia Wolfe approved as both Data Owner and CISO**, collapsing what the policy presents as a two-person approval into a single approver.\n- The policy implies independent layers of review for Confidential/Restricted data; combining them defeats the segregation-of-duties intent of CC6.3.\n- No documented compensating control or formal delegation explains this dual role.\n\n**Severity:** **High**\n\n---\n\n## Finding 6: DLP Threshold Calibration and Cumulative-Volume Blind Spot\n\n**Title:** DLP rule design only evaluates single queries, missing session-level and daily-cumulative bulk access\n\n**Policy Reference:** Section 5.2 (Automated DLP Alerting)\n\n**Gap:**\n- The 10,000-row, single-query threshold is the only quantitative trigger. As demonstrated by Finding 2, this is easily defeated by pagination.\n- No rule for: (a) cumulative rows per session, (b) cumulative rows per user per day, (c) repeated sub-threshold queries against the same Restricted table, or (d) full-table scans regardless of row count.\n- The threshold is also misaligned with policy 5.1, which requires approval for exports of *any* size (>1,000 rows tier exists) but DLP only alerts at >10,000 rows \u2014 leaving the 1,000\u201310,000 row tier with no automated detection.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 7: Missing Export Approval Tickets for Restricted-Class Service Account Activity\n\n**Title:** No documented authorization for recurring 47,000-row customer_profiles ETL extraction\n\n**Policy Reference:** Section 5.1 and Section 4.1 (Least Privilege)\n\n**Gap:**\n- `svc-etl-pipeline` extracts the entire `customer_profiles` table weekly. No standing export authorization, exception (Section 8), or scope-of-use record was provided.\n- Under Section 8, exceptions must be CISO-approved with compensating controls and 6-month maximum duration with quarterly review \u2014 none of which is evidenced.\n- Without documented authorization or scope, this constitutes ungoverned bulk movement of (likely) Restricted data, regardless of its operational legitimacy.\n\n**Severity:** **High**\n\n---\n\n## Finding 8: c.mendez Not in Documented Workforce/Role Records\n\n**Title:** User c.mendez appears only once in Q4 (the unauthorized export) with no prior baseline of activity\n\n**Policy Reference:** CC6.3 \u2014 authorization based on roles and responsibilities\n\n**Gap:**\n- `c.mendez` has no other Q4 query activity in the audit log but was able to execute a 25,000-row `SELECT INTO s3://...` to a Confidential table on first appearance. This raises questions about how access was provisioned, whether the role is appropriate, and whether onboarding included DLP-policy training.\n- Auditor was not provided with role assignment or access-grant records to corroborate authorization.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 9: After-Hours / Outside-Business-Hours Detection Not Evidenced\n\n**Title:** No alerts demonstrate Section 5.2 third trigger (\"data access outside 7 AM\u20137 PM EST for non-service accounts\")\n\n**Policy Reference:** Section 5.2 third bullet\n\n**Gap:**\n- All Q4 alerts in the log are bulk-volume alerts. No after-hours alert appears in the evidence \u2014 either the rule is not firing, the rule is not implemented, or no after-hours access occurred (unlikely over 90 days). \n- DLP-Q4-2025-021 occurred at 16:45 \u2014 within hours \u2014 but several `svc-*` queries occur outside the 7\u201319 window without alerting (which is permitted, since they are service accounts). The auditor cannot verify the after-hours rule is operational.\n\n**Severity:** **Low** (insufficient evidence rather than confirmed gap)\n\n---\n\n## Finding 10: Monthly DLP Trend Review by CISO Not Evidenced\n\n**Title:** No documentation of monthly DLP trend reviews or weekly SOC trend reports\n\n**Policy Reference:** Section 6 (monthly CISO review of DLP alert trends) and Section 7 (weekly SOC trend report)\n\n**Gap:**\n- Policy mandates two recurring management-review activities. Neither was provided as evidence. Without these, repeated patterns (such as Finding 2's paginated extraction or Finding 1's policy bypass) are unlikely to surface for management remediation.\n\n**Severity:** **Medium**\n\n---\n\n## Summary of Severity\n\n| Severity | Count | Findings |\n|---|---|---|\n| Critical | 2 | #1, #2 |\n| High | 3 | #3, #4, #5, #7 *(4)* |\n| Medium | 3 | #6, #8, #10 |\n| Low | 1 | #9 |\n\n## Auditor's Conclusion\n\n**CC6.3 is not operating effectively as designed for the Q4 2025 period.** The combined evidence of (a) an unauthorized 25,000-row export with retroactive approval, (b) an undetected 76,000-row paginated extraction, (c) auto-resolved service-account alerts without human verification, and (d) collapsed segregation of duties in the approval chain demonstrates that bulk-export controls can be \u2014 and have been \u2014 circumvented without effective detection or response. **A qualified opinion is warranted** absent significant remediation. Recommended remediation should include: cumulative/session-based DLP rules, formal service-account governance with documented data-owner authorization, removal of dual-role approvals, mandatory pre-execution approval gating (technical enforcement, not policy reliance), and incident-response treatment of any post-hoc approvals."
+}

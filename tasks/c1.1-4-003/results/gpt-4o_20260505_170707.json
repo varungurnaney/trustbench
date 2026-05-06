@@ -1,0 +1,74 @@
+{
+  "task_id": "c1.1-4-003",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-05T17:07:07.902129",
+  "score": {
+    "task_id": "c1.1-4-003",
+    "model": "gpt-4o",
+    "scoring_method": "f1",
+    "recall": 0.3333333333333333,
+    "precision": 0.08333333333333333,
+    "f1": 0.13333333333333333,
+    "score": 0.13333333333333333,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "pag_prod_support",
+          "requester_email",
+          "requester_name",
+          "plaintext",
+          "Restricted",
+          "field-level encryption"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "Confidential",
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3681,
+    "output_tokens": 472
+  },
+  "raw_response": "Based on the evidence provided and the requirements outlined in the data classification and handling policy, here's a summary of findings related to compliance with Control C1.1:\n\n### Finding 1: Lack of Encryption for Certain Restricted Data Columns\n\n1. **Title:** Lack of Encryption for Requester Email and Requester Name\n2. **Section:** Database encryption status report\n3. **Why it's a Gap:** According to the policy under Section 5.2, all Restricted data must be encrypted at rest. However, the \"requester_email\" and \"requester_name\" columns in the \"pag_prod_support\" database, which are classified as Restricted, are not encrypted. These fields are stored in plaintext which violates the encryption requirements for Restricted data classification as outlined in the policy.\n4. **Severity:** High\n\n### Finding 2: Unaddressed Encryption Configuration for Report Cache\n\n1. **Title:** Absence of Specific Encryption Measures for Report Cache\n2. **Section:** Database encryption status report\n3. **Why it's a Gap:** Although the policy requires encryption for Confidential data at rest, the \"report_data\" column in the \"pag_prod_reporting.report_cache\" appears neither field-level encrypted nor specifically mentioned in the provided exception documentation indicating that field-level encryption is unnecessary for this column due to the aggregated nature of the data. Without adequate compensating controls explicitly documented for field-level encryption, this is a potential gap in covering policy nuances.\n4. **Severity:** Medium\n\n### Finding 3: Documentation on Encryption of Non-PII Columns in Production Environments\n\n1. **Title:** Lack of Encryption Justifications for Non-PII Confidential Data at Rest\n2. **Section:** Database encryption status report\n3. **Why it's a Gap:** Sections of the database report indicate some columns with Confidential classification (like \"orders.total_amount\") are not encrypted at the field level. Although the policy does not explicitly require it for non-PII Confidential data if KMS encryption is enabled, it would be beneficial to specify exceptions or justifications within the policy for clarification and traceability.\n4. **Severity:** Low\n\nThese findings should be addressed to ensure compliance with the data classification policy, thereby supporting adherence to the SOC 2 confidentiality criteria. The presence of well-documented exceptions and regular reviews significantly mitigate the potential impact of these findings."
+}

@@ -1,0 +1,89 @@
+{
+  "id": "cc1.1-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.1",
+  "control_description": "The entity demonstrates a commitment to integrity and ethical values.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/information-security-policy.md",
+      "type": "policy",
+      "description": "Meridian Healthcare Solutions information security policy covering access control, data protection, and incident response"
+    },
+    {
+      "path": "evidence/code-of-conduct.md",
+      "type": "policy",
+      "description": "Company code of conduct establishing ethical standards and behavioral expectations"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Meridian Healthcare Solutions covering the audit period January 1 - December 31, 2025. Review the provided governance documentation and assess compliance with CC1.1 (Commitment to Integrity and Ethical Values). Evaluate whether the organization has established adequate governance structures, oversight mechanisms, and policy management practices. Identify any gaps or deficiencies that an auditor would flag.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No security committee or governance body charter exists",
+      "description": "There is no security committee charter, security steering committee, or equivalent governance body documented in the provided evidence. The information security policy references the CISO and IT Security team in operational roles (Section 4) but does not establish a cross-functional governance committee responsible for security oversight, strategic direction, or policy approval at the organizational level. SOC 2 CC1.1 expects the entity to demonstrate board-level or senior management oversight of integrity and security commitments. Without a governance committee, there is no structured mechanism for cross-functional accountability or escalation of security governance matters.",
+      "evidence_sources": ["evidence/information-security-policy.md"],
+      "expected_reasoning": "Review information security policy Section 4 (Roles and Responsibilities) — lists CISO and IT Security Team but no governance committee or steering body. No separate committee charter document exists. CC1.1 requires demonstrated oversight structure.",
+      "detection_criteria": {
+        "required_keywords": ["no committee", "no charter", "governance", "oversight", "steering", "cross-functional", "board"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Information security policy has no defined review cycle or next review date",
+      "description": "The information security policy (POL-ISEC-001 v1.3) was approved on June 15, 2024 but contains no next review date, no review cycle (annual, semi-annual), and no policy review schedule. The approval block at the bottom of the document shows only 'Approved by' and 'Approval Date' with no 'Next Review Date' field. SOC 2 CC1.1 requires that policies governing integrity and ethical values are periodically reviewed and updated. Without a defined review cycle, there is no mechanism to ensure the policy remains current and aligned with organizational changes.",
+      "evidence_sources": ["evidence/information-security-policy.md"],
+      "expected_reasoning": "Check the policy metadata and approval block — effective date June 15, 2024, but no 'Next Review Date' or review cycle defined anywhere in the document. Compare to the code of conduct which at least has a 'Last Revised' date. The security policy lacks any review governance.",
+      "detection_criteria": {
+        "required_keywords": ["no review date", "no review cycle", "review schedule", "periodic review", "policy review", "current", "outdated"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Security policy approved by VP of IT rather than CISO or executive leadership",
+      "description": "The information security policy is approved by David Chen, VP of Information Technology, rather than the CISO or a C-level executive. While the policy defines the CISO role (Section 4.1) as responsible for 'approving security policies and standards,' the document itself is approved by the VP of IT. This creates a contradiction: the CISO is stated to be the policy approver but did not approve this foundational policy. This raises questions about the CISO's authority and the governance hierarchy for security.",
+      "evidence_sources": ["evidence/information-security-policy.md"],
+      "expected_reasoning": "Policy Section 4.1 states the CISO is responsible for 'approving security policies and standards' but the approval block shows David Chen, VP of IT, as the approver — not the CISO. This is an internal inconsistency that undermines the defined governance structure.",
+      "detection_criteria": {
+        "required_keywords": ["VP of IT", "CISO", "approver", "approved by", "inconsistency", "authority", "governance hierarchy"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Code of conduct lacks a whistleblower hotline or anonymous reporting mechanism",
+      "description": "The code of conduct (Section 4) describes reporting concerns through an 'Open Door Policy' where employees raise issues with their manager, HR, or the Compliance team. However, there is no anonymous reporting mechanism, whistleblower hotline, or third-party ethics reporting channel. SOC 2 CC1.1 expects entities to provide mechanisms for personnel to report suspected violations anonymously without fear of retaliation. While Section 4.2 addresses non-retaliation, the absence of an anonymous channel may discourage reporting of concerns involving the employee's direct manager or HR personnel.",
+      "evidence_sources": ["evidence/code-of-conduct.md"],
+      "expected_reasoning": "Code of conduct Section 4.1 only provides reporting to manager, HR, or Compliance team — all identifiable channels. No anonymous hotline, third-party ethics line, or whistleblower mechanism. Section 4.2 mentions non-retaliation but without anonymous channels, employees may still fear identification.",
+      "detection_criteria": {
+        "required_keywords": ["anonymous", "whistleblower", "hotline", "reporting mechanism", "third-party", "ethics line", "reporting channel"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["governance", "security_committee", "policy_review", "code_of_conduct", "whistleblower", "single_document"]
+  }
+}

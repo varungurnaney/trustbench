@@ -1,0 +1,79 @@
+{
+  "task_id": "cc6.6-5-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T19:05:25.512847",
+  "score": {
+    "task_id": "cc6.6-5-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "admin tool",
+          "bypass",
+          "WAF",
+          "Kong",
+          "SEC-EXC-2024-018",
+          "WebSocket",
+          "compensating controls",
+          "VPN",
+          "customer data export",
+          "schema validation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "admin audit logs",
+          "CloudWatch",
+          "Splunk",
+          "SIEM",
+          "TV-MRD-2025-003",
+          "anomaly detection",
+          "correlation",
+          "not forwarded"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "10.0.4.15",
+          "internal-cron",
+          "VPN",
+          "100.64.0.0/10",
+          "non-VPN"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3338,
+    "output_tokens": 3371
+  },
+  "raw_response": "## Overall CC6.6 Assessment\n\nMeridian has a strong standard boundary architecture for customer-facing services: Internet \u2192 CloudFront \u2192 WAF \u2192 Kong API Gateway \u2192 Internal ALB. The penetration test confirms that the 14 customer-facing services generally follow this model and that the layered controls are effective against common external threats.\n\nHowever, CC6.6 is **not fully met / not fully ready** for the Q4 2025 observation period because the internal admin tool is a production service with privileged functionality and customer data access, yet it bypasses the defined boundary stack. The compensating controls \u2014 Tailscale VPN, Okta SSO/MFA, RBAC, and CloudWatch audit logs \u2014 reduce risk, but they do not fully replace WAF inspection, Kong authentication/rate limiting/schema validation/anomaly detection, or centralized SIEM monitoring.\n\nNo evidence suggests a critical exposure to the public internet, but the control design and operation have several gaps that should be remediated before audit reliance.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Admin tool bypasses required boundary stack** | **Policy MRD-SEC-POL-011 Sections 3.1, 3.2, 3.3**; **Network Architecture Sections 3.2, 3.4**; **Pen Test Finding TV-MRD-2025-001** | The policy requires all production traffic, including internal services, to traverse CloudFront, WAF, Kong API Gateway, and internal ALB. The admin tool instead follows a direct path: Tailscale VPN \u2192 Internal ALB \u2192 Admin Service. This bypasses WAF application-layer inspection, Kong schema validation, Kong rate limiting, centralized API logging, and anomaly detection. The admin tool performs privileged operations such as customer suspension, feature flag changes, rate-limit updates, scaling changes, and customer data exports. VPN, SSO/MFA, and RBAC are meaningful compensating controls, but they do not fully address the risk of malicious payloads or anomalous activity after credential/session compromise. | **Medium** |\n| 2 | **Security exception for admin bypass does not appear compliant with exception policy** | **Policy Sections 4.1, 4.2**; **Network Architecture Section 5**; **Pen Test Finding TV-MRD-2025-001** | The policy requires boundary exceptions to have VP-level approval, CISO acknowledgment, documented compensating controls, quarterly review, and a maximum 12-month duration. The architecture document states exception **SEC-EXC-2024-018** was filed in March 2024 and remains active in Q4 2025, with last review in September 2025 and next review in March 2026. That suggests the exception may exceed the 12-month maximum and is being reviewed semiannually rather than quarterly. Evidence of VP-level approval, current renewal, and quarterly compensating control verification was not provided. | **Medium** |\n| 3 | **Admin tool audit logs are not forwarded to SIEM or subject to centralized anomaly detection** | **Policy Sections 3.3 and 5.1**; **Network Architecture Section 3.3**; **Pen Test Finding TV-MRD-2025-003** | The policy states Kong is responsible for centralized audit logging and anomaly detection, and boundary logs should be forwarded to Splunk. Because the admin tool bypasses Kong, its actions are logged only to CloudWatch and are not forwarded to Splunk SIEM. This weakens monitoring of privileged administrative activity and prevents correlation with other security events. Given that the admin tool already bypasses WAF and Kong, centralized monitoring is an especially important compensating control. | **Medium** |\n| 4 | **Webhook endpoint lacks required per-source rate limiting** | **Policy Section 3.3**; **Network Architecture Section 2**; **Pen Test Finding TV-MRD-2025-002** | Kong is defined as the enforcement point for rate limiting per client/IP. The penetration test found that `webhooks.meridian.io` does not enforce per-IP rate limiting beyond WAF\u2019s global rate limit of 2,000 requests/minute. This leaves the webhook processing queue vulnerable to high-volume valid-looking requests from distributed sources. The finding was still marked \u201cRemediation in Progress,\u201d and no Q4 remediation evidence was provided. | **Medium** |\n| 5 | **Non-VPN/internal source observed in admin tool logs requires clarification and control evidence** | **Policy Sections 3.1 and 3.2**; **Admin Tool Access Logs dated 2025-12-18** | Most admin log entries originate from `100.64.0.0/10`, consistent with Tailscale VPN. However, one entry shows `internal-cron@meridian.io` accessing the admin tool from `10.0.4.15`. This may be a legitimate internal service account or scheduled job, but the evidence does not show whether this path is documented, whether it is covered by the security exception, whether it uses equivalent authentication/authorization controls, or whether it should traverse Kong. This creates a readiness evidence gap and potential lateral-movement concern if internal hosts can reach admin functionality directly. | **Low** |\n\n---\n\n## Auditor Conclusion\n\nMeridian\u2019s standard boundary architecture is appropriately designed and appears effective for the majority of customer-facing services. However, the admin tool exception is significant because it involves a privileged production service, customer data access, and operational control functions.\n\nFor CC6.6 readiness, Meridian should remediate or formally strengthen the admin tool exception before the audit period by:\n\n- Migrating the admin tool behind Kong, now that WebSocket support is available;\n- Enforcing WAF/Kong controls or equivalent compensating controls;\n- Forwarding admin audit logs to Splunk with anomaly detection;\n- Revalidating the exception through the required approval, duration, and quarterly review process;\n- Closing the webhook rate-limiting issue; and\n- Documenting/controlling the `internal-cron` access path.\n\nBased on the evidence provided, CC6.6 should be assessed as **partially effective but not fully operating as designed** for Q4 2025."
+}

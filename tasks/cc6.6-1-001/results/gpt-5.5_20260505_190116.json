@@ -1,0 +1,87 @@
+{
+  "task_id": "cc6.6-1-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T19:01:16.891042",
+  "score": {
+    "task_id": "cc6.6-1-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.23529411764705882,
+    "f1": 0.38095238095238093,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 17,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "subnet",
+          "public",
+          "private",
+          "boundary",
+          "segmentation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "environment",
+          "production",
+          "staging",
+          "development"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAF",
+          "web application firewall",
+          "IDS",
+          "IPS",
+          "SQL injection"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "should",
+          "where feasible",
+          "internal",
+          "encryption",
+          "must",
+          "PHI",
+          "permissive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 644,
+    "output_tokens": 2161
+  },
+  "raw_response": "## Overall Assessment\n\nThe Orion Health Network Security Policy **partially addresses SOC 2 CC6.6** by defining several important boundary protections, including use of public/private subnets, prohibition of direct internet access to application instances, TLS for external endpoints, VPN with MFA for administrative access, and VPC Flow Logs.\n\nHowever, the policy is **not sufficient by itself** to fully demonstrate that Orion Health has implemented logical access security measures to protect system boundaries from external threats. An auditor would likely flag several missing or under-specified controls, especially around web application protection, firewall rule governance, network segmentation, monitoring/alerting, and external threat detection.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | No Web Application Firewall Requirement | Sections 3.3, 4.1 | The policy requires internet traffic to pass through an Application Load Balancer, but it does not require a Web Application Firewall, such as AWS WAF, to protect against common external attacks including SQL injection, cross-site scripting, bot traffic, malicious payloads, and OWASP Top 10 threats. For a patient-facing healthcare application, this is a notable omission. | High |\n| 2 | No DDoS Protection Requirements | Sections 3.3, 6 | The policy does not mention protection against distributed denial-of-service attacks. There is no requirement for AWS Shield, rate limiting, CDN protections, traffic throttling, or DDoS incident response procedures. CC6.6 expects controls that protect system boundaries from external threat sources, and DDoS is a common boundary threat. | High |\n| 3 | Firewall and Security Group Review Process Not Defined | Section 3.3 | The policy states that security group rules must follow least privilege, but it does not define how rules are reviewed, approved, monitored, or periodically recertified. There is no required cadence for reviewing public ingress rules, overly permissive CIDR ranges, or stale firewall rules. | Medium |\n| 4 | No Explicit Default-Deny Boundary Control Standard | Section 3.3 | While least privilege is referenced, the policy does not explicitly require default-deny inbound access at network boundaries. It also does not prohibit broad public access, such as `0.0.0.0/0`, except where specifically justified for approved public services. | Medium |\n| 5 | No Explicit Prohibition of Publicly Accessible Databases or Management Ports | Sections 3.2, 3.3 | The policy says databases reside in private subnets and direct application instance access from the internet is prohibited, but it does not explicitly prohibit public exposure of databases, SSH, RDP, Kubernetes APIs, admin consoles, or cloud management interfaces. Auditors often expect clear restrictions on exposing administrative and data services to the internet. | High |\n| 6 | Network Segmentation Between Environments Not Fully Defined | Section 3.1, 3.2 | The policy lists production, staging, and development environments but does not state whether they are logically isolated from one another using separate AWS accounts, VPCs, subnets, routing controls, or security groups. It also does not define restrictions on connectivity between non-production and production environments. | Medium |\n| 7 | Internal Encryption Language Is Weak | Section 4.2 | Internal service-to-service communication \u201cshould use encrypted channels where feasible.\u201d This is discretionary language and does not establish a clear requirement. For environments handling PHI, auditors would expect stronger language requiring encryption in transit for internal traffic unless a documented exception is approved. | Medium |\n| 8 | VPN Access Requirements Are Under-Specified | Section 5 | The policy requires VPN with MFA for administrative access but does not define who is eligible for VPN access, approval requirements, access review frequency, device posture requirements, session timeout requirements, split tunneling restrictions, or whether privileged access is further restricted through bastion hosts or just-in-time access. | Medium |\n| 9 | Monitoring Requirements Lack Alerting and Response Criteria | Section 6 | The policy states that VPC Flow Logs are forwarded to the SIEM, but it does not define required alerts, detection use cases, escalation procedures, or response expectations for external threats. Logging alone does not demonstrate active monitoring or protection. | Medium |\n| 10 | No IDS/IPS or Threat Detection Requirement | Section 6 | The policy does not require intrusion detection or prevention capabilities, such as AWS GuardDuty, IDS/IPS, threat intelligence feeds, anomaly detection, or managed detection and response. CC6.6 focuses on protection against external threats, and detection of malicious traffic is a key supporting control. | Medium |\n| 11 | Egress Filtering Is Not Addressed | Sections 3.2, 3.3 | The policy focuses on inbound traffic but does not define outbound traffic restrictions from private subnets or workloads. There is no requirement to limit outbound connections, use approved NAT gateways, restrict access to known destinations, or monitor suspicious egress traffic. This can affect containment of compromised systems and data exfiltration prevention. | Medium |\n| 12 | NACL Requirements Are Not Defined | Section 2, 3.3 | Network ACLs are included in scope, but the policy does not specify when or how NACLs should be used, what baseline rules are required, or how they complement security groups. This creates ambiguity in boundary enforcement expectations. | Low |\n| 13 | TLS Configuration Requirements Are Incomplete | Section 4.1 | The policy requires TLS 1.2 or higher and ACM-managed certificates, but it does not define minimum cipher standards, certificate rotation expectations, HSTS requirements, weak protocol prohibition, or periodic external TLS scanning. | Low |\n| 14 | No External Vulnerability Scanning Requirement | Sections 3.3, 6 | The policy does not require periodic external vulnerability scans of internet-facing endpoints, load balancers, APIs, or exposed cloud assets. Vulnerability scanning helps validate that boundary protections are operating effectively and that no unintended services are exposed. | Medium |\n| 15 | No Cloud Boundary Configuration Monitoring | Sections 3.3, 6 | The policy does not require automated checks or alerts for risky configuration changes, such as opening security groups to the internet, creating public S3 buckets, exposing databases, or modifying routing tables. Without configuration monitoring, boundary control drift may not be detected promptly. | Medium |\n| 16 | No Exception Management Process | Sections 3.3, 4.2, 5 | The policy does not define how exceptions to network security requirements are requested, approved, documented, time-bound, or reviewed. For example, if internal encryption is deemed infeasible or a broad firewall rule is needed temporarily, there is no stated governance process. | Low |\n| 17 | No Evidence of Actual Implementation | Entire Document | The policy describes intended requirements, but it does not provide implementation evidence such as network diagrams, security group exports, AWS Config rules, WAF configuration, VPN configuration, SIEM alerts, or firewall rule review records. For SOC 2 testing, policy alone would not be sufficient to demonstrate operating effectiveness. | Medium |\n\n---\n\n## Summary\n\nThe policy establishes a reasonable foundation for network boundary security, especially around subnet design, TLS, VPN MFA, and VPC Flow Logs. However, to more fully satisfy **SOC 2 CC6.6**, Orion Health should enhance the policy to include explicit requirements for:\n\n- Web application firewall protection  \n- DDoS protection  \n- IDS/IPS or cloud threat detection  \n- Firewall rule approval and periodic review  \n- Stronger segmentation between production and non-production  \n- Explicit prohibition of public administrative and database access  \n- Egress filtering and monitoring  \n- Required encryption for internal service traffic  \n- External vulnerability scanning  \n- Security alerting and incident response expectations  \n- Exception management and configuration monitoring  \n\nAs written, the policy would likely be assessed as **partially designed but incomplete** for CC6.6 readiness."
+}

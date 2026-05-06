@@ -1,0 +1,74 @@
+{
+  "task_id": "cc8.1-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:33:00.729343",
+  "score": {
+    "task_id": "cc8.1-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "async",
+          "email",
+          "CAB meeting",
+          "cancelled",
+          "CHG-806",
+          "CHG-808",
+          "CHG-810"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-810",
+          "High risk",
+          "async email",
+          "Anya Volkov",
+          "QA Director",
+          "PTO"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "cancelled",
+          "Veterans Day",
+          "Thanksgiving",
+          "all-hands",
+          "cadence"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5382,
+    "output_tokens": 2734
+  },
+  "raw_response": "# CC8.1 Change Management Readiness Assessment \u2014 Q4 2025\n\n## Executive Summary\n\nApex Cloud Solutions demonstrated generally strong change management discipline in Q4 2025: all 11 changes had ServiceNow tickets, testing evidence, peer review, segregation of duties between developers and deployers, post-implementation verification, and a 100% deployment success rate. However, the organization's response to three cancelled CAB meetings exposed a **policy gap**: the change management policy (POL-CHG-021 v4.0) does not contemplate asynchronous approval as a valid mechanism, yet the organization used it three times in the quarter. This creates a control deviation regardless of whether the underlying decision-making was sound.\n\nFindings below are ordered by severity.\n\n---\n\n## Finding 1: Async email approval is not authorized by policy\n\n**Section:** Policy \u00a73.3 (Change Advisory Board) vs. Change Log CHG-806, CHG-808, CHG-810\n\n**Gap:** POL-CHG-021 \u00a73.3 states \"The CAB meets weekly on Tuesdays at 2:00 PM ET to review and approve Normal changes\" and defines quorum as \"VP Engineering + at least 2 other CAB members must be present\" \u2014 language that presumes a synchronous meeting. The policy contains no provision authorizing asynchronous, email-based approval as an alternative when CAB meetings are cancelled. Three Normal changes (one of them High risk) were approved via email threads with no policy basis. Even if the operational substance was sound, an SOC 2 auditor will note that the control was not executed as designed and documented. This is a control design gap, not merely an execution issue.\n\n**Severity:** **High**\n\n**Recommended remediation:** Amend POL-CHG-021 to formally define an \"Async CAB Approval\" process \u2014 including initiation criteria (e.g., scheduled CAB cancelled), required quorum, response deadlines, escalation for non-response, and documentation requirements. Backdate-acknowledge the Q4 instances via a memo from the policy owner.\n\n---\n\n## Finding 2: CHG-810 (High risk) approved without QA representation while CAB member on PTO\n\n**Section:** Email thread for CHG-810; Policy \u00a73.3 (CAB Membership)\n\n**Gap:** CHG-810 is a High-risk change to a public production endpoint. It was approved by 3 of 4 CAB members; Anya Volkov (QA Director) did not respond because she was on PTO. Under a synchronous CAB, the literal quorum rule (VP Eng + 2 others) would have been met \u2014 but the policy never contemplates a single CAB member's expertise being entirely absent from a High-risk decision. There is no evidence that:\n- A delegate or alternate QA approver was designated,\n- The thread was held open until Anya returned, or\n- The risk of proceeding without QA review was explicitly acknowledged.\n\nFor High-risk changes, an auditor would expect QA sign-off or a documented compensating control.\n\n**Severity:** **High**\n\n**Recommended remediation:** Define named alternates for each CAB role; require all four functional perspectives (Eng, SRE, Security, QA) for High-risk changes regardless of synchronous vs. async; document explicit risk acceptance when a function is unrepresented.\n\n---\n\n## Finding 3: CHG-808 approval threshold ambiguity\n\n**Section:** Email thread for CHG-808; Policy \u00a73.3\n\n**Gap:** CHG-808 was approved by 3 of 4 CAB members (Anya Volkov did not respond \u2014 Thanksgiving OOO). The notes state \"Quorum met (VP Eng + 2 others),\" applying the in-person meeting quorum rule to an async context. However, in a meeting context, \"present\" implies active participation; in an async context, non-response is ambiguous (silent assent? oversight? unavailability?). The policy provides no guidance on how to interpret silence, response deadlines, or escalation. Sanjay's email asked for response \"by EOD Wednesday Nov 26\" but the change proceeded without confirmation that Anya saw the request.\n\n**Severity:** **Medium**\n\n**Recommended remediation:** Async approval policy should require affirmative response from quorum members (silence \u2260 approval), define response SLAs, and require explicit deferral or escalation if a member is unreachable.\n\n---\n\n## Finding 4: Emergency change verbal approval lacks written confirmation trail\n\n**Section:** Change log CHG-807; Policy \u00a73.2 (Emergency)\n\n**Gap:** CHG-807 (OpenSSH CVE patch) was approved via \"VP Eng verbal\" at 09:05 on Nov 17 and deployed at 10:30 the same day. The policy permits \"VP Eng verbal + retro CAB within 5 business days,\" and the retro CAB occurred on Nov 18 (1 business day \u2014 well within tolerance). However, the evidence package contains no written record of the verbal approval (e.g., a Slack message, email confirmation, or ServiceNow comment from Sanjay) at the time of approval \u2014 only the after-the-fact note. Auditors expect contemporaneous evidence of verbal approvals.\n\n**Severity:** **Medium**\n\n**Recommended remediation:** Require the approver to log a same-day written confirmation (Slack/email/ServiceNow comment) of any verbal emergency approval; retain in the change ticket.\n\n---\n\n## Finding 5: Frequency of CAB cancellation suggests structural issue\n\n**Section:** Change log CHG-806, CHG-808, CHG-810 notes\n\n**Gap:** Three of nine scheduled weekly CAB meetings in Q4 (Nov 11 Veterans Day, Nov 25 Thanksgiving week, Dec 9 all-hands) were cancelled \u2014 a 33% cancellation rate. This indicates that the weekly Tuesday cadence is not resilient to predictable interruptions (US holidays, internal events). The repeated need to invoke an unauthorized async process is itself evidence that the documented process is misaligned with operational reality.\n\n**Severity:** **Low** (process design observation rather than control failure)\n\n**Recommended remediation:** Either schedule make-up CAB meetings around known holidays, formally adopt async-by-default with synchronous escalation for High/Critical, or move to a twice-weekly cadence.\n\n---\n\n## Finding 6: Standard change catalog not provided\n\n**Section:** Change log CHG-811; Policy \u00a72 (Standard category)\n\n**Gap:** CHG-811 is logged as a Standard change (\"Per standard change catalog\") with no individual approval. The policy permits this, but the standard change catalog itself was not provided as evidence. An auditor will need to verify that \"year-end security patches (batch)\" is in fact a pre-approved standard change type and that the catalog has appropriate governance (review cadence, approval authority for catalog additions).\n\n**Severity:** **Low**\n\n**Recommended remediation:** Provide the standard change catalog and evidence of its periodic review and approval.\n\n---\n\n## Items Reviewed and Found Adequate\n\n- **Segregation of duties:** Developers (derek.kim, elena.park, raj.kumar) never deployed their own changes; sre-team handled all deployments. \u2713\n- **Testing evidence:** All Normal changes \u226597% pass rate; security reviews present for all High-risk changes (CHG-802, 805, 809, 810). \u2713\n- **Post-implementation verification:** Recorded for all 11 changes. \u2713\n- **Change freeze compliance:** No changes deployed Dec 20 \u2013 Jan 5. \u2713\n- **Capacity planning report:** Correctly identified as not relevant to CC8.1; not used in this assessment.\n\n---\n\n## Overall Readiness Opinion\n\n**Conditional pass with required remediation.** The substance of change management at Apex Cloud Solutions is strong, but the policy-vs.-practice gap around async approval (Findings 1\u20133) must be closed before SOC 2 Type II testing. A policy amendment, ratified by the policy owner and applied retroactively to acknowledge the Q4 instances, would substantially address the design gap. Findings 4\u20136 are lower-priority hygiene improvements."
+}

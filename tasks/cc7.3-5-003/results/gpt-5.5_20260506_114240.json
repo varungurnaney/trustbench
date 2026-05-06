@@ -1,0 +1,96 @@
+{
+  "task_id": "cc7.3-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:42:40.119199",
+  "score": {
+    "task_id": "cc7.3-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.8,
+    "precision": 0.3333333333333333,
+    "f1": 0.47058823529411764,
+    "score": 0.47058823529411764,
+    "gaps_detected": 4,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "March 2025 tabletop",
+          "pre-migration architecture",
+          "Kubernetes"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "IRP v2.3",
+          "HIPAA",
+          "PCI DSS",
+          "INC-2025-904",
+          "cross-sector data leak"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "migration-related",
+          "INC-2025-902",
+          "INC-2025-904",
+          "INC-2025-905"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-905",
+          "38.25 hours",
+          "ransomware",
+          "ingestion gateway"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-904",
+          "cross-sector data leak",
+          "tenant routing",
+          "HIPAA notification"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4663,
+    "output_tokens": 3314
+  },
+  "raw_response": "## Overall Assessment\n\nPrism Data Platform has a documented incident response policy and evidence that incidents were triaged, contained, and post-mortems were performed for SEV-1/SEV-2 incidents. However, for the Q4 2025 SOC 2 Type II readiness period, **CC7.3 is not fully met**.\n\nThe main concern is that Prism underwent a major architectural migration and sector expansion during 2025, yet the incident response program was not sufficiently updated, retested, or validated against the new Kubernetes-native, multi-sector operating environment. Several Q4 incidents were directly tied to migration weaknesses, including cross-sector data exposure, unauthorized access, ransomware, and default credentials.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Incident Response Plan Not Updated or Retested After Major Platform Migration | IRP Section 7.2 Plan Updates; Section 7.3 Post-Major-Change Review; Platform Migration Summary; Tabletop Exercise Section 5 | Prism migrated from VM-based infrastructure to Kubernetes-native, multi-cloud architecture during Q3/Q4 2025. This introduced new EKS clusters, Kubernetes RBAC, service mesh, container image pipelines, External Secrets Operator, MSK Kafka, Flink, and Grafana/Prometheus/Loki. The March 2025 tabletop was conducted against the pre-migration architecture, and no post-migration tabletop or comprehensive IRP validation was performed. Given the scale of architectural change, annual testing alone was not sufficient. | High |\n| 2 | Post-Major-Change IRP Review Is Advisory Rather Than Mandatory | IRP Section 7.3 Post-Major-Change Review | The policy states that after significant platform changes, the CISO \u201cshould evaluate\u201d whether an additional IRP review or test is warranted, but no mandatory action is required. For a migration of this scale, the incident response program should require documented reassessment, approval, and testing. The advisory language creates a control design weakness. | High |\n| 3 | IRP Was Not Reviewed After SEV-1 Incidents | IRP Section 7.2 Plan Updates; Incident Register INC-2025-901 and INC-2025-905 | The IRP requires review annually or after any SEV-1 incident. Q4 included two SEV-1 incidents: a Kafka cluster compromise and ransomware on the data ingestion gateway. No evidence was provided showing the IRP was reviewed or updated after either SEV-1 incident. | High |\n| 4 | Multi-Sector Incident Response Procedures Are Insufficient or Not Evidenced | IRP Section 5 Communication; Sector Expansion Timeline Section 5 and Section 6; Incident Register INC-2025-901 and INC-2025-904 | Prism expanded into healthcare and retail during 2025, introducing HIPAA, HITECH, PCI DSS, and CCPA considerations. Q4 included multi-sector incidents involving financial, healthcare, and retail data. The evidence indicates the IRP lacks detailed procedures for cross-sector data isolation verification, multi-regulatory notification coordination, and sector-specific forensic handling. Generic references to HIPAA/PCI \u201cas applicable\u201d are not sufficient for operational execution. | High |\n| 5 | Tabletop Exercise Did Not Cover Current Risk Profile | IRP Section 7.1 Testing Schedule; March 2025 Tabletop Results | The annual tabletop occurred in March 2025 and used a financial-services supply chain scenario based on the old monolithic VM architecture. It did not test Kubernetes incident handling, container compromise, MSK/Kafka compromise, Flink data routing, Grafana exposure, ransomware in containerized ingestion, or multi-sector notification scenarios. The exercise did not validate the IRP against the Q4 operating environment. | High |\n| 6 | Migration-Related Incidents Indicate Systemic Remediation Weakness | Platform Migration Summary Section 5; Incident Register INC-2025-902, 904, 905, 906 | Four Q4 incidents were directly tied to the platform migration: legacy SSH key remaining valid, tenant routing error causing cross-sector data exposure, compromised container image causing ransomware, and default Grafana credentials. These are not isolated events; they indicate systemic weaknesses in migration security governance, change validation, and readiness of incident response procedures for the new platform. | Critical |\n| 7 | SEV-1 Resolution SLAs Were Missed | IRP Section 3 Response SLAs; Incident Register INC-2025-901 and INC-2025-905 | The IRP requires SEV-1 resolution within 24 hours. INC-2025-901 was resolved in 26.7 hours, and INC-2025-905 was resolved in 38.25 hours. Although triage and containment SLAs were met, resolution objectives for critical incidents were not achieved. | Medium |\n| 8 | Post-Mortem Action Item Closure Is Incomplete | IRP Section 4.2 Post-Mortem Content; Section 4.3 Action Item Governance; Incident Register | Several completed post-mortems still have open remediation items: INC-2025-901 has 5 of 7 completed, INC-2025-902 has 3 of 4 completed, INC-2025-904 has 3 of 6 completed, and INC-2025-905 has 3 of 8 completed. The evidence does not show due dates, Jira tracking, weekly review, or escalation of overdue items to the CISO as required by the policy. Incomplete remediation weakens the entity\u2019s ability to prevent recurrence. | High |\n| 9 | Comprehensive Post-Migration Security Assessment Was Not Performed | Platform Migration Summary Section 4 Security Review Status | Several component-level reviews were completed, but no comprehensive post-migration security assessment was performed. Grafana/Prometheus and Flink security reviews were also not performed. Both areas were implicated in Q4 incidents or alerts. Without a comprehensive assessment, the organization lacks assurance that the new architecture is secure and that the IRP is aligned to operational reality. | High |\n| 10 | Evidence of Regulatory and Customer Communications Is Incomplete | IRP Section 5 Communication; Incident Register INC-2025-901 and INC-2025-904 | The incident register notes HIPAA and PCI notifications were required and that HIPAA notification was filed for INC-2025-904, but no supporting evidence was provided showing actual customer notifications, regulatory notification timing, legal review, status page updates, or notification approvals. CC7.3 requires communication of incidents as appropriate, and the evidence does not sufficiently demonstrate execution. | Medium |\n| 11 | Evidence Preservation Execution Is Not Demonstrated | IRP Section 6 Evidence Preservation; Incident Register | The IRP requires forensic artifacts, Kafka topic snapshots, consumer offset logs, SHA-256 hashes, chain of custody, and seven-year retention for SEV-1/SEV-2 incidents. The incident register does not demonstrate that these preservation steps were executed for the Kafka compromise, ransomware event, unauthorized access incidents, or cross-sector data leak. | Medium |\n| 12 | Conflicting Evidence Regarding IRP Currency and Sector Coverage | IRP v2.3; Sector Expansion Timeline Section 6; Tabletop Exercise Section 5 | The provided IRP appears to reference healthcare, retail, HIPAA, PCI, and multi-sector scenarios, but the sector expansion assessment and tabletop results state that IRP v2.3 was written for financial services only and had not been updated for healthcare, retail, or the new architecture. This inconsistency raises concern over version control, document currency, and whether the IRP provided reflects the plan actually in effect during Q4 2025. | Medium |\n\n---\n\n## Readiness Conclusion\n\nPrism demonstrates partial operation of an incident response process, including incident tracking, severity classification, triage, containment, and post-mortems. However, the control is **not ready for SOC 2 Type II reliance without remediation**.\n\nThe highest-risk gaps are:\n\n1. Lack of mandatory IRP review and testing after the major Kubernetes migration.  \n2. Lack of demonstrated IRP review after SEV-1 incidents.  \n3. Incomplete multi-sector regulatory response procedures.  \n4. Repeated migration-related incidents indicating systemic weaknesses.  \n5. Incomplete remediation tracking and closure of post-mortem action items.  \n\nOverall, CC7.3 should be assessed as **not fully operating effectively for Q4 2025**."
+}

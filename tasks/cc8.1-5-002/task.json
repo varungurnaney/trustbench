@@ -1,0 +1,87 @@
+{
+  "id": "cc8.1-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC8.1",
+  "control_description": "The entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures to meet its objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/change-management-policy.md",
+      "type": "policy",
+      "description": "Apex Cloud Solutions change management policy defining CAB meeting process, quorum requirements, and approval procedures"
+    },
+    {
+      "path": "evidence/change-log-q4-2025.csv",
+      "type": "log",
+      "description": "Change log for Q4 2025 (11 changes) showing mix of CAB meeting approvals and async email approvals"
+    },
+    {
+      "path": "evidence/email-approval-threads.md",
+      "type": "report",
+      "description": "Full email threads for three CAB async approvals conducted via email when CAB meetings were cancelled"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/capacity-planning-q4.md",
+      "type": "report",
+      "description": "Q4 2025 infrastructure capacity planning report. Not relevant to CC8.1 change management controls."
+    }
+  ],
+  "prompt": "You are auditing Apex Cloud Solutions' SOC 2 Type II compliance for control CC8.1 (Change Management) covering Q4 2025 (October 1 - December 31, 2025). Review the change management policy, change log, and email approval threads. The organization used asynchronous email approvals for three changes when CAB meetings were cancelled. Evaluate whether the email-based approval process satisfies CC8.1 requirements and the organization's own policy. Consider the full context before making judgments -- some deviations may be reasonable operational adaptations.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Three changes approved via async email instead of CAB meeting -- policy does not define an async approval process",
+      "description": "CHG-806, CHG-808, and CHG-810 were approved via email threads instead of the weekly CAB meeting defined in policy Section 3.3. The policy states 'The CAB meets weekly on Tuesdays at 2:00 PM ET to review and approve Normal changes' and requires that 'All approvals must be documented in the ServiceNow change ticket with individual member approval and timestamp.' The policy does not define an asynchronous approval mechanism, email-based review process, or delegation authority for when the CAB meeting cannot convene. The email threads show substantive review occurred -- all members who responded reviewed the tickets and provided individual approvals with timestamps. Quorum was achieved in all three cases. The judgment call: the email threads provide documented evidence of individual review and approval that arguably satisfies the control's intent (authorized, reviewed changes), but the policy specifically defines a synchronous meeting format. Three cancelled meetings in a single quarter (Veterans Day, Thanksgiving, company all-hands) suggests the organization needs to formalize an async process.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/email-approval-threads.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "The auditor must weigh the substance of the email approvals against the letter of the policy. Supporting the email approach: each approver individually reviewed the change, approvals are timestamped and documented, quorum was met, the review was substantive (not rubber-stamp). Against: the policy defines a meeting format, not an email format; a meeting allows real-time discussion of risk trade-offs; the policy has no provision for async approval; 3 of 11 Q4 changes (27%) used an undefined process. A thorough auditor should flag this as a process gap -- the policy should be updated to formalize async approval procedures.",
+      "detection_criteria": {
+        "required_keywords": ["async", "email", "CAB meeting", "cancelled", "CHG-806", "CHG-808", "CHG-810", "policy does not define", "Section 3.3"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CHG-810 High-risk change approved via async email without real-time discussion",
+      "description": "CHG-810 (rate limiting for public GraphQL endpoint) is classified as High risk and was approved via async email instead of a CAB meeting. While CHG-806 (Medium) and CHG-808 (Medium) are arguably lower-consequence async approvals, a High-risk change affecting public-facing API rate limiting has greater potential for customer impact and warrants real-time CAB discussion. The email thread shows approval took 2 days (Dec 9-11), and Anya Volkov (QA Director) was on PTO and did not participate. The policy Section 3.3 lists the QA Director as a CAB member, and while quorum was technically met (VP Eng + 2 others), the QA perspective was absent from a change with significant testing implications (rate limit thresholds, false-positive blocking). A synchronous meeting would have allowed discussion of rate limit impact on high-volume customers.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/email-approval-threads.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "The auditor should distinguish between Medium-risk async approvals (CHG-806, CHG-808) and High-risk async approvals (CHG-810). High-risk changes have greater potential impact and benefit from real-time discussion of risk trade-offs. The QA Director's absence means testing adequacy was not evaluated by the QA function. The judgment call: is an email approval thread sufficient for High-risk changes, or should the organization have rescheduled the CAB meeting to address CHG-810 in person?",
+      "detection_criteria": {
+        "required_keywords": ["CHG-810", "High risk", "async email", "GraphQL", "rate limiting", "Anya Volkov", "QA Director", "PTO", "real-time discussion"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "low",
+      "title": "CAB meeting cancelled 3 of 13 weeks in Q4 -- 23% cancellation rate",
+      "description": "The CAB meeting was cancelled during weeks of November 11 (Veterans Day), November 25 (Thanksgiving), and December 9 (company all-hands). This means 3 of approximately 13 weekly CAB meetings (23%) did not occur. While each cancellation had a reasonable explanation, the pattern shows the organization does not have a resilient governance process that accounts for predictable schedule conflicts. The policy defines the CAB as a weekly meeting but has no contingency for holidays, company events, or other foreseeable disruptions. The combined effect is that nearly a quarter of governance touchpoints were conducted through an ad hoc, undefined email process.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/email-approval-threads.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "The auditor should note the cumulative effect of three cancelled meetings. Veterans Day, Thanksgiving, and a company all-hands are all predictable events. The organization could have rescheduled the CAB to a different day or established an alternate meeting time. The 23% cancellation rate in a single quarter suggests the weekly Tuesday cadence is not sustainable through holiday-heavy quarters.",
+      "detection_criteria": {
+        "required_keywords": ["3 of 13", "23%", "cancelled", "Veterans Day", "Thanksgiving", "all-hands", "cadence", "weekly meeting"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["change_management", "judgment_call", "async_approval", "cab_meeting", "email_approval", "governance_cadence"]
+  }
+}

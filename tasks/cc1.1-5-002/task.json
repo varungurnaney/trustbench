@@ -1,0 +1,117 @@
+{
+  "id": "cc1.1-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.1",
+  "control_description": "The entity demonstrates a commitment to integrity and ethical values.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/information-security-policy.md",
+      "type": "policy",
+      "description": "Northgate Logistics Technology information security policy with governance structure and policy review requirements"
+    },
+    {
+      "path": "evidence/policy-review-register.csv",
+      "type": "spreadsheet",
+      "description": "Policy review register showing review dates and status for all 12 security policies"
+    },
+    {
+      "path": "evidence/committee-meeting-minutes.csv",
+      "type": "log",
+      "description": "Information Security Committee meeting minutes for all four 2025 quarterly meetings"
+    },
+    {
+      "path": "evidence/security-metrics-report-annual.md",
+      "type": "report",
+      "description": "Annual security metrics report covering all six policy-defined metrics for 2025"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Northgate Logistics Technology's governance controls under CC1.1 (Commitment to Integrity and Ethical Values). Review all provided evidence to assess whether governance structures and policy management practices are operating effectively. This assessment requires careful professional judgment on several points. The information security policy states reviews occur 'annually' but does not specify whether this means calendar year or rolling 12-month period. When evaluating policy review timeliness, consider the full context including committee deliberations. For CISO reporting line, assess independence in context of the organizational design. Provide nuanced assessments rather than binary pass/fail conclusions.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Information security policy took 12 months to review — judgment required on whether 'annual' means calendar year or rolling 12 months",
+      "description": "The information security policy (POL-ISEC-007 v3.4) was last reviewed October 20, 2024. The updated version (v4.0) was published October 1, 2025 — approximately 11.5 months later. The policy states reviews occur 'annually' but specifies neither calendar year nor rolling 12-month cycle. The policy footer says 'Next Review Due: Annually' without a specific date. The auditor must determine: (1) If 'annually' means calendar year, the policy was not reviewed in calendar year 2024 (it was reviewed in October 2024, covering that year) but there is ambiguity about whether it needed to be reviewed again before December 31, 2025 — and it was (published October 1, 2025). (2) If 'annually' means rolling 12 months from last review, the next review was due by October 20, 2025 — and it was published October 1, 2025, meeting this deadline. (3) However, the committee meeting minutes reveal the review was deliberately extended: deferred at Q1 (to incorporate AI governance), deferred again at Q2 (for broader stakeholder input), approved in principle at Q3, and published October 1. The committee actively managed this timeline over 4 meetings. The auditor must weigh: the policy was technically reviewed within a 12-month window, the committee documented its reasons for the extended timeline at each meeting, and the delay was driven by thoroughness (AI governance integration) rather than negligence. A strict reading might flag the Q1 deferral as a missed window; a risk-based assessment would note the committee's active management.",
+      "evidence_sources": ["evidence/information-security-policy.md", "evidence/policy-review-register.csv", "evidence/committee-meeting-minutes.csv"],
+      "expected_reasoning": "Policy says 'annually' without specifying calendar year or rolling 12 months. Last review October 20, 2024. Published October 1, 2025 (within 12 months). Committee minutes show active management: Q1 deferred for AI governance, Q2 deferred for stakeholder input, Q3 approved, Q4 published. The delay was deliberate and documented, not neglect. Policy review register notes confirm intentional timeline. However, the ambiguous 'annually' language should be tightened. A reasonable auditor would note the ambiguity as an observation and recommend specifying the review cycle precisely, while acknowledging the review was substantively completed within 12 months.",
+      "detection_criteria": {
+        "required_keywords": ["annually", "October 2024", "October 2025", "12 months", "calendar year", "rolling", "deferred", "AI governance", "deliberate", "ambiguous"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CISO reports to COO — atypical reporting line requiring judgment on independence",
+      "description": "The information security policy (Section 3.2) states the CISO reports to the Chief Operating Officer. This is atypical — common CISO reporting lines are to CEO, CTO, CFO, or Board. Reporting to the COO is neither clearly positive nor negative for independence. The COO (Mark Stevens) oversees client operations and compliance (per the committee minutes showing his attendance and concerns), which means the CISO's reporting line does not sit under the technology organization. This is actually a stronger independence position than reporting to the CTO, because the CISO is organizationally separate from the teams building and operating the technology. However, the COO may have competing priorities (operational efficiency, cost management) that could pressure security investments. Mitigating factors: CEO chairs the ISC, CISO has quarterly Board Audit Committee access, CISO has independent deployment halt authority, and Internal Audit reports independently to the Board (Section 3.3). The auditor should note this as an observation — COO reporting is uncommon but provides some structural independence from IT while creating different potential pressure dynamics.",
+      "evidence_sources": ["evidence/information-security-policy.md", "evidence/committee-meeting-minutes.csv"],
+      "expected_reasoning": "CISO reports to COO — unusual structure. Positive: CISO not under CTO/technology organization, providing independence from teams being assessed. Negative: COO may prioritize operational efficiency over security investment. Mitigations: CEO chairs ISC, CISO has Board access, deployment halt authority. The auditor must assess whether this specific structure provides adequate independence. This is more nuanced than a standard CTO reporting concern — it could be viewed as either better or worse depending on the COO's specific responsibilities.",
+      "detection_criteria": {
+        "required_keywords": ["CISO", "COO", "reports to", "independence", "atypical", "not under CTO", "operational", "Board Audit Committee", "deployment halt"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "low",
+      "title": "Medium-tier vendor assessment coverage at 78.9% versus 80% target — judgment on materiality of 1.1% gap",
+      "description": "The security metrics report shows medium-tier vendor assessment coverage at 78.9% (30 of 38 vendors assessed), below the 80% target by 1.1 percentage points. This translates to 8 unassessed medium-tier vendors, with one (FleetView Analytics) specifically noted as delayed due to vendor responsiveness. The auditor must determine materiality: is a 1.1% miss on medium-tier vendors (not critical or high) a finding? The organization met 100% coverage for critical vendors, 95.5% for high-risk vendors (exceeding the 95% target), and 44.6% for low-risk vendors (exceeding the 40% target). The shortfall is isolated to medium tier and explained by vendor responsiveness rather than organizational neglect. A risk-based assessment would note this as an observation but not a material governance deficiency. A compliance-focused assessment might flag any target miss regardless of magnitude.",
+      "evidence_sources": ["evidence/security-metrics-report-annual.md"],
+      "expected_reasoning": "78.9% vs 80% target = 1.1% miss. Only medium-tier vendors. Critical and high tiers fully met. One vendor (FleetView) specifically identified as delayed. Is 1.1% on medium-tier material? Auditor judgment required. Most would note as observation, not finding. But pattern of vendor responsiveness could indicate process gap in vendor engagement procedures.",
+      "detection_criteria": {
+        "required_keywords": ["78.9%", "80%", "medium-tier", "1.1%", "FleetView", "materiality", "critical 100%", "high 95.5%", "observation"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Policy review cycle language should be tightened from 'annually' to specify calendar year or rolling 12-month period",
+      "description": "The information security policy (Section 4.1) states 'All security policies are reviewed annually' and the footer says 'Next Review Due: Annually.' This language is ambiguous — it does not specify whether 'annually' means calendar year, fiscal year, or rolling 12 months from last review. The committee meeting minutes show this ambiguity played out in practice: the ISC policy review was last completed October 2024 and the new version published October 2025, which satisfies a rolling 12-month interpretation but created uncertainty about whether a 2025 review was required. The policy review register note explicitly calls this out: 'Policy says reviewed annually but does not specify calendar year or rolling 12-month cycle.' Best practice is to define the review period precisely (e.g., 'within 12 months of last approval' or 'by December 31 of each calendar year') to avoid ambiguity during audits.",
+      "evidence_sources": ["evidence/information-security-policy.md", "evidence/policy-review-register.csv"],
+      "expected_reasoning": "Policy says 'annually' without defining the period. Review register explicitly notes the ambiguity. This is a documentation gap that should be addressed in the next policy revision. The ambiguity could be exploited (intentionally or unintentionally) to extend review cycles beyond the intended period.",
+      "detection_criteria": {
+        "required_keywords": ["annually", "ambiguous", "calendar year", "rolling 12 months", "specify", "documentation", "tighten", "review cycle"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "High-risk vendor exception EXC-2025-003 for sole-source GPS vendor without SOC 2 report — judgment on compensating control adequacy",
+      "description": "The security metrics report shows exception EXC-2025-003 is active for a sole-source GPS vendor classified as High risk that does not have a SOC 2 report. The compensating controls are 'Enhanced SLA monitoring' and a 'contractual remediation clause.' The auditor must assess whether these compensating controls are adequate for a High-risk vendor that is sole-source (meaning Northgate cannot easily switch providers). The vendor provides GPS data for the fleet management platform, which is core to the business. Key questions: (1) Does 'enhanced SLA monitoring' provide security assurance or just operational assurance? (2) Is a contractual clause enforceable if the vendor is sole-source? (3) Has the organization considered a HECVAT or alternative assessment approach since the vendor lacks SOC 2? The exception is properly documented and tracked, but the compensating controls may not adequately mitigate the risk of relying on a High-risk vendor without independent security assurance.",
+      "evidence_sources": ["evidence/security-metrics-report-annual.md"],
+      "expected_reasoning": "High-risk sole-source vendor without SOC 2. Compensating controls are SLA monitoring (operational, not security-focused) and contractual clause (limited leverage if sole-source). GPS data is core to fleet management business. The exception exists and is documented, which shows process maturity. But the compensating controls may be insufficient for the risk level. The auditor should assess whether additional controls (penetration test results, security questionnaire, site audit) should be required.",
+      "detection_criteria": {
+        "required_keywords": ["EXC-2025-003", "GPS vendor", "sole-source", "High risk", "no SOC 2", "compensating controls", "SLA monitoring", "contractual", "inadequate"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["policy_review_cycle", "annual_ambiguity", "CISO_independence", "COO_reporting", "vendor_risk", "judgment", "materiality", "calendar_year_vs_rolling"]
+  }
+}

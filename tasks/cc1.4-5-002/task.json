@@ -1,0 +1,119 @@
+{
+  "id": "cc1.4-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.4",
+  "control_description": "The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/hr-security-policy.md",
+      "type": "policy",
+      "description": "Orion SaaS Platforms HR security policy defining background check tiers, training completion standards (95% minimum), phishing simulation thresholds, and role change procedures"
+    },
+    {
+      "path": "evidence/training-completion-report-2025.csv",
+      "type": "log",
+      "description": "Annual security awareness training completion report for 2025 showing 20 employees with 17 completions (85%) and 3 non-completions with varying reasons"
+    },
+    {
+      "path": "evidence/phishing-simulation-results-2025.csv",
+      "type": "log",
+      "description": "Quarterly phishing simulation results for 2025 showing click rates increasing from 10% to 25% across all four quarters"
+    },
+    {
+      "path": "evidence/role-change-access-review-log-2025.csv",
+      "type": "log",
+      "description": "Role change access review log for 2025 showing 6 role changes with SOD reviews and proper access adjustments"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/quarterly-hr-metrics-dashboard.md",
+      "type": "report",
+      "description": "Q4 2025 HR security metrics dashboard summarizing training compliance, phishing trends, and workforce changes — provides consolidated view but contains the same data as primary evidence files"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II audit of Orion SaaS Platforms for the 2025 observation period. Review all personnel security evidence including the HR policy, training completion report, phishing simulation results, role change access review log, and HR metrics dashboard. Assess CC1.4 compliance with attention to both procedural compliance and the effectiveness of the training program. Consider whether the training program is achieving its intended outcomes. Some situations require auditor judgment about what constitutes acceptable performance versus a genuine control gap.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Training completion rate of 85% falls below the policy-defined 95% minimum standard",
+      "description": "The training completion report shows 17 of 20 employees completed annual training by the November 30 deadline — an 85% completion rate. Policy Section 4.3 defines 95% as the minimum acceptable completion rate. At 85%, the organization is 10 percentage points below its own standard. The judgment question is whether the 3 non-completions have mitigating circumstances that make 85% acceptable: (1) OSP-7017 (Quinn Reeves) resigned November 15 before the deadline — does a departed employee count against the completion rate? (2) OSP-7018 (Rachel Hoffman) has been on medical leave since October 1 with access suspended October 5 — the risk is mitigated by the access suspension. (3) OSP-7019 (Steven Cole) declined to complete training citing workload and was escalated November 20, eventually completing December 8, 8 days past the deadline. Even if OSP-7017 is excluded (departed) and OSP-7018 is considered mitigated (access suspended), OSP-7019's case is a clear compliance failure — an employee refused a mandatory security control for workload reasons and maintained access for 8 days past the enforcement deadline. The policy Section 4.4 states access should be suspended on December 15 if training is not completed; OSP-7019 completed December 8, so no suspension occurred, but the employee operated without current training for the entire September 1 - December 8 period while other employees completed it within the first two months.",
+      "evidence_sources": [
+        "evidence/training-completion-report-2025.csv",
+        "evidence/hr-security-policy.md",
+        "evidence/quarterly-hr-metrics-dashboard.md"
+      ],
+      "expected_reasoning": "The auditor should calculate the completion rate (17/20 = 85%), compare it to the 95% policy standard, and evaluate each non-completion individually. The key judgment is whether to count OSP-7017 (resigned) in the denominator and whether OSP-7018 (medical leave with access suspended) is adequately mitigated. Regardless of those two cases, OSP-7019's refusal represents a clear gap — workload is not a valid exception under the policy. If OSP-7017 is excluded, the rate is 17/19 = 89.5%, still below 95%. If both OSP-7017 and OSP-7018 are excluded, it is 17/18 = 94.4%, still slightly below 95%.",
+      "detection_criteria": {
+        "required_keywords": ["85%", "95%", "17 of 20", "OSP-7017", "OSP-7018", "OSP-7019", "Quinn Reeves", "Rachel Hoffman", "Steven Cole", "resigned", "medical leave", "workload", "December 8", "November 30", "Section 4.3"],
+        "minimum_keyword_matches": 6
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Phishing simulation click rate increased 150% from 10% to 25% across 2025 — training program is not effective",
+      "description": "The phishing simulation results show a consistent upward trend in click rates across all four quarters of 2025: Q1 10%, Q2 15%, Q3 20%, Q4 25%. This represents a 150% increase over the year. The Q4 simulation (PHISH-2025-013 through PHISH-2025-016, October 8, 2025, 'Fake Benefits Enrollment') had a 25% click rate with 5 link clicks and 3 credential submissions from 20 recipients. Finance (PHISH-2025-014) reached a 50% click rate — the highest ever recorded. Sales exceeded the 15% threshold in all four quarters. Policy Section 4.4 specifies that exceeding 15% triggers supplemental training, and supplemental training was consistently delivered. However, despite completing supplemental training every quarter, both Sales and Finance continued to exceed the threshold in subsequent quarters, with worsening performance. This raises a fundamental question about training effectiveness under CC1.4: the organization is completing the procedural control (supplemental training after failures) but the control is not achieving its intended outcome (improved phishing resistance). A training program that consistently fails to improve employee behavior despite repeated interventions is not meeting the CC1.4 objective of developing competent individuals.",
+      "evidence_sources": [
+        "evidence/phishing-simulation-results-2025.csv",
+        "evidence/hr-security-policy.md",
+        "evidence/quarterly-hr-metrics-dashboard.md"
+      ],
+      "expected_reasoning": "The auditor should analyze the phishing simulation trend data and identify the 150% increase in click rate. The supplemental training process is being followed per policy, but the training is demonstrably not working — click rates are increasing despite repeated supplemental training. CC1.4 requires developing competent individuals, not just completing procedural checkboxes. The judgment element is whether the organization's response (following the supplemental training process) is sufficient when the outcome data clearly shows the training is ineffective. An auditor focused on substance over form should identify this as a critical effectiveness gap.",
+      "detection_criteria": {
+        "required_keywords": ["10%", "15%", "20%", "25%", "150%", "increasing trend", "PHISH-2025-014", "50%", "Finance", "Sales", "supplemental training", "not effective", "click rate", "four quarters", "Section 4.4", "training effectiveness"],
+        "minimum_keyword_matches": 7
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "OSP-7019 Steven Cole refused mandatory training and maintained system access for 8 days past deadline",
+      "description": "OSP-7019 (Steven Cole, QA Engineer) declined to complete annual security awareness training citing workload. His manager escalated on November 20, 10 days before the deadline. Cole eventually completed the training on December 8, 8 days past the November 30 deadline. Policy Section 4.4 states access is suspended on December 15 for non-completers, so technically his access was never suspended because he completed before December 15. However, he operated without current training from September 1 through December 8 — over 3 months — while the policy expects completion within the September 1 - November 30 window. The judgment question is whether an employee who 'declines' a mandatory security control should be treated differently than one who simply has not gotten around to it. An employee actively refusing a mandatory control suggests a security culture issue. The late completion prevents the access suspension trigger, but the employee's stated reason (workload) is not a recognized exception under the policy.",
+      "evidence_sources": [
+        "evidence/training-completion-report-2025.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should identify OSP-7019's 'declined' status and note that the employee eventually completed on December 8 — past the November 30 deadline but before the December 15 suspension trigger. The employee's refusal to complete mandatory training for workload reasons is itself a finding about security culture. The policy's enforcement mechanism (December 15 suspension) was technically not violated, but the spirit of the 100% completion requirement was.",
+      "detection_criteria": {
+        "required_keywords": ["OSP-7019", "Steven Cole", "QA Engineer", "declined", "workload", "November 20", "December 8", "November 30", "December 15", "escalated", "Section 4.4", "mandatory"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "No documented escalation or corrective action plan for departments with recurring phishing failures",
+      "description": "Sales and Finance departments exceeded the 15% phishing simulation threshold in 3 and 4 consecutive quarters respectively. The policy Section 4.4 defines a single-quarter trigger (15% click rate triggers supplemental training) but does not define an escalation path for departments that repeatedly exceed the threshold despite supplemental training. Supplemental training was delivered every quarter, yet performance continued to deteriorate. The absence of a documented escalation path — such as enhanced training, one-on-one coaching, access restrictions, or management accountability — means the organization is applying the same ineffective remedy repeatedly. This is a policy design gap rather than a policy execution gap.",
+      "evidence_sources": [
+        "evidence/phishing-simulation-results-2025.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should look beyond the individual quarter triggers and identify the pattern of repeated failure in Sales and Finance. The policy provides only one response (supplemental training) regardless of how many times a department exceeds the threshold. After 3-4 consecutive quarters of failure, the organization should escalate beyond supplemental training. The policy does not provide for escalation, which is a design gap.",
+      "detection_criteria": {
+        "required_keywords": ["Sales", "Finance", "consecutive quarters", "repeated", "supplemental training", "escalation", "Section 4.4", "corrective action", "policy design", "15% threshold"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["hr_security", "judgment", "training_effectiveness", "phishing_simulation", "completion_rate", "95_percent_threshold", "workload_refusal", "escalation", "security_culture"]
+  }
+}

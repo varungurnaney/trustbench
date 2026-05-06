@@ -1,0 +1,72 @@
+{
+  "task_id": "a1.2-1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:05:54.010810",
+  "score": {
+    "task_id": "a1.2-1-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "RPO",
+          "RTO",
+          "not defined",
+          "missing",
+          "availability commitments"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "restore test",
+          "no requirement",
+          "testing",
+          "recover",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "failure",
+          "no procedure",
+          "escalation",
+          "alerting",
+          "missing",
+          "response"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 998,
+    "output_tokens": 2318
+  },
+  "raw_response": "# Compliance Readiness Assessment: SOC 2 Control A1.2\n\n**Control:** A1.2 - Backup and Recovery Infrastructure\n**Document Reviewed:** POL-BKP-001 v1.2 (Backup and Data Protection Policy)\n**Assessment Date:** Current Review\n\n---\n\n## Overall Assessment\n\nThe policy establishes baseline backup procedures (schedule, encryption, retention, storage isolation) but contains **significant gaps** related to recovery, testing, and monitoring \u2014 all of which are central to SOC 2 A1.2. A1.2 is not solely about *creating* backups; it explicitly requires procedures for **recovery of data, systems, and infrastructure** to meet availability commitments. The current policy is heavily weighted toward backup creation and largely silent on recovery.\n\n---\n\n## Findings\n\n### Finding 1: No Recovery Procedures Defined\n- **Section:** Document-wide (no section addresses recovery)\n- **Gap:** The policy is titled \"Backup and Data Protection\" but contains no procedures for restoring data, systems, or infrastructure. A1.2 explicitly requires \"procedures for recovery of data, systems, and infrastructure.\" Without documented restoration steps, roles, escalation paths, or sequencing, the entity cannot demonstrate it can meet availability commitments.\n- **Severity:** **Critical**\n\n---\n\n### Finding 2: No Backup Restoration Testing Requirement\n- **Section:** Missing \u2014 should appear as its own section\n- **Gap:** There is no requirement to periodically test backup restorations. Auditors expect documented, recurring restore tests (e.g., quarterly) with evidence of results. Untested backups provide no assurance of recoverability.\n- **Severity:** **Critical**\n\n---\n\n### Finding 3: No Defined RTO / RPO\n- **Section:** Missing (should align with \u00a73 and a Recovery section)\n- **Gap:** The policy does not define Recovery Time Objectives (RTO) or Recovery Point Objectives (RPO). Without these, \"availability commitments and system requirements\" referenced in A1.2 cannot be demonstrably met or measured. The 02:00 UTC daily schedule implicitly suggests a 24-hour RPO, but this must be explicit and tied to business commitments.\n- **Severity:** **High**\n\n---\n\n### Finding 4: No Backup Monitoring or Failure Alerting\n- **Section:** Missing (related to \u00a77 Roles)\n- **Gap:** A1.2 requires that backup processes be **monitored**. The policy does not describe how successful/failed backups are detected, who is alerted, response SLAs, or remediation procedures for failed jobs. AWS Backup provides job status, but the policy must define monitoring obligations.\n- **Severity:** **High**\n\n---\n\n### Finding 5: Disaster Recovery Plan Not Referenced\n- **Section:** Document-wide\n- **Gap:** A1.2 covers \"recovery plan procedures.\" The policy makes no reference to a Disaster Recovery Plan (DRP) or Business Continuity Plan (BCP), nor to any cross-region failover procedures despite mentioning us-west-2 replication. The link between backups and the broader recovery program is absent.\n- **Severity:** **High**\n\n---\n\n### Finding 6: Incomplete Backup Scope\n- **Section:** \u00a72 Scope, \u00a73 Backup Schedule\n- **Gap:** Scope is limited to databases, application servers, and S3, yet \u00a73 only describes backup procedures for databases and S3 \u2014 **application server backups are not addressed**. Additionally, configuration/IaC, secrets, container images, and identity data are not mentioned. A1.2 expects backup of \"data, systems, and infrastructure.\"\n- **Severity:** **High**\n\n---\n\n### Finding 7: Monthly Backup Procedure Not Defined\n- **Section:** \u00a73 vs. \u00a75\n- **Gap:** Section 5 references a 12-month retention for \"monthly backups,\" but Section 3 only defines daily backups. The procedure for creating monthly backups (timing, method, validation) is missing \u2014 a direct internal inconsistency an auditor will flag.\n- **Severity:** **Medium**\n\n---\n\n### Finding 8: No Immutability or Ransomware Protection\n- **Section:** \u00a76 Backup Storage\n- **Gap:** While backups are stored in a separate account, the policy does not require immutability (e.g., AWS Backup Vault Lock, S3 Object Lock) or MFA-delete. Modern A1.2 audits increasingly probe protection against ransomware and malicious deletion of backups.\n- **Severity:** **Medium**\n\n---\n\n### Finding 9: Single-Region Backup Storage for Databases\n- **Section:** \u00a73.1, \u00a76\n- **Gap:** Database backups appear to remain in us-east-1 (only S3 has cross-region replication). A regional AWS outage could compromise both production and backups simultaneously, undermining availability commitments.\n- **Severity:** **Medium**\n\n---\n\n### Finding 10: Incomplete Roles & Responsibilities\n- **Section:** \u00a77\n- **Gap:** Roles do not assign accountability for: backup monitoring, restore testing, failure remediation, recovery execution, or DR coordination. The CISO is listed only for policy approval. RACI-level clarity is missing.\n- **Severity:** **Medium**\n\n---\n\n### Finding 11: No Reference to Environmental Protections\n- **Section:** Document-wide\n- **Gap:** A1.2 covers **environmental protections** as part of the same control. While AWS handles physical environmental controls under shared responsibility, the policy should reference reliance on AWS SOC 2 reports / cloud responsibility model so the control objective is fully addressed at the entity level.\n- **Severity:** **Low**\n\n---\n\n### Finding 12: No Exception or Change Management Process\n- **Section:** \u00a78 Policy Review\n- **Gap:** No process is defined for exceptions to the policy, ad-hoc changes to backup configurations, or how policy updates flow into operational runbooks. Annual review alone is insufficient.\n- **Severity:** **Low**\n\n---\n\n## Summary of Severities\n\n| Severity | Count |\n|----------|-------|\n| Critical | 2 |\n| High | 4 |\n| Medium | 4 |\n| Low | 2 |\n\n## Recommended Priority Actions\n1. Add a **Recovery Procedures** section with RTO/RPO commitments.\n2. Establish a **mandatory restoration testing** cadence with documented evidence.\n3. Define **backup monitoring, alerting, and failure response** processes.\n4. Cross-link this policy to a formal **Disaster Recovery Plan**.\n5. Reconcile scope inconsistencies (application servers, monthly backups).\n\nAddressing the Critical and High findings is necessary before this control could be deemed audit-ready under SOC 2 A1.2."
+}

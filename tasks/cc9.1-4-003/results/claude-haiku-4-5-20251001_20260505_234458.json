@@ -1,0 +1,75 @@
+{
+  "task_id": "cc9.1-4-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T23:44:58.879255",
+  "score": {
+    "task_id": "cc9.1-4-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "MongoDB Atlas",
+          "Elevated",
+          "risk acceptance",
+          "CISO",
+          "misconfiguration",
+          "compensating",
+          "not platform vulnerability"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "LaunchDarkly",
+          "scope change",
+          "customer segmentation",
+          "August 2025",
+          "Section 4.4",
+          "reassessment"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Stripe",
+          "Critical",
+          "no risk assessment",
+          "missing",
+          "Section 4.3",
+          "financial data"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2485,
+    "output_tokens": 1882
+  },
+  "raw_response": "# CC9.1 Compliance Assessment \u2013 Readiness Finding Report\n\n## Summary\nSolaris Tech has implemented a robust vendor risk management framework with clear tiering, SOC 2 review requirements, and ongoing monitoring procedures. However, there are **three control deficiencies** that warrant remediation before the Q4 2025 observation period concludes.\n\n---\n\n## FINDING 1: Scope Change Reassessment Not Performed for LaunchDarkly\n\n**Title:** Missing Risk Assessment Refresh Following Material Scope Change\n\n**Related Document Section:**  \n- Vendor Risk Management Policy, Section 4.4 (Scope Change Reassessment)\n- Vendor Inventory (ST-V-009)\n\n**Gap Description:**  \nThe policy explicitly requires that when a vendor's data access or service scope changes materially, a risk assessment refresh must be completed **within 30 days of the scope change**. The policy defines material changes to include \"Access to new data categories.\"\n\nLaunchDarkly was granted access to **customer segmentation data in August 2025** (per vendor inventory notes). This constitutes a material change from the prior assessment classification of \"Internal -- production configuration flags only\" (assessed May 15, 2025). However:\n\n- No refreshed risk assessment has been documented in the risk assessment log\n- The vendor remains classified as \"High\" tier with assessment status \"Current,\" which is inaccurate\n- As of the Q4 2025 observation period, this scope change occurred **4+ months prior** with no documented reassessment\n\n**Why This Matters:**  \nRisk assessments are the primary mechanism for identifying and mitigating risks from vendors (CC9.1 requirement). A scope change introducing access to customer segmentation data (a new data category) requires documented evaluation of the vendor's ability to protect this data before reliance on the new access.\n\n**Severity:** **High**\n\n---\n\n## FINDING 2: Critical Vendor (Stripe) Risk Assessment Not Documented\n\n**Title:** Missing Risk Assessment Documentation for Critical-Tier Vendor\n\n**Related Document Section:**  \n- Vendor Risk Management Policy, Section 4.3 (Annual Risk Assessments)\n- Vendor Inventory (ST-V-003)\n- Vendor Risk Assessment Log\n\n**Gap Description:**  \nStripe Inc. (ST-V-003) is classified as a **Critical-tier vendor** processing customer PII and financial data. The policy mandates that \"All Critical and High tier vendors shall undergo an annual risk assessment.\"\n\nHowever:\n- **No risk assessment record exists** in the vendor risk assessment log for Stripe\n- The inventory shows \"Current\" risk assessment status, but no corresponding log entry\n- There is no documented evidence of evaluation of Stripe's controls, incident history, financial stability, or regulatory compliance posture\n\nThe vendor inventory notes only that \"SOC 2 reviewed annually. PCI DSS maintained,\" which documents *compliance verification* but not a *risk assessment*.\n\n**Why This Matters:**  \nThe policy distinguishes between SOC 2 review (attestation of controls) and risk assessment (evaluation of vendor risk in context of Solaris Tech's business operations and data exposure). SOC 2 review alone does not satisfy the CC9.1 requirement to \"select and develop risk mitigation activities.\" Risk mitigation requires documented assessment of the specific risks that apply to the relationship.\n\n**Severity:** **High**\n\n---\n\n## FINDING 3: Incomplete Documentation of Risk Acceptance for Elevated-Risk Vendor\n\n**Title:** Risk Acceptance Lacks Documented Mitigation Activities and Review Schedule\n\n**Related Document Section:**  \n- Vendor Risk Management Policy, Section 4.3 (Annual Risk Assessments)\n- Vendor Risk Assessment Log (ST-V-007, MongoDB Atlas)\n- Incident Response Plan, Section 7.4 (Post-Incident Review)\n\n**Gap Description:**  \nMongoDB Atlas (ST-V-007) experienced a data exposure incident in 2024 and was assessed as \"Elevated\" risk on 2025-10-20. The risk assessment log documents:\n\n\u2713 Thorough investigation of root cause (customer misconfiguration, not platform vulnerability)  \n\u2713 Vendor remediation (mandatory security defaults, automated alerts implemented)  \n\u2713 CISO risk acceptance on 2025-10-25  \n\u2713 Compensating controls identified (encryption, network peering, configuration audits)\n\nHowever, the risk acceptance documentation **lacks clarity on**:\n\n1. **Risk acceptance period:** When will the elevated risk status be re-evaluated? The \"next_assessment_due\" date of 2026-10-20 (12 months from initial elevated assessment) may be insufficient given the incident severity. No accelerated review schedule is documented.\n\n2. **Formal risk acceptance statement:** The log notation \"CISO reviewed and accepted residual risk on 2025-10-25. Formal risk acceptance documented\" references a formal document, but that document is **not provided** in the evidence package. A risk acceptance decision for a Critical/High vendor should be explicit about *what residual risk is being accepted* and *under what conditions*.\n\n3. **Mitigation effectiveness monitoring:** While compensating controls are listed, the policy and provided evidence do not show a defined schedule for validating their effectiveness (e.g., quarterly configuration audit results review).\n\n**Why This Matters:**  \nCC9.1 requires the entity to \"select and develop risk mitigation activities.\" For an elevated-risk vendor, mitigation activities must be documented, assigned ownership, and monitored. A risk acceptance is valid only when it explicitly acknowledges the nature and magnitude of the residual risk being tolerated.\n\n**Severity:** **Medium**\n\n---\n\n## FINDINGS NOT IDENTIFIED (Documented Appropriately)\n\nThe following control areas were reviewed and found adequate:\n\n\u2713 **Vendor Tiering Framework** \u2013 Clear criteria and assessment requirements documented  \n\u2713 **SOC 2 Review Procedures** \u2013 Annual SOC 2 reviews documented for all Critical/High vendors with current reports  \n\u2713 **Business Review Cadence** \u2013 Critical and High vendors have current business reviews (most recent 2025-10-01 to 2025-12-10)  \n\u2713 **Incident Response Integration** \u2013 Vendor incident procedures properly integrated with escalation and post-incident review  \n\u2713 **Onboarding Controls** \u2013 Policy defines required onboarding steps (questionnaire, DPA, SOC 2 review, risk assessment)  \n\u2713 **Contractual Requirements** \u2013 Standard contractual protections defined (audit rights, incident notification, data handling)  \n\u2713 **Subservice Organization Monitoring** \u2013 SOC 2 review procedures require documentation of subservice organizations (section 4.1)  \n\u2713 **Risk Acceptance \u2013 MongoDB** \u2013 Despite medium-severity documentation gaps, the risk acceptance decision itself demonstrates appropriate governance (CISO approval, investigation-backed decision)\n\n---\n\n## Recommended Remediation Actions\n\n| Finding | Remediation | Timeline | Owner |\n|---------|-------------|----------|-------|\n| LaunchDarkly Scope Change | Conduct and document risk assessment refresh for expanded data access. Update risk assessment log and vendor tier if warranted. | Immediate (within 7 days) | Sarah Chen / James Park |\n| Stripe Risk Assessment | Conduct and document annual risk assessment for Critical-tier vendor. Evaluate controls, financial stability, incident history, and regulatory compliance. Log in vendor risk assessment log. | Immediate (within 14 days) | Risk Assessment Team |\n| MongoDB Risk Acceptance | Obtain and file formal risk acceptance statement. Define accelerated re-evaluation schedule (recommend 6-month interim review). Document compensating control validation frequency. | Within 30 days | CISO + GRC Owner |\n\n---\n\n## Conclusion\n\nSolaris Tech's vendor risk management program demonstrates **mature control design and mostly consistent execution**. The framework appropriately addresses CC9.1's core requirement to identify, select, and develop risk mitigation activities. However, the three identified gaps must be closed to achieve full SOC 2 Type II compliance. None are systemic failures; all are remediable through documentation and process discipline.\n\n**Overall Readiness Assessment:** **Compliant with Minor Deficiencies** \u2013 Suitable for Type II opinion contingent on remediation of High-severity findings."
+}

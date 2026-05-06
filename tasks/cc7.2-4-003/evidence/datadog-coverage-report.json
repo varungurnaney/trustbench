@@ -1,0 +1,65 @@
+{
+  "report_metadata": {
+    "title": "Zenith Commerce — Datadog Security Monitoring Coverage Report",
+    "generated_date": "2025-12-31",
+    "report_period": "Q4 2025 (October 1 — December 31, 2025)",
+    "platform": "Datadog Security Monitoring"
+  },
+  "coverage_summary": {
+    "total_production_services": 16,
+    "services_with_full_monitoring": 14,
+    "services_with_partial_monitoring": 1,
+    "services_with_no_monitoring": 1,
+    "coverage_percentage": 87.5
+  },
+  "fully_monitored_services": [
+    {"service": "marketplace-api", "id": "ZEN-SVC-001", "agent_status": "Active", "alert_rules": 18, "log_volume_gb_day": 22.1},
+    {"service": "user-auth", "id": "ZEN-SVC-002", "agent_status": "Active", "alert_rules": 24, "log_volume_gb_day": 11.4},
+    {"service": "payment-gateway", "id": "ZEN-SVC-003", "agent_status": "Active", "alert_rules": 21, "log_volume_gb_day": 8.9},
+    {"service": "product-catalog", "id": "ZEN-SVC-004", "agent_status": "Active", "alert_rules": 12, "log_volume_gb_day": 6.3},
+    {"service": "order-management", "id": "ZEN-SVC-005", "agent_status": "Active", "alert_rules": 16, "log_volume_gb_day": 14.7},
+    {"service": "inventory-service", "id": "ZEN-SVC-006", "agent_status": "Active", "alert_rules": 10, "log_volume_gb_day": 5.1},
+    {"service": "search-engine", "id": "ZEN-SVC-007", "agent_status": "Active", "alert_rules": 9, "log_volume_gb_day": 7.8},
+    {"service": "notification-hub", "id": "ZEN-SVC-008", "agent_status": "Active", "alert_rules": 7, "log_volume_gb_day": 3.2},
+    {"service": "seller-portal", "id": "ZEN-SVC-009", "agent_status": "Active", "alert_rules": 14, "log_volume_gb_day": 4.5},
+    {"service": "analytics-pipeline", "id": "ZEN-SVC-010", "agent_status": "Active", "alert_rules": 11, "log_volume_gb_day": 9.6},
+    {"service": "cdn-origin", "id": "ZEN-SVC-011", "agent_status": "Active", "alert_rules": 6, "log_volume_gb_day": 1.8},
+    {"service": "webhook-dispatcher", "id": "ZEN-SVC-012", "agent_status": "Active", "alert_rules": 8, "log_volume_gb_day": 2.4},
+    {"service": "admin-console", "id": "ZEN-SVC-013", "agent_status": "Active", "alert_rules": 15, "log_volume_gb_day": 1.1},
+    {"service": "config-service", "id": "ZEN-SVC-014", "agent_status": "Active", "alert_rules": 6, "log_volume_gb_day": 0.3}
+  ],
+  "partially_monitored_services": [
+    {
+      "service": "recommendation-engine-v2",
+      "id": "ZEN-SVC-015",
+      "deployment_date": "2025-12-08",
+      "agent_status": "Active",
+      "alert_rules": 2,
+      "log_volume_gb_day": 5.4,
+      "gaps": "Only error rate and availability alerts configured. Missing: authentication failure monitoring, latency anomaly detection, data access monitoring. Service replaced recommendation-engine-v1 (deprecated December 7). Integration ticket SEC-8834 completed December 10 for agent installation; alert rule configuration in progress.",
+      "data_sensitivity": "Processes customer browsing behavior, purchase history, and personalization preferences. Serves 4.2M recommendation requests/day."
+    }
+  ],
+  "unmonitored_services": [
+    {
+      "service": "fraud-detection-sidecar",
+      "id": "ZEN-SVC-016",
+      "deployment_date": "2025-11-18",
+      "agent_status": "Not Installed",
+      "alert_rules": 0,
+      "log_volume_gb_day": 0,
+      "reason": "Sidecar container deployed alongside payment-gateway. Runs as a separate process within the same EKS pod. Datadog agent on the payment-gateway host collects payment-gateway logs but not fraud-detection-sidecar logs (separate log stream). Sidecar uses a custom binary with proprietary log format from vendor FraudShield Inc. Integration requires vendor cooperation for log format documentation.",
+      "data_sensitivity": "Analyzes all payment transactions for fraud signals in real-time. Processes customer payment data, IP addresses, device fingerprints, and transaction metadata. Handles approximately 340K transactions/day.",
+      "compensating_controls": "FraudShield vendor provides a hosted dashboard with their own alerting. Zenith Commerce security team does not have direct access to raw sidecar logs."
+    }
+  ],
+  "automated_reconciliation": {
+    "daily_jobs_run_q4": 92,
+    "new_services_detected": 2,
+    "alerts_generated": 2,
+    "details": [
+      {"date": "2025-11-18", "service": "fraud-detection-sidecar", "alert": "P3 — new service without Datadog agent", "resolution": "Acknowledged — vendor integration in progress"},
+      {"date": "2025-12-08", "service": "recommendation-engine-v2", "alert": "P3 — new service without Datadog agent", "resolution": "Resolved December 10 — agent installed within 2 business days"}
+    ]
+  }
+}

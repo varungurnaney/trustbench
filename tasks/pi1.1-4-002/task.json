@@ -1,0 +1,91 @@
+{
+  "id": "pi1.1-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "PI1.1",
+  "control_description": "The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/sdlc-policy.md",
+      "type": "policy",
+      "description": "Horizon Data Corp SDLC policy defining input validation requirements, code review standards, and data integrity controls"
+    },
+    {
+      "path": "evidence/input-validation-rules.json",
+      "type": "config",
+      "description": "API input validation configuration for 6 endpoints with field-level validation rules and rate limiting"
+    },
+    {
+      "path": "evidence/data-integrity-check-logs.csv",
+      "type": "log",
+      "description": "Data integrity check execution logs for Q4 2025 with 44 entries across order, payment, inventory, and bulk import pipelines"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Horizon Data Corp's processing integrity controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the SDLC policy, input validation configuration, and data integrity check logs. Assess whether PI1.1 requirements for complete and accurate processing are met. Examine validation rules for adequacy and check whether integrity controls are operating effectively. Not all failures indicate control gaps — distinguish between isolated incidents with appropriate response and systemic issues.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "DIC-4510 order ingestion failure with 3 record discrepancy — properly detected and resolved",
+      "description": "DIC-4510 (October 4) shows a record count discrepancy: 15,234 source records vs 15,231 destination records (3 missing). This initially appears to be a processing integrity failure. However, the integrity check detected the discrepancy, triggered an alert, and the ops team performed manual reprocessing within 4 hours (completed by 06:00 UTC). This demonstrates the control operating as designed — the integrity check caught the issue and the response was timely. This is NOT a finding; it is evidence of the control working correctly.",
+      "evidence_sources": [
+        "evidence/data-integrity-check-logs.csv"
+      ],
+      "expected_reasoning": "The model should note DIC-4510 as a failed check, then observe that the discrepancy was detected by the automated control, an alert was triggered, and manual reprocessing was completed within 4 hours. This is a control operating as intended. The purpose of integrity checks is to catch discrepancies — a failure with prompt remediation demonstrates effectiveness.",
+      "detection_criteria": {
+        "required_keywords": ["DIC-4510", "3 orders", "stuck in queue", "manual reprocessing", "06:00 UTC", "control operating"],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": ["control operating as designed", "properly detected", "not a finding", "demonstrates effectiveness"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Bulk import accepts partial files without user notification — 153 records silently dropped",
+      "description": "DIC-4527 (November 12) shows the bulk-import-validation pipeline processed only 11,847 of 12,000 records — 153 rows were rejected due to malformed CSV formatting. The action_taken field states 'Importer accepted partial file without user notification.' This means the bulk import endpoint processed an incomplete file, imported 98.7% of records, and silently discarded 1.3% without alerting the user. This directly violates PI1.1's requirement for complete processing. Additionally, the input validation rules for /api/v2/bulk-import only validate MIME type and file size — the note states 'File contents are not validated against entity schema before processing.' The combination means: (1) file content validation is absent at the API level, (2) the pipeline silently drops malformed records, and (3) the user is not notified of partial processing. The integrity check detected the discrepancy but the system's response was to log it rather than reject the import or notify the user.",
+      "evidence_sources": [
+        "evidence/data-integrity-check-logs.csv",
+        "evidence/input-validation-rules.json",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The model should contrast DIC-4510 (3 missing records, properly reprocessed) with DIC-4527 (153 dropped records, silently accepted). The key difference is user notification: DIC-4510 triggered reprocessing, but DIC-4527 accepted a partial import without telling the user. The input validation config confirms file contents are not validated against entity schema. Policy Section 5.1 requires all external inputs to be validated, yet the bulk import only checks MIME type.",
+      "detection_criteria": {
+        "required_keywords": ["DIC-4527", "153", "bulk import", "without user notification", "partial file", "silently", "file contents not validated", "MIME type", "schema"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Webhook URL validation accepts internal network addresses — no scheme or domain restriction",
+      "description": "The input validation rules for /api/v2/webhooks validate the URL field as format 'uri' but the note states 'VALIDATION GAP: No URL scheme restriction or domain allowlist enforced. Accepts any URI including internal network addresses.' This means a user could register a webhook URL pointing to internal services (e.g., http://10.0.0.1/admin, http://169.254.169.254/latest/meta-data/) enabling Server-Side Request Forgery (SSRF). The system would send webhook payloads containing order and payment data to attacker-controlled or internal endpoints. Policy Section 5.1 requires all external inputs to be validated, and Section 5.2 requires injection pattern testing, but the webhook URL validation does not enforce HTTPS scheme or domain restrictions.",
+      "evidence_sources": [
+        "evidence/input-validation-rules.json",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The input validation config explicitly flags this as a 'VALIDATION GAP' in the note field. The webhook endpoint accepts any URI including internal addresses. Unlike other endpoints with strict enum values and format restrictions, the webhook URL is only validated as a generic URI. This creates both an SSRF risk and a data leakage risk since webhook payloads contain business data.",
+      "detection_criteria": {
+        "required_keywords": ["webhook", "URL", "internal network", "SSRF", "no scheme restriction", "no domain allowlist", "VALIDATION GAP", "Section 5.1"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["processing_integrity", "input_validation", "data_integrity", "bulk_import", "webhook", "SSRF", "red_herring", "silent_failure"]
+  }
+}

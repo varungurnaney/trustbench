@@ -1,0 +1,79 @@
+{
+  "task_id": "pi1.1-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:49:58.471998",
+  "score": {
+    "task_id": "pi1.1-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PR-5610",
+          "emergency",
+          "post-deploy review",
+          "Nina Patel",
+          "48 hours",
+          "PR-5615",
+          "follow-up"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PR-5614",
+          "no post-deploy review",
+          "order processing timeout",
+          "48 hours",
+          "Section 3.2",
+          "35 days"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "ORDER_TIMEOUT_MS",
+          "configuration drift",
+          "staging",
+          "production",
+          "35 days",
+          "48 hours",
+          "Section 5.2",
+          "CDR-309",
+          "CDR-314",
+          "Under Review"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4579,
+    "output_tokens": 2352
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: PI1.1 Processing Integrity\n\n**Control:** PI1.1 \u2014 Processing objectives defining complete, accurate, and timely processing\n**Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Auditor Assessment:** Control deficiencies identified; see findings below.\n\n---\n\n## Summary of Evidence Review\n\nThe SDLC policy (POL-SDLC-011 v4.0) establishes processing integrity expectations through code review, emergency change controls, and configuration drift management. Q4 2025 evidence shows generally strong adherence to standard pre-merge review (18 of 20 PRs followed standard process correctly), but two material control failures were identified relating to emergency change handling and configuration drift remediation.\n\n---\n\n## Findings\n\n### Finding 1: Emergency Change PR-5614 Lacks Required Post-Deploy Review\n\n- **Related Policy Section:** Section 3.2 \u2014 Emergency Changes\n- **Evidence:** PR-5614 (\"EMERGENCY: Fix order processing timeout\") was deployed on 2025-11-24 with CTO authorization. The PR record shows `review_date` blank, `review_type` blank, `approval_status: N/A`, and an explicit comment: *\"No post-deploy review performed.\"*\n- **Gap:** Policy Section 3.2 requires that *\"Emergency changes must receive a post-deploy review within 48 hours of deployment\"* with documented findings and follow-up actions. As of the end of the observation period (December 31, 2025), no post-deploy review had been performed \u2014 a delay of 37 days past the 48-hour SLA. This is a clear violation of the compensating control that justifies bypassing pre-merge review. By contrast, the other emergency change in the period (PR-5610) properly received a post-deploy review within 48 hours by Nina Patel with documented findings and a follow-up action (PR-5615), demonstrating that the process can be and has been followed correctly.\n- **Severity:** **High**\n\n---\n\n### Finding 2: Untracked Production Configuration Change During Emergency Deployment\n\n- **Related Policy Section:** Section 5.2 \u2014 Configuration Management\n- **Evidence:** Configuration drift scans CDR-309 through CDR-314 reveal that during the PR-5614 emergency deployment on 2025-11-24, two production parameters (`ORDER_TIMEOUT_MS` changed from 30000\u219215000; `ORDER_RETRY_MAX` changed from 3\u21925) were modified directly in production without corresponding staging updates. Policy requires *\"All application configuration is managed through Infrastructure-as-Code (Terraform) stored in version control.\"*\n- **Gap:** Production configuration was changed outside of the IaC pipeline during incident response, bypassing version control. While `ORDER_RETRY_MAX` was eventually synced (CDR-311 on 2025-12-10, ~16 days later), `ORDER_TIMEOUT_MS` remained drifted through the end of Q4 \u2014 35 days without remediation per CDR-314 notes. This undermines the integrity of the IaC source of truth and means staging is not a reliable representation of production for testing purposes.\n- **Severity:** **High**\n\n---\n\n### Finding 3: Configuration Drift Remediation SLA Repeatedly Missed\n\n- **Related Policy Section:** Section 5.2 \u2014 Configuration Management\n- **Evidence:** Per Section 5.2: *\"Drift above 5% requires immediate investigation and remediation within 48 hours.\"* The drift in CDR-309 through CDR-314 (0.4%\u20130.6%) is below the 5% threshold; however, the policy's intent of timely remediation is undermined.\n- **Gap:** While the literal 5% threshold was not breached, the `ORDER_TIMEOUT_MS` parameter remained in \"Under Review\" status for 35 consecutive days across 6 weekly scans without remediation or formal acknowledgment as an accepted exception. The policy lacks a defined SLA for sub-5% drift remediation, and management practice has been to leave items in \"Under Review\" indefinitely. This is both a policy gap and an operational weakness affecting processing integrity assurance.\n- **Severity:** **Medium**\n\n---\n\n### Finding 4: No Defined Process for Reconciling Emergency-Change Configuration to IaC\n\n- **Related Policy Section:** Sections 3.2 and 5.2 (intersection)\n- **Evidence:** The SDLC policy addresses emergency code changes (Section 3.2) and configuration management (Section 5.2) separately, but does not specify how emergency configuration changes made directly in production are to be back-ported into Terraform/version control or reconciled with staging.\n- **Gap:** The PR-5614 incident demonstrates this gap operationally: production configuration values were changed during the emergency, but no policy mechanism required reconciliation of those changes into IaC within a defined timeframe. This is a control design deficiency that allowed the operational failures in Findings 2 and 3 to persist.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: No Evidence of Management Review or Escalation for Aging Drift Items\n\n- **Related Policy Section:** Section 5.2 \u2014 Configuration Management\n- **Evidence:** Drift reports CDR-309 through CDR-314 show \"Under Review\" status persisting across 6 consecutive weekly scans with no remediated_date populated and no notes indicating escalation, risk acceptance, or assigned owner.\n- **Gap:** PI1.1 requires that the entity actively manage processing objectives. The absence of an escalation mechanism \u2014 or even a documented owner accountable for closing drift items \u2014 indicates that detective controls (drift scans) are operating but corrective controls are not consistently triggered. An auditor would expect to see ticket linkage, an assigned owner, and escalation after a defined aging threshold.\n- **Severity:** **Medium**\n\n---\n\n## Areas of Strength\n\n- 18 of 20 PRs (90%) followed standard pre-merge review correctly with documented reviewers distinct from authors.\n- PR-5610 emergency change demonstrates the post-deploy review process working as designed, including documented follow-up (PR-5615).\n- Weekly configuration drift scans are operating consistently and detected the PR-5614 anomaly the week it occurred.\n- Expected, low-risk drift (e.g., LOG_LEVEL between staging and production) is properly acknowledged with rationale.\n\n---\n\n## Overall Conclusion\n\n**Control PI1.1 is operating with deficiencies.** The control framework is well-designed, but two of the most consequential events in the period \u2014 an emergency code deployment and an associated emergency configuration change \u2014 both failed the compensating controls intended to assure processing integrity. Recommendation: management response and remediation plan required prior to Type 2 examination, with particular focus on the PR-5614 post-deploy review, IaC reconciliation, and a defined SLA/ownership model for sub-threshold drift items."
+}

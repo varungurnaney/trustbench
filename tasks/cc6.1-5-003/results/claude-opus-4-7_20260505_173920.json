@@ -1,0 +1,89 @@
+{
+  "task_id": "cc6.1-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:39:20.989008",
+  "score": {
+    "task_id": "cc6.1-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Victor Reeves",
+          "6 systems",
+          "zero findings",
+          "dormant",
+          "rubber-stamp",
+          "USR-0142"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "210",
+          "USR-0198",
+          "USR-0205",
+          "USR-0209",
+          "not flagged"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Nathan Cole",
+          "AWS",
+          "AR-Q4-002",
+          "self-review",
+          "independence"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "USR-0178",
+          "Kenji Matsuda",
+          "95 days",
+          "November 30",
+          "dormant",
+          "contract end",
+          "DevBridge"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 13240,
+    "output_tokens": 4864
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: CC6.1 \u2014 Quarterly Access Review Effectiveness\n\n## Executive Summary\n\nWhile all 14 Q4 2025 access reviews were completed within the 15-business-day window and formally signed off, cross-referencing the review outputs against the Okta user export and HR roster reveals that **the reviews failed to identify multiple material exceptions that fall squarely within the criteria defined in Policy Section 5.2**. The reviews appear to have been procedurally completed but were not substantively effective. The control as operated does not achieve its objective.\n\n---\n\n## Findings\n\n### Finding 1: Terminated Contractor Retains Active Access \u2014 Deprovisioning SLA Breach\n\n**Related Section:** Policy Section 3.3 / 6.2 (Contractor Offboarding); Section 5.2.1 (Reviewer must confirm active employment/contract)\n**Evidence:** USR-0178 (Kenji Matsuda) shows status \"Active\" in Okta as of December 31, 2025 with last login 2025-09-27. HR record CON-2003 shows contract ended **November 30, 2025** and HR status is \"Inactive.\" Policy requires deprovisioning within 24 hours of contract end.\n**Why It's a Gap:** The account remained active for **31+ days** past contract termination, a direct violation of the 24-hour deprovisioning SLA. More critically, the Q4 access review on Okta (AR-Q4-001, completed 2025-10-12) and GitHub (AR-Q4-011, completed 2025-10-18) occurred *before* the contract end date, but no follow-up mechanism caught the November 30 expiration. The reviewer for Okta (Nathan Cole) certified all 210 accounts as appropriate, yet a known fixed-end-date contractor was not flagged for tracking.\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Unauthorized \"Temp Audit\" Account With Excessive Access Not Flagged\n\n**Related Section:** Section 5.2.4 (Identifying privilege accumulation); Section 5.2.5 (Validating service account ownership and continued business need)\n**Evidence:** USR-0205 (`temp-audit-access` / temp-audit@cascade.io) is provisioned with access to Jira, Confluence, Slack, ServiceNow, Salesforce, **and DataEngine** (the customer PII platform). The account has no department assignment, no clear owner, was created 2025-11-10, and has not logged in since 2025-12-18. There is no corresponding HR record.\n**Why It's a Gap:** This is a generic, shared-style account with broad access to customer data systems and CRM. It was provisioned *after* the Q4 review window opened (Oct 1) but the policy requires service/non-standard accounts to have validated ownership and business need. Granting DataEngine access (customer PII) to a non-attributable account also violates Section 3.2 (Data Owner + CISO approval for customer data access). The CISO (Rebecca Thornton) reviewed DataEngine herself in AR-Q4-012 but apparently did not catch or did not document this account.\n**Severity:** **Critical**\n\n---\n\n### Finding 3: Service Accounts Without MFA Accessing Customer Data Platform\n\n**Related Section:** Section 4.1 (MFA required for all Okta sessions); Section 5.2.5 (Service account validation)\n**Evidence:** USR-0198 (`svc-demo-portal`) and USR-0209 (`partner-api-sync`) both have `mfa_enrolled = No` and both have access to **DataEngine and AWS Console**. Policy Section 4.1 states \"MFA required for all Okta sessions\" with no documented exception for service accounts.\n**Why It's a Gap:** Two accounts with access to customer PII processing infrastructure lack MFA. No exception documentation is referenced. The reviewers (Nathan Cole for AWS, Rebecca Thornton for DataEngine) did not flag these MFA gaps, nor did the AR-Q4-001 Okta review. If service accounts are exempt by design, the policy does not document it and no Section 8 exception is on file.\n**Severity:** **High**\n\n---\n\n### Finding 4: Dormant Account Threshold Not Applied \u2014 Missed Flagging\n\n**Related Section:** Section 5.2.3 (Flag dormant accounts with no login >90 days for revocation)\n**Evidence:** As of December 31, 2025:\n- USR-0142 (Patricia Anderson) \u2014 last login **2025-09-15** (107 days dormant; on parental leave)\n- USR-0156 (Timothy Hall) \u2014 last login **2025-09-22** (100 days dormant; on leave pending visa)\n- USR-0178 (Kenji Matsuda) \u2014 last login **2025-09-27** (95 days dormant; contract ended)\n\nAll three exceed the 90-day dormancy threshold. None were flagged in any of the 14 review records.\n**Why It's a Gap:** The Q4 reviews were initiated October 1, 2025, when these accounts were not yet dormant \u2014 but the review evidence shows no continuous monitoring or post-review dormancy controls. The control as designed produces a single point-in-time snapshot that misses dormant accounts arising after review initiation. Additionally, leave-of-absence access management is not addressed in the policy at all (see Finding 7).\n**Severity:** **High**\n\n---\n\n### Finding 5: Reviewer Independence and Segregation of Duties Concerns\n\n**Related Section:** Section 5.1 (Reviews by system owners or designated independent reviewers); Section 5.4 (QA oversight)\n**Evidence:** Nathan Cole (Cloud Infrastructure Manager) reviewed Okta (AR-Q4-001), AWS Console (AR-Q4-002), and ServiceNow (AR-Q4-014) \u2014 all systems for which he himself holds Okta Admin and AWS Console access (USR-0002). Victor Reeves reviewed five systems he uses (Jira, Confluence, Slack, Datadog, PagerDuty) and is also an Okta Admin.\n**Why It's a Gap:** Self-review of systems where the reviewer is a privileged user creates an independence impairment. The policy permits \"system owners\" to review, but does not require independent verification of the reviewer's own account, nor cross-review of admin-level accounts. There is no evidence Section 5.4 QA was performed on any of the Q4 reviews \u2014 no QA records were provided.\n**Severity:** **High**\n\n---\n\n### Finding 6: Account-to-HR Reconciliation Not Performed\n\n**Related Section:** Section 5.2.1 (Confirming user is still employed/under contract); Section 5.4 (Cross-reference review results against HR data)\n**Evidence:** Okta shows 210 active accounts. HR roster shows 195 active employees + 7 active contractors = **202 expected human accounts**, plus a small number of legitimate service accounts. The Okta export contains:\n- USR-0205 (temp-audit-access) \u2014 no HR match\n- USR-0178 (Kenji Matsuda) \u2014 HR shows Inactive\n- 3 service/integration accounts (svc-demo-portal, partner-api-sync, plus temp-audit)\n\nA simple HR-to-Okta reconciliation would have surfaced Findings 1 and 2 immediately. Reviewer notes for AR-Q4-001 say \"All other access appropriate\" \u2014 a generic statement inconsistent with the data.\n**Why It's a Gap:** The reviews appear to have been performed without a system-of-record reconciliation against HR. Section 5.4 explicitly requires this cross-reference as part of QA, but there is no evidence it occurred. The CC6.1 control objective cannot be met without authoritative source comparison.\n**Severity:** **High**\n\n---\n\n### Finding 7: Leave-of-Absence Access Not Addressed in Policy or Reviews\n\n**Related Section:** Section 3 (Access Provisioning) \u2014 gap in policy; Section 5.2 (Review criteria)\n**Evidence:** USR-0142 (Patricia Anderson, parental leave since September) and USR-0156 (Timothy Hall, on leave pending visa) retain full access including DataEngine (Anderson removed) and Salesforce/DataEngine adjacent systems. Neither was flagged.\n**Why It's a Gap:** The Access Control Policy is silent on extended leaves of absence. Industry practice and SOC 2 expectation is that access should be suspended (or at minimum reviewed for risk) for personnel on leave exceeding 30 days. Both accounts represent dormant access to systems with sensitive data.\n**Severity:** **Medium**\n\n---\n\n### Finding 8: Review Coverage Gap \u2014 Privileged Access Not Separately Reviewed\n\n**Related Section:** Section 4.1 (FIDO2 for privileged users); Section 5.2.4 (Privilege accumulation)\n**Evidence:** Three users hold \"Okta Admin\" entitlement (USR-0001, USR-0002, USR-0003). The Okta review (AR-Q4-001) documents 1 finding and 1 modification across 210 accounts but contains no separate treatment of administrative roles. There is no privileged access review (PAM/CyberArk) record despite Section 6.1 referencing CyberArk credentials.\n**Why It's a Gap:** Privileged access review should be more rigorous than standard user review and is typically performed separately, often by an independent reviewer (e.g., CISO). The single-line note \"All other access appropriate\" provides no evidence of admin role scrutiny. No CyberArk review evidence was provided at all.\n**Severity:** **Medium**\n\n---\n\n### Finding 9: Review Note Quality Insufficient to Support Auditor Reliance\n\n**Related Section:** Section 5.3 (Review evidence \u2014 disposition for each account)\n**Evidence:** AR-Q4-005 (Jira, 88 accounts, 0 findings), AR-Q4-006 (Confluence, 82 accounts), AR-Q4-007 (Slack, 94 accounts), AR-Q4-008, AR-Q4-009, AR-Q4-010 \u2014 all reviewed by Victor Reeves, all completed on **2025-10-14** in 45-minute increments (08:15, 09:00, 09:45, 10:30, 11:15, 12:00). Reviewing 94 Slack accounts in 45 minutes (~29 seconds per account) and producing zero findings across 6 systems is implausible.\n**Why It's a Gap:** Section 5.3 requires *disposition for each account*. The provided evidence is a summary line, not per-account dispositions. The pace and uniformity of completion suggests rubber-stamping rather than substantive review. Auditor cannot rely on these reviews as effective controls.\n**Severity:** **High**\n\n---\n\n### Finding 10: No Evidence of QA Per Section 5.4\n\n**Related Section:** Section 5.4 (IT Security QA on sample of completed reviews)\n**Evidence:** No QA documentation was provided. The policy requires QA each quarter including (a) verification that Section 5.2 criteria were applied, (b) HR cross-reference, and (c) dormant account spot-check. Findings 1, 2, 4, and 6 above would have been caught by even a minimal QA pass.\n**Why It's a Gap:** A documented quality gate that does not operate is a control design that exists on paper only. Either QA was not performed, or it was performed and missed material exceptions \u2014 both indicate control failure.\n**Severity:** **High**\n\n---\n\n### Finding 11: Inconsistency Between Okta Export and Review Population\n\n**Related Section:** Section 5.3 (List of all accounts reviewed)\n**Evidence:** AR-Q4-001 reports 210 accounts reviewed in Okta. Multiple downstream system reviews show inconsistent populations: AWS Console (32 accounts), Jira (88), Salesforce (42), DataEngine (24), GitHub (56). The Okta export shows ~30 users with AWS Console assignment, ~88 with Jira \u2014 these reconcile reasonably for some systems but not others. However, AR-Q4-002 mentions \"two departed TechBridge contractors\" \u2014 TechBridge does not appear in the Okta export, HR roster, or any contractor SOW (which reference DevBridge, Quantix, CloudNine, AppDev). Either a vendor name is wrong or the review references nonexistent entities.\n**Why It's a Gap:** Reviewer notes that cite vendors not present in the source data raise questions about whether notes are templated/copied across quarters or whether a different population was actually reviewed. This undermines evidence integrity.\n**Severity:** **Medium**\n\n---\n\n### Finding 12: Contractor Sponsor Monthly Reviews Not Evidenced\n\n**Related Section:** Section 3.3 (Contractor accounts must be reviewed monthly by the contractor's sponsor)\n**Evidence:** No monthly contractor sponsor review records were provided for any of the 8 contractor accounts (USR-0172, 0175, 0178, 0182, 0190, 0200, 0204, 0210). Elena Vasquez sponsors 7 of these, Sofia Nakamura sponsors 1.\n**Why It's a Gap:** Policy mandates monthly contractor sponsor reviews \u2014 these are independent of the quarterly reviews. Absent these records, the contractor expiration tracking that should have caught Finding 1 (Matsuda) was not operating.\n**Severity:** **Medium**\n\n---\n\n## Overall Conclusion\n\n**The CC6.1 access review control is not operating effectively as of December 31, 2025.** While procedural completion is documented, substantive testing against the Okta and HR populations reveals at least 2 Critical and 5 High-severity exceptions that the reviews failed to identify. Recommended remediation prior to SOC 2 Type II observation period:\n\n1. Immediate deprovisioning of USR-0178 and investigation of USR-0205\n2. MFA enforcement (or documented exception) for service accounts\n3. Re-perform Q4 reviews with HR reconciliation as a mandatory step\n4. Implement and document Section 5.4 QA with retained evidence\n5. Add leave-of-absence handling to the Access Control Policy\n6. Require per-account disposition records (not summary notes) for review evidence\n7. Independent reviewer assignment for systems where the reviewer is a privileged user"
+}

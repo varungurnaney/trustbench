@@ -1,0 +1,64 @@
+{
+  "task_id": "cc1.4-4-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:21:08.345052",
+  "score": {
+    "task_id": "cc1.4-4-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 0.33333333333333337,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CTR-5002",
+          "Apex Janitorial",
+          "EXC-HR-2025-002",
+          "Non-Sensitive",
+          "exception"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "HCS-3007",
+          "Natasha Orlova",
+          "BGC-2025-084",
+          "EXC-HR-2025-003",
+          "Pending",
+          "expired",
+          "AWS root",
+          "Kubernetes admin",
+          "staging",
+          "production",
+          "90-day risk assessment",
+          "Section 3.3",
+          "no renewal"
+        ],
+        "total_keywords": 14,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3470,
+    "output_tokens": 2281
+  },
+  "raw_response": "# SOC 2 CC1.4 Compliance Assessment \u2014 Readiness Report\n\n## Summary\n\nHelix Cloud Solutions demonstrates **strong foundational controls** for personnel security with a well-structured HR Security Policy and generally compliant background check execution. However, **two critical control failures** have been identified related to pending background check management and exception oversight that directly undermine the control objective.\n\n---\n\n## FINDINGS\n\n### Finding 1: Unresolved Pending Background Check Beyond Policy Threshold\n\n**Title:** Sensitive Role Employee Granted Full Production Access Without Completed Background Check\n\n**Document Reference:** Background Check Records (BGC-2025-084 \u2014 Natasha Orlova); HR Exception Register (EXC-HR-2025-003); HR Security Policy Section 3.3\n\n**Issue:**\nNatasha Orlova (HCS-3007), classified as Sensitive (Site Reliability Engineer with production system access), was provisioned with full AWS root and Kubernetes admin access on June 2, 2025, while her comprehensive background check remained incomplete. As of the assessment date (December 28, 2025), her background check is still pending \u2014 **211 days past initiation**.\n\n**Policy Violations:**\n- **POL-HR-019 Section 3.1** explicitly requires comprehensive background checks to be \"completed before access is provisioned\" for sensitive roles.\n- **POL-HR-019 Section 3.3** mandates CHRO escalation at 60 days and documented risk assessment at 90 days for pending checks.\n\n**Compliance Gap:**\n- Exception EXC-HR-2025-003 was approved on August 4, 2025 (at the 60-day mark) with an expiration date of November 2, 2025.\n- The exception **expired on November 2** and was **not renewed**.\n- No documented 90-day risk assessment exists in the exception register.\n- Employee retained full production access through December 28 without valid exception coverage or documented compensating controls specific to the 211-day delay.\n- The policy escalation procedure was followed once but then abandoned when the exception expired.\n\n**Risk Exposure:**\nAn individual with unrestricted access to production systems, AWS infrastructure, and container orchestration has been operating without completed trustworthiness verification for 7 months. This directly contradicts the control's objective to ensure individuals align with organizational security objectives and creates potential compliance risk for SOC 2 attestation.\n\n**Severity:** **CRITICAL**\n\n---\n\n### Finding 2: Expired Exception Not Renewed Despite Unresolved Underlying Condition\n\n**Title:** Exception Management Failure \u2014 Lapsed Coverage for Unresolved Personnel Security Issue\n\n**Document Reference:** HR Exception Register (EXC-HR-2025-003); Background Check Records (BGC-2025-084)\n\n**Issue:**\nException EXC-HR-2025-003 for Natasha Orlova's delayed background check expired on November 2, 2025. The background check remained pending at that date (per the November 2 expiration and December 28 status showing \"Pending\"). Despite the unresolved condition, no renewal was filed and no escalation was documented after expiration.\n\n**Policy Violations:**\n- **POL-HR-019 Section 3.3** requires documented risk assessment and CHRO determination for checks pending beyond 90 days. No such assessment is evident in the record after the initial August 4 exception approval.\n- Exception management protocol breakdown: the compensating control (manager code reviews + staging-only access) was tied to a temporary exception window, not an ongoing baseline control.\n\n**Compliance Gap:**\n- The organization created a time-bounded exception but failed to establish either (a) a path to completion, (b) a renewal process, or (c) a permanent compensating control framework when the underlying issue persisted.\n- As of December 28, 2025, the employee operates without exception coverage, without documented compensating controls, and with uninterrupted production access.\n- This represents a **control operation failure**, not merely a delayed administrative process.\n\n**Severity:** **CRITICAL**\n\n---\n\n### Finding 3: Incomplete Documentation of 90-Day Risk Assessment\n\n**Title:** Missing Formal Risk Assessment Documentation for Extended Background Check Delay\n\n**Document Reference:** HR Security Policy Section 3.3; HR Exception Register (EXC-HR-2025-003)\n\n**Issue:**\nPOL-HR-019 Section 3.3 explicitly states: \"Pending checks beyond 90 days require a documented risk assessment.\"\n\nNatasha Orlova's background check exceeded 90 days of pending status (initiated June 2, crossed 90-day threshold August 31, 2025). The exception register shows no documented risk assessment\u2014only the initial August 4 CHRO escalation approval with temporary compensating controls.\n\n**Compliance Gap:**\n- Policy requires a *documented* risk assessment. The exception register entry does not contain risk assessment documentation or risk determination.\n- The \"review_notes\" field records administrative observations but not a formal risk assessment output.\n- This represents a **policy execution gap**: the escalation occurred, but the required documentation artifact was not created or retained.\n\n**Risk:** This absence makes it impossible to audit whether the CHRO made an informed determination about continued access based on documented risk analysis, undermining the control's evidentiary foundation.\n\n**Severity:** **HIGH**\n\n---\n\n### Finding 4: Training Deadline Enforcement Gap \u2014 Policy vs. Practice Misalignment\n\n**Title:** Conditional Access Suspension Policy Not Enforced Consistently\n\n**Document Reference:** HR Security Policy Section 4.3; HR Exception Register (EXC-HR-2025-004)\n\n**Issue:**\nPOL-HR-019 Section 4.3 states: \"Any employee who has not completed training by December 15 will have their system access suspended.\"\n\nException EXC-HR-2025-004 granted Roberto Iglesias an extended training deadline to December 15 due to client travel. The policy language creates ambiguity: does \"December 15\" represent (a) the automatic suspension date, or (b) the final extension deadline?\n\n**Compliance Gap:**\n- The policy is written in absolute terms (\"will have their system access suspended\"), but exceptions create exceptions.\n- While the exception was appropriately approved and the employee completed training December 3 (within the extended window), the policy as written does not explicitly contemplate exceptions.\n- This creates operational risk: without clear exception-handling language in the base policy, future administrators may misinterpret enforcement obligations.\n\n**Contextual Note:** This employee was in compliance (trained by December 3, within approved extension). The gap is **not an immediate violation** but a **policy clarity issue** that could lead to enforcement inconsistency.\n\n**Severity:** **LOW**\n\n---\n\n### Finding 5: Contractor Background Check Exemption Documentation \u2014 Reliance on Third-Party Screening\n\n**Title:** Delegated Background Check Responsibility for Contractor with After-Hours Facility Access\n\n**Document Reference:** HR Exception Register (EXC-HR-2025-002); Contractor Onboarding Report (Apex Janitorial LLC)\n\n**Issue:**\nApex Janitorial LLC (CTR-5002) was granted after-hours badge access with a background check exemption (EXC-HR-2025-002) on the basis that the contracting agency provides screening and Helix reviewed agency standards in February 2025.\n\n**Observation:**\nThe exception register states: \"Agency screening standards meet Helix minimum requirements\" per Q2 2025 review. However, no documented evidence (e.g., written verification of agency screening procedures, attestation, or minimum standards comparison) is included in the provided documents.\n\n**Compliance Consideration:**\n- POL-HR-019 Section 3.1 requires background checks for all individuals prior to granting access.\n- The policy does not explicitly authorize delegation to third-party agency screening.\n- While the compensating control (escorted access, excluded areas) is reasonable and documented, the first-line control (background check equivalence verification) lacks evidential support in the record.\n\n**Contextual Mitigant:** The role is classified as Non-Sensitive, the physical access is limited to common areas, and compensating controls are documented. This is a **documentation gap**, not an operational risk.\n\n**Severity:** **MEDIUM**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Status |\n|---|---------|----------|--------|\n| 1 | Unresolved Pending Background Check \u2014 Full Production Access Granted | CRITICAL | Active \u2014 Immediate remediation required |\n| 2 | Expired Exception Not Renewed \u2014 Lapsed Coverage | CRITICAL | Active \u2014 Immediate remediation required |\n| 3 | Missing 90-Day Risk Assessment Documentation | HIGH | Active \u2014 Documentation backfill required |\n| 4 | Training Deadline Enforcement Policy Ambiguity | LOW | Prospective \u2014 Policy clarification recommended |\n| 5 | Contractor Background Check Delegation \u2014 Missing Documentation | MEDIUM | Prospective \u2014 Documentation/evidence gathering required |\n\n---\n\n## Remediation Priority\n\n**Immediate Actions Required:**\n1. **Natasha Orlova (HCS-3007):** Conduct formal risk assessment within 5 business days. Options: (a) expedite completion of international background check, (b) restrict production access pending completion, or (c) file renewal exception with board-approved compensating controls and defined completion timeline.\n2. **Exception Management:** Implement automated exception expiration notifications and escalation protocol to prevent lapsed coverage.\n3. **Documentation:** Backfill documented 90-day risk assessment for EXC-HR-2025-003 with dated risk determination and approver signature.\n\n**Recommended Improvements:**\n- Update POL-HR-019 Section 4.3 to explicitly reference exception handling procedure.\n- Establish formal verification and documentation protocol for contractor third-party background check delegation.\n- Implement exception dashboard with trend reporting to identify systemic escalation failures."
+}

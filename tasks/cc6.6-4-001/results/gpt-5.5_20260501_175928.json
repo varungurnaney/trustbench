@@ -1,0 +1,90 @@
+{
+  "task_id": "cc6.6-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T17:59:28.533535",
+  "score": {
+    "task_id": "cc6.6-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4444444444444444,
+    "f1": 0.6153846153846153,
+    "score": 0.6153846153846153,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "EXC-NET-2025-003",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "prod-webhook-receiver",
+          "waf_association"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "notification service",
+          "unencrypted HTTP",
+          "TLS-008"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "sgr-032",
+          "prod-batch-processing",
+          "9200"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "TLS-014",
+          "Elasticsearch",
+          "TLS 1.2",
+          "PII"
+        ],
+        "total_keywords": 4,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8254,
+    "output_tokens": 4278
+  },
+  "raw_response": "## Overall readiness assessment for CC6.6\n\nPrism Cloud has several strong boundary protection controls in place, including segmented production tiers, security-group-based restrictions between ALB, application, data, cache, and internal API tiers, WAF on some public endpoints, and generally strong TLS coverage across public and internal services. However, the evidence also shows several gaps that would likely prevent a clean SOC 2 Type II readiness conclusion for CC6.6 without remediation or additional evidence.\n\n---\n\n## Findings\n\n| # | Finding | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Cross-VPC staging-to-production access is broader than the approved exception | Security group export: `prod-data-sync-cross-vpc`, rules `sgr-021`, `sgr-022`; Exception register: `EXC-NET-2025-003`; Policy Sections 3.1, 3.3, 8 | The approved exception allows cross-VPC connectivity only from `10.1.4.0/24` staging ML subnet to `10.0.8.0/24` production data export subnet, with encrypted IPsec tunnel and audit logging. However, the security group allows **all protocols and all ports** between the entire staging VPC CIDR `10.1.0.0/16` and the production security group. This materially exceeds the documented compensating control and violates least privilege and environment isolation requirements. | **High** |\n| 2 | Public webhook receiver lacks required WAF protection | Security group export: `prod-webhook-receiver`, rule `sgr-028`, `waf_association: null`; Policy Section 4.1 | The webhook receiver is a public HTTPS endpoint open to `0.0.0.0/0`. Policy requires all public-facing HTTP/HTTPS endpoints to be protected by AWS WAF. The endpoint has valid TLS, but there is no WAF association and no documented exception. | **Medium** |\n| 3 | Notification service uses unencrypted internal HTTP in production | Security group export: `prod-notification-service`, rule `sgr-015`; TLS audit: `TLS-008`; Policy Section 5.2 | The notification service accepts internal traffic over port `8080` with no TLS configured. The TLS audit explicitly marks this as non-compliant. Policy prohibits unencrypted HTTP for any production inter-service communication, even where the service does not handle PII. No exception was provided. | **Medium** |\n| 4 | Batch processing workers have unrestricted outbound access to Elasticsearch port 9200 | Security group export: `prod-batch-processing`, rule `sgr-032`; TLS audit: `TLS-014`; Policy Section 3.3 | The batch processing security group allows outbound traffic to `0.0.0.0/0` on port `9200`, described as \u201cElasticsearch cluster access \u2014 legacy configuration pending migration.\u201d Port 9200 is a non-public service port, and Elasticsearch handles customer PII according to the TLS audit. The rule is not limited to a specific internal Elasticsearch security group, CIDR, or VPC endpoint. No approved exception was provided. | **High** |\n| 5 | Partner API gateway is exposed to the entire internet despite description indicating partner IP restriction | Security group export: `prod-partner-api-gateway`, rule `sgr-023`; Policy Section 3.3 | The rule description states \u201cAllow HTTPS from partner IP ranges,\u201d but the actual source is `0.0.0.0/0`. While the endpoint has WAF protection and TLS 1.3, the security group does not enforce the stated partner allowlist. This is a least-privilege gap and could increase exposure of a PII-handling public API. | **Medium** |\n| 6 | Exception records appear stale or internally inconsistent | Exception register: `EXC-NET-2025-003`, `EXC-NET-2025-004`; Policy Section 8 | `EXC-NET-2025-003` shows an expiration date of `2025-12-05`, but the evidence export is dated `2025-12-15` and the status remains \u201cActive.\u201d The review outcome says it was extended to `2026-06-05`, but the expiration field was not updated. Similarly, `EXC-NET-2025-004` shows expiration `2025-10-05`, but status remains \u201cActive\u201d and review notes say it was extended to `2026-04-05`. This creates ambiguity over whether exceptions are valid and time-bound as required. | **Low** |\n| 7 | Security group evidence is incomplete for staging and development environments | Security group export metadata and VPC list; Policy Sections 3.1, 3.2, 3.3, 7.2 | The export claims to cover all Prism Cloud VPCs and lists production, staging, and development VPCs. However, the security group details provided appear to cover only production security groups. There is insufficient evidence to verify that staging and development are properly segmented, have no unauthorized public exposure, and do not have prohibited connectivity to production except through approved exceptions. | **Medium** |\n| 8 | Insufficient implementation evidence for network monitoring and intrusion detection | Policy Section 7.1; provided evidence set | The policy requires VPC Flow Logs, GuardDuty, Splunk anomaly detection, WAF log forwarding, and alert review. However, the evidence provided does not include configuration exports, screenshots, log samples, SIEM alert rules, GuardDuty enablement evidence, or VPC Flow Log status. Because CC6.6 includes protection against external threats, monitoring and detection evidence is needed to demonstrate operating effectiveness. | **Medium** |\n| 9 | Monitoring security group allows broad production CIDR access to Prometheus | Security group export: `prod-monitoring`, rule `sgr-018`; Policy Sections 3.2, 3.3 | Prometheus allows inbound traffic on port `9090` from the entire production VPC CIDR `10.0.0.0/16`. While metrics scraping may require broad coverage, the rule is not limited to specific application security groups, service subnets, or known exporters. This weakens internal segmentation and increases lateral movement exposure if any production host is compromised. | **Low** |\n\n---\n\n## Notes on items that appear acceptable or compensated\n\n- **Redis TLS 1.2**: TLS audit `TLS-007` shows Redis uses TLS 1.2. This is covered by exception `EXC-NET-2025-004`, with compensating controls stating no PII is stored, session tokens are ephemeral, and access is restricted to the application tier. The exception record itself has an expiration-date inconsistency, but the Redis configuration is otherwise documented.\n\n- **Cross-VPC data sync concept**: Cross-environment connectivity is not automatically a finding because `EXC-NET-2025-003` exists. The issue is that the actual security group rules are much broader than the approved exception.\n\n- **Public ALB and Partner API TLS**: The public ALB and partner API gateway use TLS 1.3 and have WAF associations. The partner API finding is specific to the mismatch between the described partner IP restriction and the actual `0.0.0.0/0` source.\n\n- **TLS posture overall**: Most reviewed endpoints use TLS 1.3 or acceptable TLS 1.2. The main encryption-in-transit failure is the notification service using unencrypted HTTP in production.\n\n---\n\n## Summary conclusion\n\nPrism Cloud demonstrates a mature baseline for system boundary protection, but the current evidence identifies material gaps in network segmentation, firewall rule least privilege, WAF coverage, encryption of internal traffic, and monitoring evidence. The most significant issues are the overly broad staging-to-production cross-VPC rules, unrestricted outbound Elasticsearch access from batch workers, and the unprotected public webhook endpoint. These should be remediated or formally risk-accepted with properly documented and technically enforced compensating controls before concluding readiness for CC6.6."
+}

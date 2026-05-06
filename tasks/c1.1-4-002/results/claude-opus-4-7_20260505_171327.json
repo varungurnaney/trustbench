@@ -1,0 +1,92 @@
+{
+  "task_id": "c1.1-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:13:27.224128",
+  "score": {
+    "task_id": "c1.1-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "Meridian Financial",
+          "PGP-002",
+          "EXC-2025-022",
+          "24-month",
+          "approved",
+          "compensating",
+          "partner"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "APP-006",
+          "notification",
+          "OVERDUE",
+          "October 2024",
+          "EXC-2025-021",
+          "expired",
+          "email",
+          "phone",
+          "PII"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-021",
+          "expired",
+          "without renewal",
+          "remediation not completed",
+          "no follow-up",
+          "process",
+          "lifecycle"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "APP-006",
+          "OVERDUE",
+          "14 months"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6099,
+    "output_tokens": 2470
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 C1.1 / CC6.7\n## Encryption Key Lifecycle Controls \u2014 Q4 2025\n\n---\n\n## Executive Summary\n\nHalcyon Cloud Services demonstrates a generally mature key management program with documented procedures (SOP-KM-001 v2.5), automated KMS rotation, and a functioning exception process. However, review of the key rotation log against the exception register identified one **genuine, material control failure** related to an expired exception with unremediated underlying deviation. Other apparent deviations are appropriately governed by active, properly scoped exceptions.\n\n---\n\n## Findings\n\n### Finding 1: APP-006 Notification Service Key Rotation Overdue with Lapsed Exception\n\n**Title:** Production application key (notification service) overdue >14 months following expired exception\n\n**Related Documentation:**\n- Key Rotation Log \u2014 APP-006 (`hcs-prod-notification-key`)\n- Exception Register \u2014 EXC-2025-021 (Expired 2025-07-10, \"Not renewed. Remediation not completed. No follow-up exception filed.\")\n- SOP-KM-001 \u00a74.1 (Application keys: every 12 months)\n\n**Why it's a gap:**\n- The original rotation due date was October 2024. The exception (EXC-2025-021) deferred this to July 10, 2025. As of the audit period close (December 31, 2025), the key remains unrotated \u2014 **over 14 months past the original due date and ~6 months past the deferred date.**\n- The expiration review explicitly states remediation was not completed and no follow-up exception was filed. This means that for the **entire Q4 2025 audit period**, the key was operating in violation of policy without compensating control coverage.\n- The key encrypts customer contact preferences (email and phone), which is Confidential-classified PII \u2014 directly relevant to C1.1 (identification and protection of confidential information).\n- Remediation is tagged for \"Q1 2026\" but no formal exception, risk acceptance, or CAB-approved remediation plan is evidenced.\n- This constitutes a CC6.7 deficiency (failure to restrict and protect data using documented cryptographic controls) and a C1.1 deficiency (confidential PII protected by an out-of-policy key).\n\n**Severity: HIGH**\n*Rationale:* Production system, confidential PII in scope, extended duration, no compensating controls in force, governance process failed (exception expired without renewal or remediation).\n\n---\n\n### Finding 2: TLS Cipher Suite Below Standard on Partner-Sync Endpoint with No Filed Exception\n\n**Title:** Partner integration endpoint operating with AES-128-CBC TLS cipher; no exception on file\n\n**Related Documentation:**\n- Change Log \u2014 CHG-2025-355 (Postponed; current cipher: `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256`)\n- SOP-KM-001 \u00a73.1 (\"All symmetric keys must be AES-256 unless an approved exception exists for AES-128\")\n- Exception Register \u2014 no exception filed for this endpoint\n\n**Why it's a gap:**\n- The partner-sync endpoint is currently using AES-128-CBC, which deviates from the SOP-KM-001 \u00a73.1 requirement of AES-256.\n- The change to remediate (CHG-2025-355) was postponed to Q1 2026 without a corresponding CISO-approved exception in the exception register.\n- Unlike EXC-2025-020 (which properly documented AES-128 use for Kafka with compensating controls), this deviation has no documented risk acceptance, no compensating controls, and no expiration date.\n- CBC mode (vs. GCM used in the approved Kafka exception) is also a weaker construction, increasing residual risk.\n- This is both a policy violation (undocumented deviation) and a governance failure (the exception process exists but was bypassed).\n\n**Severity: MEDIUM**\n*Rationale:* External-facing partner endpoint handling confidential data, but TLS layer is in addition to file-level PGP/SFTP protections; primary issue is governance (no exception filed) rather than absent encryption.\n\n---\n\n### Finding 3: Rotation Log Sign-Off Field Not Evidenced\n\n**Title:** Key Rotation Log fields do not demonstrate Security Engineering lead sign-off as required\n\n**Related Documentation:**\n- SOP-KM-001 \u00a74.4 (requires \"Sign-off by Security Engineering lead\" on each rotation entry)\n- Key Rotation Log columns: `performed_by`, `verified_by`\n\n**Why it's a gap:**\n- SOP-KM-001 \u00a74.4 specifies that each rotation log entry must include sign-off by the Security Engineering lead. The provided log records `verified_by` (consistently \"Amanda Liu\" or \"Automated Config Check\") but does not contain a distinct lead sign-off field.\n- It is unclear whether Amanda Liu serves as the Security Engineering lead (in which case the control is met but the field naming is inconsistent with the SOP) or whether lead sign-off is genuinely missing.\n- For a Type II assessment, this ambiguity weakens evidentiary value of the rotation log.\n\n**Severity: LOW**\n*Rationale:* Likely a documentation/labeling issue rather than a substantive control failure, but should be clarified before Type II audit fieldwork.\n\n---\n\n## Items Reviewed and Determined NOT to be Findings\n\n| Item | Disposition |\n|------|-------------|\n| **EXC-2025-020** (AES-128 for Kafka) | **Acceptable.** Properly scoped, time-bound, compensating controls (Internal data only, mTLS, ephemeral, monthly audit), expired with documented migration to AES-256. |\n| **EXC-2025-022** (Meridian Financial 24-month PGP cycle) | **Acceptable.** Active exception, business justification (partner constraints), strong compensating controls (SFTP, SHA-256 integrity, quarterly reviews), aligns with SOP \u00a74.1 partner PGP frequency where a deviation is documented. |\n| **PGP-002** showing \"N/A\" for current rotation | **Acceptable.** Status is \"Upcoming\" with due date January 15, 2026 \u2014 within the 24-month cycle approved by EXC-2025-022. Coordination evidenced as initiated December 1, 2025. |\n| **APP-007 staging key** | **Acceptable.** Rotated December 1, 2025; no production data. |\n| KMS auto-rotation, SSH 6-month rotation, other APP keys | **Operating effectively** based on log evidence. |\n\n---\n\n## Recommendations\n\n1. **Immediate (Finding 1):** File a retroactive risk acceptance memo for APP-006, complete the dual-key refactor and rotation in Q1 2026, and add a control to alert when an exception expires without remediation closure or renewal.\n2. **Finding 2:** File a formal exception for CHG-2025-355 covering the period until Q1 2026 implementation, with documented compensating controls.\n3. **Finding 3:** Update the Key Rotation Log template to include an explicit \"Security Engineering Lead Sign-off\" column distinct from the verifier.\n4. **Process improvement:** Add an automated control linking the exception register to the key rotation log so that expired exceptions trigger CAB review."
+}

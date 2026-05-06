@@ -1,0 +1,100 @@
+{
+  "task_id": "cc7.2-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:01:43.421643",
+  "score": {
+    "task_id": "cc7.2-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-batch-reconciler",
+          "decommissioned",
+          "SEC-EXC-2025-041",
+          "October 30",
+          "approved exception"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "real-time-collab-service",
+          "AC-SVC-019",
+          "November 15",
+          "customer document content"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "ALT-Q4-044",
+          "ALT-Q4-045",
+          "SLA breach",
+          "19 minutes",
+          "25 minutes"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "monthly alert tuning",
+          "Section 4.3",
+          "Alert Rule Change Log",
+          "no evidence",
+          "false positive",
+          "ad-hoc tuning"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "daily log review",
+          "Section 5",
+          "reviewer name",
+          "sign-off"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 18277,
+    "output_tokens": 2835
+  },
+  "raw_response": "# SOC 2 CC7.2 Readiness Assessment \u2014 Atlas Cloud Q4 2025\n\n## Executive Summary\n\nAtlas Cloud demonstrates a generally mature monitoring program with a documented policy, broad SIEM coverage (18/20 services), 167 active alert rules, and consistent alert response performance (43/45 alerts within SLA). However, several gaps were identified that affect CC7.2 conformance. Notably, I am **not** flagging the legacy-batch-reconciler as a finding \u2014 it has a valid, approved exception and is decommissioned.\n\n---\n\n## Findings\n\n### Finding 1: Production service operating without SIEM integration beyond policy SLA\n**Related to:** SIEM Coverage Report \u2014 `real-time-collab-service` (AC-SVC-019); Policy Section 3.1 (5-business-day integration SLA); Section 8 (Exception requirements)\n\n**Gap:** The `real-time-collab-service` was deployed to production on November 15, 2025 and remained un-integrated with Splunk through December 31, 2025 \u2014 approximately **33 business days past the 5-day integration SLA**. The service processes ~850K events/day including customer document content, yet has:\n- No SIEM ingestion\n- No security-specific alerting (only basic CloudWatch error/latency alarms)\n- **No documented exception** in the Security Exception Register (unlike the legacy-batch-reconciler)\n- **No risk assessment performed** (per the SIEM coverage report itself)\n\nThis is a direct policy violation and represents a meaningful blind spot for a customer-data-handling service. It also means SIEM coverage (90%) is below the 100% target without a sanctioned exception.\n\n**Severity:** **High**\n\n---\n\n### Finding 2: Monthly alert tuning not evidenced\n**Related to:** Policy Section 4.3 (monthly alert tuning required); SIEM Coverage Report `alert_rule_summary`\n\n**Gap:** Policy requires monthly alert rule tuning with documentation in an Alert Rule Change Log and Security Operations Lead approval. The SIEM report shows aggregate Q4 activity (7 added, 12 modified, 3 deprecated) but no monthly cadence evidence, no Alert Rule Change Log was provided, and no approval records were furnished. While many alert resolutions in the response log mention ad-hoc tuning (\"alert threshold adjusted,\" \"allowlist updated\"), these appear to be reactive per-incident adjustments rather than the structured monthly review the policy requires.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 3: Daily log review documentation not provided\n**Related to:** Policy Section 5.1 and 5.2 (Daily log review requirements)\n\n**Gap:** Policy mandates a daily SIEM log review covering specific dashboards, with documented reviewer name, timestamp, findings, and analyst sign-off. No daily log review records were provided as evidence for the 92-day Q4 observation period. Without these artifacts, the auditor cannot conclude that the daily review control operated effectively. This is a documentation/operating-effectiveness gap that would typically be tested via sampling.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 4: Critical alert SLA breaches\n**Related to:** Alert Response Log \u2014 ALT-Q4-044, ALT-Q4-045; Policy Section 4.1 (15-minute Critical SLA)\n\n**Gap:** Two Critical-severity alerts breached the 15-minute response SLA in December:\n- **ALT-Q4-044** (Dec 17): 19 minutes \u2014 team in post-mortem meeting\n- **ALT-Q4-045** (Dec 22): 25 minutes \u2014 concurrent alert handling\n\nBoth rationales (post-mortem occupation, concurrent paging) suggest **insufficient on-call surge capacity / backup paging coverage** for Critical events. The 24/7 rotation defined in Policy 4.2 should have a documented escalation path when the primary on-call is engaged. No evidence of a corrective action plan, root-cause analysis, or process change was provided. Two breaches in a single quarter on the highest severity tier is a pattern, not an isolated event.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: Privileged production database access without prior written approval\n**Related to:** ALT-Q4-045 (Dec 22 emergency DBA index rebuild); Policy Section 8 / general change control\n\n**Gap:** Emergency DBA performed direct privileged access to `atlas-prod-primary` on a verbal CTO approval, with written approval documented **5.5 hours after the fact**. While operationally understandable, this does not meet evidence standards for a properly-authorized break-glass procedure. The policy does not appear to define a formal break-glass workflow with concurrent ticketing/approval, and the alert log notes a similar pattern in ALT-Q4-016 (\"break-glass procedure documented\" \u2014 implying it was documented after the fact). This is both a CC7.2 issue (the monitoring did fire correctly) and a CC6.x privileged-access concern.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: Quarterly CMDB-to-SIEM reconciliation not effectively closing items\n**Related to:** Policy Section 6.2; SIEM Coverage Report (legacy-batch-reconciler \"pending CMDB removal\")\n\n**Gap:** The legacy-batch-reconciler was decommissioned October 30, 2025, but as of December 31, 2025, it still appears in the CMDB and the SIEM coverage report (artificially depressing coverage percentages and creating exception tracking overhead). The policy requires quarterly reconciliation, but the Q4 reconciliation evidently did not result in CMDB cleanup \u2014 that work was deferred to January 2026. This indicates the reconciliation control identifies issues but does not drive timely remediation. Low risk individually, but indicative of process drift.\n\n**Severity:** **Low**\n\n---\n\n### Finding 7: Red team exercise not coordinated with SOC\n**Related to:** ALT-Q4-026 (Nov 14 \u2014 Cobalt Strike beacon detection)\n\n**Gap:** A red team exercise triggered a Critical malware alert because the Security team failed to pre-notify the SOC. While the detection itself worked correctly (a positive for CC7.2), this represents a process failure between security functions that wasted incident response cycles and could have masked a real attack occurring concurrently. Process was reportedly updated post-incident, but no evidence of the updated procedure was provided.\n\n**Severity:** **Low**\n\n---\n\n### Finding 8: One alert acknowledgment timestamp data integrity issue\n**Related to:** ALT-Q4-042, ALT-Q4-043 (negative response times of -2 and -11 minutes)\n\n**Gap:** Two alert records show acknowledgment times **earlier than alert generation times** (response times of -2 and -11 minutes). While the explanation (\"team already engaged on related incident\") is plausible, it indicates that the alert response log's SLA measurement methodology does not handle correlated/cascading alerts cleanly. This raises questions about the reliability of MTTA metrics reported to the CISO (Policy \u00a77) and whether other SLA \"met\" determinations are accurate.\n\n**Severity:** **Low**\n\n---\n\n## Items Reviewed and NOT Flagged as Findings\n\n- **Legacy-batch-reconciler SIEM gap** \u2014 Valid approved exception (SEC-EXC-2025-041) with appropriate compensating controls and CISO sign-off; service is genuinely decommissioned.\n- **VPC flow log gaps in eu-west-1 (Dec 22-23)** \u2014 AWS-side issue, no data loss, properly tracked.\n- **High false-positive rate in alert log** \u2014 Most \"false positives\" reflect appropriate investigation and tuning, which is the intended control behavior.\n- **Below-target authentication service uptime (99.98% vs 99.99%)** \u2014 Availability metric, not directly within CC7.2 scope.\n\n---\n\n## Overall Readiness Conclusion\n\nCC7.2 is **partially effective**. The control design is sound, but operating effectiveness has gaps \u2014 most significantly the un-exempted, un-integrated `real-time-collab-service` (Finding 1) and missing evidence for two recurring control activities (Findings 2 and 3). Remediation of Finding 1 should be prioritized before the formal SOC 2 examination period."
+}

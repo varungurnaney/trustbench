@@ -1,0 +1,77 @@
+{
+  "task_id": "cc6.6-1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T18:08:41.251899",
+  "score": {
+    "task_id": "cc6.6-1-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 0.5,
+    "precision": 0.18181818181818182,
+    "f1": 0.26666666666666666,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "boundary"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAF",
+          "web application firewall",
+          "IDS",
+          "IPS"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "should",
+          "where feasible",
+          "internal",
+          "encryption",
+          "must",
+          "PHI",
+          "permissive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1077,
+    "output_tokens": 1926
+  },
+  "raw_response": "# CC6.6 Readiness Assessment \u2014 Orion Health Network Security Policy\n\n## Overall Assessment\n\nThe policy establishes a reasonable foundation for network security but contains several gaps that an auditor would flag during a SOC 2 Type II readiness review. CC6.6 specifically requires protection against threats from **outside** system boundaries, and several controls expected by auditors are either absent, vague, or lack measurable requirements.\n\n---\n\n## Findings\n\n### 1. Weak/Permissive Language for Internal Encryption\n- **Section:** 4.2 Encryption in Transit \u2014 Internal Traffic\n- **Gap:** The phrase \"should use encrypted channels where feasible\" is non-binding and unmeasurable. For a healthcare entity handling PHI, auditors expect a definitive requirement (e.g., \"must use TLS 1.2+ for all service-to-service communication\"). \"Where feasible\" creates an open exception with no documented approval process.\n- **Severity:** **High**\n\n### 2. No Intrusion Detection / Prevention or WAF Requirement\n- **Section:** 3.3 Firewall and Access Control / 6. Monitoring\n- **Gap:** CC6.6 expects controls that detect and respond to external threats. The policy mentions ALBs and VPC Flow Logs but does not require a Web Application Firewall (WAF), IDS/IPS, or DDoS protection (e.g., AWS Shield, AWS WAF, GuardDuty). VPC Flow Logs alone are not sufficient threat detection.\n- **Severity:** **High**\n\n### 3. Missing Boundary Protection Review/Testing Cadence\n- **Section:** General / Section 7\n- **Gap:** No requirement for periodic external vulnerability scans or penetration testing of internet-facing assets. SOC 2 auditors typically expect documented cadence (e.g., quarterly vulnerability scans, annual pen test) tied to CC6.6/CC7.1.\n- **Severity:** **High**\n\n### 4. No Security Group / Firewall Rule Review Process\n- **Section:** 3.3 Firewall and Access Control\n- **Gap:** Policy states rules \"must follow least privilege\" but provides no requirement for periodic review, change approval, or auditing of security group rules. Without a recurring review process, drift goes undetected and auditors cannot test the control's operating effectiveness.\n- **Severity:** **High**\n\n### 5. VPN MFA Requirements Underspecified\n- **Section:** 5. VPN Access\n- **Gap:** While MFA is required, the policy does not specify acceptable MFA factors (e.g., prohibiting SMS), session timeout limits, account provisioning/deprovisioning tied to HR events, or who is authorized to receive VPN access. 90-day log retention may also be insufficient for a HIPAA-regulated entity.\n- **Severity:** **Medium**\n\n### 6. No TLS Configuration Standard Beyond Version\n- **Section:** 4.1 External Traffic\n- **Gap:** Policy specifies \"TLS 1.2 or higher\" but does not address cipher suite restrictions, certificate rotation cadence, HSTS, or prohibition of weak/deprecated ciphers. Auditors often flag this in healthcare contexts.\n- **Severity:** **Medium**\n\n### 7. No Definition of System Boundaries\n- **Section:** 2. Scope / 3. Network Architecture\n- **Gap:** CC6.6 hinges on protecting the **boundary** of the system. The policy lists AWS components but does not formally define system boundaries, trust zones, or data flows between zones. Auditors typically expect a network diagram referenced or attached.\n- **Severity:** **Medium**\n\n### 8. No Reference to Incident Detection/Response Linkage\n- **Section:** 6. Monitoring\n- **Gap:** SIEM forwarding is mentioned, but there is no requirement defining alerting thresholds, response SLAs, or linkage to an incident response policy. Logs without monitoring/alerting do not satisfy CC6.6's threat-protection intent.\n- **Severity:** **Medium**\n\n### 9. Missing Remote Access Endpoint Requirements\n- **Section:** 5. VPN Access\n- **Gap:** No requirement for endpoint posture (managed device, disk encryption, EDR) before VPN connection is permitted. External threats often originate from compromised admin endpoints.\n- **Severity:** **Medium**\n\n### 10. Annual Review Cadence May Be Insufficient\n- **Section:** 7. Policy Review\n- **Gap:** Annual review by a single owner with no defined review evidence (sign-off log, change history beyond version number) makes the control hard to evidence. Auditors expect documented review attestations.\n- **Severity:** **Low**\n\n### 11. No Mention of Third-Party / Vendor Network Connections\n- **Section:** 3. Network Architecture\n- **Gap:** The scope omits any treatment of B2B integrations, partner VPNs, or SaaS egress, which are common external threat vectors evaluated under CC6.6.\n- **Severity:** **Low**\n\n---\n\n## Summary by Severity\n\n| Severity | Count |\n|----------|-------|\n| Critical | 0 |\n| High | 4 |\n| Medium | 5 |\n| Low | 2 |\n\n## Recommended Priority Actions\n1. Strengthen internal encryption language (remove \"where feasible\").\n2. Add explicit WAF, IDS/IPS, and DDoS protection requirements.\n3. Establish documented vulnerability scanning and penetration testing cadence.\n4. Add periodic security group review and approval workflow.\n5. Attach or reference a system boundary/network architecture diagram."
+}

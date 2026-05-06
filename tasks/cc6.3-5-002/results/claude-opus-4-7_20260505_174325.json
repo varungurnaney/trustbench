@@ -1,0 +1,84 @@
+{
+  "task_id": "cc6.3-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:43:25.295042",
+  "score": {
+    "task_id": "cc6.3-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.42857142857142855,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Priya Mehta",
+          "SOW-NB-2025-034",
+          "NDA",
+          "active",
+          "customer_analytics"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Marcus Webb",
+          "CloudNine",
+          "NDA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-appdev-team",
+          "shared",
+          "Jason Torres",
+          "Lisa Huang",
+          "Kevin Park",
+          "AppDev Partners",
+          "individual",
+          "accountability"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "NDA-2025-DF-003",
+          "annual"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5863,
+    "output_tokens": 2549
+  },
+  "raw_response": "# CC6.3 Compliance Assessment \u2014 NovaBridge Technologies Contractor Access Controls\n\n## Summary\nAssessment identifies multiple control failures in contractor access management, including a **critical access revocation failure** with confirmed unauthorized data access post-SOW, **shared service accounts** violating individual accountability requirements, and a **missing NDA** for an active contractor with data access.\n\n---\n\n## Finding 1: Failure to Revoke Contractor Access After SOW Completion\n\n**Related Section:** Policy \u00a76.3 (Access Duration and Revocation); Contractor Access Register; Q4 Audit Log\n\n**Gap:** Priya Mehta's SOW (SOW-NB-2025-034) ended on 2025-11-15 with status \"Completed,\" yet:\n- The contractor register shows `access_revoked_date` is **blank** (should have been revoked by 2025-11-17 per the 48-hour requirement)\n- Audit logs confirm continued data access on 2025-11-22, 2025-12-08, and 2025-12-18 \u2014 including a query returning 2,200 rows of customer_analytics data **33 days after SOW expiration**\n- Internal log notes explicitly flag \"Post-SOW query \u2014 access should have been revoked\" and \"Continued unauthorized access\"\n\nThis is a direct, evidenced violation of least-privilege and authorization-based access principles under CC6.3. The fact that the violation was logged but not acted upon also indicates the monthly contractor review control (\u00a76.5) failed \u2014 the 2025-12-01 review by sponsor Elena Vasquez did not catch (or did not act on) the expired SOW.\n\n**Severity:** **Critical**\n\n---\n\n## Finding 2: Shared Service Account Violates Individual Accountability Requirement\n\n**Related Section:** Policy \u00a76.2 (Individual Accountability); Contractor Access Register\n\n**Gap:** Three AppDev Partners contractors (Jason Torres, Lisa Huang, Kevin Park) all share the database account `svc-appdev-team`. Policy \u00a76.2 explicitly states: *\"Each contractor must have an individual database account. Shared accounts for contractor teams are prohibited. All contractor activity must be attributable to a named individual for audit purposes.\"*\n\nThe audit log confirms the impact: queries from `svc-appdev-team` (including INSERT operations to `feature_flags` and `user_preferences`) cannot be attributed to a specific individual, undermining accountability, segregation of duties, and incident investigation capability. This is particularly concerning because the account has **write access (INSERT)** to Confidential data.\n\n**Severity:** **High**\n\n---\n\n## Finding 3: Missing NDA for Active Contractor with Data Access\n\n**Related Section:** Policy \u00a76.1 (Pre-Provisioning Requirements); Contractor Access Register\n\n**Gap:** Marcus Webb (CloudNine Consulting, account `m.webb`) has an active access grant since 2025-10-01 with `nda_reference` field **blank** in the contractor register, and no corresponding entry exists in the NDA register. Policy \u00a76.1 requires: *\"All contractors must have an executed NDA on file before data access is provisioned.\"*\n\nAudit logs confirm Webb has executed at least 5 queries against `product_catalog` and `feature_usage` tables (Internal classification) without an NDA on file. This is a pre-provisioning control failure.\n\n**Severity:** **High**\n\n---\n\n## Finding 4: Segregation of Duties Concern \u2014 CISO as Both Approver and Sponsor\n\n**Related Section:** Policy \u00a73 (Restricted data approval); \u00a74.3 (Segregation of Duties); \u00a76.5 (Sponsor Reviews)\n\n**Gap:** Angela Foster (CISO) is listed as the contractor sponsor for both Rachel Kim and Omar Hassan (Quantix Solutions), who have access to **Restricted** data (customer_profiles, payment_history). Per the data classification table, Restricted data requires CISO + Data Owner + Privacy Officer approval. The CISO cannot meaningfully serve as both the approving authority and the sponsor performing monthly access reviews \u2014 this collapses an intended segregation of duties.\n\nAdditionally, NDA-2025-QX-007 and QX-008 were both executed by Angela Foster on the NovaBridge side, further consolidating control with a single individual.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 5: NDA Annual Review Field Missing for Established Contractor\n\n**Related Section:** Policy \u00a76.4 (NDA Requirements); NDA Register\n\n**Gap:** NDA-2025-DF-003 (Priya Mehta) shows a **blank `next_review_date`** field, while all other NDAs in the register have explicit annual review dates. Policy \u00a76.4 requires NDAs *\"be reviewed annually to ensure terms remain appropriate.\"* Without a scheduled review date, the annual review obligation cannot be tracked or enforced.\n\n**Severity:** **Low** (procedural gap, but compounds with Finding 1 since this contractor's access was also not revoked)\n\n---\n\n## Finding 6: Monitoring Alert Threshold Not Triggering on Suspicious Patterns\n\n**Related Section:** Policy \u00a77 (Monitoring); Q4 Audit Log\n\n**Gap:** Policy \u00a77 states automated alerts fire for bulk queries >10,000 records and that *\"Contractor access patterns reviewed weekly.\"* While no individual query exceeded 10,000 rows, weekly pattern review should have detected:\n- Continued queries from p.mehta after 2025-11-15 SOW completion\n- m.webb operating without an NDA reference\n\nThe fact that these issues persisted through multiple weekly review cycles and at least one monthly review (2025-12-01) suggests the detective monitoring controls are not operating effectively, even where preventive controls failed.\n\n**Severity:** **High**\n\n---\n\n## Finding 7: Inadequate Sponsor Notification Mechanism for SOW Completion\n\n**Related Section:** Policy \u00a76.3 (Contractor sponsor responsibility)\n\n**Gap:** Policy \u00a76.3 places SOW completion notification responsibility solely on the contractor sponsor with no automated backstop. The Mehta case demonstrates this single point of failure \u2014 sponsor Elena Vasquez did not notify IT, and there is no automated control linking SOW end dates in the register to access revocation workflows. A compensating preventive control (e.g., automatic disablement at SOW end date) is absent.\n\n**Severity:** **Medium**\n\n---\n\n## Overall Conclusion\n\n**Control CC6.3 is NOT operating effectively.** The combination of confirmed unauthorized access post-SOW (Finding 1), shared service accounts undermining accountability (Finding 2), and missing NDA for an active contractor (Finding 3) represents material weaknesses requiring remediation before SOC 2 attestation. Policy design is largely sound, but operational execution and detective monitoring have failed.\n\n### Recommended Remediation Priorities\n1. **Immediate:** Revoke p.mehta access; investigate scope of post-SOW data accessed\n2. **Immediate:** Provision individual accounts for AppDev contractors; deprecate `svc-appdev-team`\n3. **Immediate:** Either obtain NDA for Marcus Webb or revoke access\n4. **30 days:** Implement automated access disablement tied to SOW end dates\n5. **30 days:** Reassign Quantix sponsor role to a non-CISO data owner\n6. **60 days:** Enhance weekly access pattern review with formal sign-off evidence"
+}

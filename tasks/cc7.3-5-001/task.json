@@ -1,0 +1,113 @@
+{
+  "id": "cc7.3-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.3",
+  "control_description": "The entity responds to identified security incidents by executing a defined incident response program to understand, contain, remediate, and communicate security incidents, as appropriate.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/incident-response-policy.md",
+      "type": "policy",
+      "description": "Clearpoint Financial Software incident response policy with financial-data-specific notification requirements and investigation deferral provisions"
+    },
+    {
+      "path": "evidence/incident-log-q4-2025.csv",
+      "type": "log",
+      "description": "Q4 2025 incident register with 7 incidents including detailed notes on customer notification decisions and investigation deferral rationale"
+    },
+    {
+      "path": "evidence/customer-notification-log.csv",
+      "type": "log",
+      "description": "Customer notification decision log showing notification timing, deferral decisions, and rationale for each incident"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/penetration-test-executive-summary.md",
+      "type": "report",
+      "description": "Annual penetration test executive summary — vulnerability management context but not direct incident response evidence"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Clearpoint Financial Software, a provider of portfolio management and trading analytics to institutional investors. The observation period is Q4 2025. Review the incident response policy, incident log, and customer notification log. Assess whether CC7.3 requirements for incident response — particularly regarding communication of security incidents — are met. Exercise professional judgment on notification timing decisions, especially where the policy allows investigation deferral before customer notification. Not all documents may be relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-705 investigation deferral exceeded the 72-hour policy limit by 12.5 hours",
+      "description": "Policy Section 4.2 states that after 72 hours of investigation, a notification decision must be made 'regardless of investigation completion status.' INC-2025-705 (unauthorized S3 access to customer-reports bucket) was detected December 5 at 01:30 UTC. The IC deferred notification at 03:00 UTC to investigate. The 72-hour decision deadline was December 8 at 01:30 UTC (or at latest 03:00 UTC based on deferral time). Breach was confirmed December 8 at 14:00 UTC — approximately 12.5 hours past the 72-hour mark. The customer notification log (NOTIF-2025-046) acknowledges this: 'investigation deferral exceeded the 72-hour policy limit in Section 4.2 by approximately 12.5 hours.' This is a judgment call: the IC chose investigation thoroughness over the policy deadline. The IC's rationale — that notifying customers without confirmed breach scope could cause 'unnecessary alarm and regulatory scrutiny' — is understandable for financial services clients, but the policy explicitly requires a decision at 72 hours. The notification was sent 175.5 hours after detection (but only 19 hours after breach confirmation).",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/customer-notification-log.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "The auditor must parse the timeline carefully: detection at Dec 5 01:30, deferral at 03:00, 72-hour limit at Dec 8 01:30-03:00, breach confirmed at Dec 8 14:00. The 72-hour policy limit was exceeded by ~12.5 hours. The judgment element: was the IC's decision to continue investigating rather than notify at 72 hours a reasonable exercise of discretion (the evidence was genuinely inconclusive — S3 access logs couldn't confirm full download), or a policy violation that left customers uninformed while their data was potentially exposed? The auditor should note that once breach was confirmed, notification was sent within 19 hours — well within the 48-hour SLA. The issue is the extended deferral, not the post-confirmation notification speed.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-705", "72-hour deferral limit", "12.5 hours exceeded", "Section 4.2", "investigation inconclusive", "S3 access logs", "customer-reports bucket", "175.5 hours after detection"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "INC-2025-703 notification deferral decision was appropriate but raises pattern concerns with INC-2025-705",
+      "description": "INC-2025-703 (anomalous database queries) was deferred and ultimately determined to be an internal pipeline bug — no breach occurred, so no customer notification was warranted. In isolation, this is a well-handled deferral: investigation was completed within 20 hours, the root cause was confirmed as internal, and the decision was properly documented. However, combined with INC-2025-705 (where deferral exceeded the 72-hour limit), a pattern emerges: the IC consistently defers customer notification during investigation uncertainty. The judgment call: is the IC appropriately exercising Section 4.2 deferral authority, or developing a habit of delaying notification that creates risk? Two deferrals in a single quarter suggests the organization may be biased toward investigation completeness over timely customer communication.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/customer-notification-log.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "INC-2025-703 deferral was justified — confirmed as pipeline bug within 20 hours, well under 72-hour limit. But paired with INC-2025-705 (where deferral exceeded the limit), the auditor should assess whether there is a systemic bias toward delayed notification. The policy allows deferral but requires a 72-hour hard stop. The IC followed the process for INC-2025-703 but violated it for INC-2025-705. A strict auditor raises this as a pattern; a pragmatic one notes that INC-2025-703 was handled correctly and focuses the finding on INC-2025-705 alone.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-703", "deferral pattern", "pipeline bug", "investigation completeness", "notification bias", "two deferrals", "Section 4.2"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-705 resolution took 84.5 hours — exceeding the 48-hour SEV-2 target with no exception filed",
+      "description": "INC-2025-705 was classified as SEV-2 with a 48-hour resolution target. Resolution took 84.5 hours — 76% over the SLA. While containment was achieved within 1 hour (IAM role revoked), the investigation to confirm whether data was actually exfiltrated extended the resolution timeline significantly. No exception was filed for the SLA miss, unlike other organizations where resolution extensions are documented. The IC prioritized forensic certainty (determining if 2.3 GB was actually downloaded by the unauthorized role) over meeting the resolution SLA. This is a judgment call: was the extended investigation appropriate for financial data, or should a preliminary resolution have been declared at 48 hours with ongoing investigation tracked separately?",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "Resolution at 84.5 hours vs. 48-hour target for SEV-2. Containment was rapid (1 hour), but full resolution required forensic analysis of VPC Flow Logs to correlate 2.3 GB transfer with the unauthorized IAM role. The auditor should consider: for financial services, confirming the exact scope of data exposure is critical for SEC reporting and customer notification accuracy. However, the policy defines a 48-hour resolution target, and no exception was documented.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-705", "84.5 hours", "48-hour resolution target", "no exception filed", "VPC Flow Logs", "2.3 GB transfer", "forensic analysis"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-704 exploited same API endpoint as remediated pentest finding — incomplete remediation led to second breach",
+      "description": "The penetration test (August 2025) found SQL injection in the reporting API endpoint `/api/v2/reports/custom` (PT-2025-001, Critical). This was 'remediated' by August 18 — parameterized queries added for the date range filter. However, INC-2025-704 (November 20) exploited the same endpoint via a different injection vector (nested JSON payload in report filter). The August remediation was vector-specific rather than comprehensive. The pentest report notes: 'The August remediation was incomplete — it addressed the specific vector found but did not comprehensively secure all input parameters.' This represents a failure in the remediation verification process: the fix was confirmed by retesting the specific vector but no broader input validation review was conducted. From an incident response perspective, the lesson from the pentest finding was not fully learned, leading to a second breach of the same endpoint.",
+      "evidence_sources": ["evidence/penetration-test-executive-summary.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "The auditor should connect PT-2025-001 (August SQL injection finding on /api/v2/reports/custom) with INC-2025-704 (November SQL injection on the same endpoint via different vector). The remediation was narrowly scoped — fixing one injection vector rather than comprehensively securing all inputs. This is a CC7.3 issue because the incident response process (including post-mortem action items from pentests) failed to drive adequate remediation. The judgment element: should the pentest remediation have included comprehensive input validation, or is it reasonable to only fix the specific vector found?",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-704", "PT-2025-001", "/api/v2/reports/custom", "incomplete remediation", "nested JSON payload", "same endpoint", "SQL injection", "second breach"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "INC-2025-705 exploited S3 bucket permission issue identified in pentest but not remediated by target date",
+      "description": "The penetration test finding PT-2025-005 (excessive S3 bucket permissions on customer-reports bucket) had a remediation target date of November 30, 2025. INC-2025-705 (unauthorized S3 access to customer-reports bucket) occurred December 5 — 5 days after the remediation deadline. The pentest finding specifically identified the vulnerability that was later exploited: 'customer-reports bucket allows GetObject for any authenticated IAM role in the AWS account, not scoped to specific service roles.' Had the remediation been completed by November 30, INC-2025-705 would likely have been prevented. This is a judgment call about remediation prioritization: a known high-severity vulnerability that wasn't fixed in time led to a data breach.",
+      "evidence_sources": ["evidence/penetration-test-executive-summary.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "PT-2025-005 identified the exact vulnerability exploited in INC-2025-705. Remediation target was November 30; breach occurred December 5. The 5-day gap between the missed deadline and the breach is significant — timely remediation would have prevented the incident. The auditor should note this as a systemic issue: incident response is reactive, but the organization failed at proactive remediation of a known vulnerability.",
+      "detection_criteria": {
+        "required_keywords": ["PT-2025-005", "INC-2025-705", "customer-reports bucket", "November 30 deadline", "December 5 breach", "remediation not completed", "S3 bucket permissions"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["incident_response", "judgment", "customer_notification_timing", "investigation_deferral", "financial_data", "breach_notification", "pentest_remediation", "SEC_reporting"]
+  }
+}

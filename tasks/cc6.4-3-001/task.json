@@ -1,0 +1,80 @@
+{
+  "id": "cc6.4-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.4",
+  "control_description": "The entity restricts physical access to facilities and protected information assets to meet the entity's objectives.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/physical-security-policy.md",
+      "type": "policy",
+      "description": "Nimbus Cloud Solutions physical security policy defining badge controls, visitor escort requirements, and termination procedures"
+    },
+    {
+      "path": "evidence/terminated-employees-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "HR-provided list of employees terminated during Q4 2025 with termination dates and badge return status"
+    },
+    {
+      "path": "evidence/badge-access-log-q4-2025.csv",
+      "type": "log",
+      "description": "Badge access log for Q4 2025 with 60 entries covering all access points across the facility"
+    },
+    {
+      "path": "evidence/visitor-log-q4-2025.csv",
+      "type": "log",
+      "description": "Visitor sign-in log for Q4 2025 showing 30 visitor entries with escort status and areas visited"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Nimbus Cloud Solutions' physical security controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the physical security policy, terminated employees list, badge access log, and visitor log. Assess whether CC6.4 requirements for restricting physical access are met. Cross-reference documents to identify any gaps where controls are not operating as designed.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Terminated employee badge not deactivated — badge used 5 days after termination",
+      "description": "The terminated employees list shows Carlos Vega (badge B-3312) was terminated on October 28, 2025, with badge_return_status 'Not Returned.' Cross-referencing with the badge access log reveals two entries for B-3312 after the termination date: October 30 at 08:15 (AP-MAIN-01, General Office, Granted) and November 2 at 09:22 (AP-MAIN-01, General Office, Granted). Policy Section 4.5 requires badge deactivation within 4 business hours of HR termination notification. The badge was never deactivated, allowing a terminated employee physical access to the facility for at least 5 days after separation. The badge_return_status of 'Not Returned' confirms the physical badge was never collected either.",
+      "evidence_sources": [
+        "evidence/terminated-employees-q4-2025.csv",
+        "evidence/badge-access-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should cross-reference the terminated employees list against the badge access log. Carlos Vega appears in the terminated list with a termination date of October 28. Searching the badge access log for his badge ID (B-3312) after October 28 reveals two successful badge swipes on October 30 and November 2. Policy requires deactivation within 4 business hours. Both the electronic deactivation and physical badge collection failed.",
+      "detection_criteria": {
+        "required_keywords": ["Carlos Vega", "B-3312", "October 28", "October 30", "November 2", "Not Returned", "deactivation", "4 business hours", "Section 4.5"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Unescorted vendor accessed server room despite policy requiring escort for all non-employees",
+      "description": "The visitor log entry VIS-0118 shows vendor representative Mike Torres from CoolAir HVAC Services visited on November 14, 2025, with host employee listed as 'Derek Lam.' The areas_accessed field shows 'Server Room B' and the escort_status field shows 'Unescorted.' Policy Section 6.3 states 'All non-employees, including vendors and contractors, must be escorted by the designated host employee at all times while on premises. Under no circumstances shall a visitor or vendor be granted unescorted access to Restricted zones.' Server Room B is classified as a Restricted zone in Section 3.1. An unescorted vendor in the server room could access, photograph, or tamper with production infrastructure.",
+      "evidence_sources": [
+        "evidence/visitor-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should review the visitor log for escort compliance. Most visitors show 'Escorted' status, but VIS-0118 shows Mike Torres (CoolAir HVAC Services) with 'Unescorted' status in Server Room B. Cross-referencing with the policy confirms Section 6.3 requires escort for all non-employees, especially in Restricted zones. The vendor type does not exempt the escort requirement.",
+      "detection_criteria": {
+        "required_keywords": ["Mike Torres", "CoolAir HVAC", "VIS-0118", "Unescorted", "Server Room B", "Restricted", "Section 6.3", "vendor", "escort"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "20 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["physical_security", "cross_reference", "terminated_employee", "badge_deactivation", "visitor_escort", "vendor_access"]
+  }
+}

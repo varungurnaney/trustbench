@@ -1,0 +1,84 @@
+{
+  "id": "cc6.6-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.6",
+  "control_description": "The entity implements logical access security measures to protect against threats from sources outside its system boundaries.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/network-security-policy.md",
+      "type": "policy",
+      "description": "Orion Health network security policy covering network architecture, encryption in transit, and VPN access requirements"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the network security policy for Orion Health and assess whether it adequately addresses SOC 2 CC6.6 requirements for protecting system boundaries from external threats. Identify any gaps or missing elements that an auditor would flag.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No DMZ architecture defined for public-facing services",
+      "description": "The network security policy describes public subnets containing ALBs and NAT gateways and private subnets containing application containers and databases, but does not define a DMZ (demilitarized zone) or equivalent multi-tier boundary architecture. Section 3.2 shows only two subnet tiers (public and private) with no explicit separation between internet-facing load balancers and backend application services. CC6.6 expects entities to define system boundaries with layered network zones that restrict direct access from external networks to internal systems. Without a DMZ or equivalent three-tier segmentation (public, DMZ/application, data), there is no documented boundary between internet-facing components and internal application and data services.",
+      "evidence_sources": ["evidence/network-security-policy.md"],
+      "expected_reasoning": "Section 3.2 defines only 'Public subnets' and 'Private subnets' with no intermediate DMZ or application tier. A DMZ provides a buffer zone between the internet and internal networks. The absence of a defined DMZ means there is no documented architectural control preventing lateral movement from a compromised load balancer to backend databases.",
+      "detection_criteria": {
+        "required_keywords": ["DMZ", "demilitarized zone", "subnet", "public", "private", "boundary", "segmentation", "two-tier"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No boundary defined between production, staging, and development environments",
+      "description": "Section 3.1 lists three environments (Production, Staging, Development) but provides no detail on how they are isolated from each other. There is no mention of separate VPCs, separate AWS accounts, network segmentation between environments, or rules prohibiting cross-environment traffic. CC6.6 requires the entity to protect against threats from sources outside its system boundaries, which includes preventing lateral movement between environments. A compromise in the development environment could reach production if no boundary exists between them.",
+      "evidence_sources": ["evidence/network-security-policy.md"],
+      "expected_reasoning": "Section 3.1 names three environments but says nothing about how they are separated. There is no mention of separate VPCs, network ACLs between environments, or any restriction on cross-environment traffic. Without documented isolation, there is no assurance that a compromise in development cannot reach production.",
+      "detection_criteria": {
+        "required_keywords": ["environment", "isolation", "production", "staging", "development", "separate VPC", "cross-environment", "no boundary"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No Web Application Firewall requirement for public-facing endpoints",
+      "description": "The policy does not mention a WAF, IDS, or IPS for protecting public-facing endpoints against application-layer attacks. Section 3.3 requires TLS termination at the ALB but has no requirement for inspecting or filtering malicious HTTP traffic such as SQL injection, cross-site scripting, or bot traffic. CC6.6 expects controls that protect against threats from outside the system boundary, and a WAF is a standard control for internet-facing web applications, especially in healthcare (PHI data).",
+      "evidence_sources": ["evidence/network-security-policy.md"],
+      "expected_reasoning": "The policy covers TLS and security groups but has no mention of WAF, IDS, IPS, or any application-layer traffic filtering. For a healthcare company handling PHI, the absence of a WAF for public-facing endpoints is a significant gap in boundary protection.",
+      "detection_criteria": {
+        "required_keywords": ["WAF", "web application firewall", "IDS", "IPS", "application-layer", "HTTP", "SQL injection", "public-facing"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Internal encryption requirement uses weak language — 'should' instead of 'must'",
+      "description": "Section 4.2 states internal service-to-service communication 'should use encrypted channels where feasible.' This is permissive language that allows unencrypted internal traffic as an acceptable default. For a healthcare organization processing PHI, all internal communication should be encrypted with mandatory language. The 'where feasible' qualifier undermines the control by allowing exceptions without a formal exception process.",
+      "evidence_sources": ["evidence/network-security-policy.md"],
+      "expected_reasoning": "Section 4.2 uses 'should' and 'where feasible' rather than 'must.' This permissive language means unencrypted internal communication is implicitly acceptable. For PHI data, internal encryption should be mandatory, not optional.",
+      "detection_criteria": {
+        "required_keywords": ["should", "where feasible", "internal", "encryption", "mandatory", "must", "PHI", "permissive"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["network_security", "DMZ", "system_boundary", "environment_isolation", "single_document"]
+  }
+}

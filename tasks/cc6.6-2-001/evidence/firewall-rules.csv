@@ -1,0 +1,24 @@
+rule_id,security_group,direction,protocol,port_range,source_or_destination,description,vpc,environment,last_modified
+FW-001,sg-prod-alb-public,inbound,tcp,443,0.0.0.0/0,Allow HTTPS from internet — public web application,vpc-prod,production,2025-06-10
+FW-002,sg-prod-alb-public,inbound,tcp,80,0.0.0.0/0,Allow HTTP from internet — redirect to HTTPS,vpc-prod,production,2025-06-10
+FW-003,sg-prod-alb-public,outbound,tcp,8080,sg-prod-app-tier,Forward traffic to application tier,vpc-prod,production,2025-06-10
+FW-004,sg-prod-app-tier,inbound,tcp,8080,sg-prod-alb-public,Accept traffic from ALB,vpc-prod,production,2025-06-10
+FW-005,sg-prod-app-tier,inbound,tcp,22,sg-prod-bastion,SSH from bastion host only,vpc-prod,production,2025-06-10
+FW-006,sg-prod-app-tier,outbound,tcp,5432,sg-prod-data-tier,PostgreSQL connections to data tier,vpc-prod,production,2025-06-10
+FW-007,sg-prod-app-tier,outbound,tcp,6379,sg-prod-cache,Redis connections to cache cluster,vpc-prod,production,2025-06-10
+FW-008,sg-prod-app-tier,outbound,tcp,443,0.0.0.0/0,Outbound HTTPS for third-party API calls (Stripe/Twilio),vpc-prod,production,2025-06-10
+FW-009,sg-prod-data-tier,inbound,tcp,5432,sg-prod-app-tier,PostgreSQL from application tier,vpc-prod,production,2025-06-10
+FW-010,sg-prod-data-tier,inbound,tcp,5432,sg-prod-analytics,PostgreSQL read replica for analytics,vpc-prod,production,2025-06-10
+FW-011,sg-prod-cache,inbound,tcp,6379,sg-prod-app-tier,Redis from application tier,vpc-prod,production,2025-06-10
+FW-012,sg-prod-bastion,inbound,tcp,22,10.3.0.0/16,SSH from VPN CIDR only,vpc-prod,production,2025-06-10
+FW-013,sg-prod-bastion,outbound,tcp,22,10.0.0.0/16,SSH to production subnets,vpc-prod,production,2025-06-10
+FW-014,sg-prod-monitoring,inbound,tcp,9090,10.0.0.0/16,Prometheus scraping from production services,vpc-prod,production,2025-06-10
+FW-015,sg-prod-monitoring,inbound,tcp,3000,sg-prod-bastion,Grafana dashboard access from bastion,vpc-prod,production,2025-06-10
+FW-016,sg-prod-analytics,inbound,tcp,8443,sg-prod-app-tier,Analytics API from application tier,vpc-prod,production,2025-06-10
+FW-017,sg-prod-analytics,outbound,tcp,443,0.0.0.0/0,Outbound HTTPS for S3 exports,vpc-prod,production,2025-09-14
+FW-018,sg-prod-analytics,outbound,tcp,9300,0.0.0.0/0,Elasticsearch cluster transport — data export pipeline,vpc-prod,production,2025-04-22
+FW-019,sg-prod-webhook,inbound,tcp,443,0.0.0.0/0,Inbound HTTPS webhooks from partners,vpc-prod,production,2025-06-10
+FW-020,sg-prod-webhook,outbound,tcp,8443,sg-prod-app-tier,Forward webhooks to internal services,vpc-prod,production,2025-06-10
+FW-021,sg-prod-monitoring,outbound,tcp,443,0.0.0.0/0,Outbound HTTPS for PagerDuty/Slack alerts,vpc-prod,production,2025-06-10
+FW-022,sg-prod-internal-api,inbound,tcp,8443,sg-prod-app-tier,Internal API calls from application tier,vpc-prod,production,2025-06-10
+FW-023,sg-prod-internal-api,outbound,tcp,5432,sg-prod-data-tier,Database connections from internal API,vpc-prod,production,2025-06-10

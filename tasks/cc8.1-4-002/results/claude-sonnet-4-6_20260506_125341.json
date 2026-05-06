@@ -1,0 +1,82 @@
+{
+  "task_id": "cc8.1-4-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T12:53:41.019252",
+  "score": {
+    "task_id": "cc8.1-4-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "GraphQL",
+          "rollback"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "rollback"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-506",
+          "SCIM",
+          "testing evidence",
+          "empty",
+          "N/A",
+          "Section 3.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "staging",
+          "production",
+          "parity",
+          "fidelity",
+          "2 nodes"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3950,
+    "output_tokens": 2707
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC8.1 Change Management\n**Entity:** Crestline SaaS | **Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Control:** CC8.1 \u2014 Authorization, Design, Testing, Approval, and Implementation of Changes\n\n---\n\n## Executive Summary\n\nThe overall change management program demonstrates a functional, well-structured process. CAB meetings were held consistently, quorum was maintained, rollbacks were documented and reviewed, and the emergency change process was followed correctly for CHANGE-507. The policy is clearly written and appropriately scoped.\n\nHowever, review of the evidence identified **three genuine control gaps** that represent deviations from stated policy requirements, and **two observations** that do not rise to the level of findings but warrant management attention.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Testing Evidence Absent at Time of Approval for High-Risk Change (CHANGE-506)\n\n| Attribute | Detail |\n|---|---|\n| **Ticket** | CHANGE-506 \u2014 SCIM Provisioning Endpoint |\n| **Policy Reference** | POL-CHG-014 \u00a73.2 (Testing Requirements), \u00a73.3 (CAB Approval) |\n| **Document References** | CAB Minutes \u2014 November 10, 2025; Change Log \u2014 CHANGE-506 |\n| **Severity** | **High** |\n\n**Condition:**\nThe CAB meeting minutes for November 10, 2025 explicitly note: *\"formal testing evidence not yet attached to Jira ticket at time of approval. Lisa indicated test results would be uploaded before deployment.\"* The change log corroborates this \u2014 the `testing_evidence` field is blank and the `test_pass_rate` is recorded as \"N/A\" for CHANGE-506.\n\n**Why This Is a Gap:**\nPolicy Section 3.2 requires that testing evidence \u2014 including staging validation, automated test suite results with a minimum 95% pass rate, and for High-risk changes, load testing results \u2014 be included **prior to production deployment**. Section 3.3 governs the CAB approval gate, which is the mechanism through which testing evidence is reviewed before a deployment authorization is issued. Approving a High-risk change without attached testing evidence undermines the control's preventive purpose: the CAB cannot meaningfully assess risk or validate readiness if evidence is deferred.\n\nThe change was subsequently deployed on November 11 and is marked as completed with no issues, but there is no evidence in the change log or CAB minutes confirming that test results were ever uploaded. The absence of documentation means the control cannot be demonstrated as operating effectively for this change \u2014 regardless of outcome.\n\n**Impact on CC8.1:**\nCC8.1 requires that the entity *tests* and *approves* changes. When approval precedes the availability of testing evidence, the design intent of these as sequential, dependent steps is broken. For an auditor, this represents a demonstrable instance where the approval gate did not function as designed.\n\n---\n\n### Finding 2: Missing Security Lead at CAB Approval of High-Risk Change (CHANGE-503)\n\n| Attribute | Detail |\n|---|---|\n| **Ticket** | CHANGE-503 \u2014 GraphQL Subscriptions |\n| **Policy Reference** | POL-CHG-014 \u00a73.3 (CAB Approval), implicitly \u00a73.2 (risk-tiered review) |\n| **Document References** | CAB Minutes \u2014 October 20, 2025; Change Log \u2014 CHANGE-503 |\n| **Severity** | **Medium** |\n\n**Condition:**\nCHANGE-503 was classified as **High risk** and approved at the October 20, 2025 CAB meeting. The QA Lead (Carlos Vega) was absent from that meeting. Quorum of 3/4 was met per policy, and the VP Engineering was present as required, so the approval is technically quorum-compliant.\n\n**Why This Is a Gap:**\nWhile the policy's quorum rule (\u00a73.3) is satisfied, the policy does not define role-specific attendance requirements for different risk tiers, creating a structural ambiguity. In practice, for a High-risk change, the absence of the QA Lead \u2014 the member responsible for validating test adequacy \u2014 means the body approving the change lacked the person best positioned to assess whether the test evidence (test-results-503.pdf + load-test-503.pdf) was sufficient. The subsequent rollback of CHANGE-503 due to a testing gap (staging environment fidelity for WebSocket workloads) is directly related to test adequacy assessment.\n\nThis is not a policy violation in the strict sense, but it reveals a gap in policy design: quorum rules do not account for functional coverage at different risk levels. When High-risk changes are approved without QA representation, a key assurance input is missing and not compensated for elsewhere in the documented process.\n\n**Impact on CC8.1:**\nCC8.1 requires that the entity *designs* and *tests* changes adequately. A CAB composition that does not ensure QA participation for High-risk changes weakens the approval control's effectiveness as a testing adequacy gate. This is a **design gap in the policy** surfaced by an operational outcome.\n\n> **Note on CHANGE-503 Rollback Itself:** The rollback of CHANGE-503 is *not* a finding. The rollback was executed within the 15-minute window (initiated at 14:18, completed at 14:26), reviewed at the next CAB meeting per \u00a73.6, a root cause analysis was completed (INC-2025-0891), and corrective actions were implemented via CHANGE-504 with enhanced load testing. The operational response was handled correctly and reflects a functioning control.\n\n---\n\n### Finding 3: No Documented Evidence of Peer Code Review (Segregation of Duties \u2014 Systemic Gap)\n\n| Attribute | Detail |\n|---|---|\n| **Tickets Affected** | All 12 changes in scope (CHANGE-501 through CHANGE-512) |\n| **Policy Reference** | POL-CHG-014 \u00a73.4 (Segregation of Duties) |\n| **Document References** | Change Log \u2014 Q4 2025; Change Management Policy \u00a73.4 |\n| **Severity** | **Medium** |\n\n**Condition:**\nPolicy Section 3.4 requires peer code review via GitHub pull request approval for **all changes**. The change log, which is the primary evidence artifact for the quarter, contains no field capturing PR approval, reviewer identity, or a reference to the GitHub PR. The CAB minutes do not reference peer review status as part of the approval discussion for any change. No GitHub PR records were included in the evidence package.\n\n**Why This Is a Gap:**\nThe segregation of duties control has two components in \u00a73.4: (1) developers do not self-deploy (evidenced by the SRE team executing all deployments \u2014 this appears to be operating effectively), and (2) peer review of all code changes. The second component is entirely unverifiable from the evidence provided. For a SOC 2 Type II audit, the auditor must be able to confirm that the control operated throughout the period. Without PR records or a change log field linking each change to a reviewed PR, there is no way to confirm this requirement was met for any of the 12 changes.\n\nThis is a systemic evidence gap rather than an isolated exception, and it affects the completeness of the audit trail for the full quarter.\n\n**Impact on CC8.1:**\nCC8.1 requires that changes are *designed* and *developed* under appropriate controls. Peer review is a key preventive control over code quality and unauthorized modifications. The inability to demonstrate this control operated for any change in the period is a meaningful gap in the evidence population.\n\n---\n\n## Observations (Non-Findings)\n\nThe following items were considered and determined **not** to constitute findings, but are noted for management awareness.\n\n---\n\n### Observation A: Staging Environment Fidelity Gap for WebSocket Workloads\n\n**Reference:** INC-2025-0891; CAB Minutes October 27, 2025; POL-CHG-014 \u00a73.2\n\nThe root cause of the CHANGE-503 rollback was that the staging environment (2 Kubernetes nodes) could not replicate production-scale WebSocket connection pool exhaustion (12 nodes). This is a legitimate operational risk. The entity has already identified this and initiated corrective action (load testing at 2x production traffic for CHANGE-504; Derek Santos flagged staging parity as a gap in the October 27 CAB). No policy violation occurred. However, if the staging environment fidelity improvement is not formally tracked to completion, the underlying risk remains for future WebSocket-related changes. Management should confirm the remediation plan has been formalized.\n\n---\n\n### Observation B: CHANGE-505 Approved and Submitted Same Day\n\n**Reference:** Change Log \u2014 CHANGE-505; POL-CHG-014 \u00a73.1, \u00a73.3\n\nCHANGE-505 (Redis 7.2 upgrade, Medium risk) shows a submitted date of November 3, 2025 and an approved date of November 3, 2025 (CAB). This means submission and CAB approval occurred on the same day. Policy \u00a73.1 requires submission with a rollback plan and affected systems documentation, and \u00a73.3 places approval at the weekly Monday CAB. The November 3 meeting was a Monday, so this is calendar-consistent. The concern is whether the CAB had adequate time to review submission materials before the meeting if they were submitted the same morning. This does not constitute a policy violation on the face of the evidence but could indicate compressed review time for this change. No adverse outcome was observed.\n\n---\n\n## Summary Table\n\n| # | Finding | Affected Change(s) | Policy Section | Severity |\n|---|---|---|---|---|\n| F-1 | Testing evidence absent at time of CAB approval | CHANGE-506 | \u00a73.2, \u00a73.3 | **High** |\n| F-2 | QA Lead absent from High-risk CAB approval; policy lacks role-tiered quorum requirements | CHANGE-503 | \u00a73.3 | **Medium** |\n| F-3 | No documented peer code review evidence for any Q4 change | CHANGE-501 through CHANGE-512 | \u00a73.4 | **Medium** |\n| O-A | Staging environment fidelity gap identified but remediation not formally tracked | CHANGE-503 / CHANGE-504 | \u00a73.2 | Observation |\n| O-B | Same-day submission and CAB approval for CHANGE-505 | CHANGE-505 | \u00a73.1, \u00a73.3 | Observation |\n\n---\n\n## Recommended Management Responses\n\n| Finding | Recommended Remediation |\n|---|---|\n| **F-1** | Amend the CAB approval checklist to include a mandatory attestation that testing evidence is attached to the Jira ticket before a vote is recorded. Configure Jira workflow to block the \"Approved\" status transition if the testing evidence field is empty for Normal/Emergency changes. Retroactively locate and attach CHANGE-506 test results if they exist. |\n| **F-2** | Update \u00a73.3 of POL-CHG-014 to define role-specific attendance requirements for High and Critical risk changes (e.g., QA Lead attendance required for High/Critical, or an explicit compensating review documented if absent). |\n| **F-3** | Add a \"PR Link\" or \"Peer Reviewer\" field to the Jira CHANGE project as a required field for submission. Include PR reference in the CAB approval checklist. Provide GitHub PR records as a standard evidence artifact in future audit evidence packages. |"
+}

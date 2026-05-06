@@ -1,0 +1,67 @@
+{
+  "task_id": "a1.2-1-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:05:39.949832",
+  "score": {
+    "task_id": "a1.2-1-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "RPO",
+          "RTO",
+          "missing",
+          "availability commitments"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "testing",
+          "verification",
+          "recover",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "failure",
+          "alerting",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 679,
+    "output_tokens": 1921
+  },
+  "raw_response": "# Compliance Audit Assessment: A1.2 Backup and Recovery Control\n**Control: Authorization, Design, Implementation, Operation, and Monitoring of Backup and Recovery Infrastructure**\n\n---\n\n## FINDINGS\n\n### Finding 1: No Recovery Procedures or RTO/RPO Definitions\n**Related Section:** Overall policy structure; Section 3, 5, and 7  \n**Gap Description:** The policy defines backup schedules and retention but lacks critical recovery procedures. Specifically absent:\n- Defined Recovery Time Objectives (RTO) and Recovery Point Objectives (RPO)\n- Step-by-step recovery procedures for databases, applications, and file systems\n- Recovery time estimates or service level commitments\n- Procedures for partial vs. full recovery scenarios\n\n**Why This Matters:** A1.2 explicitly requires \"procedures for recovery of data, systems, and infrastructure to meet the entity's availability commitments and system requirements.\" Without documented recovery procedures and objectives, the entity cannot demonstrate it can actually meet its availability commitments.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: No Recovery Testing or Validation Program\n**Related Section:** Section 7 (Roles and Responsibilities) and Section 8 (Policy Review)  \n**Gap Description:** The policy does not mention:\n- Regular recovery testing (e.g., quarterly test restores)\n- Results documentation or metrics from recovery tests\n- Procedures for validating backup integrity before relying on recovery\n- Root cause analysis process if a recovery test fails\n\n**Why This Matters:** A1.2 requires monitoring of recovery procedures. Without testing, the entity has no evidence that backups are actually recoverable or that recovery procedures work as designed. This is a common gap that leads to failed recoveries in production incidents.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 3: Incomplete Disaster Recovery Plan Reference\n**Related Section:** Section 2 (Scope) and Section 1 (Purpose)  \n**Gap Description:** The policy references \"recovery plan procedures\" in A1.2 language but does not:\n- Reference or link to a formal Disaster Recovery Plan (DRP)\n- Define which systems are critical vs. non-critical\n- Address infrastructure recovery (servers, networks, configurations)\n- Include failover procedures or alternate recovery sites\n\n**Why This Matters:** A1.2 requires recovery procedures for \"data, systems, and infrastructure.\" This policy only addresses data backups. Infrastructure recovery (EC2 instances, networking, configurations) is not covered.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: No Backup Monitoring or Alerting Requirements\n**Related Section:** Section 3 (Backup Schedule) and Section 7 (Roles and Responsibilities)  \n**Gap Description:** The policy lacks:\n- Requirements for monitoring backup job success/failure\n- Alert thresholds or notification procedures when backups fail\n- Responsible party for monitoring and responding to backup failures\n- Backup verification procedures (e.g., checking backup logs, file integrity)\n\n**Why This Matters:** A1.2 requires entities to \"monitor\" backup and recovery infrastructure. Without monitoring requirements and ownership, failed backups could go undetected until a recovery is needed.\n\n**Severity:** **High**\n\n---\n\n### Finding 5: Incomplete Scope \u2013 Infrastructure and Environmental Protections\n**Related Section:** Section 2 (Scope)  \n**Gap Description:** The policy scope is limited to AWS backups in us-east-1. It does not address:\n- On-premises infrastructure (if any)\n- Environmental protections (physical security, power management, HVAC monitoring)\n- Network infrastructure recovery\n- Any systems outside the AWS us-east-1 region\n\n**Why This Matters:** A1.2 includes \"environmental protections\" alongside backup and recovery. The policy completely omits this dimension. Additionally, if the entity has systems outside AWS us-east-1, they are not covered.\n\n**Severity:** **High**\n\n---\n\n### Finding 6: No Change Management or Authorization Process\n**Related Section:** Section 7 (Roles and Responsibilities)  \n**Gap Description:** The policy does not define:\n- Who authorizes changes to backup procedures, schedules, or retention policies\n- Change management process for backup infrastructure updates\n- Review and approval workflows for policy modifications\n- Documented evidence of authorization for current procedures\n\n**Why This Matters:** A1.2 requires entities to \"authorize, design, develop, implement, operate, approve, maintain\" these controls. The policy lacks formalized authorization and change control procedures.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Insufficient Details on Recovery Point Objective (RPO)\n**Related Section:** Section 3 (Backup Schedule)  \n**Gap Description:**\n- Daily full backups at 02:00 UTC create a 24-hour RPO\n- No statement of acceptable data loss between backups\n- No consideration for more frequent backups for critical data\n- No differentiation of RPO based on data criticality\n\n**Why This Matters:** A1.2 requires recovery procedures to \"meet the entity's availability commitments and system requirements.\" The policy doesn't confirm that 24-hour RPO is acceptable or whether it meets business requirements.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 8: No Backup Access Controls or Audit Trail Requirements\n**Related Section:** Section 6 (Backup Storage) and Section 4 (Backup Encryption)  \n**Gap Description:** The policy lacks:\n- Requirements for logging and monitoring backup access\n- Restrictions on who can initiate recoveries or delete backups\n- Audit trail retention for backup operations\n- Separation of duties (backup creation vs. approval vs. recovery)\n\n**Why This Matters:** Without access controls and audit trails on backups, there is risk of unauthorized recovery, deletion, or modification of backups.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 9: Single Region Backup Replication Vulnerability\n**Related Section:** Section 3.2 (File System Backups) and Section 6 (Backup Storage)  \n**Gap Description:**\n- File system backups replicate to us-west-2 (both within AWS US regions)\n- No multi-region or geographically diverse backup strategy documented\n- AWS backup account location is not specified\n- No protection against regional outages affecting both primary and backup\n\n**Why This Matters:** If a catastrophic AWS region outage occurs, backups in us-west-2 may also be unavailable. Best practices recommend geographically dispersed backups.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 10: Policy Review Frequency May Be Insufficient\n**Related Section:** Section 8 (Policy Review)  \n**Gap Description:**\n- Annual review cycle (next review June 2026) is relatively infrequent\n- No trigger-based review process (e.g., after failed recovery test, after security incident, after infrastructure changes)\n- No evidence of version control history or previous reviews\n\n**Why This Matters:** A1.2 requires ongoing monitoring and maintenance. Annual review alone may miss emerging risks or changes in business requirements.\n\n**Severity:** **Low**\n\n---\n\n## SUMMARY\n\n| Severity | Count | Findings |\n|----------|-------|----------|\n| Critical | 2 | Recovery procedures missing; No recovery testing program |\n| High | 3 | Incomplete DRP reference; No backup monitoring; Incomplete scope |\n| Medium | 4 | No change management; Insufficient RPO definition; No access controls; Single-region risk |\n| Low | 1 | Annual review frequency |\n\n---\n\n## OVERALL ASSESSMENT\n\n**Status:** \u26a0\ufe0f **NOT COMPLIANT**\n\nThis policy addresses a foundational element of backup (creating and storing backups) but falls significantly short of SOC 2 A1.2 requirements. The most critical gaps are the absence of documented recovery procedures and the lack of testing/validation of those procedures. An entity cannot demonstrate control over backup and recovery infrastructure without evidence that recoveries actually work.\n\n**Recommended Actions (Priority Order):**\n1. Develop and document detailed recovery procedures with defined RTOs and RPOs\n2. Establish a recovery testing program with documented results\n3. Implement backup monitoring and alerting with clear ownership\n4. Create or reference a formal Disaster Recovery Plan covering infrastructure\n5. Define change management and authorization processes\n6. Implement backup access controls and audit logging\n7. Evaluate geographic dispersion of backup storage\n8. Consider more frequent policy reviews with trigger-based updates"
+}

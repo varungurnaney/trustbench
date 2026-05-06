@@ -1,0 +1,117 @@
+{
+  "task_id": "c1.1-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:14:50.327655",
+  "score": {
+    "task_id": "c1.1-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.7142857142857143,
+    "f1": 0.8333333333333333,
+    "score": 0.8333333333333333,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "webhook-payload-key",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "cryptographically",
+          "materiality",
+          "exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vpc-prod",
+          "vpc-data",
+          "HTTP",
+          "unencrypted",
+          "Confidential",
+          "VPC peering",
+          "analytics",
+          "cross-VPC",
+          "port 8080"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "APP-PROD-006",
+          "notification",
+          "15 days",
+          "14-day grace",
+          "1 day",
+          "batch job failure",
+          "variance",
+          "pattern"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "pattern",
+          "systemic",
+          "rotation",
+          "late",
+          "process",
+          "APP-PROD-001",
+          "APP-PROD-003",
+          "APP-PROD-006",
+          "automation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "vrs-prod-ml-models",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "SSE-KMS",
+          "ML model",
+          "trained weights",
+          "derived"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6505,
+    "output_tokens": 3122
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 C1.1 / CC6.7 Encryption Controls\n## Vanguard Risk Solutions\n\nAfter reviewing the encryption posture audit, encryption standards policy, network architecture summary, and key rotation log, I have identified the following findings. Each is assessed for materiality with consideration of compensating factors.\n\n---\n\n## Finding 1: Unencrypted Cross-VPC Analytics Traffic Carrying Confidential Data\n\n**Related Section:** Network Architecture Summary \u00a73.3 (vpc-prod \u2194 vpc-data); Encryption Policy \u00a74.2, \u00a74.3\n\n**Gap:** The analytics ingestion service transmits Confidential customer event data (user_id, event_type, session_data) over **plain HTTP on port 8080** across VPC peering between vpc-prod and vpc-data. This violates Policy \u00a74.2, which explicitly requires \"Service-to-service communication handling Restricted or Confidential data must use TLS 1.2 or higher.\" The \"compensating control argument\" cited (AWS backbone privacy) is not a recognized compensating control under the entity's own policy, and there is no documented CISO exception per Policy \u00a78.\n\nAdditionally, Policy \u00a74.3 only permits VPC-level IPSec for **Internal-classified** traffic \u2014 not Confidential. The current architecture has no encryption at any layer for this Confidential flow.\n\n**Severity:** **High**\n\n**Rationale:** This is a direct, undocumented violation of the entity's own encryption policy involving Confidential customer data. While AWS backbone traffic is not on the public internet, it traverses shared physical infrastructure and is reachable by any compromised workload with a route to the peer. Auditors will treat this as a control failure for CC6.7 (transmission of confidential information). Not \"Critical\" because the data is Confidential (not Restricted/PII) and stays within the AWS tenant boundary, but it is more than a minor variance because it is a clear policy violation lacking the formal exception process.\n\n---\n\n## Finding 2: ML Model Bucket Encrypted Below Required Standard\n\n**Related Section:** Encryption Posture Audit (vrs-prod-ml-models); Policy \u00a73.1, \u00a75.2\n\n**Gap:** The `vrs-prod-ml-models` S3 bucket holds Confidential-classified data but uses SSE-KMS with **AES-128** instead of the required AES-256. Policy \u00a73.1 mandates AES-256 minimum for Confidential data. The bucket owner notes that \"Models contain trained weights derived from Confidential customer data. No PII in model files,\" but the data classification on record is still Confidential, and the policy does not provide an exception for derived data.\n\n**Severity:** **Medium**\n\n**Rationale:** AES-128 is still cryptographically strong and not considered broken; the practical security risk is low. However, this is a clear policy non-conformance affecting Confidential data, and the classification has not been formally re-evaluated or downgraded through a documented process. Either the data should be re-encrypted with AES-256 or a formal classification review and CISO-approved exception (Policy \u00a78) should be on file.\n\n---\n\n## Finding 3: Webhook Payload Key Using AES-128 for Confidential Data\n\n**Related Section:** Encryption Posture Audit (webhook-payload-key); Policy \u00a73.1\n\n**Gap:** The `webhook-payload-key` encrypts webhook payloads containing Confidential customer event/account activity data using AES-128-GCM. Policy \u00a73.1 requires AES-256 minimum for Confidential data. Unlike the ML models (which contain derived weights), webhook payloads contain **direct customer event data** transmitted to third parties.\n\n**Severity:** **Medium-High** (treating as **Medium** for severity rating)\n\n**Rationale:** This is a more concerning policy violation than Finding 2 because the data is direct customer event content, not derived artifacts, and the payloads are transmitted externally to integration partners. Combined with Finding 4 (key rotation timing on the same key), this points to weaker control rigor in the Integrations Team's domain. Should be remediated promptly with re-keying of payload encryption.\n\n---\n\n## Finding 4: Notification Encryption Key Rotation Exceeded Grace Period\n\n**Related Section:** Key Rotation Status Log (APP-PROD-006); Policy \u00a76.1\n\n**Gap:** The `notification-encryption-key` (Confidential) was rotated 15 days after the due date \u2014 exceeding the 14-day grace period by 1 day. Policy \u00a76.1 states: \"Rotation delays beyond 14 days require CISO notification and documented justification.\" The log notes the CISO was notified on October 10 (before the breach) and the cause (re-encryption batch job failure) was documented.\n\n**Severity:** **Low**\n\n**Rationale:** This is a minor policy variance with full compensating documentation: CISO was proactively notified, root cause was identified, and rotation completed quickly thereafter. The control around exception handling **functioned as designed**. From an audit standpoint, this demonstrates the exception-handling control is working \u2014 auditors generally view a documented, escalated, and resolved breach more favorably than a silent compliance pass. Worth noting as a minor variance rather than a deficiency.\n\n---\n\n## Finding 5: Webhook Payload Key Rotated at Grace Period Boundary\n\n**Related Section:** Key Rotation Status Log (APP-PROD-003); Policy \u00a76.1\n\n**Gap:** The `webhook-payload-key` rotation was completed exactly 14 days late \u2014 at the boundary of the grace period. Combined with Finding 3 (same key uses AES-128 for Confidential data), this suggests the Integrations Team's key management practices warrant attention.\n\n**Severity:** **Low**\n\n**Rationale:** Technically within grace period, so policy-compliant on its own. Flagging as observational because two separate findings concentrate on the Integrations Team, suggesting a localized control weakness rather than a systemic issue.\n\n---\n\n## Finding 6: Pattern of Application Key Rotation Delays\n\n**Related Section:** Key Rotation Status Log (APP-PROD-001, 003, 006); Policy \u00a76.1\n\n**Gap:** All three application keys rotated in 2025 were late (3, 14, and 15 days respectively). Of the three rotations performed, **0 were on time** and **1 exceeded grace period**. This pattern suggests insufficient lead time, automation, or operational capacity for application-layer key rotation, even though individual instances may be within or near tolerance. All three rotations were performed by the same individual (Michael Torres), creating a single-person dependency.\n\n**Severity:** **Medium**\n\n**Rationale:** Each individual rotation is either compliant or has documented justification, but the **trend is the finding**. SOC 2 auditors evaluate whether controls are operating *effectively over time*. A 100% late rate \u2014 even if mostly within grace \u2014 indicates the rotation process is not operating as designed (the 14-day window is intended as a buffer for exceptions, not the standard schedule). Recommend automating rotation triggers and adding a backup rotation operator.\n\n---\n\n## Finding 7: Staging Database Classification vs. Encryption Documentation Inconsistency\n\n**Related Section:** Encryption Posture Audit (vrs-staging-db)\n\n**Gap:** Staging database is classified Internal with AES-128 minimum required, but actually uses AES-256. While the result exceeds requirements (compliant), it raises a question about whether staging contains production-derived data that would warrant a higher classification. The evidence does not address staging data sourcing.\n\n**Severity:** **Low**\n\n**Rationale:** Not a control deficiency \u2014 encryption exceeds the required standard. Noted as an observation only; auditor may want to confirm via separate inquiry that staging environments do not contain unmasked production data.\n\n---\n\n## Summary\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Unencrypted cross-VPC Confidential traffic (vpc-prod \u2194 vpc-data) | **High** |\n| 2 | ML model bucket using AES-128 for Confidential data | Medium |\n| 3 | Webhook payload key using AES-128 for Confidential data | Medium |\n| 4 | Notification key rotation exceeded grace period by 1 day | Low |\n| 5 | Webhook key rotated at grace period boundary | Low |\n| 6 | Pattern of late application key rotations (100% late rate) | Medium |\n| 7 | Staging encryption exceeds requirements (observation) | Low |\n\n## Overall Assessment\n\nC1.1 / CC6.7 controls are **substantially designed** but **operating with deficiencies**. The most material issue is **Finding 1** \u2014 unencrypted internal transmission of Confidential customer data without a documented exception. This single finding could result in a qualified opinion if not remediated or formally exception-tracked before the audit period. Findings 2, 3, and 6 represent a pattern of small-but-real policy non-conformances that, in aggregate, suggest the encryption policy is treated as aspirational in some teams (Integrations, ML) rather than enforced. Recommend prioritizing Finding 1 for immediate remediation, formalizing exceptions for Findings 2 and 3 if remediation will take time, and automating key rotation to address Finding 6."
+}

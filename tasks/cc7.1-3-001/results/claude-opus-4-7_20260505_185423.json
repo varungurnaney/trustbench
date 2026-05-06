@@ -1,0 +1,91 @@
+{
+  "task_id": "cc7.1-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T18:54:23.345015",
+  "score": {
+    "task_id": "cc7.1-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "eu-west-1",
+          "10.20.6.0",
+          "10.20.7.0",
+          "GDPR",
+          "Critical",
+          "100% coverage",
+          "data residency",
+          "production"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "10.10.20.0",
+          "IoT",
+          "Building Management",
+          "FW-REQ-2025-0892",
+          "badge readers",
+          "HVAC"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "10.10.21.0",
+          "Lab",
+          "Research",
+          "separate AD domain",
+          "credentials",
+          "100% coverage"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "81.8%",
+          "100%",
+          "18 of 22",
+          "coverage gap",
+          "no risk acceptance"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5265,
+    "output_tokens": 3088
+  },
+  "raw_response": "# CC7.1 Readiness Assessment \u2014 Vulnerability Scanning Program\n\n**Auditee:** NimbusCore Inc.\n**Observation Period:** October 1 \u2013 December 31, 2025\n**Control:** CC7.1 \u2014 Detection and monitoring for configuration changes and new vulnerabilities\n\n---\n\n## Overall Assessment: **NOT MET** \u2014 Material gaps identified\n\nThe organization has a defined vulnerability management policy, an enterprise asset inventory, and an operational scanning program using Qualys VMDR. However, scan coverage during the observation period falls materially short of the policy's stated 100% coverage requirement, with critical-classified subnets containing GDPR-regulated customer data excluded from scanning. Several findings below.\n\n---\n\n## Findings\n\n### Finding 1: EU Production Subnets Containing GDPR Customer Data Are Not Scanned\n\n- **Related Section:** Coverage Report \u2192 `not_scanned_subnets` (SUB-021, SUB-022); Policy \u00a73.3 Scan Coverage Requirement\n- **Gap:** Two AWS production subnets in eu-west-1 (10.20.6.0/24 and 10.20.7.0/24), classified **Critical** and noted in the inventory as containing **GDPR customer data**, have had **no vulnerability scanning** because Qualys Cloud Agent deployment is blocked pending a data residency review. These subnets total **110 production assets** that have been registered since April 2025 (~9 months without scanning). The reason (\"data residency review\") is a legitimate concern, but no compensating controls (e.g., AWS Inspector, agent-based scanning with EU data routing, manual assessments) are documented, and no formal CISO-approved risk acceptance per Policy \u00a76 is on file.\n- **Severity:** **Critical**\n\n### Finding 2: IoT/Building Management Subnet Firewall Request Pending 75+ Days\n\n- **Related Section:** Coverage Report \u2192 `not_scanned_subnets` (SUB-019); Policy \u00a73.3\n- **Gap:** Subnet 10.10.20.0/24 (IoT and Building Management \u2014 28 assets including HVAC, access control, and badge readers) has been unscanned because firewall request FW-REQ-2025-0892 has been open since October 15, 2025 (75+ days). Policy \u00a73.3 states \"any gaps in coverage must be documented and remediated within **one scan cycle**\" \u2014 for monthly network infrastructure scans, this gap has persisted for ~3 cycles. IoT/BMS devices are common attack vectors, and no compensating monitoring is documented.\n- **Severity:** **High**\n\n### Finding 3: Lab/Research Subnet Lacks Provisioned Scan Credentials\n\n- **Related Section:** Coverage Report \u2192 `not_scanned_subnets` (SUB-020); Policy \u00a73.3, \u00a73.4\n- **Gap:** Subnet 10.10.21.0/24 (Lab and Research Network \u2014 15 assets) has had no scanning since registration in February 2024 because scan credentials were never provisioned for the lab's separate AD domain. This represents a chronic, unremediated gap (~22 months) and a violation of both \u00a73.3 (coverage) and \u00a73.4 (authenticated scanning). No risk acceptance documented.\n- **Severity:** **High**\n\n### Finding 4: Coverage Falls Short of Policy-Mandated 100%\n\n- **Related Section:** Policy \u00a73.3; Coverage Report Summary\n- **Gap:** Policy \u00a73.3 explicitly requires **100%** scan coverage of registered subnets each cycle. Actual Q4 2025 coverage is **81.8%** (18 of 22 subnets). The shortfall is not a transient one-cycle issue; it spans the entire observation period. The policy's \"remediate within one scan cycle\" provision has been breached for all four uncovered subnets. This is a direct policy non-compliance finding regardless of the underlying root causes addressed in Findings 1\u20133.\n- **Severity:** **High**\n\n### Finding 5: Asset Discovery Gap \u2014 158 Assets in Inventory Not Discovered by Scans\n\n- **Related Section:** Coverage Report Summary; Policy \u00a73.3\n- **Gap:** Inventory reports 1,247 total assets; scans discovered 1,089 \u2014 a delta of **158 assets (12.7%)**. Even within \"scanned\" subnets, multiple subnets show fewer assets discovered than expected (e.g., SUB-008: 112 of 120; SUB-009: 80 of 85; SUB-013: 175 of 180; SUB-014: 155 of 160). This indicates either stale inventory data, hosts powered off during scan windows, agent gaps, or unscannable assets. There is no documented reconciliation process for these per-subnet deltas.\n- **Severity:** **Medium**\n\n### Finding 6: No Documented Risk Acceptance for Known Coverage Gaps\n\n- **Related Section:** Policy \u00a76 Risk Acceptance; Coverage Report `notes`\n- **Gap:** Policy \u00a76 requires CISO-approved risk acceptance with compensating controls and annual re-review for any deviation from policy. Although the report notes that EU coverage gaps were \"escalated to Platform Engineering and Legal,\" there is no evidence of a formal, CISO-signed risk acceptance covering the four uncovered subnets, no documented compensating controls, and no defined re-review cadence. Operating outside policy without formal acceptance is itself a control gap.\n- **Severity:** **High**\n\n### Finding 7: Policy References Tools Not Evidenced in Coverage Report\n\n- **Related Section:** Policy \u00a73.1 Scanning Tools\n- **Gap:** Policy \u00a73.1 specifies three scanning tools \u2014 **Qualys VMDR**, **AWS Inspector**, and **Rapid7 InsightVM**. Only Qualys VMDR coverage was provided as evidence. There is no evidence demonstrating that AWS Inspector is scanning the EU subnets (which could partially compensate for the Qualys gap in Finding 1), nor evidence of Rapid7 endpoint coverage for the 205 corporate workstations. Without this evidence, the auditor cannot conclude that the layered scanning program described in policy is operating as designed.\n- **Severity:** **Medium**\n\n### Finding 8: Authenticated Scan Success Rate Below Implicit 100% Target\n\n- **Related Section:** Policy \u00a73.4 Authenticated Scanning; Coverage Report Summary\n- **Gap:** Policy \u00a73.4 requires that \"all infrastructure scans must use credentialed scanning.\" The reported authenticated scan success rate is **96.2%**, meaning ~3.8% of scans are unauthenticated and therefore non-compliant with policy. The report does not enumerate which assets failed authentication, the root cause, or remediation actions. Unauthenticated scans materially under-detect vulnerabilities.\n- **Severity:** **Medium**\n\n### Finding 9: No Evidence of Detection for Configuration Changes Introducing New Vulnerabilities\n\n- **Related Section:** Control language of CC7.1; Policy \u00a73 (overall)\n- **Gap:** CC7.1 specifically requires detection of **configuration changes that introduce new vulnerabilities**. The evidence provided demonstrates point-in-time vulnerability scanning but does not demonstrate continuous configuration drift detection (e.g., AWS Config, CIS benchmark monitoring, change-triggered rescans). The policy is silent on configuration baseline monitoring as well. This is a scope-level gap in the control design itself, not just operating effectiveness.\n- **Severity:** **Medium**\n\n### Finding 10: Inventory Last-Validated Date Predates Report\n\n- **Related Section:** Asset Inventory `last_validated` field\n- **Gap:** All 22 subnets show `last_validated: 2025-12-01`, suggesting inventory is reviewed only quarterly or less. With ~158 assets undiscovered (Finding 5) and new subnets registered as recently as April 2025, more frequent inventory reconciliation against discovery data would strengthen completeness assertions for CC7.1.\n- **Severity:** **Low**\n\n---\n\n## Summary of Severities\n\n| Severity | Count |\n|----------|-------|\n| Critical | 1 |\n| High     | 4 |\n| Medium   | 4 |\n| Low      | 1 |\n\n## Recommended Remediation Priorities\n\n1. **Immediate (\u226430 days):** Establish compensating scanning for EU subnets (AWS Inspector with regional data handling) and obtain formal CISO risk acceptance pending Cloud Agent deployment.\n2. **Short-term (\u226460 days):** Escalate firewall request for IoT subnet; provision lab AD scan credentials or formally segment and risk-accept.\n3. **Ongoing:** Implement monthly inventory-to-discovery reconciliation; produce evidence of AWS Inspector and Rapid7 coverage; investigate authenticated scan failures.\n4. **Control design:** Add configuration drift detection to satisfy the full scope of CC7.1."
+}

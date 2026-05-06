@@ -1,0 +1,310 @@
+{
+  "task_id": "cc6.1-hard-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-04-30T18:20:10.356061",
+  "scoring": {
+    "score": 1.0,
+    "detected": 9,
+    "total": 9,
+    "gaps": [
+      {
+        "gap_id": "gap-001",
+        "category": "stale_service_account",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "jenkins",
+          "legacy",
+          "stale",
+          "unassigned",
+          "owner",
+          "rotation",
+          "2023",
+          "unused",
+          "orphan"
+        ],
+        "total_keywords": 10
+      },
+      {
+        "gap_id": "gap-002",
+        "category": "key_rotation_violation",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-monitoring",
+          "rotation",
+          "90 days",
+          "unassigned",
+          "owner"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-003",
+        "category": "direct_iam_user_console",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "david.kim",
+          "direct",
+          "IAM user",
+          "prohibited",
+          "SSO",
+          "console",
+          "federated",
+          "password"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-004",
+        "category": "termination_sla_breach",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Bradley",
+          "December 20",
+          "4 hours",
+          "delay",
+          "SLA",
+          "holiday",
+          "incomplete",
+          "checklist"
+        ],
+        "total_keywords": 10
+      },
+      {
+        "gap_id": "gap-005",
+        "category": "priya_sharma_termination_delay",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Sharma",
+          "Priya",
+          "delay",
+          "4 hours",
+          "SLA"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-006",
+        "category": "okta_default_policy_no_mfa",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "default",
+          "requireFactor",
+          "false",
+          "not enforced",
+          "gap"
+        ],
+        "total_keywords": 9
+      },
+      {
+        "gap_id": "gap-007",
+        "category": "access_review_late_completion",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "15 business days",
+          "late",
+          "flagged",
+          "revoked",
+          "Okta review"
+        ],
+        "total_keywords": 9
+      },
+      {
+        "gap_id": "gap-008",
+        "category": "backup_dual_active_keys",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "backup-s3-sync",
+          "two active",
+          "two keys",
+          "key_2",
+          "rotation",
+          "both"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-009",
+        "category": "aws_iam_not_in_access_review",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "IAM users",
+          "scope",
+          "direct",
+          "outside"
+        ],
+        "total_keywords": 9
+      }
+    ]
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment: CC6.1\n**Entity:** Meridian Cloud Systems\n**Observation Period:** Q4 2025 (Oct 1 \u2013 Dec 31, 2025)\n**Control:** CC6.1 \u2013 Logical Access Security\n\n---\n\n## Executive Summary\n\nThe Access Control Policy (POL-SEC-003 v4.1) is well-designed and broadly aligns with CC6.1 expectations. However, evidence testing across IAM credentials, access reviews, offboarding records, and service account inventory reveals **multiple control deficiencies** indicating that **operating effectiveness gaps exist** between stated policy and actual implementation. Several findings rise to the level of High severity due to direct contradictions of explicit policy statements (e.g., direct IAM users in AWS, stale credentials, expired service accounts in production).\n\n---\n\n## Findings\n\n### Finding 1: Direct AWS IAM Users Exist for Human/Admin Access (Policy Violation)\n- **Reference:** Policy \u00a73.3 (\"Direct IAM user accounts in AWS are prohibited for human users\"); IAM Credential Report\n- **Gap:** The IAM credential report shows `sso-admin-role` and `david.kim` as direct IAM users in account 441892347610.\n  - `david.kim` has `password_enabled=true` and `mfa_active=true` \u2014 this is a **direct IAM user with console password access**, which the policy explicitly prohibits. All human access should be brokered through AWS SSO/Okta federation.\n  - `sso-admin-role` is named like a role but is provisioned as a long-lived IAM **user with an active access key** (last rotated Sep 15, 2025).\n- **Severity:** **High**\n\n---\n\n### Finding 2: Stale/Unrotated Access Keys Exceeding 90-Day Rotation Requirement\n- **Reference:** Policy \u00a74.3 (\"API keys and service account credentials \u2026 with automatic rotation every 90 days\"); IAM Credential Report\n- **Gap:** Multiple access keys far exceed the 90-day rotation policy:\n  - `legacy-monitoring`: key last rotated **2024-03-10** (~21 months old) \u2014 still actively used (last used 2025-12-28).\n  - `backup-s3-sync` access_key_2: last rotated **2024-01-15** (~23 months old) \u2014 still actively used.\n  - `jenkins-legacy`: last rotated **2023-07-20** (~29 months old).\n  - `david.kim` password: last changed 2024-11-18 (~13 months) \u2014 exceeds typical password rotation expectations if applicable.\n- **Severity:** **High**\n\n---\n\n### Finding 3: Orphaned/Unowned Service Accounts in Production\n- **Reference:** Policy \u00a78 (\"Service accounts must be registered in the CMDB with a designated owner\"); Service Account Inventory\n- **Gap:** Two service accounts have **\"Unassigned\" owners** with no email:\n  - `legacy-monitoring` (CI-00145) \u2014 last reviewed 2024-09-15, but credentials were used as recently as 2025-12-28.\n  - `jenkins-legacy` (CI-00089) \u2014 last reviewed 2023-12-10, \"replaced by GitHub Actions\" yet IAM user still exists with active key.\n  Lack of ownership prevents accountability, review, and revocation. Jenkins-legacy's inactivity (last used Aug 2024) means an unused but active credential persists in production \u2014 a credential exposure risk.\n- **Severity:** **High**\n\n---\n\n### Finding 4: Inactive/Replaced Service Account Credentials Not Deprovisioned\n- **Reference:** Policy \u00a76 (Access Revocation); \u00a78 (Service Accounts); IAM Credential Report\n- **Gap:** `jenkins-legacy` is documented as \"replaced by GitHub Actions\" but its IAM user and access key remain active in AWS. This violates least-privilege and timely revocation principles. Similarly, `legacy-monitoring` is flagged for migration to Datadog with no completion date.\n- **Severity:** **High**\n\n---\n\n### Finding 5: MFA Not Enforced on All Privileged Production-Adjacent Accounts\n- **Reference:** Policy \u00a74.2 (\"MFA \u2026 required for AWS Console access\"); IAM Credential Report\n- **Gap:** The `<root_account>` shows `mfa_active=true` (good), but `sso-admin-role` (a direct IAM user with an active access key used recently) has `mfa_active=false`. While access keys cannot themselves enroll MFA in the traditional console sense, the policy's intent (no direct human IAM users; all administrative access via federated MFA-protected SSO) is undermined.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: Root Account Recently Used \u2013 Insufficient Evidence of Two-Person Authorization\n- **Reference:** Policy \u00a73.3 (\"Root account credentials are secured in a physical safe; usage requires two-person authorization \u2026 logged in CloudTrail\")\n- **Gap:** Root account `password_last_used = 2025-11-02T14:22:00`. No supporting evidence (incident ticket, two-person sign-off log, CloudTrail review record) was provided to validate that this usage followed the documented break-glass / two-person process. This is a gap in **evidence retention**, not necessarily a control failure \u2014 but cannot be relied upon by an auditor without the supporting record.\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: Tom Bradley Offboarding \u2013 SLA Breach for Okta Disablement\n- **Reference:** Policy \u00a76.1 (\"IT disables the Okta account within 4 hours of termination notification\"); Offboarding Records\n- **Gap:** Tom Bradley:\n  - Termination date: 2025-12-20\n  - HR notification: 2025-12-23 (3 days late \u2014 separate HR process gap)\n  - Okta disabled: 2025-12-27 (**~4 days after notification**, far exceeding the 4-hour SLA)\n  - Checklist not completed; signoff date blank as of evidence collection.\n  Note attributes the delay to \"holiday freeze,\" but the policy provides no exception for holidays. Account remained active during the period, creating exposure window.\n- **Severity:** **High**\n\n---\n\n### Finding 8: Priya Sharma Offboarding \u2013 HR Notification and Okta Disablement Delay\n- **Reference:** Policy \u00a76.1; Offboarding Records\n- **Gap:** Priya Sharma's last day was 2025-11-22, but HR did not notify IT until 2025-11-24 (2 days post-termination), and Okta was not disabled until 2025-11-25 (3 days after termination). Although IT acted within ~24 hours of HR notification, the **end-to-end termination-to-revocation window violates the spirit of timely revocation** and indicates an HR-to-IT handoff gap.\n- **Severity:** **Medium**\n\n---\n\n### Finding 9: Q4 Okta Access Review Completed Outside SLA\n- **Reference:** Policy \u00a75.1 (\"Reviews must be completed within 15 business days of initiation\"); Access Review Log AR-2025-Q4-008\n- **Gap:** The Okta IdP review (AR-2025-Q4-008) was initiated 2025-12-01 and completed **2026-01-08** \u2014 approximately 27 business days, exceeding the 15-business-day SLA. Additionally, 5 users were flagged but only **3 were revoked**, with no documented disposition for the remaining 2 (policy \u00a75.2 requires revocation within 5 business days of flagging).\n- **Severity:** **Medium**\n\n---\n\n### Finding 10: Unresolved Flagged Users in Okta Review (Revocation Gap)\n- **Reference:** Policy \u00a75.2 step 4 (\"Flagged access is revoked within 5 business days\"); AR-2025-Q4-008\n- **Gap:** Of 5 users flagged in the Okta review, only 3 were revoked. The 2 remaining flagged users have no recorded disposition (e.g., exception, role transfer, justified retention). This represents a control execution gap \u2014 revocation lifecycle is incomplete.\n- **Severity:** **Medium**\n\n---\n\n### Finding 11: Privileged Access Monthly Reviews Not Evidenced\n- **Reference:** Policy \u00a75.3 (\"Privileged accounts \u2026 reviewed monthly by the CISO\")\n- **Gap:** Only **quarterly** access reviews were provided in evidence. No monthly privileged access review records (October, November, December 2025) were furnished by the CISO for SRE/DBA/Security Admin populations. Either the reviews are not being performed, or evidence is not retained/produced \u2014 both are reportable gaps.\n- **Severity:** **High**\n\n---\n\n### Finding 12: Legacy Service Account Last-Review Date Predates Q4\n- **Reference:** Policy \u00a78 (\"Service accounts are included in quarterly access reviews\"); Service Account Inventory\n- **Gap:** `legacy-monitoring` last reviewed 2024-09-15 and `jenkins-legacy` last reviewed 2023-12-10 \u2014 both have been excluded from at least four quarterly review cycles. This contradicts the inventory entries showing 2025-12-12 review dates for other service accounts and indicates an incomplete review population.\n- **Severity:** **Medium**\n\n---\n\n### Finding 13: `backup-s3-sync` Has Two Active Access Keys\n- **Reference:** AWS IAM best practices; Policy \u00a74.3 (credential management); IAM Credential Report\n- **Gap:** `backup-s3-sync` has both `access_key_1_active=true` and `access_key_2_active=true`. While AWS supports two keys for rotation purposes, both keys show identical \"last used\" timestamps (2025-12-28T06:00:00), suggesting the second key (last rotated 2024-01-15) was never deactivated after rotation. This indicates rotation procedure is not being executed correctly \u2014 the old key should have been disabled after the new key was deployed.\n- **Severity:** **Medium**\n\n---\n\n### Finding 14: Default Okta Sign-On Policy Allows MFA-less Access\n- **Reference:** Policy \u00a74.2 (\"MFA \u2026 required for \u2026 any system accessing production data\"); Okta sign_on_policies\n- **Gap:** The \"Default Policy\" (priority 3) has `requireFactor: false` and applies to `app: ANY` not otherwise scoped. While higher-priority policies cover named production apps, **any new app onboarded to Okta without explicit policy assignment defaults to no-MFA**. This is a configuration drift risk \u2014 not a current breach, but a control design weakness.\n- **Severity:** **Medium**\n\n---\n\n### Finding 15: Okta MFA Factor Set Permits TOTP-only Without Phishing-Resistant Requirement for Privileged Access\n- **Reference:** Policy \u00a74.2 (\"MFA via Okta Verify (push notification or TOTP)\"); Okta MFA enrollment policy\n- **Gap:** While policy is consistent with Okta's enrollment configuration, FIDO/WebAuthn is only `OPTIONAL`. Industry-leading practice (and increasingly auditor expectation) for privileged access (SRE, DBA, Security Admin per \u00a73.2) is **phishing-resistant MFA (FIDO2/WebAuthn) required**, not optional. Push-notification MFA is susceptible to MFA fatigue attacks. This is a hardening recommendation rather than a strict policy violation.\n- **Severity:** **Low**\n\n---\n\n### Finding 16: SMS Disabled but Backup Factor Strategy Unclear\n- **Reference:** Okta MFA enrollment policy\n- **Gap:** SMS and Google Authenticator are `NOT_ALLOWED`. Only Okta OTP is REQUIRED; push and FIDO are OPTIONAL. If a user loses their Okta Verify device, the recovery path is not documented in the policy. While strict factor controls are positive, the absence of a documented account recovery procedure is a gap.\n- **Severity:** **Low**\n\n---\n\n### Finding ",
+  "score": {
+    "task_id": "cc6.1-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.5294117647058824,
+    "f1": 0.6923076923076924,
+    "score": 0.8823529411764706,
+    "gaps_detected": 9,
+    "gaps_total": 9,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 17,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "jenkins",
+          "legacy",
+          "stale",
+          "unassigned",
+          "owner",
+          "rotation",
+          "2023",
+          "unused",
+          "orphan"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-monitoring",
+          "rotation",
+          "90 days",
+          "unassigned",
+          "owner"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "david.kim",
+          "direct",
+          "IAM user",
+          "prohibited",
+          "SSO",
+          "console",
+          "federated",
+          "password"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Bradley",
+          "December 20",
+          "4 hours",
+          "delay",
+          "SLA",
+          "holiday",
+          "incomplete",
+          "checklist"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Sharma",
+          "Priya",
+          "delay",
+          "4 hours",
+          "SLA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "default",
+          "requireFactor",
+          "false",
+          "not enforced",
+          "gap"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-007",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "15 business days",
+          "late",
+          "flagged",
+          "revoked",
+          "Okta review"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-008",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "backup-s3-sync",
+          "two active",
+          "two keys",
+          "key_2",
+          "rotation",
+          "both"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-009",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "IAM users",
+          "scope",
+          "direct",
+          "outside"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  }
+}

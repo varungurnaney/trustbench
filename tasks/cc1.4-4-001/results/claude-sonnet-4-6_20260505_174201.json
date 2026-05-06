@@ -1,0 +1,67 @@
+{
+  "task_id": "cc1.4-4-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T17:42:01.721754",
+  "score": {
+    "task_id": "cc1.4-4-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Greenleaf",
+          "Apex Janitorial",
+          "EXC-HR-2025-001",
+          "EXC-HR-2025-002",
+          "Non-Sensitive",
+          "no system access",
+          "exception"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "HCS-3007",
+          "Natasha Orlova",
+          "BGC-2025-084",
+          "EXC-HR-2025-003",
+          "209 days",
+          "Pending",
+          "expired",
+          "AWS root",
+          "Kubernetes admin",
+          "staging",
+          "production",
+          "90-day risk assessment",
+          "Section 3.3",
+          "no renewal"
+        ],
+        "total_keywords": 14,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3470,
+    "output_tokens": 2231
+  },
+  "raw_response": "# CC1.4 Readiness Assessment \u2014 Helix Cloud Solutions\n## Personnel Security Controls | 2025 Observation Period\n\n---\n\n## Executive Summary\n\nEvidence reviewed includes POL-HR-019 (v4.1), background check records for 16 employees (BGC-2025-078 through BGC-2025-093), the HR exception register (4 exceptions), and the Q4 2025 contractor onboarding report. The majority of personnel security controls are operating effectively. Fourteen of sixteen background check records show full policy compliance, contractor exceptions are appropriately documented and reviewed, and the training extension for HCS-3012 was properly authorized and closed. However, one significant control failure was identified involving a sensitive-role employee with an unresolved background check and unmitigated compensating controls, constituting the primary finding of concern for this control period.\n\n---\n\n## Findings\n\n---\n\n### Finding 1 \u2014 Expired Exception and Absent 90-Day Risk Assessment for Pending Sensitive-Role Background Check\n\n**Severity: Critical**\n\n**Relevant Documents:**\n- BGC-2025-084 (Background Check Records)\n- EXC-HR-2025-003 (Exception Register)\n- POL-HR-019, Section 3.3\n\n**Condition:**\n\nNatasha Orlova (HCS-3007), a Site Reliability Engineer classified as Sensitive, has had a comprehensive background check pending since June 2, 2025 \u2014 a period of approximately 209 days as of the December 28 assessment date. The exception governing her continued access (EXC-HR-2025-003) expired November 2, 2025. No renewal exception has been filed, and no 90-day risk assessment has been completed, both of which are explicitly required by POL-HR-019 Section 3.3.\n\n**Why This Is a Gap:**\n\nThree distinct policy requirements have been simultaneously violated for the same individual:\n\n1. **60-day escalation** was properly performed, and CHRO approval with compensating controls was granted \u2014 this portion of the process functioned correctly.\n2. **90-day risk assessment** (required per Section 3.3 at the 90-day threshold) was never completed. The check passed the 90-day mark in early September 2025 with no documented assessment.\n3. **Exception expiration** (November 2, 2025) passed without renewal. The employee has been operating without any active governing exception for nearly two months.\n\nCompounding these procedural failures is a material access control concern. The background check record (BGC-2025-084) states the employee has **\"full production access including AWS root and Kubernetes admin since June 2.\"** The compensating controls approved under EXC-HR-2025-003 \u2014 weekly manager code review and staging-environment-only access \u2014 are directly contradicted by the access described in the background check record. Either the compensating controls were never enforced, were reversed without authorization, or the background check record is inaccurate. In any of these scenarios, a control failure exists.\n\nThis combination \u2014 an unscreened individual in a highly privileged role, an expired exception, a missing risk assessment, and apparent non-enforcement of compensating controls \u2014 represents the most significant finding in this review period.\n\n**What Is Required to Remediate:**\n\n- Immediate reconciliation of Orlova's actual system access against the approved compensating controls\n- Escalation to CHRO and IT Security regarding current access scope\n- Completion of a 90-day risk assessment (overdue by approximately 120 days)\n- Filing and approval of a new exception or documented risk acceptance, or restriction of access pending check completion\n- A root cause review of why the exception expiration triggered no automated or manual follow-up\n\n---\n\n### Finding 2 \u2014 Self-Approved Exception (Appearance of Inadequate Segregation of Duties)\n\n**Severity: Medium**\n\n**Relevant Documents:**\n- EXC-HR-2025-001 (Exception Register)\n- POL-HR-019 (General Governance)\n\n**Condition:**\n\nException EXC-HR-2025-001, covering the background check waiver for Greenleaf Office Supplies, was both requested and approved by the same individual: Rita Johansson, CHRO.\n\n**Why This Is a Gap:**\n\nWhile the underlying exception itself appears substantively reasonable \u2014 the contractor has no system access, no unescorted facility access, and is classified as Non-Sensitive \u2014 the approval structure does not reflect adequate segregation of duties. Self-approval by a senior executive for a personnel security exception, even a low-risk one, creates a control design weakness. SOC 2 auditors will scrutinize whether the exception approval process has an independent review step, particularly for exceptions approved by the policy owner. POL-HR-019 does not define a required approval hierarchy for exceptions, which is itself a contributing policy gap.\n\n**Distinguishing Note:** The exception is substantively defensible and has been reviewed quarterly with no change in risk posture. This finding concerns process design, not the merits of the individual exception decision.\n\n**What Is Required to Remediate:**\n\n- Update the exception management process to require a second approver independent of the requestor, regardless of seniority\n- Consider defining in policy that exceptions may not be self-approved above a defined risk tier\n- For the Greenleaf exception specifically, obtain a retrospective co-approval or document independent review at next renewal\n\n---\n\n### Finding 3 \u2014 Background Check Records Do Not Reflect Exception Status for Contractor Individuals\n\n**Severity: Low**\n\n**Relevant Documents:**\n- Q4 2025 Contractor Onboarding Report (RPT-HR-Q4-2025-003)\n- Exception Register (EXC-HR-2025-001, EXC-HR-2025-002)\n- Background Check Records (BGC-2025-078 through BGC-2025-093)\n\n**Condition:**\n\nThe background check record population covers only the 16 employees hired in 2025. Contractors with system access \u2014 specifically ClearPath Consulting, DataForge Analytics, and NovaTech Staffing (Amy Winters) \u2014 appear in the contractor onboarding report with confirmed background check completion, but these are not represented in the centralized background check tracking records. The exception register addresses only the waived/deferred contractor checks, not the completed ones.\n\n**Why This Is a Gap:**\n\nThere is no unified evidence artifact that shows the complete universe of individuals with system access and their screening status. An auditor seeking to confirm that all system-access individuals have been screened must cross-reference at least three separate documents and reconcile by inference. This is not a control failure \u2014 the underlying checks appear to have been completed \u2014 but the evidence architecture creates a documentation gap that weakens auditability and could mask omissions in future periods.\n\n**Distinguishing Note:** The contractor report does confirm completed screening for all system-access contractors in Q4 2025. This finding is procedural rather than substantive.\n\n**What Is Required to Remediate:**\n\n- Expand the background check tracking register to include contractors with system access alongside employees\n- Or establish a clear cross-reference index that maps all system-access individuals (employees and contractors) to their screening record and exception status in a single artifact\n\n---\n\n## Non-Issues Noted for Record\n\nThe following items were reviewed and determined to require no finding:\n\n| Item | Disposition |\n|------|-------------|\n| EXC-HR-2025-002 (Apex Janitorial \u2014 agency-provided screening) | Substantively appropriate. Agency screening standards reviewed by Helix in February. Access limited to common areas. No system access provisioned. Documented and renewed. |\n| EXC-HR-2025-004 (Iglesias training extension) | Properly authorized by CISO, completed within the extended window (December 3 vs. December 15 deadline). Exception closed. No gap. |\n| BGC-2025-078 through BGC-2025-083, BGC-2025-085 through BGC-2025-093 | All 15 remaining employee records show compliant screening \u2014 Sensitive roles completed prior to access provisioning, Non-Sensitive roles completed within the 30-day policy window. All checks conducted through Checkr per policy. |\n| Access provisioning dates | No instances identified where a Sensitive-role employee was provisioned access before background check completion, outside of the Orlova matter addressed in Finding 1. |\n| ClearPath Consulting expanded Jira access request | Noted as pending IT Security review. Not a current gap \u2014 request is in the appropriate review channel. Will require follow-up in subsequent period if unresolved. |\n\n---\n\n## Summary Table\n\n| # | Finding Title | Severity | Policy Reference |\n|---|---------------|----------|-----------------|\n| 1 | Expired exception, missing 90-day risk assessment, and apparent compensating control non-enforcement for Sensitive-role employee with pending background check | **Critical** | POL-HR-019 \u00a73.3; EXC-HR-2025-003 |\n| 2 | Self-approved exception with no independent review \u2014 segregation of duties weakness | **Medium** | POL-HR-019 (governance); EXC-HR-2025-001 |\n| 3 | Contractor background check completions not captured in centralized screening records | **Low** | RPT-HR-Q4-2025-003; BGC record population |\n\n---\n\n*Assessment Date: December 28, 2025 | Auditor Review of 2025 Observation Period*\n*Evidence population: POL-HR-019 v4.1, BGC-2025-078\u2013093, Exception Register (4 entries), RPT-HR-Q4-2025-003*"
+}

@@ -1,0 +1,83 @@
+{
+  "task_id": "c1.1-1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:10:40.362976",
+  "score": {
+    "task_id": "c1.1-1-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 14,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "encryption at rest",
+          "database",
+          "storage",
+          "S3",
+          "missing",
+          "not addressed"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "key rotation",
+          "lifecycle",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "mTLS",
+          "where feasible",
+          "should",
+          "internal"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "certificate",
+          "monitoring",
+          "automated",
+          "process"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1842,
+    "output_tokens": 2846
+  },
+  "raw_response": "# Compliance Readiness Assessment: Crestline Data Systems Data Protection and Encryption Policy\n\n## Control Under Review\n**C1.1** \u2013 The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.\n**CC6.7** \u2013 The entity restricts the transmission, movement, and removal of information to authorized internal/external users and processes, and protects it during transmission, movement, or removal.\n\n---\n\n## Overall Assessment\n\nThe policy is reasonably mature and addresses many core encryption requirements (TLS standards, key management, endpoint encryption, certificate management, prohibited algorithms). However, several gaps would likely be flagged by an auditor evaluating SOC 2 C1.1 and CC6.7 readiness. C1.1 in particular requires more than encryption \u2014 it requires evidence that confidential information is **identified, inventoried, retained, and disposed of** in accordance with objectives. The policy is heavily oriented toward encryption mechanics and under-addresses the lifecycle and identification aspects of confidentiality.\n\n---\n\n## Findings\n\n### Finding 1 \u2013 No Data Inventory or Identification Process\n- **Section:** \u00a73 (Data Classification)\n- **Gap:** C1.1 explicitly requires the entity to **identify** confidential information. The policy states data owners classify data \"at point of creation\" but provides no process for discovering, inventorying, or tagging confidential data already in existence across systems (databases, S3 buckets, SaaS, file shares). There is no reference to a data inventory, data map, or automated discovery tooling.\n- **Severity:** **High**\n\n### Finding 2 \u2013 Missing Data Retention and Disposal Requirements\n- **Section:** Document-wide (no section addresses this)\n- **Gap:** C1.1 requires confidential information to be **retained and disposed of** to meet confidentiality objectives. The policy is silent on retention periods, secure deletion (cryptographic erasure, media sanitization per NIST SP 800-88), or end-of-life destruction of media containing confidential data. This is a material C1.1 gap.\n- **Severity:** **Critical**\n\n### Finding 3 \u2013 Encryption at Rest Not Specified\n- **Section:** \u00a74 (Encryption Standards)\n- **Gap:** \u00a74 covers data in transit, endpoints, and email \u2014 but there is **no subsection on data at rest** for databases, object storage (S3), backups, snapshots, or logs. Given AWS KMS is referenced for key management, the auditor would expect explicit at-rest encryption requirements (e.g., AES-256, S3 SSE-KMS, RDS/EBS encryption, backup encryption). This is a significant CC6.7 gap.\n- **Severity:** **Critical**\n\n### Finding 4 \u2013 Key Rotation Requirements Absent\n- **Section:** \u00a75 (Key Management)\n- **Gap:** The policy addresses key generation, storage, and access, but does not specify **key rotation cadence** (e.g., annual rotation for KMS CMKs, rotation upon personnel changes, rotation upon suspected compromise). Auditors routinely cite missing rotation policy as a CC6.7 weakness.\n- **Severity:** **High**\n\n### Finding 5 \u2013 No Defined Roles or Responsibilities\n- **Section:** Document-wide\n- **Gap:** Beyond naming the CISO and a generic \"Data Governance team,\" the policy does not define a RACI for encryption-related controls (e.g., who approves key access, who manages the Private CA, who responds to certificate expiry). Auditors expect clear accountability.\n- **Severity:** **Medium**\n\n### Finding 6 \u2013 Vague Language Weakens Enforceability\n- **Section:** \u00a74.1 (\"mTLS where feasible\"), \u00a79 (Exceptions)\n- **Gap:** Phrases such as \"should use mTLS where feasible\" introduce ambiguity that weakens auditability. SOC 2 controls must be testable; subjective qualifiers (\"where feasible\") allow inconsistent application without compensating control documentation.\n- **Severity:** **Medium**\n\n### Finding 7 \u2013 Third-Party / Vendor Data Handling Not Addressed\n- **Section:** \u00a72 (Scope)\n- **Gap:** Scope mentions third-party vendors but the policy does not require contractual encryption obligations, vendor assessments, or controls over confidential data shared with subprocessors. Under C1.1, the entity must protect confidential information regardless of where it resides, including with vendors.\n- **Severity:** **High**\n\n### Finding 8 \u2013 No Incident Response Linkage for Cryptographic Failures\n- **Section:** \u00a78 (Compliance and Monitoring)\n- **Gap:** While non-compliance is \"reported as a security incident,\" there are no specific procedures for key compromise, certificate compromise/revocation, or cryptographic algorithm deprecation events. CC6.7 expects defined procedures for crypto-related incidents.\n- **Severity:** **Medium**\n\n### Finding 9 \u2013 Mobile Device Controls Are Underspecified\n- **Section:** \u00a74.2 (Endpoint Encryption)\n- **Gap:** \"Mobile devices accessing corporate email must have device-level encryption\" is vague. There is no reference to MDM enforcement, jailbreak detection, remote wipe capability, or BYOD vs. corporate-owned distinctions \u2014 all relevant to CC6.7 (preventing unauthorized removal of confidential data).\n- **Severity:** **Medium**\n\n### Finding 10 \u2013 DLP Coverage Limited to Email\n- **Section:** \u00a74.3 (Email Encryption)\n- **Gap:** DLP is mentioned only for outbound email scanning. There is no DLP coverage for endpoint egress (USB explicitly prohibited but not technically enforced), cloud storage uploads, collaboration tools (Slack, Teams), or web uploads. CC6.7 explicitly addresses **removal** of information, which extends beyond email.\n- **Severity:** **High**\n\n### Finding 11 \u2013 No Annual Policy Review by Management Documented in Process\n- **Section:** Document footer / \u00a78\n- **Gap:** A \"Next Review Date\" is listed, but the policy does not formalize annual review and management approval as a control activity. SOC 2 expects evidence of periodic policy review.\n- **Severity:** **Low**\n\n### Finding 12 \u2013 Absence of Confidentiality Commitments to External Parties\n- **Section:** Document-wide\n- **Gap:** C1.1 maps to confidentiality commitments made to customers (NDAs, contractual confidentiality clauses, MSAs). The policy does not reference how those commitments are tracked or operationalized through this policy.\n- **Severity:** **Medium**\n\n### Finding 13 \u2013 No Cryptographic Algorithm Lifecycle Management\n- **Section:** \u00a77 (Prohibited Practices)\n- **Gap:** The policy lists deprecated algorithms but provides no process for evaluating and adopting new standards (e.g., post-quantum readiness, monitoring NIST guidance). The list is static and will become outdated.\n- **Severity:** **Low**\n\n### Finding 14 \u2013 Key Backup and Recovery Not Addressed\n- **Section:** \u00a75 (Key Management)\n- **Gap:** No procedures for key escrow, backup, or recovery in the event of KMS unavailability, accidental deletion, or personnel turnover. Loss of keys = loss of data; auditors will expect documented recovery procedures.\n- **Severity:** **Medium**\n\n---\n\n## Summary by Severity\n\n| Severity | Count | Findings |\n|----------|-------|----------|\n| Critical | 2 | #2, #3 |\n| High | 4 | #1, #4, #7, #10 |\n| Medium | 5 | #5, #6, #8, #9, #12, #14 |\n| Low | 2 | #11, #13 |\n\n---\n\n## Recommendation\n\nBefore SOC 2 examination, Crestline Data Systems should prioritize remediation of the **Critical** findings (data retention/disposal, encryption at rest) as these represent material C1.1 deficiencies that an auditor will almost certainly flag as control exceptions. The **High** findings represent meaningful CC6.7 gaps that, while individually non-fatal, collectively weaken the design effectiveness of the control. Addressing the inventory/identification gap (Finding #1) is particularly important because it underpins the entire confidentiality control objective \u2014 you cannot protect what you have not identified."
+}

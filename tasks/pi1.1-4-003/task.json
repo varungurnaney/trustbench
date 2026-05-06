@@ -1,0 +1,91 @@
+{
+  "id": "pi1.1-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "PI1.1",
+  "control_description": "The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/sdlc-policy.md",
+      "type": "policy",
+      "description": "Cascade Systems SDLC policy defining code review, emergency change, and configuration drift requirements"
+    },
+    {
+      "path": "evidence/code-review-records-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "Pull request code review records for Q4 2025 with 20 entries including 2 emergency deployments"
+    },
+    {
+      "path": "evidence/configuration-drift-report-q4-2025.csv",
+      "type": "report",
+      "description": "Weekly configuration drift scan results comparing staging and production environments for Q4 2025"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Cascade Systems' processing integrity controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the SDLC policy, code review records, and configuration drift reports. Assess whether PI1.1 requirements for accurate processing are met. Examine the emergency change process and configuration management practices. Be careful to distinguish between emergency changes that followed the compensating control process and those that did not.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "high",
+      "title": "PR-5610 emergency deployment without pre-merge review — but post-deploy review was completed within 48 hours",
+      "description": "PR-5610 (November 7, payment double-charge bug fix) was deployed to production without pre-merge code review. This initially appears to be a code review control failure. However, the SDLC policy Section 3.2 explicitly permits emergency hotfixes without pre-merge review when authorized by the VP Engineering or CTO, provided a post-deploy review is completed within 48 hours. The code review records show: (1) the emergency was authorized by the VP Engineering, (2) a post-deploy review was completed by Nina Patel on November 9 (within 48 hours), (3) the review documented findings ('fix is correct — race condition in concurrent payment processing'), and (4) a follow-up action was identified and tracked (PR-5615, concurrent payment integration test). This is NOT a finding — the emergency change process was followed correctly with all compensating controls executed.",
+      "evidence_sources": [
+        "evidence/code-review-records-q4-2025.csv",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The model should identify PR-5610 as an emergency deployment without pre-merge review, then check whether the policy's emergency change process (Section 3.2) was followed. VP Engineering authorization, post-deploy review within 48 hours by a different engineer, documented findings, and tracked follow-up action all demonstrate compliance with the emergency process.",
+      "detection_criteria": {
+        "required_keywords": ["PR-5610", "emergency", "double-charge", "VP Engineering authorized", "post-deploy review", "Nina Patel", "48 hours", "PR-5615", "follow-up"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["not a finding", "process followed", "compensating control completed", "properly authorized"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "PR-5614 emergency deployment with no post-deploy review — compensating control not completed",
+      "description": "PR-5614 (November 24, order processing timeout fix) was deployed to production without pre-merge code review, authorized by the CTO. However, unlike PR-5610, the code review records show no post-deploy review was ever performed. The review_date field is blank, the review_type field is blank, the approval_status is 'N/A', and the resolution_notes state 'No post-deploy review performed.' Policy Section 3.2 requires that emergency changes 'must receive a post-deploy review within 48 hours of deployment.' As of December 29 (35 days after deployment), no post-deploy review has occurred. The fix modified order processing timeout and retry configuration — changes that directly affect processing completeness and timeliness. Without a post-deploy review, there is no verification that the emergency fix was correct, did not introduce regressions, or handled edge cases properly. The contrast with PR-5610 (which completed all compensating controls) makes this gap clear.",
+      "evidence_sources": [
+        "evidence/code-review-records-q4-2025.csv",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The model should compare the two emergency deployments: PR-5610 followed the full emergency process (authorization, post-deploy review within 48 hours, documented findings, follow-up action). PR-5614 has CTO authorization but no post-deploy review — 35 days after deployment. Section 3.2 requires post-deploy review within 48 hours. The change affected order processing parameters, making the lack of review a direct processing integrity concern.",
+      "detection_criteria": {
+        "required_keywords": ["PR-5614", "no post-deploy review", "order processing timeout", "CTO authorized", "48 hours", "Section 3.2", "35 days", "compensating control not completed"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Configuration drift from PR-5614 emergency fix persists 35 days without remediation",
+      "description": "The configuration drift reports show that ORDER_TIMEOUT_MS diverges between staging (30000ms) and production (15000ms) starting from CDR-309 on November 26, coinciding with the PR-5614 emergency deployment on November 24. The drift has persisted through CDR-314 (December 29) — 35 days. Policy Section 5.2 states 'Configuration drift between staging and production must not exceed 5% of configuration parameters' and drift must be 'resolved within 48 hours.' While the drift percentage (0.4%) is under the 5% threshold, the 48-hour remediation SLA has been violated by 33 days. This means staging and production have different order timeout values, so integration tests running against staging are validating behavior with 30-second timeouts while production uses 15-second timeouts. Any timeout-sensitive code path validated in staging may behave differently in production.",
+      "evidence_sources": [
+        "evidence/configuration-drift-report-q4-2025.csv",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The drift reports show ORDER_TIMEOUT_MS divergence starting CDR-309 (Nov 26) persisting through CDR-314 (Dec 29). While drift percentage is under 5%, the 48-hour remediation requirement (Section 5.2) was violated — the drift has been 'Under Review' for 35 days. The specific parameter (ORDER_TIMEOUT_MS) directly affects processing behavior, and the staging/production mismatch undermines the value of staging validation.",
+      "detection_criteria": {
+        "required_keywords": ["ORDER_TIMEOUT_MS", "configuration drift", "staging", "production", "35 days", "48 hours", "Section 5.2", "CDR-309", "CDR-314", "Under Review"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["processing_integrity", "emergency_change", "code_review", "configuration_drift", "red_herring", "compensating_controls", "post_deploy_review"]
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "task_id": "a1.2-5-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:10:03.395611",
+  "score": {
+    "task_id": "a1.2-5-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.25,
+    "f1": 0.36363636363636365,
+    "score": 0.36363636363636365,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "5 hours 32 minutes",
+          "332 minutes",
+          "4-hour RTO",
+          "92 minutes",
+          "container image",
+          "Kubernetes",
+          "scaling",
+          "warm standby"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "CDN cache",
+          "runbook"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "warm standby",
+          "2 nodes",
+          "container image",
+          "scaling"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3458,
+    "output_tokens": 2352
+  },
+  "raw_response": "## Overall Assessment\n\nZenith Cloud has a defined availability/DR policy, performed a Q4 full DR failover test, achieved the stated RPO, documented issues, and obtained sign-off. The test is valuable evidence that the organization is exercising and monitoring its DR process.\n\nHowever, the Q4 2025 DR test did **not** meet the stated 4-hour RTO, and the evidence provided does not demonstrate that remediation was completed and validated within the observation period. In addition, backup evidence is incomplete relative to the policy\u2019s daily, incremental, WAL, and retention requirements.\n\nAs a result, I would treat the Q4 DR test result as a **control operating exception / readiness gap** for A1.2, not merely a successful test with observations.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | DR failover did not meet the stated 4-hour RTO | Availability and DR Policy \u00a7\u00a7 3.1, 3.2, 5.1; Q4 DR Test Report \u2014 `rto_assessment` | The policy requires service restoration within 4 hours / 240 minutes. The Q4 DR test completed in 332 minutes, exceeding the RTO by 92 minutes, or 38.3%. A1.2 requires backup and recovery processes to meet availability commitments and system requirements. Although the test identified useful issues and the RPO was met, the entity did not demonstrate that it can restore Tier 1 services within its committed RTO. | **High** |\n| 2 | DR environment design is not currently sufficient to meet recovery objectives | Availability and DR Policy \u00a7 3.3; Q4 DR Test Report \u2014 `issues_and_remediation` | The policy states that the DR environment maintains warm standby infrastructure capable of assuming full production load within the RTO window. The test identified multiple design/capacity gaps: container images were not pre-cached in the DR region, the warm standby Kubernetes cluster had only 2 nodes versus 8 production nodes, and scaling/pulling images materially contributed to the missed RTO. This indicates the DR architecture is not yet aligned with the documented RTO objective. | **High** |\n| 3 | DR runbook is incomplete for CDN failover procedures | Q4 DR Test Report \u2014 Phase 3 DNS and Traffic; Availability and DR Policy \u00a7 5.1 | The DR test found that CloudFront/CDN cache invalidation was required but was not included in the DR runbook. This caused a 22-minute delay and required manual intervention. Recovery procedures should be complete, current, and executable during a disaster scenario. Missing a required CDN invalidation step creates risk that production traffic will not fully route to the DR environment within the expected recovery window. | **Medium** |\n| 4 | No evidence that DR remediation actions were completed and validated within Q4 | Q4 DR Test Report \u2014 `issues_and_remediation`; Availability and DR Policy \u00a7 5.1 | The report lists remediation actions with ETAs of December 1 and December 15, 2025, and one action pending budget approval. However, no evidence was provided showing that these remediations were completed, approved, implemented, or re-tested by December 31, 2025. Because the RTO failed, management should demonstrate timely corrective action and validation that the recovery capability now meets the stated objective. | **High** |\n| 5 | Backup monitoring evidence does not demonstrate daily backups for the full Q4 period | Availability and DR Policy \u00a7 4.1; Backup Monitoring Logs | The policy requires daily full backups at 02:00 UTC. The backup log provided contains only selected dates in Q4, not a complete daily listing for October 1 through December 31. While the listed backups are successful and checksum-verified, the evidence is insufficient to conclude that daily backups operated effectively for the full observation period. | **Medium** |\n| 6 | No evidence provided for incremental backup monitoring | Availability and DR Policy \u00a7 4.3 | The policy requires incremental backups every 4 hours. The provided backup monitoring logs only show full backups and do not include incremental backup records, success/failure status, alerting, or exception handling. Without incremental backup evidence, the auditor cannot verify that the backup process operated as designed throughout Q4. | **Medium** |\n| 7 | No evidence provided for ongoing WAL archiving lag monitoring | Availability and DR Policy \u00a7 4.2; Q4 DR Test Report \u2014 `data_integrity` | The policy requires continuous PostgreSQL WAL archiving with a maximum 15-minute lag. The DR test showed database replication was current to within 30 seconds at the time of the test, which is positive. However, no Q4 monitoring evidence was provided to show that WAL archiving consistently stayed within the 15-minute maximum lag requirement throughout the observation period. | **Medium** |\n| 8 | Backup retention compliance not evidenced | Availability and DR Policy \u00a7 6 | The policy defines retention requirements for daily, WAL, and monthly backups. The evidence provided does not show retention configuration, backup lifecycle rules, deletion protections, or historical retention reports. Therefore, the auditor cannot determine whether backups were retained for the required periods. | **Low** |\n\n---\n\n## Auditor Judgment on the Failed DR Test\n\nThe failed DR test should **not** be dismissed simply because the test was useful. A DR test can both provide value and still identify a control failure.\n\nPositive evidence from the test includes:\n\n- A full DR failover was performed during Q4.\n- RPO was met.\n- Data integrity was verified.\n- Tier 1 services were ultimately restored.\n- Issues were documented with owners and remediation plans.\n- Management sign-off was obtained.\n\nHowever, the control objective requires recovery processes to meet the entity\u2019s availability commitments and system requirements. Because the documented RTO is 4 hours and the actual recovery took 5 hours 32 minutes, the test demonstrates that the DR process did **not** operate effectively against the stated requirement during Q4.\n\nAccordingly, I would assess A1.2 as having a **High-severity readiness gap / control exception** for the Q4 observation period unless Zenith Cloud can provide additional evidence showing that remediation was completed and a successful re-test met the 4-hour RTO before December 31, 2025."
+}

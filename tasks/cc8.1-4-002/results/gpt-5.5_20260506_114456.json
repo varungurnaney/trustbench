@@ -1,0 +1,81 @@
+{
+  "task_id": "cc8.1-4-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:44:56.217894",
+  "score": {
+    "task_id": "cc8.1-4-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 2,
+    "red_herrings_total": 2,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "rollback",
+          "control failure"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-510",
+          "rollback"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-506",
+          "SCIM",
+          "testing evidence",
+          "N/A"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "CHANGE-510",
+          "staging",
+          "production",
+          "parity",
+          "fidelity"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3330,
+    "output_tokens": 3519
+  },
+  "raw_response": "## Readiness Assessment Findings for CC8.1 \u2014 Q4 2025\n\nOverall, Crestline\u2019s Q4 change evidence shows a generally operating change management process: normal changes were CAB-approved before deployment, deployments occurred in approved windows, rollbacks for CHANGE-503 and CHANGE-510 were executed within policy thresholds and reviewed at the next CAB, and the emergency change followed the verbal approval / retrospective CAB process.  \n\nHowever, the following genuine control gaps were identified.\n\n---\n\n### 1. Missing Required Testing Evidence for High-Risk Change CHANGE-506\n\n**Related document section:**  \n- Change Management Policy \u00a73.2 \u2014 Testing Requirements  \n- Change log \u2014 CHANGE-506  \n- CAB minutes \u2014 November 10, 2025\n\n**Why this is a gap:**  \nCHANGE-506, \u201cImplement SCIM provisioning endpoint,\u201d was classified as **High** risk and approved by CAB on November 10. The CAB minutes explicitly note that formal testing evidence was not yet attached at the time of approval and that Lisa indicated it would be uploaded before deployment.\n\nHowever, the change log still shows:\n\n- `testing_evidence` is blank  \n- `test_pass_rate` is `N/A`  \n- No load testing evidence is referenced, despite the policy requiring High/Critical risk changes to include load testing results  \n- The change was deployed and marked completed\n\nThis indicates insufficient evidence that required testing was completed and documented prior to production deployment.\n\n**Severity:** High\n\n---\n\n### 2. Peer Review Evidence Not Provided for Code Changes\n\n**Related document section:**  \n- Change Management Policy \u00a73.4 \u2014 Segregation of Duties  \n- CC8.1 \u2014 design, development, approval, and implementation of changes\n\n**Why this is a gap:**  \nThe policy requires peer review for all code changes through GitHub PR approval. The evidence package includes CAB approvals, deployment records, and testing references, but it does not include PR links, reviewer names, review timestamps, or other evidence demonstrating that code changes were peer-reviewed before deployment.\n\nThis is an evidence gap for demonstrating that changes were appropriately reviewed during the design/development phase, not just approved by CAB for release.\n\n**Severity:** Medium\n\n---\n\n### 3. Deployment Accountability Is Recorded Only at Team Level\n\n**Related document section:**  \n- Change Management Policy \u00a73.4 \u2014 Segregation of Duties  \n- Change log \u2014 `developer` and `deployer` fields\n\n**Why this is a gap:**  \nThe change log lists the deployer as `sre-team` for all changes rather than identifying the individual who performed the production deployment. For most application changes, this still suggests functional segregation between developer and SRE. However, for SRE-owned changes such as CHANGE-507 and CHANGE-512, the developer and deployer are both recorded as `sre-team`.\n\nBecause deployment activity is recorded only at the team level, the evidence does not fully demonstrate individual-level segregation of duties or accountability. An auditor would not be able to confirm from the provided evidence that the same individual who prepared the change did not also deploy it.\n\n**Severity:** Low\n\n---\n\n### 4. Corrective Action Tracking for CHANGE-503 Staging Parity Gap Is Incomplete\n\n**Related document section:**  \n- Incident Report: CHANGE-503 Rollback \u2014 Corrective Actions  \n- Change Management Policy \u00a73.2 \u2014 Testing Requirements\n\n**Why this is a gap:**  \nThe CHANGE-503 rollback was handled appropriately: the rollback threshold was exceeded, rollback was initiated and completed within policy, and CAB reviewed the event. The rollback itself is not a control failure.\n\nHowever, the incident report identified a testing environment fidelity issue: staging had 2 Kubernetes nodes while production had 12, causing the WebSocket connection pooling issue to appear only under production load. One corrective action was for Engineering to evaluate staging environment parity for WebSocket workloads.\n\nThe evidence does not show an owner, due date, tracking ticket, or closure status for that corrective action. CHANGE-504 included improved load testing, which partially addresses the immediate issue, but the broader staging parity corrective action is not shown as tracked to resolution.\n\n**Severity:** Low\n\n---\n\n## Items Reviewed That Do Not Appear to Be Findings\n\n- CHANGE-503 rollback: handled per rollback policy and reviewed by CAB.  \n- CHANGE-510 rollback: handled per rollback policy and reviewed by CAB.  \n- CHANGE-507 emergency change: verbal approval and retrospective CAB were completed within the policy requirement.  \n- CHANGE-512 standard certificate renewal: appropriately treated as a standard change under SC-002."
+}

@@ -1,0 +1,40 @@
+{
+  "task_id": "cc3.1-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:17:24.895934",
+  "score": {
+    "task_id": "cc3.1-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.16666666666666666,
+    "f1": 0.2857142857142857,
+    "score": 1.0,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "Critical",
+          "quarterly",
+          "90 days",
+          "overdue"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1957,
+    "output_tokens": 1405
+  },
+  "raw_response": "Certainly! Below is a list of findings based on your instructions, reviewing the **risk register** against the **risk management policy** and SOC 2 CC3.1 requirements.\n\n---\n\n### **Finding 1: Risk Reviews Not Meeting Policy Cadence (Critical, High, Medium Risks)**\n- **Section Referenced:** Risk Management Policy \u00a73.2 (Review Cadence), Risk Register columns `last_review_date` and `next_review_date`\n- **Gap:**  \n  According to the policy, all **Critical** and **High** risks require review at least every 90 days. On several register entries, the next review date is set **over three months after** the last review date (e.g., last review 2025-11-20, next review 2026-02-20; this is 92 days, exceeding 90 days).  \n  **Example entries:**  \n    - CV-RISK-001 (last review: 2025-11-20, next review: 2026-02-20 = 92 days; High)\n    - CV-RISK-003 (2025-10-15 to 2026-01-15 = 92 days; High)  \n  This appears consistent across most High/Critical entries \u2013 the \u201cquarterly\u201d review is set exactly at three months, but reviewing calendar days, many intervals are **over 90 days**.  \n- **Severity:** **High**  \n  Even minor violations of maximum review intervals for Critical/High risks undermine management\u2019s ability to monitor and mitigate risks per policy and SOC 2 requirements.\n\n---\n\n### **Finding 2: Inconsistent Review Intervals \u2013 Medium Risks**\n- **Section Referenced:** Risk Management Policy \u00a73.2 (Review Cadence), Risk Register  \n- **Gap:**  \n  Policy requires **Medium** risks to be reviewed every 180 days (semi-annually). Several medium-classified risks have \u201cnext_review_date\u201d set less than six months from \u201clast_review_date\u201d (e.g. last review 2025-09-10, next 2026-03-10 = 182 days, which is acceptable; however, policy wording uses \u201cmaximum,\u201d so shorter intervals are permitted, but registering these reviews uniformly at ~182 days may create drift and risk of overdue reviews if not carefully tracked.)  \n  **However, no medium risk in the sample is overdue.**  \n- **Severity:** **Low**  \n  Currently no overdue entries, but close monitoring is warranted given the risk that imprecise scheduling could soon result in non-compliance.\n\n---\n\n### **Finding 3: No 'Low' Risks in Register**\n- **Section Referenced:** Policy \u00a73.1, Risk Register  \n- **Gap:**  \n  The risk register contains **no 'Low' classified risks**. Policy requires the register to cover all risks; absence of 'Low' risks suggests either an overly restrictive threshold for recording risks, or that all risks are consistently rated Medium or above, possibly due to bias in risk scoring or lack of granularity. SOC 2 CC3.1 expects comprehensive risk identification, including documenting lower significance risks.\n- **Severity:** **Medium**  \n  This could suggest incomplete risk identification practices or a risk of missing emerging issues.\n\n---\n\n### **Finding 4: No Evidence of Overdue Review Escalation**\n- **Section Referenced:** Policy \u00a73.2 (Escalation clause)  \n- **Gap:**  \n  The policy says, \u201cOverdue reviews must be escalated to the CRO within 5 business days.\u201d The risk register **does not indicate** if any reviews have ever been overdue, escalated, or how overdue review tracking/escalation is documented or managed. For SOC 2, evidence of this control operating is required.\n- **Severity:** **Medium**  \n  This lack of evidence may prevent demonstrating the organization detects and responds to control exceptions.\n\n---\n\n### **Finding 5: Risk Register Lacks Explicit \u201cObjective\u201d Mapping**\n- **Section Referenced:** SOC 2 CC3.1; Policy Purpose \u00a71  \n- **Gap:**  \n  CC3.1 expects objectives to be specified with sufficient clarity such that risks to the achievement of those objectives are identified. The risk register provides only categories, not clear mapping between individual/risk and the specific organizational objective it threatens (financial, regulatory, availability, confidentiality, etc.) as an explicit field.\n- **Severity:** **Medium**  \n  If challenged, the register may not sufficiently demonstrate alignment of each risk to organizational objectives\u2014this is a documentation/traceability gap for CC3.1.\n\n---\n\n### **Finding 6: Policy States \u201cServiceNow GRC,\u201d But Register Format Is CSV**\n- **Section Referenced:** Policy \u00a73.1  \n- **Gap:**  \n  The policy mandates the risk register be maintained in the ServiceNow GRC module. The evidence provided is a CSV file. While a CSV may be an export, the format does not confirm location, workflow, or change-tracking per the GRC mandate.\n- **Severity:** **Low**  \n  Not a direct CC3.1 gap, but may impact audit trail and demonstrate less robust governance.\n\n---\n\n## **Summary Table**\n\n| Finding Title                                        | Section            | Gap Description                                                               | Severity |\n|------------------------------------------------------|--------------------|-------------------------------------------------------------------------------|----------|\n| Risk Reviews Not Meeting Policy Cadence (Critical, High, Medium Risks) | Policy \u00a73.2, Register | Some review intervals >90 days for High/Critical risks; violates max interval  | High     |\n| Inconsistent Review Intervals \u2013 Medium Risks          | Policy \u00a73.2        | Medium risks reviewed just at maximum interval; risk of drift/overdue in future| Low      |\n| No 'Low' Risks in Register                           | Policy \u00a73.1        | No low-rated risks; undermines complete risk identification                    | Medium   |\n| No Evidence of Overdue Review Escalation             | Policy \u00a73.2        | No documentation of escalation, as required                                   | Medium   |\n| Risk Register Lacks Explicit \u201cObjective\u201d Mapping     | SOC 2 CC3.1, Policy| No field mapping risks directly to objectives                                 | Medium   |\n| Policy States \u201cServiceNow GRC,\u201d But Register Format Is CSV          | Policy \u00a73.1        | Evidence does not prove register is in GRC system or includes all required metadata | Low      |\n\n---\n\n**Remediation:**  \n- Tighten review scheduling to comply with policy maximums (\u226490 days for high/critical).\n- Consider incorporating explicit mapping of each risk to enterprise objectives.\n- Add/record low-rated risks for completeness.\n- Provide evidence of overdue review tracking and escalation activity.\n- Ensure evidence provided for audits matches policy-mandated source (ServiceNow GRC).\n\nLet me know if you need recommendations or draft management responses."
+}

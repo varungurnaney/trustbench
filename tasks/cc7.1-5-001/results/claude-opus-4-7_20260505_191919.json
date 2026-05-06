@@ -1,0 +1,87 @@
+{
+  "task_id": "cc7.1-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T19:19:19.384311",
+  "score": {
+    "task_id": "cc7.1-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.3333333333333333,
+    "f1": 0.46153846153846156,
+    "score": 0.46153846153846156,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "biweekly",
+          "code freeze",
+          "Section 3.2",
+          "CISO approval",
+          "Platform Engineering request",
+          "QSC-2025-049",
+          "2 new Critical",
+          "scan frequency reduction"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CVE-2024-53677",
+          "VULN-8011",
+          "legacy-crm-02",
+          "EXC-2025-092",
+          "expired",
+          "not renewed",
+          "SLA Breached",
+          "12 days past",
+          "no risk acceptance"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "QSC-2025-050"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "Section 4.2",
+          "SLA compliance report",
+          "reporting"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 10887,
+    "output_tokens": 3612
+  },
+  "raw_response": "# SOC 2 Type II Audit Findings \u2014 CC7.1 Vulnerability Management\n**Entity:** Zenith Cloud Technologies\n**Observation Period:** October 1 \u2013 December 31, 2025\n**Control:** CC7.1 \u2014 Detection and monitoring of configuration changes and vulnerabilities\n\n---\n\n## Evidence Relevance Assessment\n\n**Relevant evidence:**\n- Exception register (EXC-2025-XXX)\n- Remediation SLA tracking spreadsheet (VULN-8001 through VULN-8030)\n- Vulnerability Management Policy POL-VM-007 v4.2\n- Q4 2025 scan execution log\n\n**Not directly relevant:**\n- Annual Penetration Test Executive Summary \u2014 provides context on security posture but is an offensive assessment, not a vulnerability management program control. Excluded from primary findings analysis.\n\n---\n\n## Findings\n\n### Finding 1: Unauthorized Reduction of Scan Frequency During Code Freeze\n**Document Section:** Q4 2025 Scan Execution Log (QSC-2025-049, QSC-2025-050, AWI-2025-049, AWI-2025-050) cross-referenced with POL-VM-007 Section 3.2\n\n**Gap:** Policy Section 3.2 explicitly mandates weekly scanning and prohibits reducing scan frequency below weekly \"under any circumstances including code freezes.\" Scan logs document a 2-week gap between QSC-2025-048 (Nov 30) and QSC-2025-049 (Dec 14), with biweekly cadence continuing through Dec 28. Notes state \"Scan frequency reduced to biweekly per Platform Engineering request\u2026 No formal change request or CISO approval documented.\" This is a direct policy violation. Compounding this, QSC-2025-050 explicitly notes \"2 new Critical vulns discovered that were not detected during the Dec 7 gap\" \u2014 demonstrating actual detection failure during the unauthorized reduction. AWS Inspector cadence was reduced in parallel, with AWI-2025-049 detecting a new Critical Lambda vulnerability that remained open across the next biweekly cycle.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Expired SLA Extension With No Risk Acceptance or Renewal (VULN-8011)\n**Document Section:** Exception Register EXC-2025-092 cross-referenced with VULN-8011 in SLA tracking spreadsheet, and POL-VM-007 Sections 4 and 5\n\n**Gap:** EXC-2025-092 (CVE-2024-53677, Apache Struts, legacy-crm-02) expired Dec 17, 2025 with status \"Expired \u2014 Not Renewed.\" Review notes confirm: \"Vulnerability remains open. No renewal or formal risk acceptance filed.\" The SLA tracking sheet shows VULN-8011 as \"SLA Breached,\" 12 days past SLA, 103 days open. Policy Section 5 requires risk acceptances for vulnerabilities held beyond SLA, with CISO approval, compensating control validation, and documented business justification. None has been filed. The vulnerability is in an unremediated, out-of-SLA state with no governance wrapper.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Missing Compensating Control Validation Evidence\n**Document Section:** Exception Register EXC-2025-092 and VULN-8021 notes; POL-VM-007 Section 5.2\n\n**Gap:** Policy Section 5.2 requires that compensating controls be validated by Security Operations (independent of asset owner) at approval, every 90 days, and on configuration change \u2014 with documented evidence (control description, validation method, test results, validator identity, timestamp). EXC-2025-092 references \"WAF and network restriction\" as compensating controls, and VULN-8021 cites \"Network segmentation\" as a compensating control, but no validation evidence is provided in the evidence package. Given EXC-2025-092 was approved September 22 and was active for ~90 days before expiring, at least one independent validation should exist.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 4: Authenticated Scan Coverage Gap \u2014 Assets Consistently Missed\n**Document Section:** Q4 2025 Scan Execution Log (all QSC entries); POL-VM-007 Section 3.3\n\n**Gap:** Policy Section 3.3 requires \"100% subnet coverage\u2026 All assets in the CMDB must be scanned at least once per scan cycle.\" Every Qualys scan in Q4 shows assets_scanned of 1482\u20131492 against assets_expected of 1495 \u2014 a consistent gap of 3\u201313 assets per cycle. AWS Inspector scans during the freeze period (AWI-2025-049/050) also dropped from 100% to 348/352 and 350/352. There is no documentation of which assets were missed, why, or whether they were rescanned. Authenticated scan success rates of 97.4\u201398.4% similarly indicate ~25\u201340 assets per cycle scanned without credentials.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: Critical Vulnerability Remediated Outside 48-Hour Emergency SLA (VULN-8019)\n**Document Section:** SLA Tracking VULN-8019 cross-referenced with EXC-2025-095 and POL-VM-007 Section 6.2\n\n**Gap:** Policy Section 6.2 requires Critical vulnerabilities with active exploitation be deployed within 48 hours via emergency change. VULN-8019 (CVE-2025-29824, Windows CLFS Zero-Day, actively exploited per CISA KEV) was first detected Oct 19 and remediated Oct 28 \u2014 9 days later. While within the 14-day Critical SLA, the active-exploitation 48-hour requirement was missed by ~7 days. Additionally, EXC-2025-095 narrative inconsistency: the exception was filed Nov 28 for an \"emergency deployment\" but review notes state \"Emergency patch deployed October 25\" \u2014 over a month before the exception request was filed, suggesting retroactive documentation.\n\n**Severity:** **High**\n\n---\n\n### Finding 6: Inconsistent Remediation Date Documentation (EXC-2025-095)\n**Document Section:** Exception Register EXC-2025-095 cross-referenced with VULN-8019\n\n**Gap:** EXC-2025-095 was requested Nov 28, 2025 and approved Nov 28 for emergency deployment of CVE-2025-29824, with expiration Nov 30. However, review notes state \"Emergency patch deployed October 25\" and VULN-8019 in the SLA tracker shows remediated_date of Oct 28. The exception request post-dates the actual remediation by approximately one month. This indicates either (a) backdated/retroactive exception documentation, or (b) the emergency change process was not followed concurrently with the change. Either undermines the integrity of the exception register as a control artifact.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: SLA Tracker Status Inconsistency \u2014 VULN-8022 Past Due Not Flagged as Breached\n**Document Section:** SLA Tracking spreadsheet VULN-8022\n\n**Gap:** VULN-8022 (CVE-2024-11680) shows first_detected 2025-09-28, sla_deadline 2025-12-27, status \"SLA Approaching,\" days_to_remediate 93. The Medium SLA is 90 calendar days, and 93 days have already elapsed past first detection \u2014 the SLA deadline (Dec 27) is within days of the audit period end. The \"SLA Approaching\" status is potentially miscategorized given days_to_remediate exceeds the 90-day SLA. This raises concern about the accuracy/integrity of the automated SLA dashboard referenced in Policy Section 4.1.\n\n**Severity:** **Low**\n\n---\n\n### Finding 8: No Evidence of Monthly SLA Compliance Reporting\n**Document Section:** POL-VM-007 Section 4.2\n\n**Gap:** Policy Section 4.2 requires monthly SLA compliance reports including compliance rate, MTTR, aging distribution, and exceptions/risk acceptances by severity tier. No such monthly reports were provided in the evidence package for October, November, or December 2025. For a SOC 2 Type II observation period, the absence of these recurring reports indicates either the reports do not exist (control failure) or were not produced for the auditor (evidence gap).\n\n**Severity:** **Medium**\n\n---\n\n### Finding 9: Endpoint Coverage Gap During Holiday Period\n**Document Section:** Q4 2025 Scan Execution Log (CSP-2025-050) and POL-VM-007 Section 3.3\n\n**Gap:** CrowdStrike Spotlight scan CSP-2025-050 (Dec 28) shows 484/492 endpoints scanned with 8 offline. While agent-based scanning continued operating during code freeze, there is no documented procedure for handling persistently offline endpoints or remediation tracking for missed coverage. Policy Section 3.3 requires \"all assets in the CMDB must be scanned at least once per scan cycle\" without exception for offline status.\n\n**Severity:** **Low**\n\n---\n\n## Summary of Findings\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Unauthorized scan frequency reduction during code freeze | **Critical** |\n| 2 | Expired SLA extension with no risk acceptance (VULN-8011) | **High** |\n| 5 | Critical zero-day not remediated within 48-hour active-exploitation SLA | **High** |\n| 3 | Missing compensating control validation evidence | **Medium** |\n| 4 | Authenticated scan coverage gap | **Medium** |\n| 6 | Retroactive/inconsistent exception documentation (EXC-2025-095) | **Medium** |\n| 8 | No evidence of monthly SLA compliance reporting | **Medium** |\n| 7 | SLA tracker status inconsistency (VULN-8022) | **Low** |\n| 9 | Endpoint coverage gap (offline assets) | **Low** |\n\n## Overall Assessment\n\n**CC7.1 is NOT operating effectively** during the observation period. The Critical finding regarding unauthorized scan frequency reduction directly undermines the detection objective of CC7.1 and resulted in demonstrably delayed detection of new Critical vulnerabilities. Combined with the SLA breach without risk acceptance, retroactive exception documentation, and absence of required monthly reporting, the control as designed is reasonable but is not being executed in accordance with policy. **Recommend a qualified opinion / exception for CC7.1.**"
+}

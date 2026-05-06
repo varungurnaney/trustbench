@@ -1,0 +1,99 @@
+{
+  "task_id": "c1.1-5-001",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-05T17:07:19.581399",
+  "score": {
+    "task_id": "c1.1-5-001",
+    "model": "gpt-4o",
+    "scoring_method": "f1",
+    "recall": 0.8,
+    "precision": 0.8,
+    "f1": 0.8000000000000002,
+    "score": 0.8000000000000002,
+    "gaps_detected": 4,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "webhook-payload-key",
+          "AES-128",
+          "AES-256",
+          "Confidential"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vpc-prod",
+          "vpc-data",
+          "unencrypted",
+          "Confidential",
+          "VPC peering",
+          "analytics",
+          "cross-VPC"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "notification",
+          "15 days",
+          "14-day grace",
+          "variance"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "rotation",
+          "late"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "vrs-prod-ml-models",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "SSE-KMS",
+          "ML model"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3924,
+    "output_tokens": 624
+  },
+  "raw_response": "### Finding 1: Encryption Standards Compliance - ML Model Artifacts\n**Section:** Evidence Provided - Q4 2025 encryption posture audit  \n**Gap:** The S3 Bucket `vrs-prod-ml-models` is using AES-128 encryption instead of the required AES-256 for Confidential data.  \n**Severity:** Medium  \n**Reasoning:** While using AES-128 instead of AES-256 technically violates the encryption policy for Confidential data, the risk may be mitigated by the absence of PII in the model files and the use of SSE-KMS at least ensures some level of encryption. This is a policy violation but presents a minor variance in security risk.\n\n### Finding 2: Encryption Standards Compliance - Webhook Payloads\n**Section:** Evidence Provided - Q4 2025 encryption posture audit  \n**Gap:** The application key `webhook-payload-key` uses AES-128 instead of AES-256 for Confidential customer event data, contrary to policy requirements.  \n**Severity:** Medium  \n**Reasoning:** This key protects Confidential data that warrants AES-256 encryption. Although the data does not include PII, not adhering to the prescribed encryption standard represents a policy and potential security issue. This is more concerning than the ML models case due to direct customer-related data being exposed.\n\n### Finding 3: Key Rotation Schedule Adherence - Notification Encryption Key\n**Section:** Evidence Provided - Key rotation status log  \n**Gap:** The notification-encryption-key was rotated 15 days late, exceeding the 14-day grace period.  \n**Severity:** Low  \n**Reasoning:** There was a delay in key rotation beyond the allowed grace period. However, the delay was minimal (only one day over) and has been appropriately documented, with notification to CISO per policy.\n\n### Finding 4: Network Encryption Compliance - Cross-VPC Analytics Pipeline\n**Section:** Network Architecture Summary - Cross-VPC Traffic  \n**Gap:** Traffic between `vpc-prod` and `vpc-data` for the analytics pipeline is not encrypted at the network layer.  \n**Severity:** High  \n**Reasoning:** The flow contains Confidential data, yet remains unencrypted over VPC peering connections, posing a risk if AWS-specific protections were to fail or be bypassed. Industry best practices increasingly recommend encryption even within private setups where sensitive data is concerned.\n\n### Finding 5: Legacy Service Encryption\n**Section:** Network Architecture Summary - Legacy Non-Containerized Services  \n**Gap:** Legacy non-containerized services use TLS 1.2, but one service (Analytics pipeline REST API) is missing application-layer encryption.  \n**Severity:** High  \n**Reasoning:** Without TLS, the risk of data interception for Confidential data in transit is greater. This poses a significant security risk even if the network itself is private, thus warranting immediate remediation to ensure end-to-end data protection.\n\nEach of these findings reflects some level of control variance or lack thereof, and further investigation may be required to adequately assess and mitigate risks presented by these gaps within the context of Vanguard Risk Solutions' overall security posture and compliance framework."
+}

@@ -1,0 +1,77 @@
+{
+  "task_id": "p1.1-3-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-06T08:39:34.061054",
+  "score": {
+    "task_id": "p1.1-3-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 0.4615384615384615,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "Section 4",
+          "Amplitude",
+          "SendGrid",
+          "Salesforce",
+          "contradiction",
+          "ROPA",
+          "third-party",
+          "processors"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Amplitude",
+          "United States",
+          "EEA",
+          "transfer",
+          "Section 6",
+          "PROC-008",
+          "international"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Salesforce",
+          "PROC-010",
+          "CRM",
+          "not disclosed",
+          "Section 2",
+          "collection"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2621,
+    "output_tokens": 2307
+  },
+  "raw_response": "# Compliance Audit Findings: P1.1 Privacy Notice Readiness Assessment\n\n## Finding 1: Undisclosed Third-Party Data Processors\n\n**Section:** Privacy Policy Section 4 (Data Sharing) vs. ROPA Processors\n\n**Issue:**\nThe privacy policy states: \"Helix Software does not sell, rent, or share your personal information with third parties for their own purposes. Your data remains exclusively within the Helix Software environment.\"\n\nHowever, the ROPA documents five active third-party processors with access to personal data:\n- Stripe Inc. (payment processing)\n- OneTrust LLC (consent management)\n- Amplitude Inc. (product analytics)\n- SendGrid/Twilio Inc. (email delivery)\n- Salesforce Inc. (CRM)\n\nThe policy's language creates a materially false impression that data does not leave Helix Software's environment, when in fact customer data is routinely processed by external vendors.\n\n**Severity:** **CRITICAL**\n\n---\n\n## Finding 2: Missing Disclosure of Product Analytics and Behavioral Tracking\n\n**Section:** Privacy Policy Section 2 (Information We Collect) and Section 3 (How We Use Your Information)\n\n**Issue:**\nThe policy does not mention the collection or processing of behavioral tracking data through Amplitude Inc., including:\n- Device fingerprinting\n- Click paths and time-on-page metrics\n- Session IDs\n- Detailed feature usage events\n\nPROC-008 indicates this data is collected for \"product improvement and feature adoption analysis\" under a legitimate interest basis. Data subjects have no notice of this tracking activity, which is particularly problematic given:\n- The data transfer to the United States (outside EEA)\n- The \"indefinite\" retention period with \"no deletion policy configured\"\n- The use of Standard Contractual Clauses, which have uncertain enforceability post-Schrems II\n\n**Severity:** **CRITICAL**\n\n---\n\n## Finding 3: Incomplete Data Retention Disclosures\n\n**Section:** Privacy Policy Section 5 (Data Retention) vs. ROPA\n\n**Issue:**\nThe privacy policy provides a single retention rule: \"24 months after account closure\" plus \"90 days for backup copies.\"\n\nHowever, the ROPA reveals significantly different retention periods across processing activities:\n- Payment data: 7 years (tax compliance) \u2014 not mentioned in policy\n- Support tickets: 24 months after closure (aligns with policy)\n- Security monitoring: 90 days rolling (different from account closure)\n- Application logging: 12 months (not disclosed in policy)\n- CRM data: 36 months after customer relationship ends (much longer than policy suggests)\n- HR/Employee data: 10 years (irrelevant to most data subjects, but not disclosed)\n\nData subjects cannot accurately understand how long their data will be retained because the policy presents a simplified retention model that does not reflect actual practice.\n\n**Severity:** **HIGH**\n\n---\n\n## Finding 4: Undisclosed International Data Transfers (United States)\n\n**Section:** Privacy Policy Section 6 (Data Location)\n\n**Issue:**\nThe privacy policy explicitly states: \"We do not transfer personal data outside the EEA.\"\n\nHowever, PROC-008 (Amplitude Inc. Product Analytics) clearly documents a transfer to the United States (us-east-1) under Standard Contractual Clauses (2021).\n\nThis is a direct contradiction. Data subjects are affirmatively told no transfers occur, when in fact product analytics data is transferred to a US processor. This is particularly significant post-Schrems II given regulatory uncertainty around SCCs.\n\n**Severity:** **CRITICAL**\n\n---\n\n## Finding 5: Missing Disclosure of Legitimate Interest Basis for Tracking\n\n**Section:** Privacy Policy Section 3 (How We Use Your Information)\n\n**Issue:**\nThe policy lists legal bases as \"consent, contractual necessity, legitimate interest, or legal obligation\" generically, but does not inform data subjects that:\n- Security monitoring (PROC-004) relies on legitimate interest\n- Application logging (PROC-005) relies on legitimate interest\n- Backup and disaster recovery (PROC-006) relies on legitimate interest\n- Product analytics/behavioral tracking (PROC-008) relies on legitimate interest\n\nMost critically, the policy does not articulate *what* the legitimate interests are or provide the balancing test showing why the company's interests override data subject rights. GDPR requires transparency about the basis for processing; generic references are insufficient.\n\n**Severity:** **HIGH**\n\n---\n\n## Finding 6: Missing Contact Information for Data Protection Officer in Policy Accessibility\n\n**Section:** Privacy Policy Section 8 (Data Protection Officer)\n\n**Issue:**\nWhile the policy does provide DPO contact details (Section 8), there is no indication of how easily data subjects can access this information or submit requests. Best practice (and implied by GDPR Article 14) requires:\n- A clear mechanism for submitting data subject access requests\n- Confirmation of response timeframes (GDPR requires 30 days)\n- Clarity on whether requests can be submitted online or only via email/post\n\nThe policy provides no email contact form, online portal, or indication of expected response times.\n\n**Severity:** **MEDIUM**\n\n---\n\n## Finding 7: Vague \"Product Improvement\" Purpose with Unclear Scope\n\n**Section:** Privacy Policy Section 3 (How We Use Your Information)\n\n**Issue:**\nThe policy lists \"Product Improvement: Analyzing aggregated usage patterns to enhance platform features\" as a use case.\n\nHowever, PROC-008 shows product analytics extends far beyond \"aggregated\" analysis to include individual-level behavioral tracking (device fingerprints, click paths, session IDs, IP addresses). The policy's language (\"aggregated usage patterns\") misrepresents the granularity of data collection and creates a false impression of privacy-friendly practices.\n\nThe ROPA retention period of \"indefinite\" with \"no deletion policy configured\" contradicts the notion of legitimate use for bounded product improvement.\n\n**Severity:** **HIGH**\n\n---\n\n## Finding 8: Missing Disclosure of Cookie and Consent Management Processing\n\n**Section:** Privacy Policy Section 2 (Information We Collect)\n\n**Issue:**\nThe policy does not mention the collection of consent preferences or the use of OneTrust LLC for consent management (PROC-007).\n\nData subjects visiting the website are not informed in the privacy policy that:\n- Consent preferences themselves are being recorded and processed\n- A third-party processor (OneTrust) is managing this data\n- Consent data is retained for 24 months from last visit\n\nThis is particularly important because the privacy policy itself should be transparent about how consent is managed.\n\n**Severity:** **MEDIUM**\n\n---\n\n## Finding 9: Incomplete Description of Third-Party Processors and DPAs\n\n**Section:** Privacy Policy Section 4 (Data Sharing)\n\n**Issue:**\nWhile the policy states that data is only shared \"when required by law,\" it does not mention:\n- The existence of Data Processing Agreements (required by GDPR Article 28)\n- The names and locations of specific processors (Stripe, OneTrust, Amplitude, SendGrid, Salesforce)\n- The legal safeguards (e.g., Standard Contractual Clauses) protecting transfers\n- The data subjects' right to request information about processor locations\n\nThis lack of transparency prevents data subjects from understanding who processes their data and under what contractual protections.\n\n**Severity:** **HIGH**\n\n---\n\n## Finding 10: Discrepancy in CRM Data Processing Scope\n\n**Section:** Privacy Policy vs. PROC-010 (CRM)\n\n**Issue:**\nThe privacy policy does not disclose that customer usage metrics, support history, and NPS scores are processed in Salesforce for CRM purposes beyond the contractual service delivery basis stated in Section 3.\n\nPROC-010 indicates this is processed under \"legitimate interest\" for \"sales pipeline management and customer success tracking,\" which is a secondary use beyond account management. The privacy policy provides no disclosure of this CRM processing activity or its basis.\n\n**Severity:** **MEDIUM**\n\n---\n\n## Summary Table\n\n| Finding | Severity | Primary Issue |\n|---------|----------|---------------|\n| 1. Undisclosed Third-Party Processors | CRITICAL | False statement that data \"remains exclusively within Helix\" |\n| 2. Missing Product Analytics Disclosure | CRITICAL | Behavioral tracking undisclosed to data subjects |\n| 3. Incomplete Retention Disclosures | HIGH | Actual retention periods differ significantly from policy |\n| 4. Undisclosed US Data Transfers | CRITICAL | Direct contradiction of \"no transfers outside EEA\" statement |\n| 5. Missing Legitimate Interest Basis | HIGH | No transparency about legal basis for tracking |\n| 6. Missing DPO Contact Mechanisms | MEDIUM | Limited accessibility for data subject requests |\n| 7. Vague \"Product Improvement\" Language | HIGH | \"Aggregated\" misrepresents actual granular tracking |\n| 8. Missing Cookie/Consent Disclosure | MEDIUM | OneTrust processing not mentioned |\n| 9. Incomplete Processor Information | HIGH | No transparency about processor safeguards |\n| 10. Undisclosed CRM Processing | MEDIUM | Salesforce usage not disclosed to customers |\n\n---\n\n## Overall Assessment\n\n**Control P1.1 Status: NOT MET**\n\nThe privacy notice contains multiple critical inaccuracies and material omissions that create a false and misleading representation of Helix Software's data processing practices. The organization cannot be assessed as meeting the control objective of providing \"notice to data subjects about its privacy practices\" when the notice contradicts actual practices on fundamental issues (data sharing, international transfers, behavioral tracking, and data retention).\n\n**Immediate Actions Required:**\n1. Revise privacy policy to accurately reflect all third-party processors and their locations\n2. Disclose product analytics and behavioral tracking with appropriate legal basis explanation\n3. Correct the international data transfer statement\n4. Align retention period disclosures with ROPA\n5. Add transparent information about processor safeguards (DPAs, SCCs)\n6. Re-obtain informed consent from existing users if practices have materially changed"
+}

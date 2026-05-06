@@ -1,0 +1,98 @@
+{
+  "id": "cc1.4-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.4",
+  "control_description": "The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/hr-security-policy.md",
+      "type": "policy",
+      "description": "Pinnacle Software Group HR security policy defining tiered background checks, training requirements, phishing simulation thresholds, and role change procedures"
+    },
+    {
+      "path": "evidence/training-completion-report-2025.csv",
+      "type": "log",
+      "description": "Annual security awareness training completion report for 2025 showing 20 employees with completion status, scores, and phishing simulation failure counts"
+    },
+    {
+      "path": "evidence/role-change-access-review-log-2025.csv",
+      "type": "log",
+      "description": "Role change access review log for 2025 showing 8 role change events with review timelines and access adjustments"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/employee-onboarding-checklist-report.md",
+      "type": "report",
+      "description": "Employee onboarding checklist compliance report for Q3-Q4 2025 — all 5 new hires show 100% completion, no issues"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Pinnacle Software Group's personnel security controls for the 2025 observation period. Review the HR security policy, training completion report, role change access review log, and onboarding checklist report. Assess whether CC1.4 requirements for attracting, developing, and retaining competent individuals are being met. Be careful to distinguish between genuine compliance gaps and situations where controls operated as designed.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "PSG-4007 Greta Lindqvist completed training on October 29 — close to deadline but within policy requirement",
+      "description": "PSG-4007 (Greta Lindqvist, VP Sales) completed annual training on October 29, just 2 days before the October 31 deadline, with a score of 78 — the lowest in the organization. She also had 3 phishing simulation failures year-to-date and completed supplemental training on November 20. While the late completion and low score may raise concerns, she met the October 31 deadline per policy Section 4.2, and the supplemental training for phishing failures was completed within the 15-business-day window per Section 4.3. This is NOT a finding — the controls operated as designed. The phishing simulation program detected the deficiency and the supplemental training remediation process worked correctly.",
+      "evidence_sources": [
+        "evidence/training-completion-report-2025.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The model should flag PSG-4007's October 29 completion, low score, and 3 phishing failures, then verify against policy deadlines and supplemental training requirements. The October 31 deadline was met. The supplemental training required by Section 4.3 was completed November 20 (within the 15-business-day window from the triggering failure). While concerning from a security culture perspective, all policy controls operated as designed.",
+      "detection_criteria": {
+        "required_keywords": ["PSG-4007", "Greta Lindqvist", "October 29", "October 31", "78", "3 phishing", "supplemental training", "November 20", "Section 4.3", "15 business days"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": ["not a finding", "within deadline", "controls operated", "compliant", "met requirements", "properly handled"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "5 new hires (PSG-4021 through PSG-4025) absent from annual training completion report",
+      "description": "The onboarding checklist report shows 5 new hires joined between July 14 and November 11, 2025: PSG-4021 (Vera Santos, July 14), PSG-4022 (Warren Cho, August 5), PSG-4023 (Xena Petrov, September 2), PSG-4024 (Yosef Abadi, October 20), and PSG-4025 (Zoe Drummond, November 11). The annual training completion report only includes PSG-4001 through PSG-4020. The training window opened July 1 per policy Section 4.2, meaning PSG-4021 through PSG-4024 were all hired within the training period and should have been enrolled in the annual training cycle with an October 31 deadline. PSG-4025 was hired November 11, after the deadline, but should have completed initial training per Section 4.1. The onboarding report notes these employees completed 'Security Awareness Training' but this may only refer to initial onboarding training, not the annual refresher module tracked in the Wombat platform. The 20-person training report should reflect 25 active employees.",
+      "evidence_sources": [
+        "evidence/training-completion-report-2025.csv",
+        "evidence/employee-onboarding-checklist-report.md",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The model should cross-reference the training report (20 employees) with the onboarding report (5 additional hires) and identify that PSG-4021 through PSG-4025 are missing from the annual training tracking. PSG-4021 through PSG-4024 were hired before the October 31 deadline and should have been enrolled. The onboarding checklist mentions training completion but this is separate from the annual Wombat platform training module.",
+      "detection_criteria": {
+        "required_keywords": ["PSG-4021", "PSG-4022", "PSG-4023", "PSG-4024", "PSG-4025", "Vera Santos", "Warren Cho", "Xena Petrov", "Yosef Abadi", "Zoe Drummond", "missing", "annual training", "Wombat", "20 employees", "onboarding"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "RCAR-2025-007 Rachel Dumont promotion review did not revoke any previous access despite role change",
+      "description": "RCAR-2025-007 shows PSG-4018 (Rachel Dumont) was promoted from Senior Backend Engineer to Staff Engineer on October 15, 2025. The review was completed October 21 and noted 'No access revocation needed as role is additive.' However, the Staff Engineer role may include architecture-level access that creates a separation of duties concern if combined with direct production code commit access retained from the Senior Backend Engineer role. The review record shows previous_access_revoked as 'N/A' without documenting the analysis of whether existing access is still appropriate. Policy Section 6.1 requires the review to document access to be revoked — not documenting this analysis, even to conclude no revocation is needed, is a process gap. Every role change review should explicitly document the access comparison regardless of conclusion.",
+      "evidence_sources": [
+        "evidence/role-change-access-review-log-2025.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The model should examine all 8 role change reviews and identify that RCAR-2025-007 is the only one where no access was revoked. While the 'additive' justification may be valid, the review did not document the analysis per Section 6.1 requirements. All other reviews (RCAR-2025-001 through RCAR-2025-006 and RCAR-2025-008) explicitly documented both access revoked and access granted.",
+      "detection_criteria": {
+        "required_keywords": ["RCAR-2025-007", "PSG-4018", "Rachel Dumont", "Staff Engineer", "additive", "N/A", "no access revocation", "Section 6.1", "documentation"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["hr_security", "red_herring", "training_completeness", "phishing_simulation", "role_change", "new_hires", "access_review"]
+  }
+}

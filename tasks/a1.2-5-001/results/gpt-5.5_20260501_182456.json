@@ -1,0 +1,87 @@
+{
+  "task_id": "a1.2-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:24:56.092223",
+  "score": {
+    "task_id": "a1.2-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5714285714285714,
+    "f1": 0.7272727272727273,
+    "score": 0.7272727272727273,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "November 16",
+          "failed",
+          "gap",
+          "RPO",
+          "WAL"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Q4",
+          "quarterly",
+          "missing",
+          "observation period",
+          "control"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RTO",
+          "exceed",
+          "growth",
+          "4 hours"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "not provided",
+          "WAL",
+          "evidence",
+          "RPO",
+          "4 hour",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5265,
+    "output_tokens": 3408
+  },
+  "raw_response": "## Overall Readiness Assessment \u2014 A1.2 Backup and Recovery\n\nBased on the evidence provided, NexGen has a documented and approved availability/recovery policy, defined backup requirements, RTO/RPO targets, encrypted cross-region backup design, and evidence of successful Q2/Q3 restore testing. However, for the Q4 2025 SOC 2 Type II observation period, there are several evidence and operating gaps that would likely result in audit exceptions unless remediated or supplemented with additional evidence.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document Section | Gap / Why It Matters | Severity | Likely Audit Exception? |\n|---|---|---|---|---|---|\n| 1 | Missing Evidence of Q4 Restore Test | Policy Section 3.3 \u2014 Backup Verification | The policy requires a full restore test quarterly, with results documented and retained. Evidence was provided for Q2 and Q3 2025 only. No Q4 2025 restore test was provided for the October 1\u2013December 31 observation period. Restore testing is key evidence that backups are usable and RTO/RPO objectives can be met. | **Medium** | **Yes**, if no Q4 test exists or cannot be evidenced. |\n| 2 | Incomplete Q4 Backup Log Population | Policy Section 3.1 \u2014 Database Backups; Section 3.3 \u2014 Backup Verification | The evidence is described as \u201cQ4 2025 \u2014 92 days,\u201d but logs only run through **December 28, 2025**. Q4 has 92 calendar days, October 1 through December 31. Backup execution evidence for **December 29\u201331** is missing. Without complete population evidence, the auditor cannot conclude daily backups operated throughout the full observation period. | **Medium** | **Yes**, unless logs for Dec. 29\u201331 are provided. |\n| 3 | Daily Full Backup Failure Not Successfully Re-run on November 16 | Policy Section 3.1 \u2014 Database Backups | The policy requires a daily full backup at 02:00 UTC. On **November 16, 2025**, the full backup failed due to a network timeout to GCS, and there is no evidence of a successful re-run that same day. The next successful full backup was November 17. This represents a missed daily full backup. | **Medium** | **Yes**, likely an isolated operating exception. |\n| 4 | No Evidence of Incremental Backups or WAL Archiving | Policy Section 3.1 \u2014 Database Backups | The policy requires incremental backups every 4 hours and continuous WAL archiving for point-in-time recovery. The evidence provided only includes daily full backup logs. No evidence was provided to show that incremental backups or WAL archiving operated during Q4. This is important because the stated **4-hour RPO** depends on these controls operating effectively. | **High** | **Yes**, unless separate incremental/WAL evidence is provided. |\n| 5 | No Evidence of Semiannual DR Failover Testing | Policy Section 4 \u2014 Disaster Recovery | The policy requires DR failover testing semi-annually. The provided restore tests validate backup restoration to staging, but they do not evidence a DR failover test to the designated DR region. No H2 2025 or Q4 2025 DR failover test evidence was provided. This limits assurance that recovery infrastructure can support failover within target RTOs. | **Medium** | **Likely yes**, unless a documented H2 2025 DR failover test exists. |\n| 6 | Restore Duration Trend May Threaten Future RTO | Policy Section 4 \u2014 Disaster Recovery; Section 3.3 \u2014 Backup Verification | Q2 restore completed in 165 minutes and Q3 in 210 minutes. Both met the 4-hour RTO, but Q3 notes indicate data growth may cause restore times to exceed RTO by Q2 2026. This is not a current control failure, but it indicates emerging capacity and recovery performance risk. | **Low** | **No**, not an exception for Q4 because RTO was met. |\n| 7 | Limited Evidence for Backup Retention and Encryption Configuration | Policy Section 3.1 \u2014 Database Backups | The policy requires AES-256 encryption at rest, storage in a separate GCS bucket in a different region, and defined retention periods. The logs show backups were stored in `gs://nexgen-backup-us-east1/daily/`, which supports the separate-region design relative to the stated primary region of `us-central1`. However, no direct evidence was provided for bucket encryption settings, lifecycle/retention rules, or retention enforcement. | **Low to Medium** | **Potentially**, if this control is selected for testing and configuration evidence is not provided. |\n\n---\n\n## Acceptable Operational Variances\n\nThe following items appear to be operational variances rather than audit findings:\n\n### November 3 Backup Failure With Same-Day Successful Re-run\n\n- Initial backup failed due to disk full on the backup staging volume.\n- Auto-cleanup was triggered.\n- Backup was manually re-run at 04:30 and completed successfully at 05:18.\n- Checksum verification passed.\n\n**Professional judgment:** This is an acceptable operational variance because the backup was successfully completed the same day and the failure was remediated.\n\n### October 16 Slow Backup Completion\n\n- Backup ran from 02:00 to 05:32 due to GCS throttling.\n- Backup ultimately completed successfully.\n- Checksum verification passed.\n\n**Professional judgment:** This is acceptable, assuming no downstream RPO/RTO impact occurred.\n\n---\n\n## Summary Judgment\n\nNexGen demonstrates a reasonably mature backup and recovery design through its documented policy, defined SLAs, RTO/RPO objectives, cross-region storage approach, and successful Q2/Q3 restore tests. However, for the Q4 2025 Type II readiness period, the most significant gaps are:\n\n1. No Q4 restore test evidence.\n2. Missing backup logs for Dec. 29\u201331.\n3. One failed daily full backup with no same-day successful retry.\n4. No evidence of incremental backups or WAL archiving.\n5. No evidence of semiannual DR failover testing.\n\nThe most material issue is the absence of incremental backup and WAL archiving evidence because the 4-hour RPO depends on those processes. The missed November 16 full backup and missing Q4 restore test would also likely result in audit exceptions unless NexGen can provide additional evidence."
+}

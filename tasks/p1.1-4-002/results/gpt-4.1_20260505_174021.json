@@ -1,0 +1,74 @@
+{
+  "task_id": "p1.1-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:40:21.880737",
+  "score": {
+    "task_id": "p1.1-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.25,
+    "f1": 0.36363636363636365,
+    "score": 0.36363636363636365,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": false,
+        "matched_keywords": [
+          "false"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "3 years",
+          "5 years",
+          "Health Assessment",
+          "retention",
+          "inaccurate"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "health assessment",
+          "sensitive",
+          "separate"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4995,
+    "output_tokens": 1895
+  },
+  "raw_response": "Below are the findings for SOC 2 Control P1.1 based on review of all provided evidence for Nextera Health. Each finding is classified with its document section, a concise rationale, and a severity rating.\n\n---\n\n### 1. **Inaccurate or Incomplete Data Retention Periods in Public Notice**\n\n**Section:** Privacy Policy \u00a76 (Data Retention) vs. Data Retention Schedule\n\n**Gap:**  \nThe privacy policy states: _\u201cWe retain your personal health information for a maximum of 3 years after your last interaction with the platform, after which it is securely deleted. Account data is retained for the duration of your active subscription plus 12 months. Payment records are retained for 7 years...\u201d_  \nHowever, the data retention schedule lists multiple categories with different, sometimes longer retention periods \u2014 for example:\n- Health Assessment Data: 5 years after last assessment (not 3)\n- Health Profile Data: Active account + 12 months (aligned, but not explicitly clarified as separate from \u201chealth information\u201d in the policy)\n- Research Participation Data: 10 years after study completion\n\nUsers relying on the privacy policy may be misinformed about the actual duration their detailed health and research data is held. This is a material omission regarding notice requirements, and may expose the company to regulatory risk if challenged, especially for sensitive health/research data.\n\n**Severity:** High\n\n---\n\n### 2. **Lack of Explicit Cookie and Third-Party Tracking Notice Detail**\n\n**Section:** Privacy Policy \u00a72 (Information We Collect) and \u00a73 (How We Use Your Information)  \n**References:** CookieBot Configuration & Consent Management Records\n\n**Gap:**  \nThe privacy policy mentions technical data and \u201cplatform usage,\u201d but provides only a generic reference to \u201canalytics tracking\u201d as something users can opt out of via the cookie preferences panel. It does **not** specifically list or describe the use of third-party analytics (Google Analytics, Mixpanel), marketing trackers (Facebook Pixel, LinkedIn Insight), or unique identifiers/cookies placed (including duration or purposes) as configured in the CookieBot platform and shown in consent records.\n\nWhile a detailed cookie notice may be separately accessible via CookieBot, under modern privacy standards (including UK/EU GDPR, and SOC 2 privacy criteria), the main privacy notice should either:\n- List the key categories of cookies/services and their purpose (i.e., Google Analytics, Facebook Pixel, etc.),\n- Or provide a clear, prominent cross-reference/summary in the main policy to the full cookie notice.\n\nFailure to explicitly describe these categories, or at least inform users what services are being used, means users are not fully aware of the extent of third-party tracking and data sharing. This is especially important for health platforms where data sensitivity is higher.\n\n**Severity:** Medium\n\n---\n\n### 3. **Ambiguous Description of Research Data and Retention**\n\n**Section:** Privacy Policy \u00a72 (Information We Collect), \u00a73 (How We Use...), \u00a76 (Data Retention)  \n**References:** Data Retention Schedule (\u201cResearch Participation Data\u201d)\n\n**Gap:**  \nThe privacy policy mentions that _\u201canonymized health research ... requires separate explicit consent_\u201d but does not make clear that some research data (even anonymized) may be retained for up to **10 years** after study completion, per the data retention schedule. While explicit consent may be obtained at the research participation stage, the privacy notice does not reference this extended retention or clarify the difference in data lifecycle between routine health assessment data and research consent/data. This could cause confusion or create a false expectation for data subjects.\n\n**Severity:** Medium\n\n---\n\n### 4. **Inconsistent Maximum Retention for Health Data Categories**\n\n**Section:** Privacy Policy \u00a76 (Data Retention), \u00a72 (Information We Collect)  \n**References:** Data Retention Schedule\n\n**Gap:**  \nThe privacy notice refers to \u201cpersonal health information\u201d being held for a _maximum_ of 3 years. In fact, some health-related data categories are retained for longer:\n- Health Assessment Data (5 years after last assessment)\n- Health Research Participation Data (10 years after study \u2014 even if \"anonymized,\" in most jurisdictions, if data can be distinguished per study, privacy notice should clarify).\nThe policy may unintentionally understate how long some elements of the user\u2019s health data could persist.\n\n**Severity:** Medium\n\n---\n\n### 5. **No Description of Cookie Consent Log Retention**\n\n**Section:** Privacy Policy (No mention), CookieBot Configuration (\u201cconsent_log_retention\u201d: 24 months)\n\n**Gap:**  \nThe privacy policy does not state that records of user consent decisions (for cookies, marketing, analytics, etc.) are retained for **24 months** after consent withdrawal or account closure, as stated in the CookieBot config and reflected in the consent management records. This is required both for transparency and also in some jurisdictions (such as GDPR) so that users understand how long their consent/objection choices are maintained and what logs about them exist.\n\n**Severity:** Low\n\n---\n\n### 6. **Consent Withdrawal Mechanisms Not Fully Described**\n\n**Section:** Privacy Policy \u00a75 (Your Choices), CookieBot Config, Consent Management Export\n\n**Gap:**  \nThe privacy policy states opt-out is available via \u201ccookie preferences panel\u201d and \u201cunsubscribe links.\u201d The consent management records demonstrate that users actively opt in and out via banners, and that opt-outs are logged with date/method. However, the privacy notice could more clearly state, for each data use (analytics, marketing, research), what channels/mechanisms are available to withdraw consent (e.g., via cookie banner, contacting support, panel inside app), and clarify if opt-outs are honored immediately or after a delay. This may be minor, but increased precision improves demonstrable transparency.\n\n**Severity:** Low\n\n---\n\n### 7. **No Reference to Retention Schedule Availability**\n\n**Section:** Privacy Policy (General)\n\n**Gap:**  \nThere is no indication in the privacy policy or public-facing notice that users can request a more detailed breakdown of retention timeframes by data type/category (as shown in the internal data retention schedule). Good practice increasingly is to provide this granularity upon request, or at least inform users that granular retention details are available.\n\n**Severity:** Low\n\n---\n\n### 8. **No Prominence of Last Updated Date or Change Communication for Privacy Notice**\n\n**Section:** Privacy Policy \u00a711 (Changes to This Policy)\n\n**Gap:**  \nWhile the policy states users will be notified of material changes via email 30 days in advance, it is not clear from the evidence whether this notification process is actually tested or documented. Though this may be more relevant for operational testing, the current policy could be enhanced by encouraging users to regularly check for updates, and perhaps by making the \u201cEffective Date\u201d more visually prominent.\n\n**Severity:** Low\n\n---\n\n## **Summary Table**\n\n| # | Title | Section | Reason | Severity |\n|---|-------|---------|--------|----------|\n| 1 | Inaccurate/Incomplete Data Retention in Notice | Privacy Policy \u00a76 vs. Retention Schedule | Public notice retention < actual retention for some categories | High |\n| 2 | Lack of Explicit Cookie/Tracking Detail | Privacy Policy \u00a72/3 vs. CookieBot config | Main notice doesn't specify analytics/3rd-party tracker types | Medium |\n| 3 | Ambiguous Research Data Notice | Privacy Policy \u00a72/3/6 vs. Retention Schedule | Extended research data retention not disclosed | Medium |\n| 4 | Inconsistent Health Data Retention Claims | Privacy Policy \u00a72/6 vs. Retention Schedule | Some health data >3 years not disclosed | Medium |\n| 5 | No Cookie Consent Log Retention in Notice | Privacy Policy (none) vs. CookieBot | No mention of consent log/data retention | Low |\n| 6 | Consent Withdrawal Mechanism Vagueness | Privacy Policy \u00a75 vs. Consent records | Mechanisms and timing of withdrawal not fully described | Low |\n| 7 | Retention Schedule Availability Not Noted | Privacy Policy | No statement that granularity is available upon request | Low |\n| 8 | Limited Change Communication Details | Privacy Policy \u00a711 | No explicit evidence change process is tested or actively promoted | Low |\n\n---\n\n**Note:**  \nFindings #1 and #4 overlap (retention discrepancies), but #1 focuses on policy transparency generally, while #4 highlights the specific maximum period misstatement for health data. If the company adjusts the privacy notice to match its actual retention schedule, both can be resolved.  \nNetwork architecture and infrastructure details are not directly relevant to P1.1 (privacy notice requirements), so are excluded from findings.  \n\n**Recommendations:**  \n- **Update the privacy notice** to precisely match actual retention per category, and reference all categories of personal data retention >3 years.\n- **Enhance the notice** with greater specificity about third-party cookies/services and link or summarize the detailed Cookie Policy in the main privacy policy body.\n- **Include details** on consent log retention and clarify withdrawal methods/timing.\n- **Optionally,** state that more detailed retention info is available upon request.\n\nThese changes will improve alignment with privacy principle P1.1 and reduce risk at the next audit or in the event of a privacy inquiry."
+}

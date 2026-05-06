@@ -1,0 +1,74 @@
+{
+  "task_id": "cc6.6-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:25:59.745417",
+  "score": {
+    "task_id": "cc6.6-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "schema-registry",
+          "PERMISSIVE",
+          "STRICT",
+          "mTLS",
+          "plaintext",
+          "Section 3.1",
+          "no exception",
+          "Kafka Connect"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "metrics-exporter",
+          "self-signed",
+          "Section 3.1",
+          "all namespaces"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "exception process",
+          "Section 3.3",
+          "no formal exception",
+          "compensating controls",
+          "remediation plan",
+          "CISO approval"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1814,
+    "output_tokens": 951
+  },
+  "raw_response": "Certainly! Here are the findings from my review of the **Nimbus Analytics system boundary and service mesh security policy** and the **service mesh TLS audit report**, cross-referenced as per your instructions:\n\n---\n\n### **Finding 1: Schema Registry mTLS Not Enforced**\n\n**Section Referenced:**  \n- Policy Section 3.1: mTLS Requirement\n\n**Description (Why it\u2019s a gap):**  \nThe `schema-registry` service in the `data-ingestion` namespace has Istio sidecar injected, but PeerAuthentication is set to **PERMISSIVE** rather than **STRICT**. This permits both plaintext and mTLS traffic, violating the policy that mandates all production service-to-service communication must use mTLS (PeerAuthentication: STRICT). The notes indicate this is to support a legacy Kafka Connect plugin, but there is no evidence in the provided documentation of an approved exception (required by Policy Section 3.3).\n\n**Severity:**  \n**High**  \n- This exposes one of the core ingestion services to potential downgrade, interception, or unauthorized lateral movement, especially as it handles significant integration dependencies.  \n---\n\n### **Finding 2: Metrics Exporter Lacks mTLS and Istio Integration**\n\n**Section Referenced:**  \n- Policy Section 3.1: mTLS Requirement  \n- Policy Section 3.3: Exceptions Process\n\n**Description (Why it\u2019s a gap):**  \nThe `metrics-exporter` service in the `internal-tools` namespace does **not** have an Istio sidecar injected and uses a self-signed (Helm-generated) TLS certificate (TLS 1.2), providing only server-side encryption and no mutual auth. This is an outright policy violation\u2014mTLS via Istio is not in place, potentially allowing unauthenticated connections and plaintext traffic within production. No evidence of an approved exception or compensating controls was provided as required by Section 3.3, even though this service exports metrics from all namespaces and could be an attractive lateral movement target.\n\n**Severity:**  \n**Critical**  \n- This constitutes a significant gap in system boundary protection, as it breaks the uniform service mesh trust fabric and cryptographic assurance required by policy.  \n---\n\n### **Finding 3: Exception Process Documentation Missing for Identified Gaps**\n\n**Section Referenced:**  \n- Policy Section 3.3: Exceptions\n\n**Description (Why it\u2019s a gap):**  \nBoth policy exceptions above (Schema Registry and Metrics Exporter) lack documentation showing they have gone through the formal GRC exception process: business justification, compensating controls, remediation plan, and CISO approval. The policy requires these for any mTLS deviations, but no exception artifacts are present in the evidence provided.\n\n**Severity:**  \n**Medium**  \n- Absence of a formal, documented exception process increases the risk of unmanaged or unmonitored deviations from critical security controls and weakens governance.  \n---\n\n### **Finding 4: Use of Outdated TLS Version on Metrics Exporter**\n\n**Section Referenced:**  \n- Policy Section 3.1: mTLS and Certificate Requirements\n\n**Description (Why it\u2019s a gap):**  \nThe `metrics-exporter` service uses **TLS 1.2** rather than **TLS 1.3** as required by the current policy. TLS 1.3 offers improved security, efficiency, and removes support for vulnerable cryptographic primitives, and its enforcement helps reduce the risk of various downgrade and interception attacks.\n\n**Severity:**  \n**Low**  \n- While service-to-service encryption is still present, using an outdated protocol version increases exposure to protocol-level vulnerabilities and is non-compliant with current policy.\n---\n\n**Summary:**\n\n| # | Title                                    | Policy Section    | Why it\u2019s a Gap                                                                              | Severity  |\n|---|------------------------------------------|-------------------|---------------------------------------------------------------------------------------------|-----------|\n| 1 | Schema Registry mTLS Not Enforced        | 3.1 (mTLS)        | PERMISSIVE mode admits plaintext; no exception documented.                                   | High      |\n| 2 | Metrics Exporter Lacks mTLS/Istio        | 3.1, 3.3          | No mTLS or service mesh protection, no formal exception.                                     | Critical  |\n| 3 | Exception Process Documentation Missing  | 3.3 (Exceptions)  | No GRC exception records for non-compliant services.                                         | Medium    |\n| 4 | Outdated TLS Version on Metrics Exporter | 3.1 (Certificates)| Uses TLS 1.2, not TLS 1.3 per policy.                                                       | Low       |\n\n---\n\nIf you need recommended remediation steps, please let me know!"
+}

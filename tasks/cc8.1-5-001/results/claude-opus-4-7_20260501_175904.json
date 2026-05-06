@@ -1,0 +1,89 @@
+{
+  "task_id": "cc8.1-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T17:59:04.671008",
+  "score": {
+    "task_id": "cc8.1-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.8333333333333334,
+    "f1": 0.9090909090909091,
+    "score": 0.9090909090909091,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-414",
+          "94.2%",
+          "flaky"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-415",
+          "Jared Kim",
+          "CAB"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-406",
+          "CHG-418",
+          "rollback"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "staging"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "FLAKY-028",
+          "remediation SLA"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 11483,
+    "output_tokens": 2745
+  },
+  "raw_response": "# CC8.1 Change Management \u2014 Readiness Assessment\n\n## Executive Summary\n\nBeacon SaaS has a mature, well-documented change management program with strong evidence of operating effectiveness across 20 Q4 2025 deployments. The policy (POL-CHG-2024-007 v4.0) addresses authorization, peer review, staging testing, CAB approval, deployment windows, rollback criteria, and emergency change handling \u2014 all key elements of CC8.1.\n\nThe deployment log demonstrates that controls largely operated as designed: peer reviews were completed, staging testing occurred, CAB approval was obtained for Medium/High risk changes, and rollback criteria were enforced (2 rollbacks correctly initiated and remediated). However, several deviations warrant findings, ranging from documented exceptions handled reasonably to genuine control weaknesses.\n\n---\n\n## Findings\n\n### Finding 1: Informal CAB Delegation Without Documented Authority (CHG-415)\n\n- **Related Section:** Policy \u00a74.4 (CAB Approval); Deployment Log CHG-415\n- **Gap:** CHG-415 was approved by Jared Kim (Engineering Manager) as a delegate, based on \"verbal authorization from Natasha Volkov.\" The policy defines CAB composition explicitly (VP Eng, Director SRE, Security Eng Lead, PM) and does not contemplate single-approver delegation, holiday-period substitutes, or verbal authorization. There is no documented delegation-of-authority procedure, no written record of the verbal approval, and the approval came from a single delegate rather than a quorum of CAB roles. For a Medium-risk customer-facing change (onboarding wizard), this represents a circumvention of the multi-stakeholder review the CAB is designed to provide.\n- **Severity:** Medium\n\n### Finding 2: Flaky Test SLA Materially Exceeded; Threshold Effectively Bypassed (CHG-414)\n\n- **Related Section:** Policy \u00a74.3 (Staging Testing \u2014 98% pass rate); Test Results FLAKY-028 through FLAKY-030\n- **Gap:** CHG-414 deployed with a 94.2% pass rate \u2014 well below the policy-mandated 98% threshold. While the team attributes failures to known flaky tests with Jira tracking, three of those tests (FLAKY-028/029/030) have been open for 109 days against a stated 30-day remediation SLA \u2014 exceeding the SLA by ~3.6\u00d7. The policy does not contain a documented exception process permitting CAB to waive the 98% threshold based on flaky-test attribution. This creates two compounding issues: (a) a documented testing control was not met, and (b) the flaky-test remediation SLA is not being enforced, allowing the test signal to degrade indefinitely. The \"CAB was informed and approved\" remediation is informal and not codified in policy.\n- **Severity:** High\n\n### Finding 3: Emergency Change Retrospective CAB Review Timing (CHG-409)\n\n- **Related Section:** Policy \u00a75 (Emergency Changes \u2014 retrospective CAB within 5 business days)\n- **Gap:** CHG-409 deployed on 2025-11-06 (Thursday) with retrospective CAB review on 2025-11-11 (Tuesday). Counting business days (Nov 7 Fri, Nov 10 Mon, Nov 11 Tue), this is within the 5-business-day window. However, no root cause analysis document is referenced in the evidence, despite the policy requiring \"RCA documenting why the emergency process was invoked.\" The deployment log only states \"active exploitation detected\" without referencing a formal RCA artifact. **Note:** This finding is conditional \u2014 if RCAs exist but were not provided in evidence, this is an evidence-collection gap rather than a control gap.\n- **Severity:** Low\n\n### Finding 4: Test Suite Did Not Detect Production-Impacting Defects in Two Deployments (CHG-406, CHG-418)\n\n- **Related Section:** Policy \u00a74.3 (Staging Testing); Test Results notes for CHG-406, CHG-418\n- **Gap:** Two of 20 deployments (10%) resulted in rollbacks due to issues that staging testing did not surface \u2014 CHG-406 (rate-limiting latency impact) and CHG-418 (Kubernetes pod scheduling/affinity failure). Both passed automated tests and the 2-hour staging stability window. While the rollback control operated correctly (which is positive), the recurring pattern suggests staging environment fidelity gaps for performance and infrastructure-topology changes. Policy \u00a74.3 requires \"performance regression testing for changes flagged as High risk\" but CHG-406 (High risk, rate limiting) apparently did not catch the latency regression. The rollback rate of 2 in Q4 also approaches the policy escalation trigger (>2 rollbacks/quarter per \u00a76).\n- **Severity:** Medium\n\n### Finding 5: Change Failure Rate Approaching Policy Escalation Threshold\n\n- **Related Section:** Policy \u00a76 (Deployment Metrics \u2014 rollback escalation trigger >2/quarter; failure rate target <5%)\n- **Gap:** Q4 2025 had 2 rollbacks (CHG-406, CHG-418) out of 20 deployments = 10% change failure rate, double the policy target of <5%. The rollback count is at \u2014 not over \u2014 the >2/quarter escalation threshold, but the failure rate exceeds the documented target. There is no evidence in the provided artifacts that engineering leadership formally reviewed Q4 metrics, identified the trend, or initiated corrective action as required by \u00a76.\n- **Severity:** Medium\n\n### Finding 6: Emergency Hotfix Test Coverage Gap Acknowledged but Not Procedurally Addressed (CHG-409)\n\n- **Related Section:** Policy \u00a75; Test Results CHG-409 notes\n- **Gap:** CHG-409 test results note: \"only unit and integration tests executed (staging bypassed). Full end-to-end suite not run.\" The policy permits staging bypass for emergencies but requires \"post-deployment validation within 30 minutes.\" There is no evidence that the post-deployment validation included execution of the end-to-end suite against production, nor a defined procedure for catching up on skipped test coverage after an emergency change. This is a minor procedural gap rather than a substantive control failure.\n- **Severity:** Low\n\n---\n\n## Areas of Strength\n\nFor balance, the following controls operated effectively:\n\n- **Peer review:** All 20 changes show documented peer review by an engineer other than the author, completed prior to merge.\n- **Risk-based CAB approval:** All Medium/High-risk normal changes received CAB approval (with the exception noted in Finding 1); Low-risk changes correctly bypassed CAB per policy.\n- **Deployment windows:** All non-emergency deployments occurred Tue\u2013Thu, 10:00 AM\u20134:00 PM ET as required.\n- **Rollback execution:** Both rollbacks (CHG-406, CHG-418) were initiated within the 1-hour window per \u00a74.6 criteria, demonstrating the rollback control is functional.\n- **Emergency change handling:** CHG-409 included peer review and retrospective CAB, consistent with \u00a75.\n- **High-risk extended staging:** CHG-403 (6h) and CHG-410 (8h) show appropriately extended staging validation for high-risk changes, exceeding the 2-hour minimum.\n- **Segregation:** Authors are consistently distinct from peer reviewers and CAB approvers.\n\n---\n\n## Overall Assessment\n\n**Readiness:** Substantially ready for SOC 2 Type II with remediation of the High and Medium findings. The control design is sound; the operational gaps are concentrated in (a) governance around exception handling (CAB delegation, flaky-test waivers) and (b) leadership-level metrics review. None of the findings indicate a fundamental breakdown in change authorization or testing, but Finding 2 in particular should be remediated before the audit period concludes, either by clearing the flaky-test backlog or by formally amending the policy to define a CAB-approved exception process with documented criteria."
+}

@@ -1,0 +1,85 @@
+{
+  "task_id": "cc6.4-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T18:07:07.272672",
+  "score": {
+    "task_id": "cc6.4-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.3,
+    "f1": 0.4285714285714285,
+    "score": 0.4285714285714285,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Q3 review",
+          "Section 4.6",
+          "quarterly",
+          "Pending",
+          "5 business days",
+          "stale access"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Citadel Colo",
+          "bridge letter",
+          "Section 8.2",
+          "Prism-specific",
+          "access list",
+          "cabinet lock",
+          "independent"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "pre-registered",
+          "walk-in",
+          "Section 6.1",
+          "Security Manager approval",
+          "VIS-0312",
+          "VIS-0319",
+          "VIS-0329"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 12958,
+    "output_tokens": 2830
+  },
+  "raw_response": "# CC6.4 Compliance Assessment \u2014 Prism Analytics\n\n## Scope Note\nThe FM-200 fire suppression test report (FST-2025-007) was reviewed but is not directly relevant to CC6.4 (physical access restriction). It pertains to environmental/life-safety controls. Findings below focus on access-relevant evidence.\n\n---\n\n## Findings\n\n### Finding 1: Annual Colocation Audit Overdue\n- **Reference:** Policy Section 8.2; Audit Report DC-AUD-2024-003\n- **Gap:** Policy requires annual independent physical security audits of Citadel Colocation. The most recent audit on record was conducted June 10, 2024, with the next audit due by June 10, 2025. The Q4 2025 observation period (Oct 1 \u2013 Dec 31, 2025) ends with no evidence that the 2025 audit was performed. As of the audit period end, the colocation audit is approximately 6+ months overdue. Because Prism's data center hosts production infrastructure and Section 8.2 explicitly states that the provider's SOC 2 does not replace this independent verification of Prism-specific controls (access list accuracy, cabinet lock rotation, dedicated CCTV), this is a control failure \u2014 not merely a documentation gap.\n- **Severity:** **High**\n\n### Finding 2: Cabinet Lock Rotation Cadence Unverified for 2025\n- **Reference:** Policy Section 8.3; Audit Report Section 4.3\n- **Gap:** Policy requires semi-annual cabinet lock rotation. The 2024 audit verified rotation on April 1, 2024. With no 2025 audit performed during the observation period, there is no independent evidence that locks were rotated on schedule (next rotations would have been due ~October 2024, April 2025, October 2025). Cabinet lock integrity for production infrastructure is unverified.\n- **Severity:** **High**\n\n### Finding 3: Q4 2025 Quarterly Badge Access Review Not Evidenced\n- **Reference:** Policy Section 4.6\n- **Gap:** Only the Q3 2025 review (dated October 8, 2025) was provided. Policy requires the review to occur within 15 business days of quarter end. For Q4 2025 (ending December 31, 2025), the review would be due by approximately January 23, 2026 \u2014 outside the observation window \u2014 but the auditor cannot confirm completion. More critically, no evidence of a Q1, Q2, or Q4 2025 review was provided to demonstrate the recurring control is operating effectively across the period.\n- **Severity:** **Medium**\n\n### Finding 4: Contractor Badge Not Deactivated Within Policy SLA\n- **Reference:** Policy Section 4.4; Q3 review entry QAR-010\n- **Gap:** Contractor Alex Drummond's contract with NetForge Solutions ended September 15, 2025. Policy requires deactivation within 1 business day of contract end. The badge remained active and was only flagged at the October 8 quarterly review \u2014 23 days after the deactivation deadline. This indicates the contractor offboarding process failed and the quarterly review (a detective control) was the only mechanism that caught it. Additionally, the action_completed_date is blank, so it cannot be confirmed the badge was actually deactivated by the action_due_date of October 15.\n- **Severity:** **High**\n\n### Finding 5: Stale Access Remediation Status Unconfirmed\n- **Reference:** Policy Section 4.6; Q3 review entries QAR-009, QAR-010\n- **Gap:** Policy requires flagged items to be \"resolved within 5 business days of the review completion.\" Two flagged items (Tanya Morales \u2014 stale Executive Area access; Alex Drummond \u2014 terminated contractor) had action_due_date of October 15, 2025, but the action_completed_date field is empty for both, with status \"Pending \u2014 Facilities ticket open.\" No follow-up evidence demonstrates these were actually closed within the 5-day SLA.\n- **Severity:** **Medium**\n\n### Finding 6: Walk-In Visitor Without Required Security Manager Approval\n- **Reference:** Policy Section 6.1.1; Visitor log entry VIS-0319\n- **Gap:** Tony Alvarez (DataPure Cleaning) entered on November 8, 2025, was escorted into the **Server Room** (a Restricted zone) without pre-registration. The visitor log explicitly notes: \"Scheduled but not pre-registered in system. No Security Manager approval documented.\" Policy 6.1.1 mandates real-time Security Manager approval documented in the visitor log for walk-ins. This is compounded by Section 6.3, which requires Infrastructure Director approval for visitor access to Restricted zones \u2014 also not documented. Two control failures on a single high-sensitivity visit.\n- **Severity:** **High**\n\n### Finding 7: Walk-In Visitors Lacking Documented Security Manager Approval (Pattern)\n- **Reference:** Policy Section 6.1.1; Visitor log entries VIS-0312, VIS-0329\n- **Gap:** Two additional walk-in visitors lack documented Security Manager approval:\n - VIS-0312 (Frank DiMaggio, emergency plumber, Oct 18) \u2014 note states \"Emergency visit. No pre-registration\" with no approval documented.\n - VIS-0329 (Henry Nakamura, supply delivery, Dec 19) \u2014 \"Walk-in delivery. Not pre-registered. Brief visit.\" No approval documented.\n Policy contains no exception for emergencies or brief visits. Only VIS-0324 (James Thornton) properly documents Security Manager approval. This indicates inconsistent enforcement of the walk-in approval control.\n- **Severity:** **Medium**\n\n### Finding 8: Visitor Access to Restricted Zones \u2014 Infrastructure Director Approval Not Documented\n- **Reference:** Policy Section 6.3\n- **Gap:** Several Q4 visitors accessed Restricted zones (Server Room: VIS-0302, VIS-0305, VIS-0319, VIS-0325; Network Closet: VIS-0315; Executive Area: VIS-0303, VIS-0309, VIS-0317, VIS-0324). Policy Section 6.3 requires Infrastructure Director approval for visitor access to Restricted zones. The visitor log captures host, escort status, and pre-registration but contains no field or notation evidencing the required Infrastructure Director approval for any of these visits.\n- **Severity:** **Medium**\n\n### Finding 9: Citadel SOC 2 Coverage Gap for Observation Period\n- **Reference:** Audit Report Section 7\n- **Gap:** Citadel's most recent SOC 2 Type II report covers June 2023 \u2013 May 2024, with a bridge letter extending to November 2024. There is no evidence of a SOC 2 report or bridge letter covering the Q4 2025 observation period (Oct\u2013Dec 2025). Combined with the missed 2025 independent audit (Finding 1), Prism has no current third-party assurance over its data center physical security during the observation period.\n- **Severity:** **High**\n\n### Finding 10: Inconsistent Recordkeeping in Quarterly Review\n- **Reference:** Q3 review entries QAR-009, QAR-010, QAR-012\n- **Gap:** QAR-012 properly populates both action_due_date and action_completed_date, demonstrating closure. QAR-009 and QAR-010 leave action_completed_date blank without status updates, weakening the evidentiary value of the review log. The control's effectiveness cannot be demonstrated without consistent closure tracking.\n- **Severity:** **Low**\n\n---\n\n## Summary\n\n| Severity | Count |\n|---|---|\n| Critical | 0 |\n| High | 4 |\n| Medium | 4 |\n| Low | 1 |\n\n**Overall CC6.4 Conclusion:** Control is **NOT operating effectively** during the Q4 2025 observation period. The most material concerns are (a) the missing 2025 colocation audit combined with stale provider SOC 2 coverage, leaving production data center physical security unverified, (b) a contractor badge deactivation failure caught only by detective review, and (c) visitor management exceptions \u2014 including a Restricted-zone walk-in \u2014 without the policy-required approvals. Management should remediate before SOC 2 Type II reporting."
+}

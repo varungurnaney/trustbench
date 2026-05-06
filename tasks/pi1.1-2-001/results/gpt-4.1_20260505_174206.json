@@ -1,0 +1,46 @@
+{
+  "task_id": "pi1.1-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:42:06.486972",
+  "score": {
+    "task_id": "pi1.1-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.125,
+    "f1": 0.2222222222222222,
+    "score": 1.0,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-8906",
+          "SQ-8913",
+          "SQ-8920",
+          "30-day SLA",
+          "High",
+          "unassigned",
+          "SSRF",
+          "Log Injection",
+          "XXE",
+          "Section 4.1"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3246,
+    "output_tokens": 1242
+  },
+  "raw_response": "Certainly! Below is a structured table identifying **control gaps** in relation to PI1.1 for each static analysis finding, **cross-referenced with the SDLC policy** (especially section 4.1 on SAST SLAs and section 6 on Processing Integrity). I highlight only the findings that represent a **gap**\u2014that is, cases where remediation status does **not comply with the stated SLA/policy requirements** or otherwise indicates an issue for PI1.1.\n\n---\n\n## Control Gaps Table \u2014 SonarQube SAST Findings vs. SDLC Policy\n\n| # | Short Title | SDLC Policy Section | Gap Explanation | Severity |\n|---|-------------|---------------------|-----------------|----------|\n| 1 | SSRF vulnerability unremediated | 4.1.1 Static Analysis (SAST), 6.2 Data Integrity | Finding SQ-8906 (High Vulnerability) has been \"Open\" since 2025-09-14. Per policy, High issues must be resolved in 30 days; this is open for >3 months, violating policy and risking data integrity. | High |\n| 2 | Log injection vulnerability not assigned/remediated | 4.1.1 Static Analysis (SAST), 6.2 Data Integrity | SQ-8913 (High Vulnerability) has been \"Open\" since 2025-08-22 and is still unassigned, well beyond the 30-day SLA, risking undetected tampering via logs. | High |\n| 3 | XXE vulnerability (legacy integration, unassigned) | 4.1.1 Static Analysis (SAST), 6.2 Data Integrity | SQ-8920 (High Vulnerability) is open, \"no owner assigned\", since 2025-09-08. Again, SLA is 30 days; actual is >3 months. Legacy excuse, but this still violates policy and may put processing at risk. | High |\n| 4 | Recent critical SQL injection (merge blocked, fix pending) | 4.1.1 Static Analysis (SAST), 6.2 Data Integrity | SQ-8937 (Critical Vulnerability), detected 2025-12-15, is currently \"Open\", but marked \"PR in review\" and \"Blocking merge\". Policy **allows** blocking merge for criticals, so as long as code doesn't deploy, this meets the intent. **However**, if merges are bypassed, this would be a severe gap. No evidence here of a SLA breach. | Critical (if circumvented); otherwise N/A |\n| 5 | Unremediated High: Log injection, SSRF, XXE (unassigned/unplanned) | 4.1.1 Static Analysis (SAST), 6.2 Data Integrity | (Summarizing above) All are well past the 30-day SLA for \"High\" issues, indicating a pattern of non-compliance which weakens process integrity and controls for timely, complete, and accurate processing. | High |\n| 6 | Medium or lower severity overdue: NONE (as of December 28, all Medium findings either Resolved, have plans, or are within the 90-day SLA) | 4.1.1 Static Analysis (SAST) | No gap found for medium findings, except for old ones not exceeding 90 days. | N/A |\n| 7 | Documentation/process gap: No \u201cOwner\u201d or remediation for some critical/high issues | 4.1.2 Code Review, 4.1.1 Static Analysis (SAST) | Multiple unassigned critical/high severity vulnerabilities (see above) show an SDLC/process gap\u2014timeliness and ownership not consistently enforced on high risk findings. This is a gap for integrity objectives under PI1.1. | High |\n| 8 | No automated tracking/escalation for overdue findings | 4.1 (general, SAST), 6.2 Data Integrity | The evidence shows that findings can remain unassigned and open past SLA with no documented escalation. The SDLC policy doesn't specify what happens if SLAs are breached or issues remain unremediated/unassigned. This increases the risk of incomplete or untimely issue resolution, affecting integrity objectives. | Medium |\n\n---\n\n### All Other Findings\n- All Medium findings are either recently detected, \"Open\" but not overdue, or marked as \"Resolved\"/\"Planned\" within 90 days as per policy. Low findings are \"best effort\" by policy, so their open status is not a gap.\n\n---\n\n## Summary Conclusion\n\n**SDLC policy** sets clear objectives for complete, accurate, and timely processing regarding remediation of SAST findings (Critical: before merge, High: 30 days).\n\nHowever, the **evidence (SAST report)** shows a number of **long-standing unresolved High severity vulnerabilities** (SSRF, log injection, XXE) and a lack of assignment/ownership on some. This is a material gap in processing objectives specifying \"timely processing\", meaning PI1.1 is **not fully met** in practice.  \nThere is also an SDLC process weakness\u2014lack of required ownership/escalation for overdue findings.\n\n---\n\n## Key Gaps per PI1.1:\n\n1. **Untimely Remediation:** High findings are open well past the 30-day SLA.\n2. **Lack of Ownership:** Several major findings have \"Unassigned\" status, with no remediation plan.\n3. **Missing Escalation:** No documented process for when remediation SLAs are missed.\n\n**Status:**  \n- **Policy** defines objectives for processing integrity.\n- **Practice** (according to the findings) currently does **not** ensure timely and complete issue resolution.\n\n**Recommendation:**  \n- Enforce assignment and SLA deadlines for all High/Critical issues, with automated notifications and escalation for overdue/unassigned findings.\n- Review all outstanding high/critical items at least weekly in engineering management meetings.\n\n---\n\n**Do you want the full detail for each of the 40 findings, or just gap findings as above?**"
+}

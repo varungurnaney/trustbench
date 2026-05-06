@@ -1,0 +1,101 @@
+{
+  "id": "cc8.1-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC8.1",
+  "control_description": "The entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures to meet its objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/change-management-policy.md",
+      "type": "policy",
+      "description": "Meridian Analytics change management policy with dual-approval emergency process and Saturday maintenance windows"
+    },
+    {
+      "path": "evidence/change-log-q4-2025.csv",
+      "type": "log",
+      "description": "Change log for Q4 2025 (10 changes) with approval details, deployment windows, and security reviews"
+    },
+    {
+      "path": "evidence/cab-meeting-minutes-q4.md",
+      "type": "report",
+      "description": "CAB meeting minutes for Q4 2025"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/sla-dashboard-q4.md",
+      "type": "report",
+      "description": "Q4 2025 SLA performance dashboard showing service availability metrics and incident summary"
+    }
+  ],
+  "prompt": "You are auditing Meridian Analytics's SOC 2 Type II compliance for control CC8.1 (Change Management) covering Q4 2025 (October 1 - December 31, 2025). Review all provided evidence and assess compliance. Meridian Analytics handles financial data and has a dual-approval emergency change process (VP Engineering + CISO). Cross-reference the change policy against the change log and CAB meeting minutes. Not all documents may be relevant. Identify genuine gaps -- consider full context before flagging.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "CHG-706 deployed outside Saturday maintenance window -- but CAB-approved exception",
+      "description": "CHG-706 (data export API) was deployed on Thursday November 13 at 14:00 UTC instead of the Saturday 02:00-06:00 UTC maintenance window. However, the CAB minutes from November 11 show the CAB explicitly discussed the timeline, approved a business justification exception per policy Section 5, and voted to allow a weekday deployment due to a customer contract deadline of November 15. The policy Section 5 explicitly allows maintenance window exceptions with CAB approval.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/cab-meeting-minutes-q4.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Deployed outside maintenance window → check policy → Section 5 allows exceptions with CAB business justification → CAB minutes confirm vote and approval → customer contract deadline justified urgency → compliant, not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-706", "maintenance window", "Thursday", "outside", "Saturday", "violation"],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": ["CAB approved exception", "business justification", "exception approved", "per Section 5", "not a finding", "compliant"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "CHG-708 emergency change deployed without required CISO dual approval",
+      "description": "CHG-708 (auth token expiry fix) was an emergency change deployed on December 2 at 04:15 UTC. Policy Section 4 requires dual verbal approval from VP Engineering AND CISO for emergency changes. The change log shows 'CISO: NOT OBTAINED' -- the CISO was unreachable at 3:00 AM. VP Engineering approved alone. The CAB minutes from December 9 confirm Yuki Tanaka (Security Lead/CISO) was not contacted and acknowledged the dual approval requirement was not met. The policy explicitly states dual approval is 'a higher bar than standard emergency processes because Meridian Analytics handles financial data subject to regulatory requirements.' Deploying a Critical change to the authentication system without CISO approval is a control failure.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/cab-meeting-minutes-q4.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Change log shows CISO approval = NOT OBTAINED. Policy Section 4 requires dual approval (VP Eng + CISO). CAB minutes confirm CISO was unreachable. The policy explicitly requires this dual approval for financial data regulatory reasons. Single approval is a control failure.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-708", "CISO", "NOT OBTAINED", "dual approval", "unreachable", "Section 4", "emergency"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "CHG-708 deployed by the developer instead of SRE team -- segregation of duties violation",
+      "description": "CHG-708 was deployed by anika.patel, who is also the developer of the change. Policy Section 3.4 states 'Production deployments by SRE team only' and 'Developer must not approve or deploy their own change.' The change log notes the SRE on-call (Raj Mehta) did not respond to the page. The CAB minutes confirm this was discussed and corrective action recommended. Emergency change procedures do not exempt segregation of duties -- the developer both wrote and deployed the code to production.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/cab-meeting-minutes-q4.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Change log: developer = anika.patel, deployer = anika.patel. Policy Section 3.4 requires SRE team deployment and prohibits developers from deploying their own changes. Emergency procedures do not waive this requirement. The same person wrote and deployed the code.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-708", "anika.patel", "developer", "deployer", "segregation", "SRE", "same person", "Section 3.4"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No CISO delegate defined for after-hours emergency approvals",
+      "description": "The policy Section 4 requires CISO approval for all emergency changes but does not define a delegation process or alternate approver for when the CISO is unavailable. CHG-708 demonstrated this gap -- the CISO was unreachable at 3:00 AM, resulting in a single-approval emergency deployment. The CAB retrospective recommended establishing a secondary CISO delegate, but this has not yet been implemented in policy. For a company handling financial data with a dual-approval requirement, the absence of a delegation framework creates a predictable point of failure in the emergency process.",
+      "evidence_sources": ["evidence/change-management-policy.md", "evidence/cab-meeting-minutes-q4.md"],
+      "expected_reasoning": "Policy requires CISO approval but has no fallback. CHG-708 proved this is a real operational gap. The CAB identified it but has not updated the policy. The dual-approval control is only as strong as the availability of both approvers.",
+      "detection_criteria": {
+        "required_keywords": ["CISO", "delegate", "after-hours", "unavailable", "unreachable", "fallback", "delegation", "emergency"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["change_management", "red_herring", "dual_approval", "segregation_of_duties", "emergency_change", "CISO_delegation", "maintenance_window"]
+  }
+}

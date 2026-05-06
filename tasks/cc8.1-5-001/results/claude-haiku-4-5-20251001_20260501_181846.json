@@ -1,0 +1,90 @@
+{
+  "task_id": "cc8.1-5-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-01T18:18:46.534157",
+  "score": {
+    "task_id": "cc8.1-5-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2777777777777778,
+    "f1": 0.4347826086956522,
+    "score": 0.4347826086956522,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 18,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-414",
+          "94.2%",
+          "flaky"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-415",
+          "Jared Kim",
+          "CAB"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-406",
+          "CHG-418",
+          "rollback"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "CVE-2025-41823",
+          "staging"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "FLAKY-028",
+          "remediation SLA"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8813,
+    "output_tokens": 3348
+  },
+  "raw_response": "# CC8.1 Change Management Control \u2014 Compliance Audit Report\n\n## Executive Summary\n\nBeacon SaaS has implemented a comprehensive change management framework with documented policies, automated testing, peer review requirements, and CAB oversight. However, the audit identified **5 findings** ranging from Critical to Medium severity, primarily related to policy exceptions, flaky test management, and gaps in test coverage for production-impacting scenarios.\n\n---\n\n## Finding 1: Production Deployment Failures Not Prevented by Approved Test Results\n\n**Document Reference:** CI/CD Test Results (CHG-406, CHG-418); Change Management Policy (Section 4.3)\n\n**Description:**\n\nTwo changes (CHG-406 and CHG-418) passed all testing requirements and were approved for deployment but subsequently failed in production due to issues not caught by the test suite:\n\n- **CHG-406** (API rate limiting): Passed 98.7% test threshold in staging. Post-deployment: P95 latency exceeded 200% of baseline within 15 minutes, triggering rollback. Root cause: \"Rate limiting thresholds were too aggressive\" \u2014 an issue not detected in staging tests.\n\n- **CHG-418** (Kubernetes node pool scaling): Passed 99.1% test threshold. Post-deployment: Pod rescheduling failures caused intermittent 503 errors. Root cause: \"Node affinity rules conflicted with new pool configuration\" \u2014 infrastructure behavior not adequately tested in staging.\n\n**Why This Is a Gap:**\n\nThe policy (Section 4.3) requires \"Automated integration test suite must pass with 100% of critical tests and 98% overall pass rate\" and \"Staging deployment must be stable for a minimum of 2 hours before production promotion.\" Both changes satisfied these criteria. However, the tests do not validly predict production behavior for:\n- Load-dependent performance characteristics (rate limiting thresholds under realistic load)\n- Infrastructure-specific configurations (Kubernetes node affinity and scheduling constraints)\n\nThis represents a **gap between the proxy metric (test pass rate) and actual control objective (preventing production incidents)**.\n\n**Severity:** **Critical**\n\n**Recommendation:**\n- Expand test suite to include performance regression testing under realistic load conditions (already mentioned in Section 4.3 for High-risk changes but not consistently applied)\n- Add infrastructure integration tests that simulate production topology, scheduling constraints, and node affinity rules\n- Document the specific testing gaps identified by CHG-406 and CHG-418 incidents and implement corrective tests before redeployment\n\n---\n\n## Finding 2: Flaky Tests Exceeding SLA Without Enforcement Action\n\n**Document Reference:** CI/CD Test Results (Flaky Test Registry); Change Management Policy (Section 4.3)\n\n**Description:**\n\nThe test data indicates 3 flaky tests (FLAKY-028, FLAKY-029, FLAKY-030) have been open for **109 days** as of the report date (January 2, 2026), identified on September 14, 2025. The documented remediation SLA is **30 days**. These tests exceeded the SLA by 79 days.\n\nAdditionally, CHG-414 (Kafka migration) was deployed despite a 94.2% pass rate (below the 98% policy threshold) with the justification that \"all 146 failures are attributed to 7 known flaky tests\" and \"CAB was informed and approved deployment.\" However:\n\n1. The policy (Section 4.3) requires \"98% overall pass rate\" \u2014 no explicit exception clause for flaky tests exists in the documented policy.\n2. The decision to deploy below the stated threshold was made at CAB discretion, but this creates an undocumented exception.\n3. No enforcement action is documented for the SLA breach on FLAKY-028 through FLAKY-030.\n\n**Why This Is a Gap:**\n\n1. **SLA Non-Compliance**: The 79-day overage indicates inadequate monitoring or enforcement of flaky test remediation commitments.\n2. **Policy Exception Without Documentation**: CHG-414's deployment below the 98% threshold was approved verbally by CAB but not formally documented in policy as an allowable exception condition.\n3. **Control Reliance on Environment Issues**: The flaky tests are described as \"environment-sensitive\" (Kafka container startup, CI resource constraints, timing-dependent tests). Relying on test results that are known to be environment-dependent weakens the control's validity.\n\n**Severity:** **High**\n\n**Recommendation:**\n- Establish an escalation procedure for SLA breaches on flaky test remediation (escalate to VP Engineering after 45 days)\n- Formally amend the policy to define conditions under which deployment below the 98% threshold is acceptable (e.g., when failures are pre-identified as flaky and tracked in Jira)\n- Implement automated alerting when flaky test SLA is at risk\n- Prioritize remediation of FLAKY-028 through FLAKY-034; consider quarantining environment-sensitive tests in a separate test tier until fixed\n\n---\n\n## Finding 3: CAB Approval Delegation Without Documented Authority\n\n**Document Reference:** Deployment Log (CHG-415); Change Management Policy (Section 4.4)\n\n**Description:**\n\nCHG-415 (Onboarding wizard redesign, Medium risk) was approved by \"Jared Kim (Engineering Manager)\" on December 2, 2025, with a comment: \"CAB did not convene week of 12/01 due to holiday scheduling. Jared Kim (Engineering Manager) approved as delegate per verbal authorization from Natasha Volkov.\"\n\n**Policy Requirements (Section 4.4):**\n- \"CAB approval must be documented in the change ticket prior to deployment.\"\n- The CAB composition is formally defined: VP of Engineering (Chair), Director of SRE, Security Engineering Lead, Product Manager.\n- Jared Kim (Engineering Manager) is **not** listed as an authorized CAB member or delegate.\n\n**Why This Is a Gap:**\n\n1. **Authority Not Documented**: The policy does not establish a delegation mechanism or identify authorized alternates.\n2. **Verbal Authorization**: The approval was granted \"per verbal authorization\" rather than through documented policy or a formal delegation record.\n3. **Inconsistent Application**: No evidence that formal delegation authority was established before this incident; this creates uncertainty about whether similar approvals in other periods are valid.\n\n**Severity:** **High**\n\n**Recommendation:**\n- Establish a formal CAB delegation policy specifying authorized alternates (likely: Director of SRE when VP Engineering unavailable)\n- Require written delegation authority (email or documented policy amendment) before accepting alternate approvals\n- For CHG-415, obtain retrospective written approval from Natasha Volkov and VP Engineering confirming Jared Kim's authority or validate the decision under normal CAB procedures if scheduling allows\n- Document a CAB holiday schedule and contingency approval process at the start of each calendar year\n\n---\n\n## Finding 4: Emergency Change Process Bypass Without Retrospective CAB Review Documentation\n\n**Document Reference:** Deployment Log (CHG-409); Change Management Policy (Section 5)\n\n**Description:**\n\nCHG-409 (Critical XSS vulnerability hotfix) was deployed on November 6, 2025, at 22:15 ET as an emergency change. The deployment log states:\n\n- Staging deployment: **No (bypassed per emergency change process)**\n- Staging test result: **N/A (Emergency)**\n- Post-deploy validation: **Pass**\n- Comment: \"CVE-2025-41823 \u2014 active exploitation detected. Peer review completed. Staging bypassed per emergency change process. Retrospective CAB approval obtained 2025-11-11.\"\n\n**Policy Requirements (Section 5):**\n- \"Emergency changes may bypass... Staging environment testing (if time-critical)\"\n- \"All emergency changes must be logged and reviewed at the next CAB meeting with a root cause analysis documenting why the emergency process was invoked.\"\n\n**Findings:**\n\n1. The retrospective CAB review date (2025-11-11) is documented in the deployment log, which satisfies the policy requirement.\n2. However, **no root cause analysis or incident report is provided** in the evidence. The policy requires RCA to explain why the emergency process was necessary.\n3. No evidence of formal security incident response documentation (vulnerability severity, exploitation scope, blast radius, remediation validation).\n\n**Why This Is a Gap:**\n\n1. **Incomplete Emergency Documentation**: While the retrospective CAB review occurred, the supporting documentation (RCA, security incident report) is not provided.\n2. **Verification Gap**: The audit cannot confirm that the retrospective review was thorough or that the decision to bypass staging was truly justified, as the RCA is missing.\n\n**Severity:** **Medium**\n\n**Recommendation:**\n- Attach or reference the security incident report and root cause analysis to CHG-409 in the change management system\n- Establish a template for emergency change RCAs that documents: vulnerability/incident severity, affected systems, exploitation evidence, why staging bypass was necessary, validation steps taken post-deployment\n- Verify that the retrospective CAB review (2025-11-11) documentation includes discussion of the security context and rationale\n\n---\n\n## Finding 5: Test Suite Does Not Cover All Critical Production Scenarios\n\n**Document Reference:** CI/CD Test Results; Change Management Policy (Section 4.3); Deployment Log\n\n**Description:**\n\nAnalysis of the test suite and deployment outcomes reveals systematic gaps in test coverage:\n\n1. **CHG-406** (rate limiting): Tests passed but production deployment revealed aggressive thresholds causing latency issues. Implication: Load testing or threshold validation is missing.\n\n2. **CHG-418** (Kubernetes node pool scaling): Tests passed but production revealed node affinity rule conflicts. Implication: Infrastructure integration tests do not simulate scheduling constraints.\n\n3. **CHG-414** (Kafka analytics pipeline): 146 test failures attributed to 7 flaky Kafka integration tests. Implication: Kafka test environment is unstable and unreliable, undermining test validity.\n\n4. **General**: The test suite includes 2,400\u20132,500 tests per deployment but focuses on unit and integration tests. The policy mentions \"Performance regression testing for changes flagged as High risk\" (Section 4.3), but no evidence shows this is consistently executed or that results are evaluated.\n\n**Why This Is a Gap:**\n\n1. **Test Coverage Mismatch**: The test suite achieves high pass rates (99%+ in most cases) but fails to predict production failures in critical areas: load-dependent performance and infrastructure configuration.\n2. **High-Risk Change Testing Requirement Not Consistently Met**: The policy (Section 4.3) specifies performance regression testing for High-risk changes. CHG-406 (High risk, rate limiting) and CHG-418 (Medium risk, but infrastructure-related) do not show documented performance test results.\n3. **Flaky Test Environment**: The Kafka tests (FLAKY-028 through FLAKY-034) demonstrate that the test environment itself is unreliable, calling into question the validity of the entire test result for CHG-414.\n\n**Severity:** **Medium**\n\n**Recommendation:**\n- Implement mandatory performance regression testing for all High-risk changes, with documented baseline metrics and threshold comparisons\n- Expand infrastructure integration tests to include Kubernetes scheduling, node affinity, and resource constraints; deploy to a staging cluster that mirrors production topology\n- Establish a separate, more reliable Kafka test environment or consider using managed Kafka in staging (e.g., AWS MSK) rather than Docker Compose\n- Quarantine or exclude flaky tests from the pass/fail calculation until remediated; track flaky test outcomes separately\n- Define \"critical tests\" in the policy and ensure that the 100% critical test pass rate requirement includes performance and infrastructure scenarios\n\n---\n\n## Summary Table\n\n| Finding | Title | Severity | Policy Section | Root Cause |\n|---------|-------|----------|---------------|-----------| \n| 1 | Production Failures Not Prevented by Test Results | Critical | 4.3 | Test suite does not validate load-dependent performance or infrastructure behavior |\n| 2 | Flaky Tests Exceeding SLA Without Enforcement | High | 4.3, Policy Gap | No escalation procedure; undocumented exception for flaky test-related deployments |\n| 3 | CAB Approval Delegation Not Documented | High | 4.4 | Policy lacks delegation authority framework; verbal authorization not sufficient |\n| 4 | Emergency Change RCA Not Provided | Medium | 5 | Supporting incident documentation missing (RCA, security report) |\n| 5 | Test Suite Gaps in Performance & Infrastructure | Medium | 4.3 | Performance regression and infrastructure integration tests not consistently applied |\n\n---\n\n## Overall Compliance Assessment\n\n**Control Status:** Partially Effective with Significant Exceptions\n\n**Strengths:**\n- Formal change management policy with clear classification (standard, normal, emergency)\n- Peer review requirement consistently enforced across all changes (100% of deployments show peer reviewer documented)\n- CAB approval structure and composition defined\n- Automated CI/CD pipeline with test execution\n- Rollback procedures defined and executed when necessary (2 rollbacks in Q4)\n\n**Weaknesses:**\n- Test suite design does not capture production-impacting failure modes (load-dependent and infrastructure-specific issues)\n- SLA management for flaky tests is ineffective (109-day overage)\n- Policy exceptions (deployment below 98% threshold) made without documented authorization framework\n- CAB delegation authority not formalized\n- Emergency change retrospective documentation incomplete\n\n**Risk Level:** **High** \u2014 While the framework is in place, gaps in test coverage and policy exception handling create a material risk that changes will pass approval and testing but fail in production. Two actual incidents (CHG-406, CHG-418) in Q4 demonstrate this risk is not theoretical.\n\n---\n\n## Recommended Priority Actions\n\n1. **Immediate (Critical):**\n   - Expand test suite to include load testing and infrastructure integration scenarios\n   - Document root cause analysis for CHG-406 and CHG-418 incidents; implement corrective tests\n\n2. **Short-term (High):**\n   - Establish CAB delegation policy and update CHG-415 approval documentation\n   - Implement flaky test SLA escalation procedure\n   - Formally amend change management policy to define exception conditions for below-98% deployments\n\n3. **Medium-term (Medium):**\n   - Remediate FLAKY-028 through FLAKY-034 or establish alternate Kafka test environment\n   - Implement performance regression test execution for all High-risk changes\n   - Add infrastructure integration test layer with production-like topology"
+}

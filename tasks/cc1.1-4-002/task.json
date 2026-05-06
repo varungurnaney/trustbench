@@ -1,0 +1,106 @@
+{
+  "id": "cc1.1-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.1",
+  "control_description": "The entity demonstrates a commitment to integrity and ethical values.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/whistleblower-policy.md",
+      "type": "policy",
+      "description": "Whistleblower and ethics reporting policy with anonymous hotline details and non-retaliation protections"
+    },
+    {
+      "path": "evidence/policy-review-records.csv",
+      "type": "spreadsheet",
+      "description": "Policy review register tracking annual review dates, status, and overdue items for all organizational policies"
+    },
+    {
+      "path": "evidence/board-security-presentation-q3.md",
+      "type": "report",
+      "description": "Board of Directors security posture briefing presented in September 2025"
+    },
+    {
+      "path": "evidence/ethics-hotline-activity-log.csv",
+      "type": "log",
+      "description": "Ethics hotline case log showing all reports received in 2025 with investigation status and outcomes"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/employee-satisfaction-survey-summary.md",
+      "type": "report",
+      "description": "Mid-year employee pulse survey results — not directly relevant to CC1.1 ethics and integrity assessment"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Crestwood Dynamics covering the audit period January 1 - December 31, 2025. Review all provided evidence artifacts and assess the operating effectiveness of controls under CC1.1 (Commitment to Integrity and Ethical Values). Focus on the whistleblower and ethics reporting program, policy governance, and board oversight. Not all documents may be relevant. Consider whether the ethics reporting program is operating effectively and whether policy review obligations are being met. When reviewing the ethics case log, assess both the cases themselves and what they reveal about the integrity culture.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Whistleblower policy review overdue by 422 days — ethics governance document not updated since March 2024",
+      "description": "The policy review records show POL-WB-001 (Whistleblower and Ethics Reporting Policy) was due for annual review on March 1, 2025 and is 422 days overdue with no review conducted. The policy remains at version 1.4 from March 2024. The policy footer confirms 'Next Review Date: March 2025.' The notes cite 'competing priorities (merger due diligence)' from the GC office. This is particularly concerning because the whistleblower policy is a Tier 1 governance document directly supporting CC1.1 integrity and ethical values commitments. The board security presentation (Section 5) acknowledges this gap, noting '1 policy overdue: Whistleblower Policy' and the Board Chair requested resolution by December 2025, but the policy review records show no subsequent review was completed. Additionally, the policy review notes state 'Hotline phone number and web URL not verified for 2025,' meaning the anonymous reporting channels may not have been validated as operational.",
+      "evidence_sources": ["evidence/policy-review-records.csv", "evidence/whistleblower-policy.md", "evidence/board-security-presentation-q3.md"],
+      "expected_reasoning": "Policy review tracker shows POL-WB-001 overdue 422 days, status 'Overdue,' no review date. Policy footer confirms March 2025 due date. Board presentation Section 5 acknowledges the gap. Board Chair requested resolution by December 2025 but no evidence of completion. Hotline contact info not verified.",
+      "detection_criteria": {
+        "required_keywords": ["POL-WB-001", "whistleblower", "422 days", "overdue", "March 2024", "merger", "hotline", "not verified", "Board Chair"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Open retaliation case ETH-2025-008 unresolved for 3+ months — integrity program effectiveness concern",
+      "description": "The ethics hotline activity log shows case ETH-2025-008 (reported September 12, 2025) is a Critical severity retaliation complaint that remains 'Open' and 'Under investigation' as of the end of the audit period. The reporter alleges retaliation after filing a prior substantiated harassment complaint (ETH-2025-003), claiming they were passed over for promotion and excluded from key meetings. The whistleblower policy (Section 5) explicitly prohibits retaliation and promises monitoring by HR. A Critical retaliation case open for more than 3 months raises serious questions about the organization's commitment to the non-retaliation protections that underpin the entire ethics reporting program. If employees perceive that reporting leads to retaliation without timely resolution, the integrity of the reporting mechanism is compromised.",
+      "evidence_sources": ["evidence/ethics-hotline-activity-log.csv", "evidence/whistleblower-policy.md"],
+      "expected_reasoning": "ETH-2025-008 is a Critical retaliation case open since September 12 — over 3 months with no resolution. Linked to prior substantiated case ETH-2025-003. Policy Section 5 prohibits retaliation. Extended open duration for a Critical case undermines the non-retaliation guarantee and discourages future reporting.",
+      "detection_criteria": {
+        "required_keywords": ["ETH-2025-008", "retaliation", "Critical", "open", "3 months", "ETH-2025-003", "promotion", "non-retaliation", "unresolved"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "ETH-2025-005 expense fraud case took 46 days to close — within expected range for financial investigations",
+      "description": "Case ETH-2025-005 involved expense report fraud requiring Internal Audit investigation, forensic analysis of 8 months of expense records, and coordination with Legal for employment termination and funds recovery. The 46-day closure timeline may appear lengthy, but the whistleblower policy (Section 4.1) defines Critical investigations as requiring initiation within 5 business days, not completion. The investigation was initiated on the same day as the report (May 30). Financial fraud investigations requiring document analysis, witness interviews, and legal proceedings typically take 30-90 days. The case was substantiated, the employee was terminated, and funds recovery was initiated. This represents the ethics program operating as designed — it is NOT a finding.",
+      "evidence_sources": ["evidence/ethics-hotline-activity-log.csv", "evidence/whistleblower-policy.md"],
+      "expected_reasoning": "ETH-2025-005 took 46 days — check if this violates policy. Policy Section 4.1 requires investigation initiation within 5 days, not closure. Investigation started same day. Financial fraud inherently complex. Substantiated finding with appropriate consequences. Program working as intended.",
+      "detection_criteria": {
+        "required_keywords": ["ETH-2025-005", "46 days", "expense fraud", "Critical", "initiated same day", "Internal Audit", "not a finding", "terminated"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["too slow", "delayed", "SLA violation", "overdue"]
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "11 of 12 policies reviewed on time but the single overdue policy is the most CC1.1-critical governance document",
+      "description": "The policy review records show 11 of 12 policies were reviewed on schedule in 2025, which appears to demonstrate a strong policy governance program (91.7% on-time rate). However, the single overdue policy is the Whistleblower and Ethics Reporting Policy — the most directly relevant governance document for CC1.1 integrity and ethical values. The organization's policy review discipline is strong for technical and operational policies (all Tier 2 policies current) but has failed on the governance document most critical to demonstrating commitment to integrity. This selective gap is more concerning than a broadly weak review program because it suggests ethics governance is deprioritized relative to operational policies.",
+      "evidence_sources": ["evidence/policy-review-records.csv"],
+      "expected_reasoning": "11 of 12 policies current — high compliance rate. But the single failure is POL-WB-001 (whistleblower), the most CC1.1-relevant document. Pattern shows operational policies prioritized over governance policies. The GC office cited merger due diligence as the reason — suggesting integrity governance deprioritized for business transactions.",
+      "detection_criteria": {
+        "required_keywords": ["11 of 12", "whistleblower", "most critical", "CC1.1", "deprioritized", "merger", "governance", "operational"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["whistleblower", "ethics_reporting", "retaliation", "policy_review", "board_oversight", "red_herring", "noise_document", "integrity"]
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "task_id": "cc6.6-5-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:26:47.526676",
+  "score": {
+    "task_id": "cc6.6-5-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 1.0,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 2,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "admin tool",
+          "bypass",
+          "WAF",
+          "Kong",
+          "WebSocket",
+          "compensating controls",
+          "VPN",
+          "customer data export",
+          "schema validation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "admin audit logs",
+          "CloudWatch",
+          "Splunk",
+          "SIEM",
+          "TV-MRD-2025-003",
+          "anomaly detection",
+          "correlation",
+          "not forwarded"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "VPN"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3339,
+    "output_tokens": 1671
+  },
+  "raw_response": "Below are the key findings from the review of Meridian SaaS\u2019s boundary controls against CC6.6 based on the provided evidence.\n\n---\n\n## **Finding 1: Admin Tool Bypasses Core Boundary Controls**\n\n**1. Short Title:**  \n**Admin Tool Bypasses WAF and API Gateway**\n\n**2. Related Sections:**  \n- Network Architecture Document \u2013 Section 3 (Internal Admin Tool), Section 5 (Security Exception)  \n- Penetration Test Report \u2013 Finding TV-MRD-2025-001  \n- System Boundary and Access Control Policy \u2013 Section 3.1, 4 (Exception Process), 6 (Penetration Testing)\n\n**3. Why It\u2019s a Gap:**  \nThe Internal Admin Tool is architected to bypass the standard system boundary (CloudFront, WAF, Kong API Gateway), connecting directly from the Tailscale VPN to the Internal ALB. This design leaves the admin tool without application-layer protection (Web Application Firewall, Schema Validation, Anomaly Detection) that is present for all other production services.  \nWhile compensating controls exist (restricted VPN access, Okta SSO with MFA, RBAC, audit logging), this bypass creates exposure:  \n- A compromise of both VPN credentials and SSO could allow an attacker direct, uninspected access to high privilege tool functionality (e.g., customer data export, customer account changes), with no boundary-level threat detection.\n- The original technical blocker (no WebSocket support in Kong) no longer applies as of Kong Gateway 3.4 (Aug 2024), but the tool was not migrated during the review period.\n- The bypass is documented and subject to a formal exception with quarterly review, and it is covered by penetration testing; however, the exception is still in effect, and the risk is only accepted, not remediated.\n- This direct path is inconsistent with policy Section 3.1, which requires all production services to traverse the full boundary stack and only allows time-limited exceptions (max 12 months).\n\n**4. Severity:**  \n**Medium**  \n*Rationale*: The affected tool is highly sensitive, but access is limited via strong compensating controls and the tool accounts for only 0.03% of traffic. The risk of exploitation is reduced by VPN & SSO with MFA, but the absence of boundary inspection for this tool means some attack vectors (payload injection, app-layer attacks) would not be detected or blocked by the standard controls.\n\n---\n\n## **Finding 2: Admin Tool Audit Logs Not Integrated with SIEM**\n\n**1. Short Title:**  \n**Admin Tool Audit Logs Not Ingested by SIEM**\n\n**2. Related Sections:**  \n- Penetration Test Report \u2013 Finding TV-MRD-2025-003  \n- Network Architecture Document \u2013 Section 3.3 (Audit Logging)  \n- Access Logs\n\n**3. Why It\u2019s a Gap:**  \nAudit logs for the admin tool are only stored in CloudWatch and not forwarded to Splunk SIEM. As a result,  \n- Admin actions are not automatically correlated with security events elsewhere in the environment (e.g., failed login attempts, suspicious network activity).\n- SIEM-based detection rules and alerting (which protect other boundary points) do not apply to admin tool actions.\n- This increases dwell time for identifying insider threats or admin misuse, particularly relevant given the tool\u2019s direct access to sensitive data and system controls.\n\n**4. Severity:**  \n**Low \u2013 Trending to Medium**  \n*Rationale*: There is 365-day retention and audit logs are available, but lack of SIEM integration reduces the effectiveness of monitoring and detection. As remediation is planned for Q1 2026 and logs have not yet shown suspicious activity, impact is currently Low. However, in the context of the boundary bypass, this compounds risk (hence, trending towards Medium if not remediated promptly).\n\n---\n\n## **Finding 3: Compensating Controls for the Bypass Are Strong and Actively Managed**\n\n**1. Short Title:**  \n**Compensating Controls for Admin Tool Bypass Are Well-Documented and Enforced**\n\n**2. Related Sections:**  \n- Network Architecture Document \u2013 Section 3.3  \n- Penetration Test Report \u2013 Positive Observations  \n- System Boundary and Access Control Policy \u2013 Exception Process\n\n**3. Why It\u2019s a Positive Mitigant, Not a Gap:**  \n- The admin tool is only accessible via VPN, Okta SSO with MFA, and strict RBAC.\n- Actions are thoroughly audited.\n- The exception is documented, formally reviewed, and subject to penetration testing.\n- No evidence of unauthorized or suspicious admin activity in the logs.\n\n**4. Severity:**  \n**N/A (Mitigating Factor, Not a Gap)**  \n*Rationale*: These controls do not eliminate the gap (Finding 1) but constitute strong mitigation, supporting the reduction of impact from High to Medium.\n\n---\n\n## **Finding 4: Standard Boundary Stack Is Effective and Fully Implemented for All Other Services**\n\n**1. Short Title:**  \n**Boundary Stack Enforced for All Customer-Facing Services**\n\n**2. Related Sections:**  \n- System Boundary and Access Control Policy \u2013 Section 3.1  \n- Network Architecture Document \u2013 Section 2  \n- Penetration Test Report \u2013 Positive Observations, TV-MRD-2025-002\n\n**3. Why It\u2019s Not a Gap:**  \nAll customer-facing services traverse CloudFront, WAF, and Kong API Gateway per policy. The only documented bypass is the admin tool, which is formally excepted.\n\n**4. Severity**:  \n**N/A (No Gap for These Services)**\n\n---\n\n## **Summary of Gaps and Severity**\n\n| # | Title                                             | Gap/Section(s)                   | Why It's a Gap / Comments                                                     | Severity          |\n|---|---------------------------------------------------|-----------------------------------|--------------------------------------------------------------------------------|-------------------|\n| 1 | Admin Tool Bypasses WAF and API Gateway           | Network Arch 3, Pentest TV-MRD-001| Boundary bypass, application-layer controls missing for sensitive admin tool    | Medium            |\n| 2 | Admin Tool Audit Logs Not Ingested by SIEM        | Pentest TV-MRD-003, Logs          | Reduces real-time monitoring and correlation for privileged activity            | Low (trending Medium if not remediated) |\n|   |                                                   |                                   |                                                                                |                   |\n\n### **Other Note:**\n- Findings regarding webhook receiver rate limiting (TV-MRD-2025-002) do not pertain to system boundary enforcement from external sources (CC6.6), so are not included as CC6.6-relevant gaps.\n\n---\n\n# **Conclusion \u2013 Materiality Perspective**\n\n**Is CC6.6 met?**  \n**Partially \u2013 WITH DISCLOSED EXCEPTION.**  \n- The boundary controls for all customer-facing services are strong and fully implemented.\n- The admin tool\u2019s bypass is a **material exception**, but lessens in severity due to robust compensating controls and formal risk management.\n- The organization is transparent about this risk and has plans for remediation, now that technical blockers are removed.\n- **SOC 2 implication:** The gap should be documented in the CC6.6 description as an exception; it is not \u201ccritical\u201d but is significant enough to warrant explicit disclosure and tracking in the management assertion/controls description and opinion narrative.\n\n---\n\n## **Summary Table**\n\n| Finding Title                                  | Related Section(s)                   | Reason for Gap             | Severity    |\n|------------------------------------------------|--------------------------------------|----------------------------|-------------|\n| Admin Tool Bypasses WAF and API Gateway        | Network Architecture 3, Pentest TV-MRD-001 | Policy deviation for admin tool, missing boundary-layer protections | Medium      |\n| Admin Tool Audit Logs Not Ingested by SIEM     | Pentest TV-MRD-003, Logs             | Diminished monitoring/correlation | Low (trending Medium if not remediated) |\n\n---\n\n**Recommendation:**  \nExpedite migration of the admin tool behind Kong API Gateway now that WebSocket support is available, and accelerate SIEM integration of admin audit logs. Continue strong access controls until remediation is complete."
+}

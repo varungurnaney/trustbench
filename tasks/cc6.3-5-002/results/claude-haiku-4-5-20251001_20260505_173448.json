@@ -1,0 +1,89 @@
+{
+  "task_id": "cc6.3-5-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:34:48.700644",
+  "score": {
+    "task_id": "cc6.3-5-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Priya Mehta",
+          "SOW-NB-2025-034",
+          "DataForge",
+          "NDA",
+          "48 hours",
+          "active",
+          "customer_analytics"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Marcus Webb",
+          "CloudNine",
+          "SOW-NB-2025-042",
+          "NDA",
+          "before access"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-appdev-team",
+          "shared",
+          "Jason Torres",
+          "Lisa Huang",
+          "Kevin Park",
+          "AppDev Partners",
+          "individual",
+          "accountability"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "NDA-2025-DF-003",
+          "annual",
+          "DataForge"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4350,
+    "output_tokens": 2978
+  },
+  "raw_response": "# CC6.3 Compliance Assessment \u2014 NovaBridge Technologies Contractor Access Control\n\n## FINDINGS\n\n---\n\n### Finding 1: Unauthorized Post-SOW Database Access \u2014 Priya Mehta\n\n**Related Section:** Policy 6.3 (Access Duration and Revocation)\n\n**Description:**\nPriya Mehta's SOW-NB-2025-034 ended on 2025-11-15. However, database access logs show active queries from her account (p.mehta) on:\n- 2025-11-22 (7 days post-SOW)\n- 2025-12-08 (23 days post-SOW)\n- 2025-12-18 (33 days post-SOW)\n\nAll queries accessed Confidential data (customer_analytics, order_history, user_behavior) with significant row returns (1,500\u20132,200 rows).\n\n**Why This Is a Gap:**\nPolicy 6.3 explicitly states: \"Access must be revoked within 48 hours of SOW completion or contract end date.\" The active access register shows no revocation date for p.mehta. The access persisted for 33+ days beyond the contractual engagement end, violating both the time-limitation requirement and the 48-hour revocation mandate. The contractor sponsor (Elena Vasquez) did not enforce timely access removal.\n\n**Severity:** **CRITICAL**\n\nThis represents a direct control failure\u2014unauthorized access to sensitive data beyond the engagement period creates material risk of data exposure, insider threat, and policy violation.\n\n---\n\n### Finding 2: Shared Service Account \u2014 AppDev Partners Team\n\n**Related Section:** Policy 6.2 (Individual Accountability)\n\n**Description:**\nThree contractors (Jason Torres, Lisa Huang, Kevin Park) from AppDev Partners all share a single service account (svc-appdev-team) with SELECT/INSERT access to Confidential data (product_catalog, feature_flags, user_preferences). Individual accountability cannot be established from the audit logs\u2014all three individuals execute queries under the same account identity.\n\n**Why This Is a Gap:**\nPolicy 6.2 states: \"Each contractor must have an individual database account. Shared accounts for contractor teams are prohibited. All contractor activity must be attributable to a named individual for audit purposes.\" The use of svc-appdev-team violates this requirement. The audit log shows INSERT operations to feature_flags on 2025-10-12 and 2025-11-05, but there is no way to determine which of the three contractors performed these writes. This breaks the audit trail and makes it impossible to enforce segregation of duties or attribute actions for investigation.\n\n**Why This Matters for CC6.3:**\nAuthorization must be *individual* and traceable. The shared account prevents verification that access was properly authorized to each person, that each person's access scope matches their duties, and that modifications are attributable.\n\n**Severity:** **CRITICAL**\n\nIndividual accountability is foundational to SOC 2 access control. Shared contractor accounts are explicitly prohibited in the policy and cannot support compliance.\n\n---\n\n### Finding 3: Missing NDA for Marcus Webb \u2014 CloudNine Consulting\n\n**Related Section:** Policy 6.1 (Pre-Provisioning Requirements)\n\n**Description:**\nMarcus Webb from CloudNine Consulting has an active SOW (SOW-NB-2025-042, active from 2025-10-01 to 2026-03-31) with database access (m.webb account, SELECT on Internal data). However:\n- The active contractor access register shows **NDA_reference: blank**\n- No corresponding NDA entry exists in the NDA register\n- The contractor was provisioned access on 2025-10-01\n\n**Why This Is a Gap:**\nPolicy 6.1 requires: \"Before any data access is provisioned for a contractor, the following must be in place: Executed NDA on file in the NovaBridge NDA Register.\" This requirement was not met. Access was granted without documented NDA execution. While Marcus Webb only accesses \"Internal\" classification data (product_catalog, feature_usage), the policy requires an NDA *before provisioning*, regardless of classification level.\n\n**Severity:** **HIGH**\n\nThe contractor is accessing data without contractual data handling obligations documented. While the risk is lower given the Internal classification, this represents a control gap in the pre-provisioning authorization process and failure to enforce policy requirements consistently.\n\n---\n\n### Finding 4: Incomplete Monthly Access Reviews\n\n**Related Section:** Policy 6.5 (Contractor Access Reviews)\n\n**Description:**\nThe active contractor access register includes a \"monthly_review_last_date\" column. Review dates show:\n- DataForge Analytics (Priya Mehta, Kenji Watanabe): 2025-11-01 and 2025-12-01\n- AppDev Partners (Jason Torres, Lisa Huang, Kevin Park): 2025-12-01\n- CloudNine Consulting (Marcus Webb): 2025-12-01\n- Quantix Solutions (Rachel Kim, Omar Hassan): 2025-12-01\n\nHowever, the December 1, 2025 review occurred *after* Priya Mehta's SOW had already ended (2025-11-15) and *after* unauthorized access on 2025-11-22. This suggests:\n1. Reviews were not performed monthly as required\n2. Reviews failed to detect and remediate the access revocation failure\n3. No evidence that reviews verified \"SOW is still active\" (per policy requirement)\n\n**Why This Is a Gap:**\nPolicy 6.5 requires monthly reviews by the contractor's sponsor to verify SOW status, access appropriateness, NDA currency, and data handling. The evidence shows reviews occurred, but the timing and failure to catch Priya Mehta's post-SOW access indicates reviews were either:\n- Not performed on a true monthly cadence, OR\n- Not genuinely validating SOW end dates and enforcing access revocation\n\nThe policy states monthly review; the data shows sporadic reviews with gaps.\n\n**Severity:** **HIGH**\n\nMonitoring and review failures allowed unauthorized access to persist undetected for weeks. This is a control design and execution gap that enabled Finding 1.\n\n---\n\n### Finding 5: No Evidence of Quarterly NDA Review\n\n**Related Section:** Policy 6.4 (NDA Requirements)\n\n**Description:**\nPolicy 6.4 requires: \"Be reviewed annually to ensure terms remain appropriate and the contractor's data handling obligations are current.\" The NDA register includes a \"next_review_date\" column, but:\n- Most NDAs show next review dates (e.g., 2026-09-12, 2026-08-28, 2026-10-28)\n- No evidence of *completed* annual reviews is provided\n- No documentation of review completion, findings, or approval to continue access based on NDA currency\n\n**Why This Is a Gap:**\nWhile annual review dates are scheduled, there is no audit evidence that reviews have been performed or documented. The policy requires NDAs to be reviewed to ensure terms remain appropriate\u2014but there's no record of this control being executed. For an active engagement, the review should occur while the contract is active, and evidence of completion should be retained.\n\n**Severity:** **MEDIUM**\n\nThis is a documentation and execution gap rather than an authorization failure. The control is designed but not evidenced. However, without evidence of NDA review, there is no assurance that NDA terms match current data handling practices or that the contractor's obligations are current.\n\n---\n\n### Finding 6: Access Scope Misalignment \u2014 Restricted Data Access Without Individual Accounts\n\n**Related Section:** Policy 6.2 and 6.3\n\n**Description:**\nRachel Kim and Omar Hassan (Quantix Solutions) have individual accounts (r.kim, o.hassan) with access to Restricted data (customer_profiles, payment_history). This is appropriately individual and meets the least privilege requirement. However:\n\nThe audit log shows queries on 2025-12-12 and 2025-12-28\u2014well within the active SOW period (2025-11-01 to 2026-04-30), so this is *not* a post-SOW access issue. However, the finding is noted for completeness: **These contractors access the most sensitive data classification** and their access is correctly individual. No deficiency here, but this represents the benchmark for what proper contractor access should look like.\n\n**Note:** This is not a finding\u2014this is a control that is working correctly.\n\n---\n\n### Finding 7: Incomplete Access Revocation Process \u2014 No Evidence of Data Return/Destruction\n\n**Related Section:** Policy 6.3 and 6.4\n\n**Description:**\nWhile the policy and NDAs require data return/destruction upon engagement end:\n- NDA-2025-DF-003 requires \"data return within 30 days of engagement end\"\n- No evidence of data return confirmation or destruction certification is provided in the audit materials\n- No process documentation showing how data return is verified before access is fully deprovisioned\n\nFor Priya Mehta (engagement ended 2025-11-15), there is no evidence that data was returned or that return was verified before her account should have been disabled.\n\n**Why This Is a Gap:**\nAccess revocation (technical control) is separate from data disposition (information security control). The policy requires both, but only access revocation (or in this case, failure to revoke) is auditable from the logs. The absence of data return verification represents a gap in the end-of-engagement process that should accompany access revocation.\n\n**Severity:** **MEDIUM**\n\nThis is a control design gap\u2014the process for verifying and documenting data return is not demonstrated. It's not immediately apparent if data was returned or if this step is being bypassed.\n\n---\n\n### Finding 8: Access Duration Exceeds Least Privilege for Completed SOW\n\n**Related Section:** Policy 4.1, 6.3\n\n**Description:**\nPriya Mehta's SOW (SOW-NB-2025-034) was marked \"Completed\" in the access register but access was not revoked. The policy requires access revocation within 48 hours of SOW *completion*. The fact that the SOW status is \"Completed\" yet access persisted for 33 days indicates the revocation trigger was not enforced.\n\n**Why This Is a Gap:**\nThe system has a mechanism to mark SOWs as \"Completed,\" but there is no automated or enforced process linking SOW status change to access revocation. This is a control implementation gap\u2014the authorization framework lacks a gating function that automatically revokes access upon SOW completion status change.\n\n**Severity:** **HIGH**\n\nThis is a process and system design deficiency that enabled Finding 1. Without automated or enforced linkage between SOW status and access revocation, the 48-hour requirement cannot be reliably met.\n\n---\n\n## Summary Table\n\n| Finding | Issue | Severity | Policy Section |\n|---------|-------|----------|-----------------|\n| 1 | Unauthorized post-SOW access (Priya Mehta, 33 days) | **CRITICAL** | 6.3 |\n| 2 | Shared service account (AppDev Partners) | **CRITICAL** | 6.2 |\n| 3 | Missing NDA (Marcus Webb) | **HIGH** | 6.1 |\n| 4 | Ineffective monthly reviews (access not caught/revoked) | **HIGH** | 6.5 |\n| 5 | No evidence of annual NDA reviews | **MEDIUM** | 6.4 |\n| 6 | Missing data return verification process | **MEDIUM** | 6.3 |\n| 7 | No SOW-to-access-revocation automation | **HIGH** | 6.3 |\n\n---\n\n## Overall Assessment: **NOT COMPLIANT**\n\nNovaBridge's contractor access control framework is **materially deficient** in execution. While the policy (CC6.3) is well-designed with appropriate requirements for least privilege, individual accountability, time-limited access, and segregation of duties, the **operational controls are not effectively implemented**:\n\n- **Authorization is not properly time-limited** (Finding 1 demonstrates 33-day unauthorized access after SOW end)\n- **Individual accountability is not enforced** (shared accounts exist in violation of policy)\n- **Pre-provisioning controls are inconsistently applied** (NDA missing for one contractor)\n- **Monitoring and revocation processes are ineffective** (reviews failed to detect and remedy access persistence)\n\n**Recommendation:** Immediate remediation required, including:\n1. Immediate revocation of all post-SOW access (e.g., Priya Mehta)\n2. Replacement of shared service account with individual accounts\n3. Provisioning of missing NDA and access review for Marcus Webb\n4. Implementation of automated SOW-to-revocation workflow\n5. Redesign and re-execution of monthly access reviews with evidence retention\n6. Formal data return verification process before access deprovisioning"
+}

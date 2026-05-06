@@ -1,0 +1,58 @@
+{
+  "task_id": "cc7.1m-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T02:22:10.855146",
+  "score": {
+    "task_id": "cc7.1m-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PATCH-4023",
+          "jump-srv-01",
+          "10:45",
+          "business hours",
+          "Wednesday"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "PATCH-4013",
+          "monitoring-srv-01",
+          "Grafana",
+          "14:22",
+          "business hours",
+          "no maintenance window",
+          "High"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3609,
+    "output_tokens": 2855
+  },
+  "raw_response": "## Overall Assessment: Partially Meets CC7.1\n\nRidgeline Systems has a defined maintenance policy with maintenance windows, patching SLAs, testing requirements, and emergency maintenance procedures. The Q4 2025 patch records show regular maintenance across production, database, network, and corporate systems.\n\nHowever, the control is **not fully operating effectively** because several patches were applied outside approved maintenance windows, emergency approval was missing or not evidenced, and key requirements such as staging testing, SLA compliance, and stakeholder notification are not supported by the patch records.\n\n### Maintenance Window Cross-Check Summary\n\nOut of 35 patch records reviewed, **31 appear to align with defined maintenance windows**. The following exceptions were identified:\n\n| Patch ID | Date / Time UTC | System | Issue |\n|---|---:|---|---|\n| PATCH-4013 | 2025-10-15 14:22 | monitoring-srv-01 | Applied during business hours with no maintenance window or emergency approval noted |\n| PATCH-4023 | 2025-11-12 10:45 | jump-srv-01 | Critical patch applied outside window; record explicitly states emergency change was not approved |\n| PATCH-4033 | 2025-12-11 02:45 | fw-edge-01 | Recorded as Wednesday MW-PROD-2, but 2025-12-11 was Thursday UTC |\n| PATCH-4034 | 2025-12-11 03:15 | fw-edge-02 | Recorded as Wednesday MW-PROD-2, but 2025-12-11 was Thursday UTC |\n\n---\n\n## Findings\n\n| # | Finding Title | Related Section | Gap / Why It Matters | Severity |\n|---:|---|---|---|---|\n| 1 | High-severity Grafana patch applied outside approved maintenance window | Policy Sections 3.1, 3.2, 6; Patch Record PATCH-4013 | PATCH-4013 was applied to `monitoring-srv-01` on 2025-10-15 at 14:22 UTC, during business hours, with maintenance window listed as `N/A`. The notes state it was applied outside a maintenance window, but there is no documented emergency approval or justification. This does not comply with the policy requirement that maintenance outside designated windows requires emergency change approval. | Medium |\n| 2 | Critical RDP patch applied without emergency approval | Policy Sections 3.2, 4.1, 6; Patch Record PATCH-4023 | PATCH-4023 was a Critical RDP security patch applied to `jump-srv-01` on 2025-11-12 at 10:45 UTC, outside an approved maintenance window. The record explicitly states: \u201cEmergency change not approved.\u201d While critical patches may be deployed outside normal windows, the policy requires emergency approval from the IT Director or designee and documentation of justification. This is a direct control failure. | High |\n| 3 | Firewall critical updates incorrectly recorded as within Wednesday maintenance window | Policy Sections 3.1, 3.2, 4.3; Patch Records PATCH-4033 and PATCH-4034 | PATCH-4033 and PATCH-4034 were recorded as occurring within `MW-PROD-2`, which is defined as Wednesday 02:00\u201304:00 UTC. However, the deployment date was 2025-12-11, which was a Thursday UTC. The time was within the stated time range, but not the approved day. This indicates either maintenance was performed outside the approved window or the records are inaccurate. Because the affected systems are edge firewalls and the patches were Critical, this represents elevated operational and change-control risk. | High |\n| 4 | Patch testing in staging is required but not evidenced | Policy Section 4.2 | The policy requires that all patches be tested in staging before production deployment. The patch records include deployment results but do not include staging test dates, test outcomes, approvers, or references to test evidence. Without evidence of pre-production testing, Ridgeline cannot demonstrate that patches were validated before production implementation. | Medium |\n| 5 | Patch SLA compliance cannot be verified from provided records | Policy Section 4.1 | The policy defines SLAs for Critical, High, Medium, and Low severity patches. However, the patch records do not include vendor release date, vulnerability publication date, patch availability date, detection date, or SLA due date. As a result, it is not possible to determine whether Critical patches were deployed within 14 calendar days, High within 30 days, Medium within 90 days, and Low within 180 days. | Medium |\n| 6 | Stakeholder notification requirement not evidenced | Policy Section 3.2 | The policy requires stakeholders to be notified at least 48 hours before planned maintenance. The patch records do not include notification timestamps, recipients, communication references, or change ticket approval details. This makes it difficult to verify that planned maintenance communications occurred as required. | Low |\n\n---\n\n## Conclusion\n\nRidgeline Systems has a reasonably defined maintenance and patching process, and most Q4 2025 patch activity appears to follow the approved windows. However, CC7.1 is **not fully met** based on the evidence reviewed due to:\n\n- Patches applied outside approved maintenance windows;\n- At least one Critical patch explicitly lacking emergency approval;\n- Incorrect maintenance-window classification for firewall updates;\n- Missing evidence of staging testing;\n- Inability to verify patch SLA compliance; and\n- Lack of evidence for required stakeholder notifications."
+}

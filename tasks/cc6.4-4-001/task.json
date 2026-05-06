@@ -1,0 +1,83 @@
+{
+  "id": "cc6.4-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.4",
+  "control_description": "The entity restricts physical access to facilities and protected information assets to meet the entity's objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/physical-security-policy.md",
+      "type": "policy",
+      "description": "Crestline Analytics physical security policy defining after-hours access procedures, badge controls, and contractor requirements"
+    },
+    {
+      "path": "evidence/badge-access-log-q4-2025.csv",
+      "type": "log",
+      "description": "Badge access log for Q4 2025 with 65 entries including after-hours swipes across all access points"
+    },
+    {
+      "path": "evidence/after-hours-exception-register.csv",
+      "type": "exception_register",
+      "description": "Register of approved after-hours access exceptions including on-call SRE rotations and special authorizations"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/fire-suppression-test-report.md",
+      "type": "report",
+      "description": "Annual FM-200 fire suppression system test report — environmental safety documentation not directly relevant to physical access controls"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Crestline Analytics' physical access controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the physical security policy, badge access log, after-hours exception register, and any supporting documentation. Assess whether CC6.4 requirements for restricting physical access are met. Identify any gaps where controls are not operating as designed. Be careful to distinguish between genuine gaps and situations where apparent issues have valid explanations or documented approvals.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "SRE after-hours access at 2:17 AM appears suspicious but is covered by approved on-call exception",
+      "description": "Badge access log entry ACL-3047 shows employee Daniel Park (B-4201, SRE team) accessing Server Room A at 2:17 AM on November 8, 2025 (Saturday). This initially appears as unauthorized after-hours access to a restricted zone. However, the after-hours exception register entry AH-2025-031 shows Daniel Park has approved 24/7 access for the period November 1-30, 2025, as part of the SRE on-call rotation. The exception was approved by the Infrastructure Director (Brian Kessler) on October 28, 2025, and references the on-call schedule OC-SRE-2025-NOV. Policy Section 7.3 explicitly authorizes on-call personnel for after-hours access when documented on-call schedules are submitted to Facilities. This is NOT a finding — the after-hours access is properly authorized through the on-call exception process.",
+      "evidence_sources": [
+        "evidence/badge-access-log-q4-2025.csv",
+        "evidence/after-hours-exception-register.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The model should flag the 2:17 AM Saturday access as suspicious, then cross-reference the after-hours exception register to find AH-2025-031 covering Daniel Park's on-call rotation for November 2025. The exception has proper approval from the Infrastructure Director and references a documented on-call schedule. Policy Section 7.3 authorizes this. The model should dismiss this as a properly managed exception.",
+      "detection_criteria": {
+        "required_keywords": ["Daniel Park", "B-4201", "2:17 AM", "AH-2025-031", "on-call", "SRE", "Brian Kessler", "Section 7.3", "approved"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": ["not a finding", "properly authorized", "valid exception", "approved on-call", "dismissed"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Contractor badge used at 3:14 AM with no after-hours access approval",
+      "description": "Badge access log entry ACL-3058 shows contractor Marcus Webb (CTR-0088, Pinnacle IT Services) accessing the Network Closet (AP-NET-01, Restricted zone) at 3:14 AM on December 3, 2025 (Wednesday). Policy Section 7.2 requires all after-hours access to be pre-approved via the After-Hours Access Request Form, and Section 4.4 requires contractor access to be limited to the scope and hours defined in the contractor's approved work order. Cross-referencing the after-hours exception register shows no entry for Marcus Webb or CTR-0088. The only Pinnacle IT Services entry (AH-2025-028) covers a different contractor (Jennifer Liu, CTR-0072) for October 15-17 only. A contractor accessing a restricted zone at 3:14 AM without after-hours authorization is a significant physical access control failure — there is no documented approval, no work order reference for overnight work, and no evidence of host employee presence.",
+      "evidence_sources": [
+        "evidence/badge-access-log-q4-2025.csv",
+        "evidence/after-hours-exception-register.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The model should identify after-hours access events and check each against the exception register. Daniel Park's 2:17 AM access has a valid exception (AH-2025-031). Marcus Webb's 3:14 AM access has no corresponding exception entry. The only Pinnacle IT Services exception is for a different person and a different time period. Policy requires both after-hours approval (Section 7.2) and contractor-specific scope restrictions (Section 4.4). The contrast between the two after-hours events is key — one is authorized, the other is not.",
+      "detection_criteria": {
+        "required_keywords": ["Marcus Webb", "CTR-0088", "3:14 AM", "December 3", "Network Closet", "Pinnacle IT Services", "no after-hours", "Section 7.2", "Section 4.4", "contractor"],
+        "minimum_keyword_matches": 5
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "25 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["physical_security", "red_herring", "after_hours_access", "contractor_access", "on_call_exception", "badge_access"]
+  }
+}

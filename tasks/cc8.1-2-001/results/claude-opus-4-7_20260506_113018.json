@@ -1,0 +1,72 @@
+{
+  "task_id": "cc8.1-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:30:18.850768",
+  "score": {
+    "task_id": "cc8.1-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2727272727272727,
+    "f1": 0.42857142857142855,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "recommended",
+          "staging",
+          "testing",
+          "should",
+          "mandatory",
+          "gap",
+          "permissive"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "standard change",
+          "pre-approved",
+          "security",
+          "review"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "standard change",
+          "testing",
+          "evidence",
+          "pre-approved",
+          "validation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1848,
+    "output_tokens": 2236
+  },
+  "raw_response": "# Compliance Readiness Assessment: CC8.1 Change Management\n\n## Executive Summary\n\nThe NovaCrest Technologies Change Management Policy (POL-CHG-009 v3.0) addresses many core elements of SOC 2 CC8.1, including change categorization, approval workflows, peer review, CAB governance, rollback requirements, and a defined Standard Change Catalog. However, several gaps exist that could result in audit findings, most notably around the permissive language used for testing requirements, lack of segregation of duties between development and deployment, and gaps in emergency change controls.\n\n---\n\n## Findings\n\n### Finding 1: Testing Requirements Are Discretionary, Not Mandatory\n- **Section:** 4.3 Testing\n- **Gap:** The policy states testing in staging is \"recommended\" and that changes \"should be\" validated in staging \u2014 not \"must\" or \"shall.\" CC8.1 explicitly requires that changes be **tested** prior to implementation. Permissive language allows untested changes to reach production, undermining the control. Auditors will flag this as a design deficiency because the control is not enforceable as written.\n- **Severity:** **Critical**\n\n### Finding 2: No Evidence Requirements for Test Results\n- **Section:** 4.3 Testing\n- **Gap:** The policy does not require that test results, test plans, or evidence of successful testing be documented or attached to the ServiceNow change ticket. Without retained test artifacts, there is no auditable evidence that testing occurred \u2014 even if it did. CC8.1 requires that testing be documented.\n- **Severity:** **High**\n\n### Finding 3: Insufficient Segregation of Duties (SoD) Controls\n- **Section:** 4.2 Peer Review / 4.5 Deployment\n- **Gap:** While peer review prevents self-merging of code, the policy does not explicitly prohibit a developer from deploying their own change to production, nor does it require the deployer to be different from the author. Stating that \"SRE executes deployments\" is informational, not a control. CC8.1 expects clear segregation between those who develop changes and those who approve/deploy them.\n- **Severity:** **High**\n\n### Finding 4: Emergency Change Controls Are Weak\n- **Section:** 4.4 Approval / Section 3 (Emergency category)\n- **Gap:** Emergency changes rely on **verbal** approval from a single individual (VP Engineering) with retroactive ticketing up to 72 hours later. There is no requirement for: (a) written confirmation (e.g., Slack/email) at the time of approval, (b) a defined backup approver if VP Engineering is unavailable, or (c) post-emergency review criteria. This creates an audit trail gap and a single-point-of-approval risk.\n- **Severity:** **High**\n\n### Finding 5: Standard Change Catalog Lacks Periodic Review Requirement\n- **Section:** 5. Standard Change Catalog\n- **Gap:** Pre-approved changes bypass CAB review, so the catalog itself is a critical control. The policy does not specify how often the catalog must be reviewed, who owns the review, or what criteria justify a change type's inclusion/removal. Without periodic reassessment, low-risk changes could drift into higher-risk territory unnoticed.\n- **Severity:** **Medium**\n\n### Finding 6: Production Access Controls Not Referenced\n- **Section:** 4.5 Deployment\n- **Gap:** The policy does not reference how production deployment access is restricted (e.g., who has merge/deploy permissions, MFA, privileged access management). CC8.1 implementations are typically tied to logical access controls (CC6.x), and the absence of cross-references creates an evidence gap during walkthroughs.\n- **Severity:** **Medium**\n\n### Finding 7: Security Review Threshold Is Subjective\n- **Section:** 4.3 Testing\n- **Gap:** Security team review is required for \"High and Critical\" risk changes, but the policy provides no rubric, examples, or criteria for how risk classification is determined. Risk is self-assigned by the requester per Section 4.1 with no validation step. This allows requesters to underclassify changes to avoid Security review.\n- **Severity:** **Medium**\n\n### Finding 8: No Defined Process for Infrastructure-as-Code or Database Changes\n- **Section:** 4.2 / 4.5\n- **Gap:** Peer review is required for \"code changes\" via GitHub, but the policy does not explicitly address: (a) Terraform / infrastructure-as-code changes, (b) manual database schema changes (which may bypass GitHub), or (c) configuration changes made directly in cloud consoles. CC8.1 covers infrastructure changes, not just application code.\n- **Severity:** **Medium**\n\n### Finding 9: Post-Implementation Verification Is Vague\n- **Section:** 4.6 Post-Implementation Review\n- **Gap:** The policy requires verification within 2 hours but does not define what constitutes \"successful deployment\" \u2014 e.g., specific health checks, error rate thresholds, or smoke tests. Without defined success criteria, verification is subjective.\n- **Severity:** **Low**\n\n### Finding 10: Rollback Plan Quality Not Validated\n- **Section:** 8. Rollback\n- **Gap:** Rollback plans are required to be documented but there is no requirement that the rollback plan be reviewed, tested, or approved as part of the CAB process. A documented but untested or inadequate rollback plan provides false assurance.\n- **Severity:** **Low**\n\n### Finding 11: No Reference to Customer/Stakeholder Communication\n- **Section:** General\n- **Gap:** CC8.1 implies that affected parties should be aware of changes that may impact them. The policy does not address customer notification for customer-impacting changes (maintenance windows, breaking changes, etc.), even though Product Manager involvement in CAB is mentioned.\n- **Severity:** **Low**\n\n---\n\n## Recommendations Summary\n\n| Priority | Action |\n|----------|--------|\n| Immediate | Replace \"should/recommended\" with \"must/required\" in Section 4.3; mandate test evidence attachment to tickets |\n| Immediate | Document explicit SoD between developers and deployers |\n| Near-term | Strengthen emergency change controls with written approval and defined backups |\n| Near-term | Add risk classification rubric and Security validation of risk level |\n| Near-term | Add quarterly Standard Change Catalog review |\n| Ongoing | Extend policy scope explicitly to IaC, database, and console-based changes |\n\nThe policy is structurally sound but requires tightening of language and evidence requirements to withstand SOC 2 Type II testing."
+}

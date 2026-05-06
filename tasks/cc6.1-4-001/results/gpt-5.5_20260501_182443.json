@@ -1,0 +1,86 @@
+{
+  "task_id": "cc6.1-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:24:43.272835",
+  "score": {
+    "task_id": "cc6.1-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "exception",
+          "EXC-2025-004",
+          "approved",
+          "compensating"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "terraform",
+          "editor",
+          "expired",
+          "deleted",
+          "stale",
+          "one-time",
+          "still active",
+          "broad"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "monitoring",
+          "expired",
+          "exception",
+          "still",
+          "active"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "rotation",
+          "compensating",
+          "audit"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2288,
+    "output_tokens": 2428
+  },
+  "raw_response": "## CC6.1 Readiness Assessment Findings \u2014 Q4 2025\n\n| # | Finding | Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Expired Terraform import service account key remains active with broad privileges** | **Access Control Policy \u00a74 Privileged Access; \u00a75 Service Accounts**; **Exception Register EXC-2025-003**; **GCP service account configuration: `terraform-import@vantage-prod-2024`** | The Terraform import exception expired on **2025-04-08** and stated the key was for a one-time import and should be deleted after use. However, the GCP configuration shows the service account key still exists during the Q4 2025 audit period and has `roles/editor`, a highly privileged role. The key also has no practical expiration date (`9999-12-31`). This violates the policy requirement prohibiting direct service account key creation unless covered by an approved exception. The expired exception and excessive privilege create a significant logical access risk even though the key has not been recently used. | **High** |\n| 2 | **Monitoring agent service account key used after exception expiration and rotation control appears unmet** | **Access Control Policy \u00a75 Service Accounts**; **Exception Register EXC-2025-002**; **GCP service account configuration: `monitoring-agent@vantage-prod-2024`** | The monitoring agent exception expired on **2025-12-10**, but the service account key was still active and used on **2025-12-28**, within the Q4 assessment period. The exception\u2019s compensating controls required the key to be rotated every six months; the key was created on **2025-06-15**, meaning rotation was due around **2025-12-15**, yet the same key remained active and in use. While the permissions are read-only, the exception was no longer valid and the stated compensating control was not operating as expected. | **Medium** |\n| 3 | **Insufficient evidence that required Q4 access reviews were performed** | **Access Control Policy \u00a76 Access Reviews** | The policy requires quarterly reviews by system owners, quarterly service account reviews, and monthly privileged access reviews by the CISO. The evidence provided does not include Q4 2025 access review records, attestations, review results, remediation tracking, or evidence of CISO monthly privileged access review. The presence of a stale privileged Terraform service account and an expired monitoring key exception suggests the review process may not be operating effectively. | **Medium** |\n\n## Items Reviewed but Not Flagged as Findings\n\n- **Legacy ETL service account key**: Although it uses a static key, it is covered by active CISO-approved exception **EXC-2025-004**, valid through **2026-01-15**, with compensating controls documented. Not flagged as a Q4 finding based on the evidence provided.\n- **BCP executive summary** and **vendor risk assessments**: Not directly relevant to CC6.1 logical access security for this assessment."
+}

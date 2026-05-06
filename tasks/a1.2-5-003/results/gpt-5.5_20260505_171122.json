@@ -1,0 +1,65 @@
+{
+  "task_id": "a1.2-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:11:22.075001",
+  "score": {
+    "task_id": "a1.2-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.3333333333333333,
+    "precision": 0.2,
+    "f1": 0.25,
+    "score": 0.25,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legal hold",
+          "LH-2024-003",
+          "customer transaction",
+          "lifecycle",
+          "preserve",
+          "annual backup"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "vault",
+          "legal hold"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "legal hold"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2535,
+    "output_tokens": 4607
+  },
+  "raw_response": "## Overall Assessment\n\nKeystone Data is **not fully ready** for A1.2 based on the evidence provided. The backup policy defines reasonable backup objectives and procedures, but the implemented AWS Backup retention configuration does **not adequately support active legal hold and preservation requirements**, and there are gaps in evidence supporting RPO/RTO capability, backup coverage, and restore monitoring.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document Section(s) | Gap / Why It Matters | Severity |\n|---|---|---|---|---|\n| 1 | **Active legal holds are not enforced in backup retention configuration** | Data Retention Policy \u00a73 Legal Holds; Legal Hold Register; AWS Backup configuration `legal_hold_configuration`; Backup Policy \u00a75.2 Lifecycle Management | Keystone has multiple active legal holds during Q4 2025, including LH-2024-003 requiring preservation of all backups containing customer transaction data for an estimated 5\u20137 years. However, AWS Backup shows `legal_hold_configuration.enabled: false`, no legal hold tagging mechanism, and Vault Lock is disabled. All backups continue to follow standard lifecycle deletion rules. This creates a risk that backups subject to legal hold are automatically deleted, contrary to the Data Retention Policy requirement that legal holds supersede standard retention. | **High** |\n| 2 | **Backup lifecycle rules are insufficient for preservation obligations** | AWS Backup configuration `backup_plans.lifecycle`; Legal Hold Register LH-2024-003 and LH-2025-001; Backup Policy \u00a75 Backup Retention | Daily backups are deleted after 365 days, monthly consolidated backups are deleted after 365 days, and DR copies are deleted after 30 days. These lifecycle periods do not align with active preservation obligations requiring certain backup data to be retained for 3 years, 5\u20137 years, or until legal hold release. The annual archive retained for 7 years may preserve one point-in-time snapshot, but it does not preserve \u201call backups containing\u201d scoped legal hold data as required by the active holds. By Q4 2025, backups from 2024 subject to LH-2024-003 may already have been deleted or be approaching deletion under standard lifecycle rules. | **High** |\n| 3 | **No evidence that 4-hour RPO is technically supported by implemented backup configuration** | Backup Policy \u00a73 Recovery Objectives; \u00a74.2 WAL Archiving; \u00a74.3 Incremental Backups; AWS Backup configuration `backup_plans` | The policy requires a 4-hour RPO, continuous PostgreSQL WAL archiving with a maximum 15-minute lag, and incremental file system backups every 4 hours. The AWS Backup configuration provided only shows daily, monthly, and annual backup plans. It does not evidence the configured WAL archiving, 4-hour incremental backups, monitoring of WAL lag, or backup jobs needed to support the stated RPO. Without additional evidence, the auditor cannot conclude that the RPO commitment is achievable. | **Medium** |\n| 4 | **Backup coverage is not fully evidenced for all in-scope systems and preservation data** | Backup Policy \u00a72 Scope; AWS Backup configuration `target_resources`; Legal Hold Register data scopes | The Backup Policy scope includes PostgreSQL clusters, S3 storage, HashiCorp Vault, and document storage. The AWS Backup configuration targets RDS clusters and S3 buckets matching `ks-prod-*`, but does not clearly evidence backup protection for HashiCorp Vault or other systems referenced by legal holds, such as HR records, email archives, audit trail logs, and financial reporting data. If these datasets are outside the configured backup plans, Keystone may be unable to recover or preserve data required for operational recovery or legal/regulatory obligations. | **Medium** |\n| 5 | **Restore testing and monitoring evidence was not provided for the Q4 2025 observation period** | Backup Policy \u00a77 Restore Testing; \u00a78 Failure Handling; \u00a79 Capacity Management | The policy requires quarterly full restore testing in the DR environment, checksum validation, and confirmation of RTO compliance. However, no Q4 2025 restore test results, backup job success reports, checksum validation, RTO test evidence, failure tickets, or capacity monitoring evidence were provided. As a result, operating effectiveness of backup recovery procedures and monitoring cannot be validated for the observation period. | **Medium** |\n\n---\n\n## Material Concern\n\nThe most material issue is the **failure to integrate active legal holds into backup lifecycle controls**. Because standard lifecycle deletion remains active and no legal hold override mechanism is configured, Keystone cannot demonstrate that backups subject to litigation or regulatory preservation requirements are protected from deletion. This is a significant readiness gap under A1.2 because backup and recovery infrastructure must be designed, operated, maintained, and monitored to meet system requirements and organizational objectives, including preservation obligations."
+}

@@ -1,0 +1,85 @@
+{
+  "task_id": "cc6.3-4-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T18:07:12.108428",
+  "score": {
+    "task_id": "cc6.3-4-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 0.4615384615384615,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-070",
+          "exception",
+          "compensating"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "t.brooks",
+          "clinical-ops-write",
+          "patient_records",
+          "RBAC matrix",
+          "PHI"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DAR-Q4-2025-017",
+          "k.shah",
+          "Privacy Officer",
+          "CISO",
+          "approval",
+          "patient_records"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-065",
+          "svc-legacy-sync",
+          "expired",
+          "write access",
+          "reverted"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3990,
+    "output_tokens": 5834
+  },
+  "raw_response": "Based on the evidence provided, Orion Health Systems is **not fully ready** for CC6.3. Several production database grants do not align with approved roles, least privilege, required approval chains, or exception governance.\n\n| # | Finding title | Related document section | Why it is a gap | Severity |\n|---|---|---|---|---|\n| 1 | **Restricted PHI access provisioned to Data Science user without required approvals** | POL-DAP-2025-003 Sections **3.2 Access Request Process**, **4.1 PHI Access Controls**, **4.2 De-identification**; DAR-Q4-2025-017; PostgreSQL grant export | Karen Shah (`k.shah`) was granted direct `SELECT` access to `patient_records` and `prescriptions`, both Restricted/PHI tables. The request shows only manager approval; Data Owner, Privacy Officer, and CISO approvals were blank/pending. The ticket notes the DBA provisioned access before the full approval chain was completed. This also violates the requirement that non-clinical roles access PHI through masked/de-identified views, not direct production PHI tables. | **High** |\n| 2 | **Direct grants outside the approved RBAC model** | POL-DAP-2025-003 Sections **3.1 Approved RBAC Matrix**, **4.1 PHI Access Controls**; PostgreSQL grant export | The policy requires role-based access through the approved RBAC matrix. `k.shah` has direct table-level grants on `orion_clinical.patient_records` and `orion_clinical.prescriptions` in addition to the `data-scientist` role. Direct grants bypass the approved RBAC model and make access harder to review, remove, and enforce consistently. | **High** |\n| 3 | **Shared roles grant broader PHI access than approved in tickets** | POL-DAP-2025-003 Sections **3.1 Approved RBAC Matrix**, **3.3 Least Privilege**, **4.1 PHI Access Controls**; DAR tickets; PostgreSQL grant export | The `app-readonly` role grants `SELECT` to `patient_records`, `appointments`, and `treatment_plans`. However, approvals do not consistently support that scope. Examples: `d.okafor` was approved for `appointments`, `treatment_plans`, and later `prescriptions`, but the role grants `patient_records` and does not show `prescriptions`; `l.johnson` was approved for `appointments` and `treatment_plans`, but also receives `patient_records`; `svc-monitoring` was approved for `audit_log`, but the assigned role grants clinical PHI tables and does not include `audit_log`. This indicates access is being provisioned through broad roles rather than the minimum necessary tables approved in the request. | **High** |\n| 4 | **Expired service account exception not removed or reverted** | POL-DAP-2025-003 Sections **5.2 Temporary Elevated Access**, **7 Exception Process**, **3.3 Least Privilege**; EXC-2025-065; PostgreSQL grant export | EXC-2025-065 for `svc-legacy-sync` expired on **2025-10-31**, and the review outcome explicitly states that access \u201cshould be reverted to read-only.\u201d As of the December 20 database export, `svc-legacy-sync` still has the `app-readwrite` role. Temporary elevated service account access was not removed when the exception expired. | **High** |\n| 5 | **Unapproved custom production write role assigned to Clinical Operations user** | POL-DAP-2025-003 Sections **3.1 Approved RBAC Matrix**, **3.2 Access Request Process**, **7 Exception Process**; PostgreSQL grant export | The role `clinical-ops-write` is not listed in the approved RBAC matrix. Policy states custom roles are prohibited unless approved through the CISO exception process. No corresponding exception or access request was provided. The role grants `SELECT`, `INSERT`, and `UPDATE` on PHI tables including `patient_records`, `appointments`, and `treatment_plans`, and is assigned to `t.brooks`. | **High** |\n| 6 | **Service account production write access does not match approved request scope** | POL-DAP-2025-003 Sections **3.2 Access Request Process**, **3.3 Least Privilege**, **5.1 Service Account Governance**; DAR-Q4-2025-029; PostgreSQL grant export | DAR-Q4-2025-029 approved `svc-orion-api` for `SELECT, INSERT` on `lab_results`. The database export shows `svc-orion-api` assigned to `app-readwrite`, which grants `SELECT`, `INSERT`, and `UPDATE` on `appointments`, `treatment_plans`, and `invoices`, and does not show access to `lab_results`. The provisioned access is both broader than approved and inconsistent with the approved table/function. | **High** |\n| 7 | **Privileged DBA access lacks supporting approval evidence** | POL-DAP-2025-003 Section **3.1 Approved RBAC Matrix**; PostgreSQL grant export | The `dba-admin` role has `ALL PRIVILEGES` across all schemas and requires **CISO + CTO approval** under the policy. The export shows `n.wright` assigned to `dba-admin`, but no supporting access request, approval chain, exception, or current access review evidence was provided to validate that the assignment remains authorized. | **Medium** |\n| 8 | **BI reporting exception renewal appears untimely and register is inconsistent** | POL-DAP-2025-003 Section **7 Exception Process**; EXC-2025-070; DAR-Q4-2025-005 | Broad BI reporting access appears to have a CISO-approved exception with compensating controls, so the broad access itself is not necessarily a finding. However, EXC-2025-070 shows an expiration date of **2025-08-01**, while the last review and renewal occurred on **2025-10-15**. DAR-Q4-2025-005 on **2025-10-10** relied on EXC-2025-070 before the documented renewal date. This indicates exception renewals may not be completed before expiration, and the register contains conflicting status/expiration information. | **Medium** |\n| 9 | **Quarterly access review/removal process not evidenced and appears ineffective** | POL-DAP-2025-003 Sections **6 Access Reviews**, **5.1 Service Account Governance**; PostgreSQL grant export; EXC-2025-065 | The policy requires quarterly Data Owner access reviews and inclusion of service accounts in quarterly reviews. No quarterly access review evidence was provided for production database roles, direct grants, or service accounts. The continued presence of `svc-legacy-sync` elevated access after its exception expired suggests the review/removal process is not effectively identifying and remediating stale or excessive access. | **Medium** |"
+}

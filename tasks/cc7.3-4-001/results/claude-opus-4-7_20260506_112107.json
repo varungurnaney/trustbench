@@ -1,0 +1,83 @@
+{
+  "task_id": "cc7.3-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:21:07.697162",
+  "score": {
+    "task_id": "cc7.3-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2727272727272727,
+    "f1": 0.42857142857142855,
+    "score": 0.42857142857142855,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-405",
+          "SEC-EXC-2025-078",
+          "concurrent",
+          "INC-2025-404"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-404",
+          "41.5 hours",
+          "SEV-1",
+          "ransomware",
+          "SLA miss"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-404",
+          "PM-404-AI-03",
+          "Not Started",
+          "ransomware"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-407",
+          "SQL injection",
+          "WAF bypass",
+          "2 of 4 action items"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8755,
+    "output_tokens": 3343
+  },
+  "raw_response": "# CC7.3 Readiness Assessment \u2014 Vantage Cloud Systems\n\n## Scope Note on Evidence\n\nTwo of the provided documents (Q4 Vendor Risk Assessment and Annual BCP Test Results) are not directly relevant to CC7.3 incident response control effectiveness. The vendor assessment addresses CC9.2 (vendor risk management) and the BCP test addresses A1.2/A1.3 (availability/recovery). I have noted these but excluded them from the substantive CC7.3 analysis. The remaining evidence \u2014 IR policy, incident register, INC-2025-404 post-mortem, and exception register \u2014 is the relevant evidence base.\n\n---\n\n## Assessment Summary\n\nThe control is **partially effective**. The IR program is well-designed and largely operating as intended (clear policy, defined SLAs, documented post-mortems, exception process used appropriately for the concurrent-incident SLA miss on INC-2025-405). However, several genuine gaps were identified.\n\n---\n\n## Findings\n\n### Finding 1: SEV-1 Resolution SLA Breach on INC-2025-404 \u2014 No Documented Exception\n\n- **Reference:** Incident register (INC-2025-404); IR Policy \u00a73.3\n- **Gap:** The policy sets a SEV-1 resolution target of 24 hours. INC-2025-404 (LockBit ransomware) was detected 2025-11-12 02:33Z and resolved 2025-11-13 20:00Z \u2014 **41.5 hours**, ~17.5 hours past target. No corresponding entry exists in the security exception register justifying the breach. The exception register demonstrates the team knows how to document exceptions (SEC-EXC-2025-078), making the absence here a control gap rather than a design issue.\n- **Severity:** **Medium**\n\n### Finding 2: SEV-2 Resolution SLA Breaches Without Documented Exceptions\n\n- **Reference:** Incident register (INC-2025-402, INC-2025-405, INC-2025-407); IR Policy \u00a73.3\n- **Gap:** Policy SEV-2 resolution target is 72 hours, which is met for all SEV-2s. However, the policy also requires SEV-2 **post-mortems within 5 business days of resolution** (\u00a74.1). While post-mortems are marked \"Complete,\" delivery dates are not captured in the register, making timeliness unverifiable. The only post-mortem in evidence (INC-2025-404) was authored 5 days after resolution \u2014 within SLA \u2014 but no audit trail exists to confirm the same for INC-2025-402, 405, 407, 408.\n- **Severity:** **Low** (documentation/evidence gap rather than confirmed control failure)\n\n### Finding 3: Open Action Items from Post-Mortems \u2014 Tracking and Closure Gap\n\n- **Reference:** Incident register; INC-2025-404 post-mortem \u00a75; IR Policy \u00a74.3\n- **Gap:** Action item completion rates are notably low for several incidents:\n  - INC-2025-401: 5 of 7 complete (29% open)\n  - INC-2025-404: 4 of 9 complete (56% open)\n  - INC-2025-407: 2 of 4 complete (50% open)\n  \n  Several INC-2025-404 items have target dates in 2026 (e.g., PM-404-AI-03 target 2026-01-15, AI-05 target 2026-01-31, AI-07 target 2026-01-01, AI-08 target 2026-02-28). Per \u00a74.3, items overdue >14 days must be escalated to CISO. Evidence of escalation reviews is not provided. While long target dates can be legitimate, the volume of open Critical/High items from a SEV-1 ransomware incident \u2014 combined with absence of weekly tracking minutes \u2014 is a genuine evidentiary weakness.\n- **Severity:** **Medium**\n\n### Finding 4: Single Security On-Call \u2014 Known Coverage Gap Not Yet Remediated\n\n- **Reference:** INC-2025-404 post-mortem (PM-404-AI-07); Exception SEC-EXC-2025-078\n- **Gap:** The concurrent-incident scenario (INC-2025-404 and INC-2025-405) exposed a structural staffing gap: only one security on-call engineer for overnight/weekend coverage. The exception was properly documented and management accepted the risk, but the corrective action (PM-404-AI-07 \u2014 add second security on-call) is **Not Started** with a target date of 2026-01-01. As of the observation period close (December 31, 2025), the underlying capacity issue that caused the SLA breach remained unresolved, meaning recurrence risk persists.\n- **Severity:** **Medium**\n\n### Finding 5: SEV-3 Triage SLA Breach on INC-2025-409\n\n- **Reference:** Incident register (INC-2025-409); IR Policy \u00a73.1\n- **Gap:** SEV-3 triage SLA is 4 hours during business hours. INC-2025-409 was detected 2025-12-18 06:00 UTC (01:00 ET \u2014 outside business hours), triaged at 10:15 UTC (05:15 ET \u2014 still outside business hours start of 9 AM ET). Triage at 10:15 UTC = 05:15 ET, which is **before** the 9 AM ET business hours start. Whether this is a breach depends on how the SLA clock starts for after-hours SEV-3s \u2014 the policy is ambiguous on this point. **The policy itself has a definitional gap.**\n- **Severity:** **Low**\n\n### Finding 6: SEV-3 Triage SLA Breach on INC-2025-403\n\n- **Reference:** Incident register (INC-2025-403); IR Policy \u00a73.1\n- **Gap:** INC-2025-403 was detected 2025-10-28 11:15 UTC (07:15 ET \u2014 before 9 AM ET business hours start) and triaged at 13:30 UTC (09:30 ET). 30 minutes into business hours is well within the 4-hour SEV-3 SLA, so this is **not** a finding upon closer review. *(Withdrawn \u2014 including for transparency in audit reasoning.)*\n\n### Finding 7: SEV-4 Containment Field Marked \"N/A\" Without Policy Definition\n\n- **Reference:** Incident register (INC-2025-406); IR Policy \u00a73.2\n- **Gap:** SEV-4 containment SLA is \"Best effort.\" The register shows containment as \"N/A\" for INC-2025-406 (employee data exfiltration to personal email). For an insider data-handling incident, *some* containment action (e.g., recall request, mailbox audit, DLP rule update) should be documented. Marking containment N/A and routing to HR without recording any technical containment step is insufficient for an incident involving sensitive document exfiltration.\n- **Severity:** **Medium**\n\n### Finding 8: Post-Mortem Not Required Determination Lacks Documented Rationale\n\n- **Reference:** Incident register (INC-2025-403, 406, 409); IR Policy \u00a74.1\n- **Gap:** Policy \u00a74.1 leaves SEV-3/SEV-4 post-mortems to the IC's discretion but does not require documentation of the discretion decision. Three incidents in Q4 (403, 406, 409) have post_mortem_status = \"Not Required\" with no recorded rationale, approver, or lessons-learned summary. INC-2025-409 (brute force from a foreign IP range) and INC-2025-406 (insider exfiltration) plausibly warrant lightweight retrospectives. Recommend policy enhancement requiring brief written rationale when post-mortems are waived.\n- **Severity:** **Low** (policy design gap)\n\n### Finding 9: Detection Gap on INC-2025-407 (WAF Bypass) \u2014 Action Items Largely Open\n\n- **Reference:** Incident register (INC-2025-407)\n- **Gap:** A SQL injection bypassed the WAF and reached the application layer. Only 2 of 4 action items are complete. Given this represents a confirmed control bypass of a preventive security control, the slow remediation pace warrants attention. The post-mortem itself is not provided in evidence, limiting the auditor's ability to assess RCA quality.\n- **Severity:** **Medium**\n\n### Finding 10: Evidence Preservation Verification Not Demonstrated\n\n- **Reference:** IR Policy \u00a76\n- **Gap:** Policy requires SHA-256 hashes, chain of custody, and S3 evidence storage with versioning for SEV-1/SEV-2 incidents. The INC-2025-404 post-mortem references log reviews and image scans but does not reference evidence artifacts, hashes, or S3 paths. No evidence inventory or chain-of-custody documentation was provided for any Q4 incident.\n- **Severity:** **Medium**\n\n---\n\n## Items Reviewed and Determined NOT to Be Findings\n\n- **INC-2025-405 SEV-2 triage breach (43 min vs 30 min SLA):** Properly documented in exception register SEC-EXC-2025-078 with valid concurrent-incident justification, CISO approval, and compensating controls. This is the control operating as designed.\n- **INC-2025-404 containment within SLA:** 47 minutes, well within 1-hour SEV-1 target.\n- **Severity classification of INC-2025-408 (load test):** Appropriately triaged and downgraded; demonstrates effective triage process.\n\n---\n\n## Overall Conclusion\n\nCC7.3 is **operating with deficiencies**. The program design is sound, but operating effectiveness is undermined by (a) a SEV-1 resolution SLA breach without documented exception, (b) significant volume of open post-mortem action items from the ransomware incident, (c) an unremediated structural staffing gap that has already caused one SLA breach, and (d) insufficient documentation of evidence preservation. None of these rise to a qualified opinion individually, but in aggregate they warrant a management response and remediation plan before SOC 2 Type II testing."
+}

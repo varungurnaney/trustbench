@@ -1,0 +1,87 @@
+{
+  "task_id": "cc6.3-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:41:20.163333",
+  "score": {
+    "task_id": "cc6.3-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "bi-reporting",
+          "EXC-2025-070",
+          "exception",
+          "compensating",
+          "read replica"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "t.brooks",
+          "clinical-ops-write",
+          "patient_records",
+          "RBAC matrix",
+          "PHI"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DAR-Q4-2025-017",
+          "k.shah",
+          "Privacy Officer",
+          "CISO",
+          "approval",
+          "patient_records"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-065",
+          "svc-legacy-sync",
+          "expired",
+          "write access",
+          "reverted"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6374,
+    "output_tokens": 2749
+  },
+  "raw_response": "# CC6.3 Compliance Audit Findings \u2014 Orion Health Systems\n\n## Summary\nAfter cross-referencing the data access policy (POL-DAP-2025-003), the PostgreSQL role/grant export, the exception register, and the Q4 2025 access request tickets, I identified **seven findings** ranging from Critical to Low severity. The most serious issues involve unauthorized PHI access provisioned outside the approval chain, an unauthorized custom role, and an expired exception that was never remediated.\n\n---\n\n## Finding 1: PHI Access Provisioned Without Required Approval Chain (DAR-Q4-2025-017)\n\n**Severity: CRITICAL**\n\n**Related to:** Policy Section 3.2 (Access Request Process), Section 4.1 (PHI Access Controls); DAR-Q4-2025-017; PostgreSQL grants for user `k.shah`\n\n**Gap:**\nKaren Shah (Data Science) was granted direct SELECT on `orion_clinical.patient_records` and `orion_clinical.prescriptions` (both Restricted/PHI tables) on 2025-11-08, despite the access request showing only Manager approval. Data Owner, Privacy Officer, and CISO approvals are explicitly marked as missing in the ticket (\"Data Owner and Privacy Officer approvals pending \u2014 provisioned by DBA before full chain completed\").\n\nPolicy Section 3.2 requires **all four approvals** for Restricted/PHI access. The DBA bypassed the approval gate, which:\n- Violates the documented authorization workflow\n- Exposes unmasked PHI without Privacy Officer review of the \"minimum necessary\" standard (Section 4.1)\n- Indicates a control failure in the provisioning process itself (no enforcement gate between approval and grant execution)\n\nThis is a direct violation of CC6.3 \u2014 access was authorized outside the approved process for the most sensitive data class.\n\n---\n\n## Finding 2: Unauthorized Custom Role in Production (`clinical-ops-write`)\n\n**Severity: HIGH**\n\n**Related to:** Policy Section 3.1 (Approved RBAC Matrix); PostgreSQL roles export\n\n**Gap:**\nThe role `clinical-ops-write` exists in production with SELECT/INSERT/UPDATE on `patient_records`, `appointments`, and `treatment_plans`, and is assigned to Tyler Brooks (`t.brooks`). This role is **not in the approved RBAC matrix** in Section 3.1.\n\nPolicy explicitly states: *\"Custom roles not listed in this matrix are prohibited. Any role outside this matrix requires CISO approval through the exception process.\"* No corresponding entry appears in the exception register for this role, and no DAR ticket documents its creation or t.brooks's provisioning.\n\n---\n\n## Finding 3: Expired Exception with Access Not Reverted (EXC-2025-065)\n\n**Severity: HIGH**\n\n**Related to:** Policy Section 5.2, Section 7 (Exception Process); Exception Register; PostgreSQL grants for `svc-legacy-sync`\n\n**Gap:**\nEXC-2025-065 expired on 2025-10-31 with explicit review outcome: *\"Access should be reverted to read-only.\"* As of the 2025-12-20 database export, `svc-legacy-sync` still holds the `app-readwrite` role with INSERT/UPDATE permissions on clinical and billing tables \u2014 nearly two months past expiration.\n\nThis indicates a missing process to automatically revoke or downgrade access when exceptions lapse, violating both Section 5.2 (time-bound elevation) and the least-privilege principle in Section 3.3.\n\n---\n\n## Finding 4: Segregation of Duties Violation \u2014 Engineer with Production Clinical Access\n\n**Severity: MEDIUM**\n\n**Related to:** Policy Section 3.4 (Segregation of Duties); user `d.okafor`\n\n**Gap:**\nDaniel Okafor is in the Engineering department and holds `app-readonly` plus additional grants approved via DAR-Q4-2025-001 and DAR-Q4-2025-025 (prescriptions, appointments, treatment_plans \u2014 all Restricted PHI).\n\nWhile the policy's SoD rule prohibits **write** access to production for development personnel (Section 3.4), the policy does not address read-PHI access for engineering. However, the spirit of CC6.3 segregation of duties and the \"minimum necessary\" PHI standard (Section 4.1) is challenged when development personnel hold persistent SELECT on production PHI rather than using de-identified datasets (as contemplated in EXC-2025-058). Approvals were obtained, but the architectural pattern undermines least privilege.\n\n---\n\n## Finding 5: BI Reporting Role Has Direct PHI Access Despite Policy Requiring Masked Views\n\n**Severity: MEDIUM**\n\n**Related to:** Policy Section 4.2 (De-identification); `bi-reporting` role grants\n\n**Gap:**\nThe `bi-reporting` role has SELECT directly on `orion_clinical.patient_records`, `prescriptions`, `lab_results`, and `referrals` \u2014 raw PHI tables. Policy Section 4.2 states: *\"Non-clinical roles accessing PHI tables must use de-identified views with field-level masking applied at the database layer.\"*\n\nEXC-2025-070 documents a compensating control of \"PHI field-level masking via PostgreSQL row-level security policies\" routed through a read replica. However:\n- RLS on the base table is not equivalent to \"de-identified views\" as the policy requires\n- The grants visible in the export show direct table access, not view-based access\n- Auditors cannot verify the masking controls from the evidence provided\n\nThis is a design weakness; recommend converting to view-based access with documented masking logic.\n\n---\n\n## Finding 6: Service Account Approval Self-Approved by Owner (DAR-Q4-2025-029)\n\n**Severity: MEDIUM**\n\n**Related to:** Policy Section 3.2, Section 5.1 (Service Account Governance); DAR-Q4-2025-029\n\n**Gap:**\nDAR-Q4-2025-029 (svc-orion-api expansion to add INSERT on `lab_results`) shows James Chen as both Manager approver **and** Data Owner approver. While Privacy Officer and CISO also approved, the dual-role approval by the same individual undermines the multi-party authorization principle inherent in the policy's tiered approval matrix and creates a conflict-of-interest concern for service account governance.\n\n---\n\n## Finding 7: Privileged DBA Account Lacks Documented Compensating Controls\n\n**Severity: LOW**\n\n**Related to:** Policy Section 3.1, Section 3.3 (Least Privilege); `dba-admin` role\n\n**Gap:**\nNicole Wright holds `dba-admin` with `ALL PRIVILEGES` on all schemas (assigned 2024-01-15). While the role itself is in the approved matrix, no evidence shows:\n- Use of break-glass / just-in-time elevation rather than persistent admin\n- Session recording or enhanced audit logging for DBA activity (beyond standard audit logs)\n- Periodic re-justification of standing admin privileges\n\nPersistent ALL PRIVILEGES contradicts least-privilege intent (Section 3.3). The DBA was also the actor who improperly granted Karen Shah's PHI access (Finding 1), reinforcing the need for stronger controls around this role.\n\n---\n\n## Recommendations Summary\n\n| Priority | Action |\n|---|---|\n| Immediate | Revoke k.shah's direct PHI grants pending full approval; revoke svc-legacy-sync write access |\n| Immediate | Investigate `clinical-ops-write` role \u2014 either remove or formalize via exception |\n| 30 days | Implement automated provisioning gate that blocks DBA grants until ticket approval chain is complete |\n| 30 days | Build automated revocation tied to exception expiration dates |\n| 60 days | Convert `bi-reporting` direct PHI grants to documented masked views |\n| 60 days | Implement JIT elevation for `dba-admin` and require dual-approver enforcement for service account changes |"
+}

@@ -1,0 +1,72 @@
+{
+  "task_id": "cc6.1-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:47:33.359364",
+  "score": {
+    "task_id": "cc6.1-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.25,
+    "precision": 0.125,
+    "f1": 0.16666666666666666,
+    "score": 0.16666666666666666,
+    "gaps_detected": 1,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "dormant"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "210"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "AWS"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Kenji Matsuda",
+          "dormant",
+          "contract end"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7963,
+    "output_tokens": 5470
+  },
+  "raw_response": "## Overall Assessment\n\nAlthough Cascade completed all Q4 2025 access reviews on time, the evidence indicates the reviews were not fully effective in achieving the CC6.1 objective. Several active accounts as of December 31, 2025 were not appropriately reconciled to HR/contractor status, dormant-account criteria were not applied, and service/temporary accounts with access to sensitive systems were not adequately validated.\n\n| # | Finding | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Quarterly review population was not complete or point-in-time reliable** | Access Control Policy \u00a7\u00a7 5.1, 5.2, 5.3; Q4 Review Records AR-Q4-001 through AR-Q4-014 | The Q4 reviews were completed between Oct. 12 and Oct. 20, yet the Dec. 31 Okta population includes accounts created after those review dates, including `temp-audit-access` created Nov. 10, Ian Roberts created Nov. 15, Kevin Edwards created Dec. 1, Leah Phillips created Dec. 1, and Maya Cooper created Dec. 15. These accounts could not have been reviewed during the October access review, yet AR-Q4-001 states that all 210 Okta accounts were reviewed. This creates a population completeness issue and suggests the review evidence does not reliably support that all Q4 access was reviewed. | **High** |\n| 2 | **Expired contractor account remained active after contract end** | Access Control Policy \u00a7\u00a7 3.3, 5.2, 6.2 | Kenji Matsuda, `k.matsuda@cascade.io`, is listed in HR as **Inactive** with a contract end date of Nov. 30, 2025. However, the Okta export as of Dec. 31 shows the account still **Active** with access to Jira, Confluence, Slack, and GitHub. Policy requires contractor accounts to be deprovisioned within 24 hours of contract termination and reviewed for continued active contract status. This should have been identified through HR-to-Okta reconciliation or contractor access review procedures. | **High** |\n| 3 | **Temporary external audit account lacks clear authorization, ownership, and role appropriateness** | Access Control Policy \u00a7\u00a7 3.2, 5.2, 5.3 | The account `temp-audit-access` / `temp-audit@cascade.io` is active, marked as user type \u201cEmployee,\u201d but does not appear on the HR roster and has no department assignment. It has access to Jira, Confluence, Slack, ServiceNow, Salesforce, and DataEngine. Because DataEngine and Salesforce may contain customer or business-sensitive data, this access should have evidence of business justification, manager approval, data owner/CISO approval where applicable, and an expiration date. None is evident from the provided documentation. | **High** |\n| 4 | **Service and integration accounts lack documented ownership, MFA exception, and continued business-need validation** | Access Control Policy \u00a7\u00a7 4.1, 5.2, 8 | Two non-human accounts are active in Okta: `svc-demo-portal` and `partner-api-sync`. Both have access to DataEngine and AWS Console, and both are not MFA enrolled. The policy requires MFA for all Okta sessions and requires service account ownership and continued business need to be validated during access reviews. The Okta export does not identify a named owner, department, approval, compensating control, or CISO-approved exception. Given access to DataEngine and AWS, this represents a meaningful access-control weakness. | **High** |\n| 5 | **Dormant accounts were not identified or dispositioned** | Access Control Policy \u00a7\u00a7 5.2, 5.3 | Policy requires reviewers to flag dormant accounts with no login activity exceeding 90 days for revocation. As of Dec. 31, several active accounts exceeded 90 days without login, including Patricia Anderson, last login Sept. 15; Timothy Hall, last login Sept. 22; and Kenji Matsuda, last login Sept. 27. Patricia and Timothy may have legitimate leave or transfer circumstances, but the review evidence does not show they were flagged, reviewed for exception, or dispositioned. Kenji\u2019s account should have been revoked. | **Medium** |\n| 6 | **Review evidence is summary-level and does not demonstrate per-account certification** | Access Control Policy \u00a7 5.3 | The Q4 access review records provide reviewer name, completion date, account counts, and summary findings, but they do not include the required list of all accounts reviewed, per-account disposition, or clear remediation tracking for each identified issue. For example, AR-Q4-001 notes one Okta role change but does not identify the user, role, approval, or remediation evidence. Without per-account evidence, it is not possible to verify that reviewers applied the required criteria consistently. | **Medium** |\n| 7 | **HR reconciliation control did not operate effectively** | Access Control Policy \u00a7\u00a7 5.2, 5.4 | Section 5.2 requires reviewers to confirm users are still employed or under active contract, and Section 5.4 requires QA cross-reference against HR data. The active Okta population includes at least one inactive contractor, Kenji Matsuda, and a temporary audit account not present in the HR roster. These exceptions indicate that either the HR reconciliation was not performed or was not effective. | **High** |\n| 8 | **Access review QA was not evidenced and appears ineffective** | Access Control Policy \u00a7 5.4 | The policy requires IT Security to perform quality assurance over completed access reviews, including HR cross-reference and dormant account spot checks. No QA evidence was provided. The issues identified above \u2014 active expired contractor, dormant accounts, and non-roster temporary account \u2014 are the types of exceptions QA should have detected. This undermines reliance on the completed review sign-offs. | **Medium** |\n\n## Conclusion\n\nThe Q4 access reviews were completed timely, but the control did not fully meet its intended objective. The reviews appear procedural in several areas and did not consistently validate whether access remained appropriate, authorized, tied to active employment or contract status, and aligned with business need. The most significant gaps relate to incomplete review populations, active access for an expired contractor, insufficient governance over temporary and service accounts, and weak HR reconciliation."
+}

@@ -1,0 +1,58 @@
+{
+  "task_id": "cc7.1m-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T20:03:18.652302",
+  "score": {
+    "task_id": "cc7.1m-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.125,
+    "f1": 0.2222222222222222,
+    "score": 0.2222222222222222,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-P-060",
+          "PaperCut",
+          "compensating controls"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "VMA-2025-003",
+          "Fortinet",
+          "expired",
+          "September 30",
+          "hardware maintenance",
+          "lapsed",
+          "Section 5.2",
+          "renewal in progress",
+          "procurement"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5001,
+    "output_tokens": 2603
+  },
+  "raw_response": "# CC7.1 System Maintenance Readiness Assessment\n## Keystone Data Services \u2014 Q4 2025 Review\n\n---\n\n## Executive Summary\n\nKeystone Data Services demonstrates a generally mature maintenance program with documented patching cycles, formal exception handling, and vendor management processes. Q4 2025 patching evidence shows consistent monthly cadence across production systems with all 17 deployments succeeding within maintenance windows. Two patch exceptions are well-documented with appropriate compensating controls.\n\nHowever, a **material gap exists in vendor maintenance agreement currency**: the Fortinet maintenance agreement expired September 30, 2025, leaving firewall hardware coverage lapsed during the entire audit period. Additional concerns relate to exception review cadence and policy specificity around critical-severity escalation.\n\n---\n\n## Findings\n\n### Finding 1: Expired Fortinet Vendor Maintenance Agreement\n- **Related Section:** VMA-2025-003 (Vendor Maintenance Agreements); Policy Section 5.2\n- **Gap:** The Fortinet maintenance agreement (VMA-2025-003) expired on September 30, 2025 and remained expired for the entire Q4 2025 audit period. Policy Section 5.2 explicitly requires \"all vendor maintenance agreements must be current.\" The lapse covers firewall hardware maintenance for fw-edge-01 and fw-edge-02 \u2014 which are perimeter security devices that received two firmware updates (PATCH-6006, PATCH-6007, PATCH-6012) during this uncovered period. Without an active hardware maintenance contract, hardware failure recovery and break-fix support are unavailable on critical edge security infrastructure. There is no documented compensating control, risk acceptance, or executive approval for the gap.\n- **Severity:** **High**\n\n---\n\n### Finding 2: No Defined SLA or Process for Critical Vendor-Dependency Exceptions\n- **Related Section:** Policy Section 4.1, 4.2, 4.3; Exception EXC-2025-P-058\n- **Gap:** EXC-2025-P-058 covers a **Critical**-severity vulnerability (CVE-2024-38077, Windows RDS RCE) with a planned remediation date of March 31, 2026 \u2014 approximately 20 months after the vendor patch was released (July 2024). The 14-day Critical SLA in Section 4.1 is exceeded by an order of magnitude. While compensating controls appear strong (RDS disabled, Citrix-only access, port 3389 blocked), the policy lacks: (a) a maximum allowable duration for Critical exceptions, (b) escalation requirements to executive management or the board for prolonged Critical exceptions, and (c) a requirement to evaluate alternative remediation (e.g., system replacement, vendor pressure, workaround validation testing cadence).\n- **Severity:** **Medium**\n\n---\n\n### Finding 3: Inconsistent Exception Review Cadence Documentation\n- **Related Section:** Exception Register (EXC-2025-P-060, EXC-2025-P-058); Policy Section 4.2\n- **Gap:** Policy Section 4.2 requires exceptions to include defined elements but does not mandate a specific review frequency. EXC-2025-P-058 notes \"reviewed quarterly \u2014 last review Nov 20,\" while EXC-2025-P-060 references a \"Dec 15 review\" with no stated cadence. The policy should formalize a minimum review frequency (e.g., monthly for Critical, quarterly for High/Medium) and require documented review approvals to ensure compensating controls remain operational over extended exception periods.\n- **Severity:** **Low**\n\n---\n\n### Finding 4: VMware (Broadcom) Agreement Approaching Expiration Without Documented Renewal Status\n- **Related Section:** VMA-2025-004\n- **Gap:** The VMware/Broadcom support agreement expires December 31, 2025 \u2014 the final day of the audit period. Unlike the Fortinet record (which notes renewal in progress), VMA-2025-004 contains no notes on renewal status, procurement timeline, or successor agreement. Given the Fortinet lapse precedent, lack of forward-looking renewal tracking is a process weakness. vSphere/vCenter underpin production virtualization and any lapse would mirror the Fortinet gap.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: No Evidence of Patch Coverage Completeness / Asset Reconciliation\n- **Related Section:** Patching Records; Policy Section 4\n- **Gap:** The patching records show 17 deployments across a limited set of named systems (web-srv-01/02, app-srv-01/02, db-srv-01, fw-edge-01/02). The evidence package does not include an asset inventory or reconciliation demonstrating that **all** in-scope systems were assessed for applicable patches each month. Without this, an auditor cannot confirm that systems were not silently missed (e.g., staging servers, corporate endpoints, hypervisor hosts, the legacy ERP, the print management server beyond the exception). Policy Section 2 scopes \"all production, staging, and corporate systems\" but no staging or corporate-tier patching evidence is provided.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: Maintenance Policy Lacks Configuration/Vulnerability Scanning Requirements\n- **Related Section:** Policy (entire document)\n- **Gap:** CC7.1 requires that system components be maintained to meet objectives, which typically includes vulnerability identification feeding the patch process. The policy describes patch SLAs and windows but does not specify: (a) vulnerability scanning frequency feeding the patch pipeline, (b) the authoritative source for severity classification (CVSS, vendor, internal), or (c) how emergency/zero-day patches are handled outside maintenance windows. EXC-2025-P-060 references \"daily vulnerability scan,\" indicating the practice exists, but it is not codified in policy.\n- **Severity:** **Low**\n\n---\n\n### Finding 7: PaperCut Workaround Application Not Independently Verified\n- **Related Section:** EXC-2025-P-060\n- **Gap:** The PaperCut exception states that the vendor-recommended interim workaround (\"disable remote admin API\") was applied. However, the exception narrative does not reference an independent verification ticket, configuration screenshot, or change record confirming the workaround is actually in place and tested. Given this is a High-severity RCE compensating control, evidence of effective implementation should be referenced (e.g., a change ticket or scan confirmation) rather than asserted in narrative form.\n- **Severity:** **Low**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Expired Fortinet maintenance agreement | High |\n| 2 | No SLA cap for Critical exception duration | Medium |\n| 3 | Inconsistent exception review cadence | Low |\n| 4 | VMware agreement expiring without renewal status | Medium |\n| 5 | No patch coverage / asset reconciliation evidence | Medium |\n| 6 | Policy missing scanning & emergency patch procedures | Low |\n| 7 | PaperCut workaround not independently verified | Low |\n\n## Overall Readiness Opinion\n\n**Qualified \u2014 Remediation Required Before Attestation.** The expired Fortinet agreement is the most significant issue and should be remediated immediately with either a renewed contract or formal risk acceptance with documented compensating controls. The remaining findings are process-improvement opportunities that strengthen but do not block CC7.1 attestation. The patching cadence and exception documentation quality are otherwise strong."
+}

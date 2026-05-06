@@ -1,0 +1,93 @@
+{
+  "task_id": "a1.2-4-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T18:00:48.831828",
+  "score": {
+    "task_id": "a1.2-4-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "WAL archiving",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "December 1",
+          "re-run",
+          "delayed",
+          "RPO",
+          "4-hour",
+          "exceeded",
+          "2-hour"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RTO",
+          "restore time",
+          "margin"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAL",
+          "RPO"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "capacity",
+          "growth",
+          "planning"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 9828,
+    "output_tokens": 3343
+  },
+  "raw_response": "# SOC 2 A1.2 Readiness Assessment \u2014 Cobalt Systems\n## Backup and Recovery Controls\n\n---\n\n## Assessment Summary\n\n| Category | Result |\n|---|---|\n| Policy Documentation | \u2705 Adequate |\n| Backup Execution (Routine) | \u2705 Adequate with noted exceptions |\n| Backup Failure Response | \u26a0\ufe0f Partially Adequate \u2014 process gaps identified |\n| Restore Testing | \u26a0\ufe0f Adequate \u2014 forward-looking risk flagged |\n| Backup Scope Coverage | \u274c Gap Identified |\n| Encryption & Security | \u2705 Adequate |\n| Monitoring & Alerting | \u26a0\ufe0f Partially Adequate |\n\n**Overall Readiness:** Conditional \u2014 the control is substantially operating but carries three findings that require remediation or management response before a clean opinion can be supported.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Backup Execution Log Limited to a Single System; Coverage of All In-Scope Systems Cannot Be Confirmed\n\n**Severity: High**\n\n**Related Evidence:** Backup and Recovery Policy (\u00a72 \u2014 Scope); Daily Backup Execution Log (Q4 2025)\n\n**Observation:**\n\nThe Backup and Recovery Policy (CS-POL-BKP-004 \u00a72) explicitly defines the backup scope as encompassing six production database clusters (`cs-db-prod-01` through `cs-db-prod-06`), three S3 production buckets (`cs-prod-assets`, `cs-prod-uploads`, `cs-prod-configs`), configuration management repositories, and the HashiCorp Vault cluster. The Q4 2025 daily backup execution log provided as evidence covers **only** `cs-db-prod-01` across the full 92-day period. No backup records, logs, or other attestation have been provided for the remaining five database clusters or any other in-scope asset class.\n\n**Why This Is a Gap:**\n\nUnder A1.2, the entity must demonstrate that backup processes are implemented and operating across all systems required to meet availability commitments. Without execution evidence for the other five database clusters, three S3 buckets, configuration repositories, and Vault, the auditor cannot conclude that the control operates as designed for the majority of in-scope systems. This is not a policy or design gap \u2014 it is an evidence completeness gap that, in the absence of additional documentation, must be treated as a potential control operating gap. If those systems are not backed up on the same schedule, a failure or recovery event involving them could result in data loss or recovery failure well beyond stated RPO/RTO targets.\n\n**Recommendation:** Provide backup execution logs or equivalent evidence (e.g., AWS Backup job reports, S3 replication metrics, Vault snapshot logs) for all in-scope systems for the audit period. If a centralized backup management dashboard is in use, a full export covering all systems and the complete period should be substituted.\n\n---\n\n### Finding 2: December 1 Backup Failure \u2014 Re-Run Response Time Exceeded Policy Requirement; No Formal Exception on Record\n\n**Severity: Medium**\n\n**Related Evidence:** Daily Backup Execution Log (BKP-2025-1201 / BKP-2025-1201R); Backup and Recovery Policy (\u00a76.1 \u2014 Backup Failure Response); Exception Register\n\n**Observation:**\n\nOn December 1, 2025, backup job BKP-2025-1201 failed at 02:23 UTC due to a cross-region network timeout. The re-run (BKP-2025-1201R) did not begin until 08:15 UTC \u2014 approximately **5 hours and 52 minutes** after the failure alert was sent at 02:32 UTC. The re-run log notes explicitly state: *\"6-hour gap between failure and re-run due to delayed on-call response.\"*\n\nThe Backup and Recovery Policy (\u00a76.1) requires that the on-call engineer investigate and **initiate a re-run within 2 hours** of a backup failure. This requirement was missed by approximately four hours. Furthermore, \u00a76.2 requires a formal exception approved by the CISO for backup failures that cannot be resolved within the standard process. The Exception Register contains only one entry (EXC-2025-042) covering the November 8 incident. No exception has been raised or documented for the December 1 incident.\n\n**Distinction from the November 8 Incident:** The November 8 failure is handled appropriately. A CISO-approved exception (EXC-2025-042) is on file, compensating controls (continuous WAL archiving at \u226415-minute lag) are documented and substantiated, and the exception acknowledges the absence of a re-run. That finding is **not carried forward as a gap** because the exception process functioned as designed.\n\nThe December 1 incident, by contrast, involved a re-run that was eventually completed \u2014 but outside the required two-hour window \u2014 and without a formal exception or compensating control assessment having been documented. The failure response process was not followed, and there is no management acknowledgment of the deviation.\n\n**Why This Is a Gap:**\n\nThe control as written requires timely re-run initiation. A six-hour response gap \u2014 nearly triple the allowed window \u2014 with no documentation of a compensating control assessment or formal exception means the control was not operating as designed on this date. Under A1.2, the entity must demonstrate not only that procedures exist but that they are followed. A single documented deviation with no management response is a control operating effectiveness deficiency.\n\n**Mitigating Factor (partial):** WAL archiving was presumably operational on December 1 as it was on November 8 (same underlying infrastructure), which would have limited actual data exposure. However, unlike the November 8 exception, this has not been formally assessed or documented for the December 1 event, so the auditor cannot credit it.\n\n**Recommendation:** Raise a formal exception or management acknowledgment for the December 1 incident, documenting the delayed response, the WAL continuity status during that window, and the actual data exposure risk. Update the runbook to implement the automated re-run trigger that was identified as a remediation action in EXC-2025-042 \u2014 had that remediation been completed before December 1, the policy breach may have been avoided entirely.\n\n---\n\n### Finding 3: RTO Margin Erosion Creates Forward Risk of Non-Compliance \u2014 Management Response Not Yet Formalized\n\n**Severity: Medium**\n\n**Related Evidence:** Q4 2025 Restore Test Report (RT-2025-Q4-001); Backup and Recovery Policy (\u00a73.3, \u00a75.1)\n\n**Observation:**\n\nThe Q4 2025 restore test completed in **3 hours 50 minutes** against a 4-hour RTO target, leaving only a **10-minute margin** (4.2% of the total window). This compares unfavorably to the Q3 2025 test, which completed in 3 hours 15 minutes with a 45-minute margin. The quarter-over-quarter degradation is 35 minutes (18%), driven primarily by database growth (16.9% volume increase, from 138.5 GB to 161.9 GB) and a secondary performance issue (S3 download throughput at 580 MB/s vs. an 800 MB/s baseline).\n\nThe restore test report itself acknowledges this trend clearly: *\"If this trend continues, next quarter's restore may approach or exceed the 4-hour RTO.\"* The VP of Infrastructure's sign-off notation \u2014 *\"noting RTO margin concern for Q1 2026 planning\"* \u2014 confirms management awareness. Four recommendations are documented in the report, including parallel restore strategies, S3 Transfer Acceleration, and database partitioning.\n\n**Why This Is a Gap:**\n\nFor the Q4 period under review, the restore test passed and the control was technically compliant. This finding is therefore **not a current control failure**. However, A1.2 requires the entity to *maintain* recovery infrastructure and procedures to meet its objectives on an ongoing basis. The documented trajectory \u2014 with no remediation timeline, no assigned owner, and no formal project or action plan beyond aspirational bullet-point recommendations \u2014 means that the control is at meaningful risk of failing its stated RTO within the next one to two test cycles. A readiness assessment must flag this because:\n\n1. The trend is linear and data-driven, not speculative.\n2. The contributing performance issue (download throughput degradation) is unresolved and additive to the growth problem.\n3. The only management response on record is a VP notation on a test report \u2014 not a tracked remediation commitment.\n\nIf the Q1 2026 restore test breaches the 4-hour RTO, the entity will face either a control failure finding or a need to formally revise its RTO commitment \u2014 both of which are more consequential than acting now.\n\n**Recommendation:** Convert the report's recommendations into a tracked remediation plan with assigned owners, timelines, and success criteria before the Q1 2026 test. At minimum, evaluate S3 Transfer Acceleration as a near-term measure (lowest implementation risk) and initiate a parallel restore proof-of-concept. If remediation cannot be completed prior to the Q1 test, consider whether the stated 4-hour RTO remains achievable and whether it should be formally reassessed.\n\n---\n\n### Finding 4: AWS Direct Connect SLA Missed in Q4 2025 \u2014 No Assessment of Impact on Backup Cross-Region Replication\n\n**Severity: Low**\n\n**Related Evidence:** Cloud Vendor SLA Performance Summary (Q4 2025); Backup and Recovery Policy (\u00a73.5 \u2014 Cross-Region Storage); Exception Register (EXC-2025-042)\n\n**Observation:**\n\nThe Q4 2025 vendor SLA summary shows that AWS Direct Connect fell below its 99.9% availability SLA during Q4, recording **99.87% availability** due to two brief outages in November. An SLA credit of $4,200 was approved on December 15. The backup policy (\u00a73.5) requires that cross-region backup replication complete within one hour of backup completion, with CloudWatch monitoring and SNS alerting for replication failures. The November 8 backup failure (EXC-2025-042) was also attributed to a *\"cross-region network timeout\"* occurring in November.\n\nNo assessment has been documented connecting the Direct Connect availability shortfall to the November 8 backup failure or to any broader risk of backup cross-region replication interruption during the two outage windows.\n\n**Why This Is a Gap:**\n\nThis is a low-severity finding because the November 8 failure was handled through the exception process and Direct Connect is not the sole replication path (S3 cross-region replication and Transit Gateway are also in use per CS-INF-DR-002). However, the absence of any documented root-cause correlation between the infrastructure-level SLA breach and the backup failure means that the remediation may be incomplete. If both outages caused replication failures and only one is documented in the exception register, there may be an unacknowledged backup integrity gap during the second outage window.\n\n**Recommendation:** Perform and document a correlative review confirming whether either or both Direct Connect outages affected cross-region backup replication, and whether any unlogged backup integrity gaps resulted. The automated re-run trigger remediation identified in EXC-2025-042 should be validated as effective against network-path failures specifically, not just the single November 8 event.\n\n---\n\n## Summary Table\n\n| # | Finding Title | Severity | Control Gap Type | Current Period Finding? |\n|---|---|---|---|---|\n| 1 | Backup execution log covers only one of six in-scope database clusters; other systems and asset classes unevidenced | **High** | Evidence completeness / potential operating gap | Yes |\n| 2 | December 1 backup failure re-run exceeded 2-hour policy requirement by ~4 hours; no exception documented | **Medium** | Control operating effectiveness | Yes |\n| 3 | Restore time trend at 96% of RTO with no formalized remediation plan; Q1 2026 breach risk | **Medium** | Forward-looking sustainability risk | Prospective |\n| 4 | AWS Direct Connect SLA miss in November not correlated to backup replication failures; potential undocumented gap | **Low** | Documentation / root-cause completeness | Possible |\n\n---\n\n## Items Confirmed Adequate \u2014 Not Carried as Findings\n\nThe following areas were reviewed and found to be operating in accordance with policy requirements:\n\n- **November 8 Backup Failure (EXC-2025-042):** Exception process followed correctly. CISO approval obtained, compensating control (WAL archiving at \u226415-minute lag) documented and credible. Not a finding.\n- **October 15 Backup Failure:** Failed backup triggered alert within 15 minutes; re-run initiated by j.martinez at 04:22 UTC (within 2-hour window); root cause identified and resolved (disk capacity); re-run succeeded. Consistent with \u00a76.1 process. Not a finding.\n- **Backup Encryption:** AES-256 at rest and TLS 1.3 in transit confirmed in policy. Consistent with \u00a73.4. Not a finding.\n- **Quarterly Restore Testing Cadence:** Q4 test conducted November 15, 2025, with Q3 test on August 17, 2025 \u2014 approximately 90-day cadence consistent with \u00a75.1 quarterly requirement. Test documentation meets \u00a75.2 requirements including Infrastructure Lead and VP sign-off. Not a finding.\n- **Data Integrity Verification:** Q4 restore test shows SHA-256 checksum match, row count validation, referential integrity check across 247 tables and 48.3M rows. Not a finding.\n- **Backup Retention:** Policy defines retention schedule across all tiers (7-day through 7-year). Not contradicted by any evidence reviewed. Not a finding.\n- **Backup Start Times:** All 92 log entries confirm automated initiation at 02:00 UTC consistent with \u00a73.1 requirement.\n- **DR Site Infrastructure:** Adequate warm-site configuration with tested failover (38-minute completion September 14, 2025). Noted as supporting context for A1.2 though assessed separately from backup controls per document classification.\n\n---\n\n*Assessment prepared for readiness purposes. Findings represent conditions identified based on evidence provided and are subject to revision upon receipt of additional documentation, particularly with respect to Finding 1.*"
+}

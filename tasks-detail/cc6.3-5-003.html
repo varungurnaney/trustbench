@@ -1,0 +1,48 @@
+---
+layout: default
+title: "cc6.3-5-003"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>cc6.3-5-003</h2>
+    <p class="section-subtitle">CC6.3 · D5 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D5</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">4</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">0</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">49%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are a SOC 2 auditor evaluating Meridian Insights' data loss prevention and bulk export controls under CC6.3. Meridian provides business intelligence services to enterprise clients and handles large volumes of customer data. Review all evidence to assess whether the DLP controls effectively prevent unauthorized bulk data access and export. Several situations involve ambiguity about what constitutes a 'bulk export' versus normal analytical query behavior, and whether the DLP threshold is appropriately calibrated. Exercise professional judgment on each finding.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/data-access-policy.md</code> — Meridian Insights data access policy with DLP controls and bulk export thresholds</li>
+<li><code>evidence/dlp-alert-log-q4.csv</code> — Q4 2025 DLP alert log showing all bulk data access alerts triggered by the data loss prevention system</li>
+<li><code>evidence/export-approval-tickets.csv</code> — Q4 2025 data export approval tickets in ServiceNow with justification and approval chain</li>
+<li><code>evidence/database-query-audit-q4.csv</code> — Q4 2025 database query audit log showing large result set queries and their context</li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>Analyst h.nguyen ran 8 sequential queries of 9,500 rows each to stay below the 10,000-row DLP threshold — total 76,000 rows extracted</strong><br><span style="font-size:13px;color:var(--text-dim)">The database query audit log shows user h.nguyen (Hannah Nguyen, Senior Data Analyst) executed 8 SELECT queries against the customer_profiles table between 2:15 PM and 3:45 PM on November 12, 2025. Ea...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>DLP alert DLP-Q4-2025-014 for legitimate BI report was auto-closed without human review</strong><br><span style="font-size:13px;color:var(--text-dim)">The DLP alert log shows DLP-Q4-2025-014 was triggered on October 28 when svc-bi-dashboard queried 15,200 rows from order_summary for the monthly executive dashboard refresh. The alert was auto-closed ...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Export approval EXP-Q4-2025-008 approved 3 days after the export was already completed</strong><br><span style="font-size:13px;color:var(--text-dim)">The export approval ticket log shows EXP-Q4-2025-008 (requested by Carlos Mendez, Business Intelligence) was submitted on December 8 for a bulk export of 25,000 rows from client_engagement_metrics. Th...</span></td></tr>
+<tr><td><strong>F-004</strong></td><td><span class="badge badge-blue">gap</span></td><td>low</td><td><strong>DLP policy does not define aggregate thresholds — only per-query thresholds are enforced</strong><br><span style="font-size:13px;color:var(--text-dim)">Policy Section 5.2 defines the DLP threshold as 'queries returning more than 10,000 rows from Restricted or Confidential tables.' This threshold applies per-query only. There is no aggregate threshold...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-low">42%</td><td>100%</td><td>27%</td><td>42%</td><td>4/4</td><td>15</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-low">57%</td><td>100%</td><td>40%</td><td>57%</td><td>4/4</td><td>10</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-low">50%</td><td>75%</td><td>38%</td><td>50%</td><td>3/4</td><td>8</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-mid">73%</td><td>100%</td><td>57%</td><td>73%</td><td>4/4</td><td>7</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-mid">75%</td><td>75%</td><td>75%</td><td>75%</td><td>3/4</td><td>4</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-bad">0%</td><td>0%</td><td>0%</td><td>0%</td><td>0/4</td><td>7</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.3-5-003">GitHub</a></p></footer>
+</div>

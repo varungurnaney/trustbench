@@ -1,0 +1,59 @@
+{
+  "task_id": "a1.2-3-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:07:38.744132",
+  "score": {
+    "task_id": "a1.2-3-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.625,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "backup log",
+          "Section 3.2",
+          "4-hour",
+          "RPO",
+          "460"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAL",
+          "archiving",
+          "no evidence",
+          "not provided",
+          "continuous",
+          "point-in-time",
+          "log"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5136,
+    "output_tokens": 3380
+  },
+  "raw_response": "## Overall Assessment\n\n**A1.2 is not fully met based on the evidence provided.**  \n\nThe Q4 2025 backup log demonstrates that **daily full backups for `nx-db-prod-01` ran successfully for all 92 days in the observation period**, started at approximately **02:00 UTC**, completed before the **06:00 UTC maintenance window**, and had checksum verification marked as true.\n\nHowever, the log does **not provide sufficient evidence** that the full backup and recovery program described in the policy operated across all scoped systems or met the stated RPO/RTO requirements.\n\n---\n\n## Findings\n\n### 1. Backup Execution Evidence Covers Only One Production Database\n\n**Related section:**  \n- Policy Section 2 \u2014 Scope  \n- Policy Section 3.1 \u2014 Daily Full Backups  \n- Q4 Backup Execution Log \u2014 `target_system`\n\n**Why it\u2019s a gap:**  \nThe policy scope includes:\n\n- PostgreSQL clusters `nx-db-prod-01` through `nx-db-prod-04`\n- S3 buckets: `nx-prod-assets`, `nx-prod-uploads`, `nx-prod-configs`\n- HashiCorp Vault cluster\n\nThe Q4 backup execution log only shows daily full backups for **`nx-db-prod-01`**. There is no evidence of daily full backups for:\n\n- `nx-db-prod-02`\n- `nx-db-prod-03`\n- `nx-db-prod-04`\n- S3 production file storage\n- HashiCorp Vault\n\nAlthough `nx-db-prod-01` appears compliant with the daily full backup schedule, the evidence does not demonstrate that all in-scope production systems are backed up as required.\n\n**Severity:** High\n\n---\n\n### 2. Incremental Backups Are Not Evidenced\n\n**Related section:**  \n- Policy Section 3.2 \u2014 Incremental Backups  \n- Policy Section 4 \u2014 Recovery Objectives\n\n**Why it\u2019s a gap:**  \nThe policy requires incremental file system backups every 4 hours at:\n\n- 06:00 UTC\n- 10:00 UTC\n- 14:00 UTC\n- 18:00 UTC\n- 22:00 UTC\n\nFor the 92-day Q4 observation period, this would result in **460 expected incremental backup events per applicable target**.\n\nThe provided log contains only **daily full backups** and does not include any incremental backup entries. Without incremental backup evidence, Nexus cannot demonstrate that it is capturing changes at the frequency required to support the stated **4-hour RPO** for file systems.\n\n**Severity:** High\n\n---\n\n### 3. WAL Archiving and Point-in-Time Recovery Are Not Evidenced\n\n**Related section:**  \n- Policy Section 3.3 \u2014 WAL Archiving  \n- Policy Section 4 \u2014 Recovery Objectives\n\n**Why it\u2019s a gap:**  \nThe policy states that PostgreSQL WAL archiving is enabled on all database clusters, with:\n\n- Continuous archiving\n- Cross-region storage in `us-west-2`\n- Maximum archive lag of 15 minutes\n- Point-in-time recovery capability\n\nThe evidence does not include WAL archive logs, archive lag metrics, replication status, cross-region storage validation, or point-in-time recovery testing. As a result, there is no evidence that WAL archiving operated for all database clusters during Q4 or that the 15-minute archive lag objective was met.\n\nThis is particularly important because WAL archiving is a key control supporting database recoverability and RPO achievement.\n\n**Severity:** High\n\n---\n\n### 4. Quarterly Restore Testing Is Not Evidenced\n\n**Related section:**  \n- Policy Section 7 \u2014 Restore Testing  \n- Policy Section 4 \u2014 Recovery Objectives\n\n**Why it\u2019s a gap:**  \nThe policy requires a full restore test to be performed quarterly in the DR environment, validating:\n\n- Restoration success\n- Data integrity\n- RTO compliance\n\nNo Q4 2025 restore test report, DR exercise record, recovery ticket, evidence of restored systems, integrity validation, or measured recovery duration was provided.\n\nSuccessful backup completion and checksum verification do not, by themselves, demonstrate that Nexus can restore systems within the required **4-hour RTO**.\n\n**Severity:** High\n\n---\n\n### 5. RPO and RTO Compliance Is Not Demonstrated\n\n**Related section:**  \n- Policy Section 4 \u2014 Recovery Objectives\n\n**Why it\u2019s a gap:**  \nThe policy defines:\n\n| Objective | Target |\n|---|---:|\n| RPO | 4 hours |\n| RTO | 4 hours |\n\nThe backup log demonstrates that full backups for `nx-db-prod-01` completed successfully, but it does not demonstrate:\n\n- Maximum potential data loss during a failure scenario\n- Successful recovery within 4 hours\n- Point-in-time recovery capability\n- Recovery timing from a DR test or incident\n- Coverage of all production systems against the RPO/RTO objectives\n\nBecause incremental backups, WAL archive evidence, and restore test evidence were not provided, RPO/RTO compliance cannot be validated.\n\n**Severity:** Medium\n\n---\n\n### 6. Backup Monitoring and Failure Handling Are Not Substantiated\n\n**Related section:**  \n- Policy Section 8 \u2014 Failure Handling\n\n**Why it\u2019s a gap:**  \nThe policy requires backup failures to trigger a PagerDuty alert within 5 minutes and for an on-call engineer to investigate and initiate a rerun within 2 hours.\n\nThe Q4 log shows all entries as successful for `nx-db-prod-01`, but no evidence was provided for:\n\n- PagerDuty alert configuration\n- Backup monitoring rules\n- Alert test results\n- Failure simulation evidence\n- Historical failed backup handling, if any occurred\n\nBecause the control includes monitoring and response expectations, Nexus should provide evidence that alerting is configured and operational, even if no actual backup failures occurred during the period.\n\n**Severity:** Medium\n\n---\n\n### 7. Backup Encryption, Key Rotation, and Retention Controls Are Not Evidenced\n\n**Related section:**  \n- Policy Section 5 \u2014 Backup Encryption  \n- Policy Section 6 \u2014 Backup Retention\n\n**Why it\u2019s a gap:**  \nThe policy requires:\n\n- AES-256 encryption at rest using AWS KMS\n- TLS 1.3 for backup data in transit\n- Quarterly encryption key rotation\n- Defined retention periods for full, incremental, WAL, and monthly backups\n\nThe backup execution log includes checksum verification, but does not provide evidence of:\n\n- KMS encryption configuration\n- Backup bucket or vault encryption settings\n- TLS enforcement\n- Quarterly KMS key rotation\n- Backup lifecycle or retention rules\n- Evidence that expired backups are purged according to policy\n\nThese items are relevant to the backup infrastructure requirements under A1.2 and should be evidenced separately.\n\n**Severity:** Medium\n\n---\n\n### 8. Policy Ownership Is Inconsistent\n\n**Related section:**  \n- Policy Header \u2014 Owner  \n- Policy Section 9 \u2014 Roles and Responsibilities\n\n**Why it\u2019s a gap:**  \nThe policy header lists the owner as **Infrastructure Engineering**, while Section 9 identifies the **VP Infrastructure** as the policy owner.\n\nThis is a documentation inconsistency. It does not directly invalidate the backup process, but ownership should be clear for accountability, review, maintenance, and approval of backup and recovery procedures.\n\n**Severity:** Low\n\n---\n\n## Positive Observation\n\nThe Q4 2025 log provides strong evidence that **daily full backups for `nx-db-prod-01`** operated consistently during the observation period:\n\n- 92 of 92 days have backup entries\n- All entries show `status = success`\n- All entries show `checksum_verified = true`\n- All backups started around 02:00 UTC\n- All backups completed before 06:00 UTC\n\nThis supports compliance for the daily full backup requirement **only for `nx-db-prod-01`**."
+}

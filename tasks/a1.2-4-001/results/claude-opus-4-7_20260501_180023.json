@@ -1,0 +1,95 @@
+{
+  "task_id": "a1.2-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:00:23.987388",
+  "score": {
+    "task_id": "a1.2-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4444444444444444,
+    "f1": 0.6153846153846153,
+    "score": 0.6153846153846153,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "WAL archiving",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "December 1",
+          "re-run",
+          "delayed",
+          "RPO",
+          "4-hour"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "3h 50m",
+          "RTO",
+          "trending",
+          "margin"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "WAL",
+          "not provided",
+          "no evidence",
+          "RPO"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "capacity",
+          "disk full",
+          "trending"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 12076,
+    "output_tokens": 3246
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 Control A1.2 (Backup & Recovery)\n\n## Executive Summary\n\nCobalt Systems demonstrates a generally mature backup and recovery program with documented policy, daily backup execution, quarterly restore testing, and a functional exception process. Out of 92 days in Q4 2025, 89 backups completed successfully, 2 failures were re-run successfully, and 1 failure was handled via a formal CISO-approved exception with documented compensating controls (WAL archiving). However, several gaps warrant attention before the formal SOC 2 audit.\n\n---\n\n## Findings\n\n### Finding 1: Backup Failure Re-Run SLA Breach (December 1)\n- **Related Section:** Backup Execution Log (BKP-2025-1201 / BKP-2025-1201R); Policy Section 6.1\n- **Gap:** Policy 6.1 requires the on-call engineer to \"investigate and initiate a re-run within 2 hours\" of a backup failure. The Dec 1 failure alerted at 02:32 UTC, but the re-run did not start until 08:15 UTC \u2014 approximately **5 hours 43 minutes** after the alert, nearly 3x the policy SLA. The log explicitly notes \"6-hour gap...due to delayed on-call response.\" There is no evidence of:\n  - A formal exception filed for this deviation (unlike the Nov 8 incident)\n  - A root-cause analysis on the on-call response delay\n  - Corrective action against the on-call escalation procedure\n- **Severity:** **High** \u2014 This is an undocumented deviation from a written control. Auditors will view unmanaged exceptions as more concerning than the Nov 8 event, which was properly governed.\n\n---\n\n### Finding 2: RTO Margin Erosion Trending Toward Breach\n- **Related Section:** Q4 2025 Restore Test Report \u2014 `rto_compliance` and `previous_quarter_comparison`\n- **Gap:** Q4 restore completed in 3h 50m against a 4-hour RTO \u2014 only a **10-minute margin**, down from 45 minutes in Q3. Trend analysis explicitly states \"next quarter's restore may approach or exceed the 4-hour RTO.\" Despite this being flagged by both the Infrastructure Lead and VP of Infrastructure, there is no evidence of:\n  - A formal remediation plan with target dates\n  - Capacity/performance engineering work in flight (parallel restore, Transfer Acceleration, partitioning are only \"recommendations\")\n  - Management acceptance or revision of the RTO\n- **Severity:** **High** \u2014 Without intervention, the next quarterly test is likely to demonstrate a control failure on a stated availability commitment.\n\n---\n\n### Finding 3: Incomplete Scope Coverage in Backup Logs\n- **Related Section:** Policy Section 2 (Scope) vs. Backup Execution Log\n- **Gap:** Policy scope includes cs-db-prod-01 through cs-db-prod-06, S3 buckets (cs-prod-assets, cs-prod-uploads, cs-prod-configs), configuration repos, and HashiCorp Vault. The provided execution log shows backups **only for cs-db-prod-01**. No evidence was provided for:\n  - Daily full backups of cs-db-prod-02 through cs-db-prod-06\n  - File system incremental backups (every 4 hours per Policy 3.2)\n  - Vault and configuration repository backups\n- **Severity:** **High** \u2014 Either the evidence is incomplete (evidence gap) or the controls are not consistently applied across the full in-scope environment (control gap). Either way, the auditor cannot conclude A1.2 is operating across the full scope.\n\n---\n\n### Finding 4: Restore Testing Limited to a Single Database\n- **Related Section:** Policy Section 5.1; Q4 Restore Test Report\n- **Gap:** Quarterly restore test validated only cs-db-prod-01. The policy does not explicitly limit testing to one system, and A1.2 expects recovery procedures for all in-scope data, systems, and infrastructure. No evidence of restore testing for:\n  - File system / S3-stored application data\n  - HashiCorp Vault secrets store\n  - Other database clusters\n- **Severity:** **Medium** \u2014 Common SOC 2 finding; auditors typically expect a representative sampling rotation across in-scope systems.\n\n---\n\n### Finding 5: Recurring Cross-Region Network Failures Not Treated as Systemic\n- **Related Section:** Backup Log (BKP-2025-1108 and BKP-2025-1201); Exception Register (EXC-2025-042)\n- **Gap:** Two backup failures in Q4 (Nov 8 and Dec 1) share the **same root cause**: cross-region network timeout to us-west-2. The exception register treats the Nov 8 issue as transient (\"Network team confirmed link restored\"), but the recurrence on Dec 1 indicates a systemic issue. The remediation listed in EXC-2025-042 (\"Added automated backup re-run trigger to runbook\") was apparently not effective \u2014 Dec 1 still required manual re-run with a delayed response. Additionally, the AWS Direct Connect SLA was missed in Q4 (99.87% vs. 99.9% target), which may be the underlying cause but is not linked in the exception analysis.\n- **Severity:** **Medium** \u2014 Indicates weakness in problem management and root-cause analysis even though individual incidents were handled.\n\n---\n\n### Finding 6: Direct Connect SLA Breach Not Linked to Availability Risk Assessment\n- **Related Section:** Vendor SLA Summary (AWS Direct Connect row)\n- **Gap:** Direct Connect availability was 99.87% vs. 99.9% target \u2014 non-compliant. This service underpins cross-region replication and DR connectivity. Only an SLA credit ($4,200) was documented; there is no evidence the breach was evaluated against availability commitments or escalated as a vendor risk concern (e.g., redundant Direct Connect, alternate transit path).\n- **Severity:** **Low** \u2014 Single-path dependency on a degraded vendor service is a contributing factor to Findings 1 and 5.\n\n---\n\n### Finding 7: Capacity Threshold Breach Implied by Oct 15 Disk-Full Failure\n- **Related Section:** Backup Log (BKP-2025-1015); Policy Section 7\n- **Gap:** Policy 7 requires alerts when backup storage exceeds 70% utilization, with semi-annual capacity reviews. The Oct 15 backup failed due to disk full on /mnt/backup-vol-03, requiring 850 GB of emergency archival to recover. A disk-full event implies the 70% threshold either did not trigger or was not acted upon. No evidence of:\n  - A 70% threshold alert occurring prior to Oct 15\n  - A semi-annual capacity review\n  - A post-incident root-cause analysis or exception\n- **Severity:** **Medium** \u2014 Capacity management control appears to have failed; failure was self-resolved by the operator without formal documentation.\n\n---\n\n### Finding 8: Restore Test Frequency vs. WAL/PITR Validation\n- **Related Section:** Policy Section 3.2 and 5.1\n- **Gap:** RPO of 4 hours (effectively 15 minutes via WAL) is the principal compensating control cited in EXC-2025-042. However, restore testing only validates the latest **full backup** \u2014 there is no documented test of point-in-time recovery via WAL replay. Since WAL was the actual compensating control during the Nov 8 outage, lack of testing means the compensating control is unverified.\n- **Severity:** **Medium** \u2014 The control everyone is relying on for RPO has never been demonstrated to work.\n\n---\n\n### Finding 9: Encryption Key Rotation Evidence Not Provided\n- **Related Section:** Policy Section 3.4\n- **Gap:** Policy requires AES-256 encryption with quarterly key rotation through HashiCorp Vault. No key rotation log, Vault audit excerpt, or attestation was provided as evidence. While not strictly an A1.2 finding (more aligned with confidentiality), it intersects backup integrity.\n- **Severity:** **Low** \u2014 Likely an evidence-collection gap rather than a true control gap.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Dec 1 re-run SLA breach with no exception filed | High |\n| 2 | RTO margin trending toward breach without remediation plan | High |\n| 3 | Backup evidence covers only 1 of 6 databases plus other in-scope systems | High |\n| 4 | Restore testing limited to single database | Medium |\n| 5 | Recurring cross-region network failures not treated systemically | Medium |\n| 6 | Direct Connect SLA breach not assessed against availability commitments | Low |\n| 7 | Oct 15 disk-full event implies failed capacity threshold control | Medium |\n| 8 | Point-in-time recovery (WAL) never restore-tested | Medium |\n| 9 | Encryption key rotation evidence not provided | Low |\n\n## Positive Observations\n- Nov 8 backup failure handled correctly: timely alert, documented exception, CISO approval, valid compensating controls (WAL), and runbook remediation.\n- 89/92 days of clean automated backup execution with checksum verification.\n- Q4 restore test fully passed integrity and application validation gates.\n- Quarter-over-quarter trend analysis demonstrates active monitoring and proactive identification of the RTO concern."
+}

@@ -1,0 +1,65 @@
+{
+  "task_id": "cc1.4-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:26:11.887829",
+  "score": {
+    "task_id": "cc1.4-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Greenleaf",
+          "EXC-HR-2025-001",
+          "Non-Sensitive",
+          "no system access",
+          "CHRO approved",
+          "exception"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "HCS-3007",
+          "Natasha Orlova",
+          "BGC-2025-084",
+          "EXC-HR-2025-003",
+          "209 days",
+          "Pending",
+          "expired",
+          "AWS root",
+          "Kubernetes admin",
+          "staging",
+          "production",
+          "90-day risk assessment",
+          "no renewal"
+        ],
+        "total_keywords": 14,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4804,
+    "output_tokens": 2149
+  },
+  "raw_response": "# CC1.4 Readiness Assessment \u2014 Helix Cloud Solutions\n\n## Summary of Review\n\nI reviewed POL-HR-019 v4.1, 16 employee background check records, the HR exception register, and the Q4 2025 contractor onboarding summary. Most controls are operating effectively: 15 of 16 employees in 2025 had background checks completed in alignment with policy timelines (Sensitive roles pre-start, Non-Sensitive within 30 days), and the exception register demonstrates a functioning governance process for contractor BGC waivers and training extensions. However, one significant finding warrants Critical classification, with related lower-severity findings.\n\n---\n\n## Findings\n\n### Finding 1: Expired Background Check Exception with Continued Privileged Access \u2014 Natasha Orlova (HCS-3007)\n\n**Related Sections:** POL-HR-019 \u00a73.1, \u00a73.3; BGC-2025-084; EXC-HR-2025-003\n\n**Gap Description:**\nNatasha Orlova was hired June 2, 2025 into a Sensitive role (Site Reliability Engineer) and provisioned full production access \u2014 including AWS root and Kubernetes admin \u2014 on her start date. Per POL-HR-019 \u00a73.1, comprehensive background checks for Sensitive roles **must be completed before access is provisioned.** This requirement was violated at hire.\n\nCompounding this:\n- Background check has been pending **209 days** (June 2 \u2013 December 28) with no completion date.\n- The \u00a73.3 60-day escalation was performed and CHRO approved continued access with compensating controls (exception EXC-HR-2025-003 valid through November 2, 2025).\n- The exception **expired November 2, 2025** and was not renewed.\n- The \u00a73.3 90-day risk assessment requirement was never completed and never documented.\n- Employee continues to hold AWS root and Kubernetes admin access with no active exception covering the gap (Nov 2 \u2013 present, ~57 days as of audit date).\n- Compensating controls noted in the exception (\"access limited to staging environment only\") appear inconsistent with the BGC record's note of \"full production access including AWS root and Kubernetes admin since June 2.\" This inconsistency itself indicates the compensating controls may not be operating as designed.\n\n**Severity:** **Critical**\n\nThis is a direct violation of the policy's pre-access screening requirement for Sensitive roles, an expired exception with no renewal, a missing 90-day risk assessment, and apparent inconsistency between documented and actual compensating controls \u2014 all on an account holding the highest-privilege access in the environment (AWS root, K8s admin).\n\n---\n\n### Finding 2: Missing 90-Day Risk Assessment Required by Policy\n\n**Related Sections:** POL-HR-019 \u00a73.3; EXC-HR-2025-003\n\n**Gap Description:**\nPOL-HR-019 \u00a73.3 explicitly requires that \"Pending checks beyond 90 days require a documented risk assessment.\" The Orlova check passed 90 days on approximately September 1, 2025. The exception register's review notes confirm: *\"No 90-day risk assessment completed.\"* No such risk assessment exists in evidence.\n\nThis represents a control design that exists on paper but was not executed when triggered. Even if Finding 1 were remediated, the absence of the documented risk assessment is an independent control failure.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Inconsistency Between Compensating Controls and Actual Access Provisioned\n\n**Related Sections:** EXC-HR-2025-003; BGC-2025-084\n\n**Gap Description:**\nException EXC-HR-2025-003 documents compensating controls as: *\"Manager conducts weekly code review of all commits. Access limited to staging environment only per original compensating controls.\"* However, the background check record (BGC-2025-084) states the employee \"has full production access including AWS root and Kubernetes admin since June 2.\"\n\nEither:\n- The compensating controls described in the exception were never actually implemented, or\n- The BGC record is inaccurate, or\n- Access was expanded beyond the exception's scope without amending the exception.\n\nIn any of these scenarios, the integrity of the exception register as a control artifact is compromised. There is no evidence of weekly manager code reviews to verify the stated compensating control is operating.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Exception Register Lacks Independent Approval Segregation\n\n**Related Sections:** EXC-HR-2025-001\n\n**Gap Description:**\nException EXC-HR-2025-001 (Greenleaf Office Supplies) was both *requested by* and *approved by* Rita Johansson (CHRO). While the exception itself is reasonable (vendor with no system access, escorted only), the lack of segregation of duties in the approval workflow is a control design weakness. A self-approval pattern, even for low-risk items, undermines the integrity of the exception governance process and should be remediated through a documented delegation or secondary reviewer requirement.\n\n**Severity:** **Low**\n\n---\n\n## Areas Operating Effectively (No Findings)\n\n- **Pre-start screening for Sensitive roles** \u2014 8 of 9 Sensitive hires completed comprehensive checks before start date (only Orlova excepted).\n- **30-day window for Non-Sensitive roles** \u2014 All 7 Non-Sensitive hires completed checks within the 30-day window.\n- **Contractor exceptions (EXC-HR-2025-001, -002)** \u2014 Properly classified, documented compensating controls, periodic review evidence, and clear scope.\n- **Training extension (EXC-HR-2025-004)** \u2014 Approved by appropriate authority (CISO), employee completed within extended window, exception closed appropriately.\n- **Provider consistency** \u2014 All 16 checks routed through Checkr per \u00a73.2.\n\n---\n\n## Recommended Remediation Priorities\n\n1. **Immediate (Critical):** Suspend or restrict Orlova's production access pending BGC completion or document a renewed, properly-approved exception with current compensating controls.\n2. **Within 30 days (High):** Complete and document the overdue 90-day risk assessment for HCS-3007.\n3. **Within 30 days (High):** Reconcile the discrepancy between documented compensating controls and actual access; obtain evidence of weekly code review attestations if that control is in fact operating.\n4. **Next policy review (Low):** Update POL-HR-019 to require independent approver for HR exceptions where the requester is the CHRO."
+}

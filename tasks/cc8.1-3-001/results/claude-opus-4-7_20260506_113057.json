@@ -1,0 +1,58 @@
+{
+  "task_id": "cc8.1-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:30:57.496095",
+  "score": {
+    "task_id": "cc8.1-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.625,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-306",
+          "webhook",
+          "security review",
+          "not completed",
+          "partner",
+          "business urgency"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "quorum",
+          "NOT MET",
+          "Security Lead",
+          "absent",
+          "CHG-306",
+          "2 attendees"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4548,
+    "output_tokens": 2362
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC8.1 Change Management\n\n**Entity:** Helios Data Systems\n**Observation Period:** October 1 \u2013 December 31, 2025\n**Control:** CC8.1 \u2014 Change Management\n\n---\n\n## Summary\n\nOf 12 changes reviewed in Q4 2025, the documented process was followed for 11. However, a single change (CHG-306) exhibits multiple, compounding control failures that touch on several requirements of POL-CHG-011. Additional process observations are noted below.\n\n---\n\n## Findings\n\n### Finding 1: High-risk change deployed without required security review (CHG-306)\n\n- **Related to:** Policy \u00a73.2 (Security Review) and Change Log entry CHG-306\n- **Gap:** CHG-306 (\"Add webhook endpoint for partner integrations\") was classified as **High** risk. Per \u00a73.2, High-risk changes **require** Security Engineering review prior to CAB approval, including threat modeling, auth/authz impact review, and confirmation that no new vulnerabilities are introduced. The change was approved and deployed (Nov 8, 2025) with security_review = \"Not completed.\" A post-deployment review was committed to but, per the Dec 10 CAB minutes, remained outstanding through year-end. Webhook endpoints are an externally-facing attack surface (auth, input validation, SSRF risk), making this gap materially significant.\n- **Severity:** **Critical**\n\n### Finding 2: CAB approved a change without required quorum (Nov 5, 2025)\n\n- **Related to:** Policy \u00a73.3 (CAB Approval) and Nov 5 CAB minutes\n- **Gap:** \u00a73.3 requires quorum of \"VP Engineering + Security Lead + at least one other member.\" The Nov 5 CAB had only 2 attendees (Marcus Webb and Tom Nakamura); the Security Lead was absent and the minutes explicitly state \"Quorum: NOT MET.\" The change (CHG-306) was approved anyway, citing business urgency. The policy provides no exception for business urgency in the Normal change pathway \u2014 the only path for urgency is the Emergency category (\u00a72), which was not invoked.\n- **Severity:** **Critical**\n\n### Finding 3: VP Engineering acted as both policy approver and CAB chair, with no escalation path documented\n\n- **Related to:** Policy \u00a73.3 and \u00a73.5 (Segregation of Duties)\n- **Gap:** Marcus Webb is both the VP Engineering (sole approver in the change log for all Normal changes) and the policy owner/approver of POL-CHG-011 itself. When the Security Lead was absent (Nov 5), Marcus unilaterally overrode the quorum requirement. The policy does not define an escalation path or compensating control for sub-quorum CAB sessions, and there is no evidence of an independent override-approval mechanism. This is a control-design weakness that enabled Finding 2.\n- **Severity:** **High**\n\n### Finding 4: Outstanding security review action item not remediated within reasonable timeframe\n\n- **Related to:** Nov 5 CAB minutes (action item) and subsequent CAB minutes (Nov 12, Dec 10, Dec 17)\n- **Gap:** The post-deployment security review for CHG-306 was committed to as a remediating action on Nov 5. It was flagged as outstanding on Nov 12 and again on Dec 10 (more than 30 days after deployment). The Dec 17 year-end review confirms it remained pending at quarter-end. This indicates an ineffective remediation/tracking process for control exceptions and undermines the credibility of the \"post-deployment review\" compensating commitment.\n- **Severity:** **High**\n\n### Finding 5: Emergency change approval timestamp suggests insufficient deliberation\n\n- **Related to:** Policy \u00a73.3 (Emergency approval) and Change Log entry CHG-307\n- **Gap:** CHG-307 was submitted at 22:00 UTC and approved at 22:05 UTC (5 minutes). While the policy permits VP Engineering verbal approval for emergencies and the retrospective CAB occurred within 48 hours (Nov 12) as required, the audit trail of the verbal approval (e.g., recorded justification, written confirmation following the verbal call) is not evidenced. For SOC 2 evidentiary purposes, verbal approvals should have a contemporaneous written artifact. Note: this is a process/evidence-quality observation; the substantive emergency response appears appropriate (CVE patch).\n- **Severity:** **Low**\n\n### Finding 6: Security review documentation location not verifiable from provided evidence\n\n- **Related to:** Policy \u00a73.2 (security review sign-off \"documented in the Jira ticket as a comment from a Security Engineering team member\")\n- **Gap:** The change log records security_reviewer names but does not provide direct evidence (Jira comment exports, links, or screenshots) of the sign-off comments. While this may be available on request, an auditor performing a Type II test would need to sample-verify the actual Jira artifacts. Recommend obtaining Jira evidence for at least the High/Critical risk changes (CHG-302, 303, 305, 307, 309, 311) prior to the formal audit.\n- **Severity:** **Low**\n\n### Finding 7: Standard change category lacks evidenced governance\n\n- **Related to:** Policy \u00a72 (Standard changes \"pre-approved per catalog\") and CHG-310\n- **Gap:** CHG-310 was processed as a Standard change with no approval, no testing evidence, and deployed during business hours. The policy permits this *if* the change appears in a \"standard change catalog,\" but no such catalog was provided as evidence. Without a documented and periodically reviewed standard change catalog, the auditor cannot confirm CHG-310 was legitimately pre-approved.\n- **Severity:** **Medium**\n\n---\n\n## Overall Conclusion\n\nThe change management control (CC8.1) is **not operating effectively** for the Q4 2025 observation period. Findings 1 and 2 alone constitute a likely **control deficiency** for SOC 2 Type II purposes \u2014 a single high-risk, externally-facing change was approved without required security review **and** without CAB quorum, with the remediation action item remaining open through year-end. This pattern suggests the control is susceptible to override based on business pressure without compensating governance.\n\n### Recommended Remediation Before Audit\n\n1. Complete the security review of CHG-306 immediately and remediate any findings; document remediation in Jira.\n2. Amend POL-CHG-011 to define the procedure when CAB quorum cannot be met (defer, escalate, or formally invoke an exception with independent approval).\n3. Implement a tracked exceptions register with owner and due date; review at every CAB meeting.\n4. Produce and maintain the Standard Change Catalog as a controlled document.\n5. Require written confirmation (email or Slack export) accompanying any verbal emergency approval.\n6. Consider adding a second approver (independent of VP Engineering) for any change where the standard approval path is not followed."
+}

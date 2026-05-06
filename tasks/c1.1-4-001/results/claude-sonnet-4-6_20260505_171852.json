@@ -1,0 +1,94 @@
+{
+  "task_id": "c1.1-4-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T17:18:52.245866",
+  "score": {
+    "task_id": "c1.1-4-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "metrics-collector",
+          "EXC-2025-011",
+          "VPC",
+          "no PII",
+          "approved",
+          "compensating"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "partner-data-sync",
+          "CBC",
+          "AES-128",
+          "Restricted",
+          "PII",
+          "no exception",
+          "bank integration",
+          "customer names",
+          "account numbers"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "bft-prod-ml-training",
+          "SSE-S3",
+          "SSE-KMS",
+          "EXC-2025-013",
+          "PII",
+          "remediation",
+          "pending",
+          "SageMaker",
+          "derived"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "partner-data-sync",
+          "HSTS",
+          "Restricted",
+          "production"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5634,
+    "output_tokens": 3602
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 Q4 2025\n## Control C1.1 / CC6.7: Data Identification, Protection, and Encryption\n\n**Assessment Period:** October 1 \u2013 December 31, 2025\n**Auditor Review Date:** January 2026\n**Evidence Reviewed:** S3 Encryption Audit, TLS Configuration Audit, Security Exception Register, Data Protection and Encryption Policy (POL-ENC-002), Vendor Assessment Results, Q4 Incident Response Summary\n\n---\n\n## Preliminary Note on Exception Handling\n\nBefore identifying findings, I evaluated each apparent policy deviation against the exception register. Where a valid, CISO-approved, non-expired exception exists with documented compensating controls that are proportionate to the risk, the deviation is treated as a managed deviation rather than a finding. The analysis below reflects that discipline.\n\nThe following apparent deviations were reviewed and **cleared**:\n\n| Apparent Gap | Exception | Disposition |\n|---|---|---|\n| `metrics-collector.internal` using HTTP/plaintext | EXC-2025-011 (Active, Low, expires 2026-06-18, renewed 2025-12-15) | Cleared \u2014 VPC-only, no PII/confidential data, compensating controls verified |\n| `webhooks.bridgeportft.com` using AES-128 | EXC-2025-012 (Active, Low, expires 2026-01-05, renewed 2025-12-15) | Cleared \u2014 data is Confidential not Restricted, AES-128 remains cryptographically sound, no PII |\n| `bft-prod-ml-training` using SSE-S3 instead of SSE-KMS | EXC-2025-013 (Active, Medium, expires 2026-02-25, reviewed 2025-11-20) | Partially cleared \u2014 exception is valid and active; however, a separate finding is raised below regarding the S3 audit's independent \"Non-Compliant\" flag and the absence of versioning for a bucket containing derived PII, which go beyond what the exception covers |\n| `bft-dev-sandbox` using no encryption | EXC-2025-010 (Expired \u2014 bucket now uses SSE-S3, remediation complete) | Cleared \u2014 risk remediated |\n| Legacy SFTP cipher suite | EXC-2025-009 (Expired \u2014 cipher suite upgraded, remediation complete) | Cleared \u2014 risk remediated |\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Partner Data Sync Endpoint Uses a Weak Cipher Suite with No Approved Exception\n\n**Severity: High**\n\n**Relevant Control/Policy Section:** POL-ENC-002 \u00a74.1 (Data in Transit), \u00a74.3 (Minimum Algorithm Standards)\n\n**Evidence Source:** TLS Configuration Audit \u2014 `partner-data-sync.bridgeportft.com`\n\n**Observation:**\n\nThe `partner-data-sync.bridgeportft.com` endpoint is classified as a Production, Restricted endpoint that handles PII (customer names and account numbers for a bank integration feed). It is configured with TLS 1.2, which is minimally acceptable under policy, but the cipher suite in use is `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256`.\n\nThis cipher suite presents two specific weaknesses:\n\n1. **AES-128-CBC**: Policy \u00a74.3 permits AES-128 only for non-Restricted data with documented justification. This endpoint carries Restricted/PII data. Furthermore, CBC mode is susceptible to padding oracle attacks in a way that GCM (authenticated encryption) is not. This is a qualitatively weaker choice even independent of the key length issue.\n2. **SHA-256 in the MAC context**: While technically SHA-256, its use in the CBC MAC construction (`_SHA256` suffix in a TLS 1.2 cipher suite) is weaker than the AEAD construction provided by GCM suites.\n\nNo exception (active or expired) covers this endpoint or this cipher suite. EXC-2025-009 covered `partner-sftp.bridgeportft.com` (a different system) and has expired with remediation confirmed. There is no coverage for `partner-data-sync`.\n\nAdditionally, HSTS is not enabled on this endpoint, meaning clients are not instructed to enforce HTTPS on future connections \u2014 a meaningful gap for an endpoint transmitting PII.\n\n**Why This Is a Finding:**\n- Restricted/PII data transmitted over a cipher suite that violates the AES-256 requirement for Restricted data (\u00a74.3)\n- CBC mode is not an authenticated encryption mode, introducing additional risk not present in GCM suites\n- No approved exception exists\n- HSTS absent on a production PII-handling endpoint\n\n**Recommendation:** Upgrade `partner-data-sync` to a TLS 1.3 cipher suite (e.g., `TLS_AES_256_GCM_SHA384`) or at minimum to `TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384` on TLS 1.2. Enable HSTS. If partner compatibility constraints require the current cipher suite, submit a formal exception request with compensating controls through the process defined in \u00a79.\n\n---\n\n### Finding 2: ML Training Bucket Non-Compliance Persisting Beyond 30-Day Remediation Window with Insufficient Versioning Control\n\n**Severity: Medium**\n\n**Relevant Control/Policy Section:** POL-ENC-002 \u00a74.2 (Data at Rest), \u00a77 (Cloud Storage), \u00a78 (Monitoring and Compliance)\n\n**Evidence Source:** S3 Encryption Audit \u2014 `bft-prod-ml-training`; Exception Register \u2014 EXC-2025-013\n\n**Observation:**\n\nThis finding has two related but distinct components:\n\n**Component A \u2014 Remediation Timeline Overrun:**\n\nEXC-2025-013 is a valid, CISO-approved exception covering `bft-prod-ml-training`'s use of SSE-S3 instead of SSE-KMS. The exception is active and the compensating controls are documented. However, the exception was originally filed in August 2025, and the S3 audit (dated December 20, 2025) independently flags this bucket as \"Non-Compliant\" with the note that it was *\"flagged in Q3 review but remediation still pending.\"*\n\nPolicy \u00a78 states: *\"Non-compliant resources are flagged and must be remediated within 30 days.\"* The Q3 review reference suggests the compliance team identified this issue independently around September/October 2025. As of the December 20 audit, remediation (migration to SSE-KMS) remains pending, with Q1 2026 as the target. This means the 30-day remediation clock referenced in \u00a78 has been exceeded.\n\nThe key distinction for auditors: the *exception* legitimizes the deviation as a temporary managed risk, but it does not override the remediation timeline requirement in \u00a78. The exception register and the compliance audit report are two different instruments, and the audit is correctly flagging that the planned remediation has not occurred. A SOC 2 auditor examining this will see a bucket marked \"Non-Compliant\" in production containing PII-linked data, with remediation deferred for at least two quarters.\n\n**Component B \u2014 Versioning Not Enabled:**\n\nPolicy \u00a77 states versioning must be enabled for buckets containing Confidential or Restricted data. `bft-prod-ml-training` contains derived PII features (income brackets and zip codes linked to customer IDs) and is classified Confidential. The S3 audit shows versioning is **not enabled**. EXC-2025-013 does not address or excuse the missing versioning control \u2014 it is scoped only to the SSE-KMS requirement under \u00a74.2.\n\nThis versioning gap is unexcepted and represents a standalone policy non-compliance for a bucket containing PII-linked data.\n\n**Why This Is a Finding:**\n- Remediation of a known non-compliance has extended well beyond the 30-day window in \u00a78, creating auditability concerns about the effectiveness of the compliance monitoring process\n- Versioning is absent on a Confidential/PII-adjacent bucket with no exception covering this specific requirement\n- The combination of both gaps in a single PII-adjacent bucket increases the overall risk profile\n\n**Recommendation:** Enable versioning on `bft-prod-ml-training` immediately \u2014 this is unblocked by any SageMaker compatibility issue. Accelerate the SSE-KMS migration to Q1 2026 as planned and document a firm completion date. Update EXC-2025-013 to explicitly address the remediation timeline and ensure \u00a78's 30-day clock is reset from the exception approval date going forward to avoid similar audit conflicts.\n\n---\n\n### Finding 3: Staging API Endpoint Lacks HSTS with No Exception Documented\n\n**Severity: Low**\n\n**Relevant Control/Policy Section:** POL-ENC-002 \u00a74.1 (Data in Transit); \u00a72 (Scope \u2014 staging environments included)\n\n**Evidence Source:** TLS Configuration Audit \u2014 `staging-api.bridgeportft.com`\n\n**Observation:**\n\n`staging-api.bridgeportft.com` is a Staging environment endpoint using TLS 1.2 with an acceptable cipher suite. The policy (\u00a72) explicitly states it applies to production, staging, and internal environments. HSTS is not enabled on this endpoint.\n\nWhile this endpoint is classified Internal with no PII, the absence of HSTS means that if a client previously connected via HTTP, subsequent connections are not automatically enforced as HTTPS by the browser/client. For a staging API that may be accessed by developers testing integrations \u2014 some of which may later handle real data \u2014 this represents a low-level hygiene gap.\n\nThis endpoint also has no approved exception covering the missing HSTS configuration.\n\n**Why This Is a Finding:**\n- Policy scope explicitly includes staging environments\n- HSTS is a standard transit security hardening measure for TLS endpoints\n- No exception exists for this gap\n- The risk is low given Internal classification and no PII, but the absence of exception documentation means it is an unmanaged deviation\n\n**Recommendation:** Enable HSTS on `staging-api.bridgeportft.com`. This is a low-effort configuration change and eliminates the deviation without requiring an exception.\n\n---\n\n### Finding 4: Expired Certificate Caused Production-Adjacent Outage \u2014 Internal Certificate Monitoring Control Gap\n\n**Severity: Low**\n\n**Relevant Control/Policy Section:** POL-ENC-002 \u00a76 (Certificate Management)\n\n**Evidence Source:** Q4 2025 Incident Response Summary \u2014 INC-2025-115\n\n**Observation:**\n\nINC-2025-115 documents a 4-hour Jenkins CI/CD outage in December 2025 caused by an expired internal certificate (CERT-INT-010). The root cause was the absence of auto-renewal and a misconfigured monitoring alert \u2014 directly contradicting \u00a76's requirement for automated expiration monitoring with 30-day advance alerts.\n\nRemediation has been initiated (certificates added to Cert-Manager pipeline), and this is noted. However, the incident occurred *during the assessment period* (Q4 2025), meaning auditors will test whether the control was operating effectively during the period \u2014 and it demonstrably was not for at least one internal certificate. The remediation occurring at the end of the period does not retroactively establish operating effectiveness for the full quarter.\n\nWhile Jenkins is classified Internal with no PII, the CI/CD pipeline is a security-sensitive system (source of deployment integrity). A certificate failure here has indirect confidentiality implications if it disrupts the deployment of security controls or patches.\n\n**Why This Is a Finding:**\n- A control failure (expired certificate causing service outage) occurred during the audit period, evidencing that \u00a76 certificate monitoring was not operating effectively across all internal certificates\n- The policy requirement for automated 30-day advance alerting was not met for CERT-INT-010\n- This is a control operating effectiveness issue, not merely a design gap\n\n**Recommendation:** Confirm that all internal certificates have been enrolled in Cert-Manager as of the remediation date. Provide evidence (e.g., Cert-Manager dashboard or configuration export) showing complete coverage. For the SOC 2 report, be prepared to address the period prior to remediation as a control exception with a disclosure, or establish a sub-period testing approach with the auditor.\n\n---\n\n## Summary of Findings\n\n| # | Title | Severity | Policy Section | Exception Exists? |\n|---|---|---|---|---|\n| F-01 | Partner Data Sync endpoint uses weak CBC cipher suite with no exception; HSTS absent | **High** | \u00a74.1, \u00a74.3 | No |\n| F-02 | ML training bucket remediation overdue and versioning absent on PII-adjacent data | **Medium** | \u00a74.2, \u00a77, \u00a78 | Partial (exception covers SSE only, not versioning or timeline) |\n| F-03 | Staging API endpoint missing HSTS with no exception | **Low** | \u00a74.1 | No |\n| F-04 | Internal certificate monitoring control failure during audit period (INC-2025-115) | **Low** | \u00a76 | No |\n\n---\n\n## Items Reviewed and Cleared (Not Findings)\n\n| Item | Reason Cleared |\n|---|---|\n| `metrics-collector` HTTP plaintext | Active exception EXC-2025-011, low risk, VPC-only, renewed December 2025 |\n| `webhooks` AES-128 | Active exception EXC-2025-012, Confidential (not Restricted), no PII, renewed December 2025 |\n| `bft-prod-ml-training` SSE-S3 vs SSE-KMS | Covered by active exception EXC-2025-013 (versioning gap is a separate finding above) |\n| `bft-dev-sandbox` no encryption | EXC-2025-010 expired; remediation confirmed complete (now SSE-S3, synthetic data only) |\n| Legacy SFTP cipher suite | EXC-2025-009 expired; remediation confirmed complete |\n| `bft-prod-logs` SSE-S3, no versioning | Internal classification, no PII; \u00a74.2 and \u00a77 versioning requirements apply to Confidential/Restricted only |\n| `bft-staging-data` SSE-S3, no versioning | Internal classification, no PII; same rationale as above |\n| TLS 1.2 usage across multiple endpoints | Meets the TLS 1.2 minimum in \u00a74.1; TLS 1.3 is not mandated |\n| Vendor assessment \u2014 Jira overdue by 7 days | Not directly relevant to C1.1/CC6.7 encryption controls; vendor document header notes this out-of-scope |\n| Datadog API key rotation not documented | Vendor-side minor finding; no direct C1.1 encryption control implication |\n| Salesforce custom field encryption unverified | Warrants follow-up under vendor management controls but not a C1.1 encryption finding for this assessment |\n\n---\n\n*Assessment prepared for internal readiness purposes. This report does not constitute an opinion on SOC 2 Type II certification. Final determinations are subject to the external auditor's testing and judgment.*"
+}

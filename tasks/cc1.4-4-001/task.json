@@ -1,0 +1,83 @@
+{
+  "id": "cc1.4-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.4",
+  "control_description": "The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/hr-security-policy.md",
+      "type": "policy",
+      "description": "Helix Cloud Solutions HR security policy defining tiered background check requirements by role sensitivity, training deadlines, and pending check escalation procedures"
+    },
+    {
+      "path": "evidence/background-check-records-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "Background check records for 16 employees hired in 2025 with check status, completion dates, and role classifications"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "HR exception register documenting background check exemptions, delays, and training extensions with approval details"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/contractor-onboarding-summary.md",
+      "type": "report",
+      "description": "Contractor onboarding summary for Q4 2025 — operational report not directly relevant to employee background check compliance assessment"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Helix Cloud Solutions' personnel security controls for the 2025 observation period. Review the HR security policy, background check records, exception register, and any supporting documentation. Assess whether CC1.4 requirements for pre-employment screening and personnel competency are being met. Be careful to distinguish between genuine compliance gaps and situations where apparent issues have valid policy-based explanations or documented exceptions.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "Contractors CTR-5001 and CTR-5002 without background checks have valid policy-based exemptions for non-sensitive roles",
+      "description": "Greenleaf Office Supplies (CTR-5001) and Apex Janitorial LLC (CTR-5002) do not have Helix-conducted background checks. This initially appears to be a screening gap. However, the exception register shows both have documented exemptions (EXC-HR-2025-001 and EXC-HR-2025-002) approved by the CHRO. Both are classified as Non-Sensitive per policy Section 3.1 — Greenleaf has no system access and is always escorted, while Apex has after-hours facility access only with no IT system accounts and their contracting agency provides independent background screening that meets Helix minimum standards. Both exceptions were reviewed during 2025 and remain active. This is NOT a finding — the policy explicitly allows Basic-level checks for Non-Sensitive roles, and these contractors have even less access than typical Non-Sensitive employees.",
+      "evidence_sources": [
+        "evidence/exception-register.csv",
+        "evidence/background-check-records-q4-2025.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The model should identify contractors without Helix-conducted background checks, then cross-reference the exception register to find EXC-HR-2025-001 and EXC-HR-2025-002 with CHRO approval and documented compensating controls. The model should recognize these are properly managed exceptions for roles with no system access, not compliance gaps.",
+      "detection_criteria": {
+        "required_keywords": ["CTR-5001", "CTR-5002", "Greenleaf", "Apex Janitorial", "EXC-HR-2025-001", "EXC-HR-2025-002", "Non-Sensitive", "no system access", "CHRO approved", "exception"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": ["not a finding", "properly documented", "valid exemption", "no gap", "compliant", "approved exception"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "HCS-3007 Natasha Orlova has had production access for 209 days with background check still pending and expired exception",
+      "description": "BGC-2025-084 shows HCS-3007 (Natasha Orlova, Site Reliability Engineer, Platform Engineering) was hired June 2, 2025, and has had full production access including AWS root and Kubernetes admin since that date. Her background check was initiated June 2 and remains 'Pending' as of December 28 — 209 days without a completed comprehensive background check. The role is classified as Sensitive, requiring a completed comprehensive check before access provisioning per policy Section 3.1. The exception register shows EXC-HR-2025-003 was approved by the CHRO on August 4 at the 60-day mark per Section 3.3, with compensating controls including weekly code review and staging-only access. However, (1) the exception expired November 2 with no renewal filed, (2) the 90-day risk assessment required by Section 3.3 was never completed, and (3) the exception notes state access was 'limited to staging environment only' but the background check record shows she has 'full production access including AWS root and Kubernetes admin' — indicating the compensating control was either never implemented or was subsequently expanded beyond what the exception authorized. An SRE with AWS root and Kubernetes admin access without a completed background check for over 6 months is a critical personnel security gap.",
+      "evidence_sources": [
+        "evidence/background-check-records-q4-2025.csv",
+        "evidence/exception-register.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The model should identify HCS-3007's pending background check, then check the exception register for EXC-HR-2025-003. The exception appears to provide coverage but has three critical problems: (1) it expired November 2 with no renewal, (2) the 90-day risk assessment was never completed, and (3) the stated compensating control of staging-only access contradicts the actual AWS root and Kubernetes admin access shown in the background check record. The contrast between the properly managed contractor exceptions (red herrings) and this improperly managed employee exception is the key insight.",
+      "detection_criteria": {
+        "required_keywords": ["HCS-3007", "Natasha Orlova", "BGC-2025-084", "EXC-HR-2025-003", "209 days", "Pending", "expired", "AWS root", "Kubernetes admin", "staging", "production", "90-day risk assessment", "Section 3.3", "no renewal"],
+        "minimum_keyword_matches": 6
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["hr_security", "red_herring", "background_check", "exception_management", "contractor", "production_access", "expired_exception", "compensating_controls"]
+  }
+}

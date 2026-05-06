@@ -1,0 +1,18 @@
+row_id,data_category,data_elements,storage_system,retention_period,deletion_method,legal_basis,owner,last_reviewed,notes
+1,Customer Account Data,"Name, email, company, billing address, phone",PostgreSQL (AWS RDS),2 years after account closure,Automated purge job (monthly),Contractual necessity,Customer Success,2025-01-10,Includes both active and churned accounts
+2,Authentication Credentials,"Password hashes, MFA tokens, session tokens",PostgreSQL (AWS RDS),2 years after account closure,Automated purge job (monthly),Contractual necessity,Engineering - Platform,2025-01-10,Passwords stored as bcrypt hashes only
+3,Billing and Payment Data,"Invoice history, payment method tokens, transaction IDs",Stripe + PostgreSQL,2 years after last transaction,Stripe-managed retention for payment tokens; DB purge for metadata,Legal obligation (tax),Finance,2025-01-10,Payment card tokens managed by Stripe; only last-4 digits stored locally
+4,Support Tickets,"Ticket content, attachments, chat transcripts",Zendesk + S3,2 years after ticket resolution,Zendesk automated deletion + S3 lifecycle policy,Legitimate interest,Customer Support,2025-01-10,May contain PII shared by customer during troubleshooting
+5,Marketing Consent Records,"Email opt-in/out status, consent timestamps, source",HubSpot + PostgreSQL,2 years after consent withdrawal or account closure,HubSpot workflow + DB purge,Consent,Marketing,2025-01-10,Consent records retained as compliance evidence
+6,Employee HR Data,"Employee PII, payroll, benefits, performance reviews",BambooHR,2 years after employment termination,BambooHR admin deletion + backup purge,Legal obligation (labor law),People Operations,2025-01-10,Subject to local labor law retention minimums
+7,Product Analytics and Telemetry,"Page views, feature usage, session duration, IP addresses, session IDs, user agent strings",Mixpanel + S3 Data Lake,See footnote 3,See footnote 3,Legitimate interest,Engineering - Data,2025-01-10,Used for product improvement and longitudinal trend analysis
+8,Application Logs,"API request logs, error logs, audit trails",Datadog + S3,2 years from log creation,S3 lifecycle policy (transition to Glacier at 6 months; delete at 2 years),Legitimate interest,Engineering - SRE,2025-01-10,Logs may contain request parameters with PII
+9,Third-Party Integration Data,"OAuth tokens, webhook payloads, API credentials",Vault + PostgreSQL,2 years after integration disconnection,Vault TTL expiration + DB purge,Contractual necessity,Engineering - Integrations,2025-01-10,OAuth tokens encrypted at rest in Vault
+10,Data Subject Access Requests,"DSAR submissions, response records, identity verification docs",Jira (restricted project) + S3,2 years after request completion,Manual deletion with audit log,Legal obligation (GDPR),Privacy Team,2025-01-10,Retain as evidence of compliance
+11,Cookie Consent Preferences,"Consent choices, banner interaction timestamps, consent version",OneTrust + PostgreSQL,2 years after last site visit,OneTrust automated cleanup,Consent,Privacy Team,2025-01-10,Retained as proof of valid consent
+
+Footnotes:
+1. All retention periods are measured from the trigger event specified in the retention_period column.
+2. Backup copies follow the same retention schedule plus a 30-day buffer for backup rotation.
+3. Analytics and product telemetry data (row 7) is exempt from standard retention periods and is retained indefinitely for longitudinal trend analysis. This exemption was approved by the VP of Engineering on 2024-03-15. No periodic review of this exemption is scheduled.
+4. Retention periods comply with Crestline SaaS Privacy Policy v4.2 (effective 2025-01-01).

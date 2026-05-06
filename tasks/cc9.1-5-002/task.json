@@ -1,0 +1,87 @@
+{
+  "id": "cc9.1-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC9.1",
+  "control_description": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions or from the use of vendors and business partners.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/vendor-policy.md",
+      "type": "policy",
+      "description": "Vega Solutions vendor risk management policy defining vendor tiers, SOC 2 review requirements, and qualified opinion procedures"
+    },
+    {
+      "path": "evidence/vendor-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Q4 2025 vendor inventory with 15 vendors showing tier, SOC 2 status, and assessment details"
+    },
+    {
+      "path": "evidence/soc2-review-tracker.csv",
+      "type": "spreadsheet",
+      "description": "SOC 2 report review tracker with reviewer notes, opinion details, CUECs, and follow-up actions"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/vendor-contract-summary.md",
+      "type": "documentation",
+      "description": "Summary of key vendor contract terms including SLAs, termination clauses, and liability caps"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Vega Solutions' vendor risk management controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the vendor management policy, vendor inventory, and SOC 2 review tracker. Assess whether CC9.1 requirements for vendor risk mitigation are met. Pay particular attention to how the organization handles vendor SOC 2 reports with qualified opinions and whether the vendor management program effectively mitigates third-party risk.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Databricks qualified SOC 2 opinion on CC6.3 acknowledged but no formal risk assessment completed",
+      "description": "Databricks (VG-V-005) is a Critical-tier vendor providing data engineering and ML platform services that processes customer PII and behavioral data. Their SOC 2 report for the period July 2024 to June 2025 received a qualified opinion on CC6.3 (Role-Based Access Control): 'Role-based access controls for production data stores were not consistently enforced. 3 of 18 production databases had overly permissive IAM policies granting read access to all engineering roles rather than scoped to specific project teams.' The SOC 2 review tracker shows the reviewer (Daniel Okafor) identified the qualification on August 12, 2025 and escalated to the CISO on August 15, 2025. The CISO acknowledged the qualification and noted: 'Databricks has committed to remediating by Q4 2025. Will follow up.' However, as of December 31, 2025, the review tracker shows 'No formal risk assessment documented. Awaiting Databricks remediation confirmation.' Policy Section 4.3 explicitly requires: 'Qualified opinions require a formal risk assessment within 30 days of review, documenting the nature of the qualification, potential impact on Vega Solutions data, and any compensating controls.' The 30-day deadline passed on September 11, 2025 — over 3 months ago.",
+      "evidence_sources": ["evidence/soc2-review-tracker.csv", "evidence/vendor-policy.md", "evidence/vendor-inventory.csv"],
+      "expected_reasoning": "The auditor should identify the qualified opinion on Databricks' SOC 2 and trace it through the review tracker. The judgment element: Databricks manages the data engineering platform where customer data is processed. The CC6.3 qualification means overly permissive access to production databases — Databricks engineers not on the Vega Solutions project could potentially access Vega's customer data. The CISO acknowledged the issue but did not complete the required risk assessment. Databricks committed to Q4 remediation, but there is no confirmation it was completed, and the risk assessment was never done regardless. The question: does the CISO's acknowledgment and Databricks' remediation commitment satisfy the policy requirement, or is the absence of a formal documented risk assessment a clear violation?",
+      "detection_criteria": {
+        "required_keywords": ["Databricks", "qualified opinion", "CC6.3", "role-based access", "risk assessment", "Section 4.3", "30 days", "not completed", "CISO acknowledged"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "SOC 2 review for 3 High-tier vendors completed outside 120-day SLA",
+      "description": "Policy Section 4.1 requires SOC 2 report reviews for High-tier vendors within 120 days of report issuance. The SOC 2 review tracker shows: (1) Cloudflare (VG-V-010) report issued August 1, 2025, reviewed December 18, 2025 — 139 days, 19 days past SLA. (2) Twilio (VG-V-011) report issued July 15, 2025, reviewed December 5, 2025 — 143 days, 23 days past SLA. (3) MongoDB Atlas (VG-V-012) report issued September 1, 2025, reviewed December 29, 2025 — 119 days, within SLA. The auditor must determine whether the two SLA breaches represent a systemic issue or isolated delays.",
+      "evidence_sources": ["evidence/soc2-review-tracker.csv", "evidence/vendor-policy.md"],
+      "expected_reasoning": "Two of the High-tier vendor SOC 2 reviews exceeded the 120-day SLA by 19 and 23 days respectively. These are not dramatic breaches, but they indicate a pattern of delayed reviews. The judgment call: are these minor operational delays or evidence of insufficient staffing/prioritization of the vendor review program? MongoDB's review was within SLA, so it is not systemic across all vendors, but 2 of 3 missed is a majority.",
+      "detection_criteria": {
+        "required_keywords": ["Cloudflare", "Twilio", "120-day SLA", "139 days", "143 days", "High tier", "review delay", "Section 4.1"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Databricks CUEC for encryption key management not validated by Vega Solutions",
+      "description": "The SOC 2 review tracker notes that Databricks' SOC 2 report includes a Complementary User Entity Control (CUEC) requiring the customer (Vega Solutions) to 'manage and rotate encryption keys for data at rest using customer-managed keys (CMK) with rotation no less than annually.' The reviewer flagged this CUEC and noted: 'Need to confirm with infrastructure team that CMK rotation is configured.' As of December 31, 2025, the follow-up status is 'Pending — infrastructure team has not confirmed.' If Vega Solutions is not meeting this CUEC, the assurance provided by Databricks' SOC 2 report is incomplete — the report's opinion is predicated on the customer fulfilling their CUECs.",
+      "evidence_sources": ["evidence/soc2-review-tracker.csv", "evidence/vendor-policy.md"],
+      "expected_reasoning": "CUECs are controls that must be implemented by the customer to complement the vendor's controls. If Vega Solutions is not rotating CMKs as required, the encryption assurance from Databricks' SOC 2 report is undermined. The judgment call: is a pending confirmation after 4+ months (August to December) an operational delay, or does it suggest the CUEC is not being met? The fact that infrastructure has not confirmed suggests either the control is not in place or the review process lacks follow-through.",
+      "detection_criteria": {
+        "required_keywords": ["Databricks", "CUEC", "encryption key", "CMK", "rotation", "not confirmed", "infrastructure team", "pending"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["vendor_management", "qualified_opinion", "SOC2_review", "CUEC", "judgment_call", "risk_assessment"]
+  }
+}

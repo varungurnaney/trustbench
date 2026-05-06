@@ -1,0 +1,75 @@
+{
+  "task_id": "cc6.3-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:52:54.439490",
+  "score": {
+    "task_id": "cc6.3-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.42857142857142855,
+    "f1": 0.6,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "d.martinez",
+          "TRUNCATE",
+          "customers",
+          "Restricted",
+          "QA",
+          "destructive",
+          "prohibited"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "f.okonkwo",
+          "Finance",
+          "payment_transactions",
+          "INSERT",
+          "UPDATE",
+          "segregation",
+          "write access"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "svc-etl-legacy",
+          "owner",
+          "ALL TABLES",
+          "SELECT",
+          "least privilege"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2770,
+    "output_tokens": 4346
+  },
+  "raw_response": "## SOC 2 Readiness Findings \u2014 CC6.3 Access Authorization, Least Privilege, and Segregation of Duties\n\n| # | Finding Title | Related Policy Section(s) | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Finance user has direct write access to Restricted payment transaction data** | **\u00a73.3 Segregation of Duties**; **\u00a73.1 Least Privilege and RBAC**; **\u00a72.1 Table Classifications** | Row **21** grants **f.okonkwo / Femi Okonkwo**, Finance, `SELECT, INSERT, UPDATE` on `zenith_prod.payment_transactions`, which is classified as **Restricted**. The policy explicitly states that Finance personnel **must not have direct write access** to `payment_transactions`, `invoices`, or `revenue_reports`; Finance access must be read-only and write activity must flow through the application layer with audit logging. | **Critical** |\n| 2 | **QA analyst has destructive production access to Restricted customer data** | **\u00a73.1 Least Privilege and RBAC**; **\u00a73.2 Destructive Operations**; **\u00a72.1 Table Classifications** | Row **22** grants **d.martinez / Diego Martinez**, QA, `SELECT, TRUNCATE` on `zenith_prod.customers`, which is **Restricted**. The `qa-analyst` role is limited to **SELECT** only. `TRUNCATE` is a destructive operation and is prohibited for non-DBA roles on Restricted production tables. The policy requires written Data Owner approval, a change ticket, DBA execution, maintenance window, and backup verification for destructive operations. None of those controls are reflected in the permission grant. | **Critical** |\n| 3 | **Engineering users have direct write access to production databases** | **\u00a73.3 Segregation of Duties**; **\u00a73.1 Least Privilege and RBAC** | Rows **9\u201310** grant **b.nakamura / Brandon Nakamura**, Engineering, `SELECT, INSERT, UPDATE` on production `products` and `orders`. Row **31** grants **j.rivera / Jordan Rivera**, Engineering, `SELECT, INSERT, UPDATE` on production `products`. The policy states that **Development personnel must not have direct write access to production databases**. These grants allow direct production modification by Engineering users outside the application/change-controlled path. | **High** |\n| 4 | **Non-DBA human users have direct access to Restricted tables instead of masked views** | **\u00a73.4 Data Masking**; **\u00a72.1 Table Classifications** | The policy requires non-DBA, non-application roles accessing Restricted data to use **masked views** that redact PII and sensitive fields. The matrix shows direct table access to Restricted production tables: row **21** Finance user on `payment_transactions`; row **22** QA user on `customers`; row **25** Engineering user **g.hoffman / Grace Hoffman** on `customers`; row **32** Customer Success user **k.williams / Kira Williams** on `customers`. These are direct grants to Restricted tables, not masked views. | **High** |\n| 5 | **Legacy ETL service account has overly broad \u201cALL TABLES\u201d access** | **\u00a73.1 Least Privilege and RBAC**; **\u00a75.1 Service Account Governance**; **\u00a76 Exceptions** | Rows **29\u201330** grant `svc-etl-legacy` `SELECT` on **ALL TABLES** in both `zenith_prod` and `zenith_analytics`, covering all data classifications, including Restricted tables such as `customers`, `payment_transactions`, `audit_log`, and potentially `user_credentials`. The `svc-application` role should be limited to **application-specific tables**, not blanket schema-wide access. The account also lacks a documented department and human owner in the matrix, despite the service account policy requiring a designated human owner and business purpose. No documented exception is provided. | **High** |\n| 6 | **Application API service account has broader access than stated business need for payment transactions** | **\u00a73.1 Least Privilege and RBAC**; **\u00a72.1 Table Classifications** | Row **4** grants `svc-app-api` both `SELECT` and `INSERT` on `zenith_prod.payment_transactions`, which is **Restricted**. The note states \u201c**Insert-only for new transactions**,\u201d but the actual privilege includes `SELECT`. If the documented business purpose is insert-only, the `SELECT` privilege is excessive and inconsistent with least privilege. | **Medium** |\n| 7 | **Role assignment for Finance user is inconsistent with read-only Finance requirement** | **\u00a73.3 Segregation of Duties**; **\u00a73.1 Least Privilege and RBAC** | Rows **19\u201321** show **f.okonkwo / Femi Okonkwo** assigned the `app-readwrite` role. Even where rows **19\u201320** only show `SELECT` on `invoices` and `orders`, the assigned role name and row **21** privileges indicate write-capable production access. Finance users should be limited to read-only access for financial reconciliation, with writes routed through the application layer. | **High** |\n\n## Summary\n\nThe most significant CC6.3 readiness gaps are:\n\n- Direct Finance write access to Restricted payment data.\n- QA destructive access to Restricted production customer data.\n- Engineering direct write access to production databases.\n- Direct human access to Restricted tables instead of masked views.\n- Overly broad legacy service account access across all production and analytics tables.\n- Service account access not consistently aligned to documented business purpose and ownership requirements.\n\nRows not specifically identified above appear generally consistent with the stated RBAC model based on the evidence provided, including DBA administrative access for DBA-team members and analytics-only `SELECT` access for data analysts."
+}

@@ -1,0 +1,93 @@
+{
+  "task_id": "a1.2-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:00:45.531215",
+  "score": {
+    "task_id": "a1.2-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "WAL archiving",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "December 1",
+          "re-run",
+          "delayed",
+          "RPO",
+          "4-hour"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RTO",
+          "trending",
+          "margin"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "WAL",
+          "no evidence",
+          "RPO"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "capacity",
+          "planning",
+          "trending"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8693,
+    "output_tokens": 4336
+  },
+  "raw_response": "## Overall Readiness Assessment \u2014 A1.2\n\nCobalt Systems has a documented backup and recovery policy, daily backup execution evidence for one production database, a quarterly restore test that met the stated RTO, and a formal exception process that was used for the November 8 backup failure. However, the evidence does not fully demonstrate that backup and recovery controls are operating effectively across the full in-scope production environment, and there are several operational gaps related to failure response, monitoring evidence, and RTO sustainability.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Backup evidence does not cover the full in-scope production environment | **Backup and Recovery Policy**, Sections 2 and 3; **Daily Backup Execution Log** | The policy scope includes PostgreSQL clusters `cs-db-prod-01` through `cs-db-prod-06`, application file storage, configuration repositories, and HashiCorp Vault. However, the Q4 backup execution log only shows daily full backups for `cs-db-prod-01`. No evidence was provided for backups of the other production database clusters, S3 file storage, configuration repositories, Vault, or other in-scope systems. As a result, the auditor cannot conclude that backup processes are operating across the full environment covered by the policy. | **High** |\n| 2 | Backup failure response procedures were not consistently followed | **Backup and Recovery Policy**, Section 6.1; **Daily Backup Execution Log**; **Exception Register** | The policy requires the on-call engineer to investigate and initiate a re-run within 2 hours of a backup failure. On December 1, the backup failed at approximately 02:31 UTC, alerting occurred at 02:32 UTC, but the re-run did not start until 08:15 UTC \u2014 approximately 5 hours and 43 minutes later. The log explicitly notes a \u201c6-hour gap between failure and re-run due to delayed on-call response.\u201d No formal exception was provided for this event. Additionally, the November 8 exception stated that an automated re-run trigger was added for future network-related failures, but the December 1 network-related failure suggests that remediation was either not implemented, not effective, or not yet operational. | **Medium** |\n| 3 | Backup storage capacity monitoring did not prevent a disk-full backup failure | **Backup and Recovery Policy**, Section 7; **Daily Backup Execution Log**, October 15 | The policy requires continuous monitoring of backup storage capacity and alerts when utilization exceeds 70%. On October 15, the scheduled backup failed due to a disk-full condition on `/mnt/backup-vol-03`. Although the backup was successfully re-run after cleanup, the failure indicates that capacity monitoring or capacity planning did not prevent the backup target from reaching a full state. No evidence was provided showing prior capacity alerts, escalation, or a formal capacity review addressing the issue. | **Low** |\n| 4 | Ongoing evidence for RPO-supporting mechanisms is insufficient | **Backup and Recovery Policy**, Sections 3.2 and 3.5; **Exception Register** | The policy relies on PostgreSQL WAL archiving, incremental backups, and cross-region replication to meet the 4-hour RPO. The November 8 exception states that WAL archiving was operating every 12\u201315 minutes during that specific incident, which is an appropriate compensating control for that event. However, no broader Q4 evidence was provided showing ongoing WAL archive success, WAL lag monitoring, incremental backup execution, or cross-region replication completion within the required 1-hour window. This is especially relevant given multiple network-related backup failures during Q4. | **Medium** |\n| 5 | Restore test passed, but RTO margin is narrow and lacks tracked remediation | **Q4 2025 Restore Test Report**; **Backup and Recovery Policy**, Sections 3.3 and 5 | The Q4 restore test completed in 230 minutes against a 240-minute RTO, leaving only a 10-minute margin. The report identifies an 18% quarter-over-quarter increase in restore duration and warns that the next quarter may approach or exceed the 4-hour RTO. Recommendations were documented, including parallel restore strategies and transfer acceleration, but no evidence was provided of assigned owners, due dates, risk acceptance, or remediation tracking. Current RTO compliance was achieved, but continued compliance is at risk. | **Low** |\n| 6 | Restore testing evidence appears limited to one database backup | **Q4 2025 Restore Test Report**; **Backup and Recovery Policy**, Sections 2 and 5 | The quarterly restore test used backup `BKP-2025-1114` for `cs-db-prod-01`. The policy scope includes multiple production databases, file storage, configuration repositories, and Vault. The evidence does not demonstrate that restore procedures are periodically validated for the other in-scope backup types or systems. While the policy requires quarterly restore testing, the provided evidence only supports successful restoration of one database system. | **Medium** |\n\n---\n\n## Items Reviewed That Do Not Appear to Be Findings\n\n### November 8 Backup Failure\n\nThe November 8 failed full backup was not re-run, creating a gap between the November 7 and November 9 full backups. However, this event was documented in a formal exception register, approved by the CISO, assigned a risk rating, and supported by compensating controls. Specifically, WAL archiving was confirmed to be operating every 12\u201315 minutes, maintaining point-in-time recovery and supporting the stated RPO.\n\nAccordingly, the November 8 event itself does not appear to be an unmitigated control failure. However, the later December 1 delayed response raises concern about whether the corrective action from the November 8 exception was effective.\n\n### Q4 Restore Test Execution\n\nThe Q4 restore test met the 4-hour RTO, passed checksum verification, row-count comparison, sample data validation, referential integrity checks, and application validation. The test was also reviewed and approved by Infrastructure leadership. Therefore, the restore test itself appears appropriately performed for the system tested.\n\n### Cloud Vendor SLA Summary\n\nThe cloud vendor SLA summary is useful context but is not, by itself, sufficient evidence of backup control operation. The AWS Direct Connect SLA miss and recurring cross-region network issues may support the broader concern around cross-region backup reliability, but the vendor SLA document is not specific enough to serve as primary evidence for backup control effectiveness.\n\n---\n\n## Summary Conclusion\n\nCobalt Systems demonstrates several mature elements of a backup and recovery program, including documented policy requirements, daily automated backups for at least one production database, checksum verification, encryption, quarterly restore testing, and formal exception handling.\n\nHowever, for SOC 2 A1.2 readiness, the current evidence package is incomplete and shows some operating effectiveness issues. The most significant gaps are:\n\n1. Lack of evidence across the full in-scope production environment.  \n2. Inconsistent backup failure response, especially the December 1 delayed re-run.  \n3. Insufficient evidence that WAL, incremental backups, and cross-region replication are monitored and operating continuously.  \n4. RTO performance trending close to the defined threshold without a tracked remediation plan."
+}

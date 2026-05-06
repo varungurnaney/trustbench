@@ -1,0 +1,95 @@
+{
+  "task_id": "cc6.1-5-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:18:21.448702",
+  "score": {
+    "task_id": "cc6.1-5-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.8,
+    "precision": 0.5,
+    "f1": 0.6153846153846154,
+    "score": 0.6153846153846154,
+    "gaps_detected": 4,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "HR"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "James Chen",
+          "self-review",
+          "AWS",
+          "segregation",
+          "reviewer"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Derek Chung",
+          "64 hours",
+          "weekend",
+          "Friday",
+          "Monday",
+          "termination",
+          "SLA",
+          "business hours"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "AR-Q4-001",
+          "late",
+          "SLA"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "contractor",
+          "missing"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 12706,
+    "output_tokens": 1847
+  },
+  "raw_response": "Below are my findings based on a review of the provided evidence for SOC 2 CC6.1 regarding logical access controls at Nimbus Health.\n\n---\n\n### **Finding 1: Tardy Access Revocation on Weekend Termination**\n\n**Section:** Termination Log, Policy Section 6.1  \n**Why It's a Gap:**  \nOne voluntary termination (Derek Chung, TERM-Q4-004) occurred late Friday afternoon, with HR notification at 5:15 PM. Okta account disablement took place Monday at 9:12 AM (>64 hours later, but ~12 minutes into business hours Monday). The policy (6.1) clearly states \"Okta account must be disabled within 24 hours of the termination effective date.\" While the log notes no account activity over the weekend, the exposure window exceeded the letter of the policy.  \n**Severity:** **Medium**  \n**Reasoning:**  \nThere was no evidence of unauthorized access or harm, and the extended exposure occurred solely due to business hour coverage limits. However, since Nimbus Health is a PHI handler, the risk of exposure\u2014even on weekends\u2014is significant. This is mitigated by audit evidence of no activity, but the documented SLA breach requires improvement to ensure access is revoked before off-hours begin, or SLA adjusted to clarify expectations.\n\n---\n\n### **Finding 2: One Late Quarterly Access Review with Segregation of Duties Question**\n\n**Section:** Quarterly Access Review Results, Policy Section 5.1  \n**Why It's a Gap:**  \nThe AWS Console (Production) quarterly review (AR-Q4-001) was completed two business days past the 15-business-day SLA, and the reviewer (James Chen) reviewed systems under his own management, raising a Segregation of Duties (SoD) issue.  \n**Severity:** **Medium**  \n**Reasoning:**  \nFor a company handling PHI, timely completion of reviews is important to minimize risk of lingering inappropriate access. A 2-business-day delay is not a critical gap but demonstrates need for stronger management oversight. Having the Cloud Infrastructure Lead review their own domain raises a SoD question; while this is sometimes operationally necessary at small orgs, it represents potential for self-review/undetected inappropriate access. Both aspects are minor in isolation but together elevate risk.\n\n---\n\n### **Finding 3: Residual Access for Terminated Users Discovered in Access Review**\n\n**Section:** Quarterly Access Review Results, Policy Section 5.1  \n**Why It's a Gap:**  \nTwo terminated employees still had active Google Workspace and Jira/Confluence accounts at the time of the Q4 review (AR-Q4-009, AR-Q4-010). Although these were found and disabled during the review, it indicates that automated or coordinated terminations did not fully succeed.  \n**Severity:** **Medium**  \n**Reasoning:**  \nLingering access for terminated users is a direct risk to PHI and corporate data. While the window appears limited (accounts for September-terminees found in early October review and then disabled), this reveals a deficiency in the execution of coordinated terminations or deprovisioning automation, with potential for accidental or deliberate unauthorized access. Since the accounts were found by controls functioning as designed (quarterly review), this is not a critical failure but does require remediation.\n\n---\n\n### **Finding 4: Presence of Non-HR-Matched Okta Accounts (Service/Shared Accounts)**\n\n**Section:** Okta User Report, Policy Section 3.4, 6.4  \n**Why It's a Gap:**  \nTwo active Okta accounts (`platform-monitoring` and `demo-environment`) are not tied to HR records. The policy (3.4) requires service accounts be managed via CyberArk, and have responsibility and documentation. The accounts are described as intended service/shared accounts, but the evidence doesn\u2019t confirm CyberArk management or review record.  \n**Severity:** **Low-to-Medium**  \n**Reasoning:**  \nNon-human accounts must be tightly managed to prevent orphaned, uncontrolled access \u2014 particularly for platforms involving demo access to production-like data (PHI exposure risk). The notes partially mitigate the risk by describing purpose/responsible owner, but there's missing evidence of CyberArk management or quarterly review for these identities. Materiality is low if these are non-privileged and usage is legitimate, but the documentation gap should be closed.\n\n---\n\n### **Finding 5: Managerial Self-Review During Access Review**\n\n**Section:** Quarterly Access Review Results, Policy Section 5.1  \n**Why It's a Gap:**  \nAt least one instance (AWS: James Chen) of an individual reviewing access to systems under their own administrative authority (i.e., possible self-review). SOC 2 and HIPAA both expect some level of separation in critical access reviews to ensure impartiality.  \n**Severity:** **Low to Medium**  \n**Reasoning:**  \nWhile smaller organizations may have to rely on function leads for review, increased oversight (spot checks by InfoSec/Compliance or managerial sign-off) is preferred. Self-reviews can allow inappropriate access to persist. However, given management awareness and evidence of actual issues being found and remediated, material risk appears low; nevertheless, stronger SoD should be considered.\n\n---\n\n### **Finding 6: Minor Delays in Laptop/Device Collection After Termination**\n\n**Section:** Termination Log, Policy Section 6.1  \n**Why It's a Gap:**  \nFor Monica Restrepo (remote employee), device collection occurred three days after termination date, due to shipment time. Not prohibited by policy, but introduces a window where physical media might not be immediately controlled.  \n**Severity:** **Low**  \n**Reasoning:**  \nIf remote-wipe/MDM/BitLocker are in place, risk is modest\u2014but a delay in device receipt extends potential data exfiltration window. Policy is silent on required timing for remote return. Remote workforce realities present logistical limits, but the company could strengthen controls with explicit requirements for remote wipe/disabling before physical return is confirmed.\n\n---\n\n### **Finding 7: All Okta Accounts Appear MFA-Enforced and Properly Categorized**\n\n**Section:** Okta User Report, Policy Section 3.2  \n**Why It's a Gap:**  \nNo major gap identified: All accounts show MFA enabled with strong factors (Okta Verify, YubiKey, TOTP; SMS not used), with account types (contractor, employee, service) properly represented. Existing evidence aligns to policy requirements.  \n**Severity:** **N/A**  \n**Reasoning:**  \nNo noted control deficiency here\u2014evidence demonstrates good practice and alignment with policy and SOC 2/HIPAA standards.\n\n---\n\n### **Finding 8: Detailed and Enforced Access Control Policy**\n\n**Section:** Policy Document  \n**Why It's a Gap:**  \nNo substantive policy gaps located based on the supplied version: SSO, MFA, least privilege, access reviews, privileged access, contractor/service account lifecycle, and monitoring are all specified and align to SOC 2/HIPAA.  \n**Severity:** **N/A**  \n**Reasoning:**  \nPolicy is complete, current, and matches evidence\u2014no policy documentation gaps detected.\n\n---\n\n## **Summary Table**\n\n| # | Title                                                                | Section(s)                                | Severity            |\n|---|----------------------------------------------------------------------|--------------------------------------------|---------------------|\n| 1 | Tardy Access Revocation on Weekend Termination                       | Termination Log, Policy 6.1                | Medium              |\n| 2 | One Late Quarterly Access Review & SoD Issue                         | Access Review, Policy 5.1                  | Medium              |\n| 3 | Residual Access for Terminated Users Found in Review                 | Access Review, Policy 5.1                  | Medium              |\n| 4 | Presence of Non-HR-Matched Okta Accounts (Service/Shared Accounts)   | Okta User Report, Policy 3.4, 6.4          | Low-Medium          |\n| 5 | Managerial Self-Review During Access Review                          | Access Review, Policy 5.1                  | Low-Medium          |\n| 6 | Minor Delays in Laptop/Device Collection                             | Termination Log, Policy 6.1                | Low                 |\n| 7 | All Okta Accounts MFA-Enforced and Proper                            | Okta User Report, Policy 3.2               | N/A (no gap)        |\n| 8 | Detailed and Enforced Access Control Policy                          | Policy Document                            | N/A (no gap)        |\n\n---\n\n**Note:**  \nNone of the above represent a \"Critical\" or \"High\" deficiency. The highest severity is \"Medium,\" reflecting some execution gaps (untimely revocations, SoD, residual access) but not systemic failure or clear evidence of unauthorized access risk being realized. For a healthcare/PHI-processing environment, timely remediation and clarification of policy versus operational limitations (e.g., in off-hours coverage, SoD for access review, remote device return) is strongly recommended to move from \"procedurally adequate\" to \"exemplar\" status."
+}

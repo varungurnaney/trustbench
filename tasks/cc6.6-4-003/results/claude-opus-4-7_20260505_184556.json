@@ -1,0 +1,87 @@
+{
+  "task_id": "cc6.6-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T18:45:56.057591",
+  "score": {
+    "task_id": "cc6.6-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "Cloud Armor"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-data-export-lb",
+          "external",
+          "no Cloud Armor",
+          "signed URLs",
+          "WAF",
+          "customer data"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-prod-webhook-waf",
+          "XSS",
+          "LFI",
+          "RFI",
+          "rate limiting",
+          "adaptive protection",
+          "disabled"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vtx-mgmt-vpc",
+          "Cloud IDS",
+          "not deployed",
+          "peering",
+          "production",
+          "CI/CD",
+          "management VPC"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4082,
+    "output_tokens": 2376
+  },
+  "raw_response": "# CC6.6 Readiness Assessment \u2014 Vertex Data\n## System Boundary Protection Controls\n**Observation Period:** Q4 2025\n\n---\n\n## Scope Note\n\nThe vendor security review schedule was provided but is not relevant to CC6.6 (which addresses external threat protection at the system boundary). Vendor reviews typically map to CC9.2 (vendor management) and were excluded from this assessment.\n\nThe following documents were assessed:\n- VTX-SEC-POL-006 (Perimeter Security Policy v2.4)\n- Cloud Armor WAF policy export\n- Cloud IDS deployment status\n\n---\n\n## Findings\n\n### Finding 1: Production External Load Balancer Lacks WAF Protection\n- **Related to:** Cloud Armor configuration export \u2014 `load_balancers_without_cloud_armor` / Policy \u00a73.1\n- **Gap:** The `vtx-prod-data-export-lb` is an **external-facing** load balancer serving customer bulk data exports, but has **no Cloud Armor policy** attached. Policy VTX-SEC-POL-006 \u00a73.1 explicitly requires that \"all public-facing endpoints must be served through Google Cloud Load Balancer with Cloud Armor security policies.\" Signed URLs provide authentication but do not provide WAF protections (SQLi, XSS, LFI/RFI inspection), DDoS adaptive protection, or rate limiting. This is a direct violation of stated policy and creates an unprotected attack surface for an endpoint handling bulk customer data.\n- **Severity:** **High**\n\n---\n\n### Finding 2: Webhook WAF Policy Has Materially Reduced Ruleset\n- **Related to:** Cloud Armor export \u2014 `vtx-prod-webhook-waf` / Policy \u00a73.1\n- **Gap:** The `vtx-prod-webhook-waf` policy enforces only the SQL Injection preconfigured expression. It is missing XSS, LFI, and RFI rules that are present on the frontend and API policies, has **adaptive_protection disabled**, and has **no rate limiting**. Webhook ingestion endpoints are common DDoS and abuse targets. Policy \u00a73.1 requires the OWASP CRS, adaptive DDoS protection, and rate limiting for all public-facing endpoints \u2014 none of which are fully met here.\n- **Severity:** **High**\n\n---\n\n### Finding 3: Cloud IDS Not Deployed on Management VPC\n- **Related to:** Cloud IDS deployment CSV \u2014 `vtx-mgmt-vpc` / Policy \u00a74.1\n- **Gap:** Policy \u00a74.1 mandates that \"Google Cloud IDS must be deployed on **all production VPC networks**.\" The management VPC has no IDS endpoint deployed, despite hosting CI/CD runners and monitoring infrastructure, and despite having **VPC peering to production** via the shared VPC. A compromise of the management VPC (e.g., via a malicious CI dependency) could pivot to production with no network-layer detection. Whether the management VPC is \"production\" is ambiguous in current policy \u2014 that ambiguity itself is a control weakness.\n- **Severity:** **High**\n\n---\n\n### Finding 4: Production IDS Default-Allows Low-Severity Traffic Inspection Inconsistency\n- **Related to:** Cloud IDS deployment CSV / Policy \u00a74.1\n- **Gap:** Production VPC IDS endpoints are tuned to `INFORMATIONAL` severity, while staging is tuned to `MEDIUM`. While more verbose production logging is defensible, Policy \u00a74.1 states \"high-confidence alerts forwarded to SIEM within 5 minutes\" but does not define severity tuning standards, signature update review evidence, or alert volume baselining. With 342 alerts in us-central1 and 187 in europe-west1 in Q4, there is no evidence provided of triage SLA conformance. This is a documentation/evidence gap rather than a configuration defect.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: Stale Policy Review Cadence\n- **Related to:** VTX-SEC-POL-006 \u00a77\n- **Gap:** The policy states it is \"reviewed quarterly\" with \"Next review: June 2025.\" As of the Q4 2025 observation period (December 2025), the policy is overdue for at least two quarterly reviews (September 2025 and December 2025). Auditors typically expect evidence that policies governing key controls are reviewed on the documented cadence. This undermines the reliability of the policy as a control artifact.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: Policy Scope vs. Reality Mismatch \u2014 VPC Architecture\n- **Related to:** VTX-SEC-POL-006 \u00a76.1\n- **Gap:** The policy describes a Shared VPC host project named `vtx-network-host` with service projects `vtx-prod`, `vtx-staging`, `vtx-dev`. The IDS inventory references `vtx-prod-vpc`, `vtx-staging-vpc`, `vtx-mgmt-vpc`, and `vtx-shared-vpc` \u2014 the management VPC is not mentioned in the policy at all, and naming conventions diverge. Policy documentation should accurately reflect the deployed architecture so that boundary protection requirements unambiguously apply to all in-scope networks (including mgmt).\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: Twilio Log Retention Finding Not Tracked to Closure (Informational/Out of Scope)\n- **Related to:** Vendor review log \u2014 Twilio Q4 review\n- **Gap:** Noted only because it appeared in evidence; the Twilio \"minor finding on log retention\" has no documented remediation status. Not a CC6.6 finding \u2014 flagged for the vendor management workstream (CC9.2).\n- **Severity:** **Low** (out of scope for CC6.6)\n\n---\n\n## Summary\n\n| Severity | Count |\n|---|---|\n| Critical | 0 |\n| High | 3 |\n| Medium | 3 |\n| Low | 1 |\n\n**Overall CC6.6 Readiness: NOT READY**\n\nThe two High findings on missing/reduced WAF coverage (Findings 1 and 2) and the IDS coverage gap on the management VPC (Finding 3) represent material deviations between stated policy and operating configuration. These should be remediated before the SOC 2 examination period closes, or compensating controls should be documented and tested.\n\n### Recommended Remediation Priorities\n1. Attach a Cloud Armor policy (matching the API/frontend baseline) to `vtx-prod-data-export-lb`.\n2. Bring `vtx-prod-webhook-waf` to parity with frontend/API WAF policies, or document a risk acceptance.\n3. Deploy Cloud IDS to `vtx-mgmt-vpc` or formally classify it out of \"production\" scope and justify based on peering/segmentation controls.\n4. Refresh VTX-SEC-POL-006 to current quarter and reconcile VPC naming."
+}

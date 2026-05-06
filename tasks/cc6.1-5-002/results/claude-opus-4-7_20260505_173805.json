@@ -1,0 +1,75 @@
+{
+  "task_id": "cc6.1-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:38:05.615164",
+  "score": {
+    "task_id": "cc6.1-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.4,
+    "f1": 0.4444444444444445,
+    "score": 0.4444444444444445,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Diana Vasquez",
+          "TERM-Q4-024",
+          "holiday",
+          "on-call",
+          "staffing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Marcus Hall",
+          "TERM-Q4-016",
+          "involuntary",
+          "AWS",
+          "access key",
+          "5 days"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7726,
+    "output_tokens": 3551
+  },
+  "raw_response": "# SOC 2 CC6.1 Readiness Assessment \u2014 CrestPoint Technologies Q4 2025\n\n## Executive Summary\n\nReviewed population: 25 terminations, 15 quarterly access reviews, supporting Okta authentication logs, and the Access Control Policy (POL-AC-2025-010 v4.2). Overall, the control is **largely operating effectively**, with strong evidence of timely Okta deprovisioning, supporting audit trails, and complete quarterly access reviews. However, three exceptions warrant findings, one of which is a clear control failure documented by the entity itself.\n\nPolicy SLAs being measured against (Section 6):\n- Voluntary: Okta + AWS + SaaS revoked within **24 hours**\n- Involuntary: Okta suspended **within 1 hour** of HR notification\n- Offboarding checklist signed off **within 48 hours**\n\n---\n\n## Finding 1: Voluntary Termination Exceeded 24-Hour Okta SLA (Holiday Coverage Gap)\n\n**Related section:** Policy \u00a76.1 \u2014 Employee Termination; Termination log TERM-Q4-024 (Diana Vasquez)\n\n**Gap description:**\nTERM-Q4-024 is a self-identified SLA failure. Termination occurred 2025-12-19 at 16:30; Okta was not disabled until 2025-12-22 at 09:15 \u2014 approximately **64.75 hours** after termination, exceeding the 24-hour policy SLA by ~40 hours. AWS IAM and SaaS were also revoked outside SLA. The stated root cause is that **IT on-call was not staffed Dec 19\u201321 due to holiday schedule**, which itself indicates a process design weakness: the policy SLA does not pause for holidays/weekends, but operational staffing apparently does. The mitigating factors (voluntary departure, no login activity during the gap per Okta audit, eventual completion) reduce risk but do not eliminate the deviation.\n\nThis is a **single exception in a population of 25 (4% deviation rate)**, but the underlying cause \u2014 absence of after-hours/holiday on-call coverage for offboarding \u2014 is a systemic process gap that could recur and could affect involuntary terminations where risk is materially higher.\n\n**Severity: Medium**\n*(Rationale: Confirmed SLA breach with documented root cause, but voluntary departure with no anomalous activity. Severity would escalate to High if the gap recurs or affects an involuntary termination.)*\n\n---\n\n## Finding 2: AWS IAM Access Key Missed in Initial Offboarding \u2014 Involuntary Termination\n\n**Related section:** Policy \u00a76.1 and \u00a76.2 \u2014 Employee/Involuntary Termination; Termination log TERM-Q4-016 (Marcus Hall)\n\n**Gap description:**\nMarcus Hall was an **involuntary** termination on 2025-11-14. Okta was disabled 2025-11-15 at 08:00 (~22 hours later). This itself is a **failure of the \u00a76.2 involuntary termination requirement** that Okta be suspended \"immediately upon HR notification (target: within 1 hour)\" \u2014 the SLA was missed by ~21 hours. The termination log marks `okta_sla_met = Yes`, suggesting the team measured against the 24-hour voluntary SLA rather than the 1-hour involuntary SLA. This is a **control measurement / classification issue** in addition to an SLA breach.\n\nFurthermore, **AWS IAM access keys were not deactivated until 2025-11-19 \u2014 5 days post-termination**, far outside the 24-hour SLA. IT noted the access key was missed in the initial checklist, indicating the offboarding checklist does not adequately enumerate long-lived AWS credentials (programmatic/access keys) separately from console/SSO access.\n\nThe Okta log also shows a **failed login attempt from external IP 98.42.156.78 at 2025-11-15 08:05**, immediately after account lock \u2014 consistent with the terminated employee attempting access post-departure. While the lock prevented entry into Okta-federated systems, the AWS IAM access key remained valid for 4 additional days. Management's note of \"no evidence of API usage during gap\" is reassuring but not equivalent to affirmative monitoring evidence (e.g., CloudTrail review attached).\n\nThis is the **most serious finding** in the population:\n- Involuntary termination (highest-risk category)\n- SLA breach across two systems (Okta and AWS)\n- Documented attempt to re-authenticate post-termination\n- Long-lived credential remained valid for 5 days\n- Self-reported as a checklist gap, indicating control design weakness\n\n**Severity: High**\n\n---\n\n## Finding 3: SLA Tracking / Classification Inaccuracy\n\n**Related section:** Policy \u00a77 \u2014 Monitoring (quarterly termination compliance reporting); Termination log column `okta_sla_met`\n\n**Gap description:**\nThe termination log's `okta_sla_met` field appears to use a single 24-hour threshold for all terminations, regardless of voluntary vs. involuntary classification. Per policy \u00a76.2, involuntary terminations have a **1-hour Okta suspension target**, not 24 hours. Three involuntary terminations in Q4:\n\n| Term ID | Employee | Notification \u2192 Okta Disable | 1-hr SLA Met? | Log Marks SLA Met? |\n|---|---|---|---|---|\n| TERM-Q4-008 | Samantha Liu | 17 min | Yes | Yes \u2713 |\n| TERM-Q4-016 | Marcus Hall | ~21 hours | **No** | Yes \u2717 |\n| TERM-Q4-022 | Derek Cho | 16 min | Yes | Yes \u2713 |\n\nThe Marcus Hall row inaccurately reports SLA compliance. This indicates the **quarterly termination compliance report (\u00a77)** is not differentiating SLAs by termination type, weakening management's ability to detect involuntary-termination control breakdowns. Auditors should request the underlying report logic.\n\n**Severity: Medium**\n*(Rationale: Affects monitoring/reporting accuracy of CC6.1 control operation, not the underlying revocation event. Tightly coupled to Finding 2.)*\n\n---\n\n## Finding 4: Offboarding Checklist Does Not Reliably Capture Programmatic Credentials\n\n**Related section:** Policy \u00a76.1 \u2014 Offboarding checklist scope; TERM-Q4-016 root cause note\n\n**Gap description:**\nTERM-Q4-016 explicitly states: *\"IT noted access key was missed in initial offboarding checklist.\"* This points to a **control design weakness** rather than a one-time human error: the checklist apparently treats AWS IAM revocation as a single line item rather than enumerating sub-tasks (console federation via Okta, IAM user accounts, IAM access keys, programmatic tokens, GitHub PATs, CI/CD credentials, etc.). For an engineering-heavy organization where developers typically hold long-lived credentials outside of SSO, this is a meaningful exposure.\n\nNo evidence was provided that the checklist has been revised post-incident. There is no remediation ticket, root-cause memo, or updated checklist version included in the evidence package.\n\n**Severity: Medium**\n\n---\n\n## Finding 5: No Evidence of Post-Termination Monitoring / Anomaly Review\n\n**Related section:** Policy \u00a77 \u2014 Monitoring (failed login monitoring, weekly authentication anomaly review)\n\n**Gap description:**\nThe Okta log shows a failed login from external IP 98.42.156.78 attributed to marcus.hall@crestpoint.io at 2025-11-15 08:05, five minutes after the account was locked. Policy \u00a77 requires \"Failed login monitoring with SOC alerts\" and \"Weekly authentication anomaly review.\" No evidence has been provided of:\n- A SOC alert generated on this event\n- Investigation/disposition documentation\n- Confirmation that no AWS API calls occurred during the 5-day IAM key gap (CloudTrail review)\n\nFor an involuntary termination with a documented post-termination authentication attempt, the absence of investigation evidence is a notable evidence gap even if the underlying monitoring control operated.\n\n**Severity: Low** (evidence gap rather than confirmed control failure; auditor should request SOC alert/ticket history before finalizing)\n\n---\n\n## Areas Operating Effectively (No Findings)\n\n- **Quarterly access reviews:** All 15 systems completed within the 15-business-day window per \u00a75.1; findings remediated and documented.\n- **Voluntary termination Okta SLA:** 21 of 22 voluntary terminations within 24 hours; remaining cases (e.g., TERM-Q4-002, TERM-Q4-006, TERM-Q4-014) processed next-business-morning, all within SLA.\n- **Two of three involuntary terminations** processed in 16\u201322 minutes \u2014 well within the 1-hour target.\n- **Audit trail completeness:** Okta logs show paired session-end and account.lock events for sampled users, supporting the integrity of revocation evidence.\n- **Session termination on lock:** Active sessions appear to end at or before the account lock event in sampled cases.\n\n---\n\n## Recommended Remediation (for management response)\n\n1. **Implement 24/7/365 offboarding coverage** (on-call rotation or automated workflow that does not depend on staffed IT) \u2014 addresses Finding 1.\n2. **Redesign the offboarding checklist** to enumerate AWS IAM access keys, GitHub PATs, CI/CD tokens, and other long-lived credentials as discrete line items with sign-off \u2014 addresses Findings 2 and 4.\n3. **Update the quarterly termination compliance report** to apply the 1-hour SLA for involuntary terminations and flag breaches separately \u2014 addresses Finding 3.\n4. **Document SOC investigation** of the Marcus Hall failed login event and provide CloudTrail evidence covering 11/14\u201311/19 to confirm no unauthorized API activity \u2014 addresses Finding 5.\n\n## Overall Conclusion\n\nThe control is operating but with **identified deficiencies**. Findings 1 and 2 represent confirmed SLA breaches; Finding 2 is the most consequential due to its involuntary-termination context, multi-system scope, and evidence of post-termination access attempt. Recommend reporting these as **observed deviations** rather than a control failure of CC6.1 overall, contingent on satisfactory management response addressing the systemic weaknesses (holiday coverage, checklist completeness, SLA classification in monitoring)."
+}

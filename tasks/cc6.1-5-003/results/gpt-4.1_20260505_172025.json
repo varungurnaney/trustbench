@@ -1,0 +1,79 @@
+{
+  "task_id": "cc6.1-5-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:20:25.319818",
+  "score": {
+    "task_id": "cc6.1-5-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.2222222222222222,
+    "f1": 0.30769230769230765,
+    "score": 0.30769230769230765,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "dormant",
+          "USR-0142"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "210",
+          "207",
+          "USR-0198",
+          "USR-0209",
+          "headcount",
+          "discrepancy"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "AWS"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "USR-0178",
+          "Kenji Matsuda",
+          "dormant",
+          "contract end"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7964,
+    "output_tokens": 1948
+  },
+  "raw_response": "Below are findings based on your evidence, mapped to the Cascade Analytics access control policy, HR roster, Okta user export, and Q4 2025 access reviews:\n\n---\n\n### 1. **Dormant Accounts Not Explicitly Reviewed**\n\n- **Policy Section:** Section 5.2 (Quarterly Access Reviews \u2013 dormant account flagging)\n- **Why it's a gap:** The access control policy requires reviewers to \"flag dormant accounts (no login activity exceeding 90 days) for revocation.\" The Okta user export shows some accounts with last login dates exceeding or approaching 90 days (e.g., `USR-0156`, Timothy Hall: last login 2025-09-22; `USR-0142`, Patricia Anderson: last login 2025-09-15; `USR-0178`, Kenji Matsuda: last login 2025-09-27), yet the review records do **not** explicitly note the identification or remediation of dormant accounts. Reviewer notes show only general comments regarding active status and team alignment, lacking specific mention of dormant account evaluation or actions.\n- **Severity:** **High**  \n  (Because failing to flag dormant accounts directly undermines a documented control specifically aimed at mitigating stale access risk.)\n\n---\n\n### 2. **Service Account MFA Non-Enforcement**\n\n- **Policy Section:** Section 4.1 (MFA Required for All Okta Sessions)\n- **Why it's a gap:** Several Okta accounts (e.g., `USR-0198` svc-demo-portal, `USR-0209` partner-api-sync) are service/integration accounts with **MFA enrollment = No**. There is no documentation or evidence in the reviews regarding compensating controls or exceptions for these accounts, nor any mention in review notes of explicitly validating the risk. Policy allows CISO-approved exceptions only (Section 8), time-bound and reviewed quarterly, but no such exceptions are cited.\n- **Severity:** **High**  \n  (Because MFA enforcement is a core security requirement, and unprotected service accounts can be major vectors for compromise, especially if lacking oversight.)\n\n---\n\n### 3. **Discrepancy in User Roster vs. Okta Accounts**\n\n- **Policy Section:** Section 5.2 (Reviews must verify employment/contract status), Section 5.4 (Cross-reference against HR data)\n- **Why it's a gap:** The Okta user list (210 users) is higher than the active headcount indicated by the HR roster (195 employees + 12 active contractors = 207 named individuals). The Okta report includes miscellaneous accounts such as `temp-audit-access`, which does not correspond directly to a named employee or contractor assignment. The Q4 review reviewer notes do not address reconciliation between Okta and HR headcount, nor document the business justification for temp or special accounts.\n- **Severity:** **Medium**  \n  (Because missed reconciliation may allow presence of \u201cshadow\u201d accounts that escape regular HR-driven oversight.)\n\n---\n\n### 4. **Missing Documentation of Actual Account Dispositions**\n\n- **Policy Section:** Section 5.3 (Review must produce documented evidence: list, disposition, signature, remediation tracking)\n- **Why it's a gap:** The Q4 access review summaries report numbers of accounts reviewed, revoked, or modified, but do **not** provide underlying evidence lists or documentation at user level as required by policy. There is also no explicit tracking of flagged or remediated issues by specific user/account in the provided evidence. The review evidence as presented is likely insufficient for independent validation.\n- **Severity:** **Medium**\n  (Because lack of granular evidence impedes testing, and the control's design explicitly requires detailed documentation for defensibility.)\n\n---\n\n### 5. **Incomplete Review of Contractors' Offboarding**\n\n- **Policy Section:** Section 3.3 (Contractors reviewed monthly; deprovisioned within 24 hours), Section 6.2 (Offboarding timing)\n- **Why it's a gap:** The Q4 review notes for AWS and other systems mention revocation for departed contractors, but there is no record of a systematic check to ensure that all contractors whose contract ended (e.g., Kenji Matsuda, contract ended Nov 30, 2025) were actually deprovisioned from all relevant systems, nor is there a linkage back to the HR roster's \"Inactive\" or end-date fields. Okta shows Kenji Matsuda (USR-0178) **active** in Okta as of 2025-12-31, even though contract ended the prior month (and last login was in September).\n- **Severity:** **High**\n  (Because continued active credentials for departed contractors violate a critical control, and policy mandates strict timelines for offboarding.)\n\n---\n\n### 6. **Lack of Evidence for Quality Assurance (QA) Spot-Checks**\n\n- **Policy Section:** Section 5.4 (QA checks by IT Security each quarter)\n- **Why it's a gap:** The access control policy requires IT Security to perform QA spot-checks on reviews to ensure compliance with review criteria and reconciliation with HR data. The provided access review summary makes no mention of the QA process, results, or any documented findings from such oversight.\n- **Severity:** **Medium**\n  (Because secondary oversight is itself a control activity; if missing or undocumented, review quality may be unverified.)\n\n---\n\n### 7. **Unclear Handling of Special-Use Accounts (Audit, Integrations)**\n\n- **Policy Section:** Section 5.2 and 5.3 (Validation of service/special accounts, Review evidence)\n- **Why it's a gap:** Accounts such as `temp-audit-access` and `partner-api-sync` exist in Okta. The access review summaries and notes do not describe review of these accounts' business justifications, time-bounded need, or whether appropriate restrictions (expiration, usage monitoring) were in place, nor do they link to any formal exception process as required in Section 8.\n- **Severity:** **Medium**\n  (Because such accounts frequently present risk if not justified, monitored, and timed out per policy.)\n\n---\n\n### 8. **No Explicit Reference to Privilege Accumulation Checking**\n\n- **Policy Section:** Section 5.2 (Identify privilege accumulation due to role changes)\n- **Why it's a gap:** While some reviewer notes reference \"adjusted permissions\" (e.g., Okta, GitHub, DataEngine), most reviews do not document a systematic check for users who have changed roles, and whether old privileges were removed. The reviewer notes are not always granular or explicit regarding privilege drift analysis per user.\n- **Severity:** **Low**\n  (Because privilege accumulation is often a subtle risk, and lack of process transparency may permit lingering excessive access; however, some evidence of adjustment is present.)\n\n---\n\n### 9. **No Documentation of Exception Approvals or Compensating Controls**\n\n- **Policy Section:** Section 8 (Exceptions)\n- **Why it's a gap:** For accounts missing MFA or for special situations, the policy requires CISO-approved, time-limited exceptions with compensating controls. There is **no evidence** such exceptions were tracked, documented, or cited in review artifacts for any accounts that would require them.\n- **Severity:** **Medium**\n  (Because absence of a documented exception process means policy deviations are invisible; however, none were explicitly documented as needed.)\n\n---\n\n**Summary Table**\n\n| # | Title                                               | Policy Section(s)     | Why Gap                                                      | Severity  |\n|---|-----------------------------------------------------|-----------------------|--------------------------------------------------------------|-----------|\n| 1 | Dormant Accounts Not Explicitly Reviewed            | 5.2                  | Missing evidence of dormant account review/action             | High      |\n| 2 | Service Account MFA Non-Enforcement                 | 4.1, 8               | Service/integration accounts lack MFA & exception tracking    | High      |\n| 3 | Discrepancy in User Roster vs. Okta Accounts        | 5.2, 5.4             | Okta > HR headcount, not fully reconciled/documented          | Medium    |\n| 4 | Missing Documentation of Actual Account Dispositions| 5.3                  | No detailed user-level cert evidence per review               | Medium    |\n| 5 | Incomplete Review of Contractors' Offboarding       | 3.3, 6.2             | Terminated contractors remain in Okta                         | High      |\n| 6 | Lack of Evidence for QA Spot-Checks                 | 5.4                  | No documentation of reviewer QA or spot checks                | Medium    |\n| 7 | Unclear Handling of Special-Use Accounts            | 5.2, 5.3, 8          | Special/acct justification & controls not cited/reviewed      | Medium    |\n| 8 | No Explicit Reference to Privilege Accumulation     | 5.2                  | Most reviews lack detail on checking for privilege drift      | Low       |\n| 9 | No Documentation of Exception Approvals             | 8                    | Lack of records for policy exceptions/compensating controls   | Medium    |\n\n---\n\n**Note:**  \nThe above reflects both procedural and substantive effectiveness under CC6.1, considering the risk posed by dormant, overprivileged, or incorrectly retained accounts\u2014particularly among contractors and service accounts. Some issues are higher severity, notably around dormant account management, service account controls, and improper contractor offboarding, which are directly related to potential PII exposure and overall system security."
+}

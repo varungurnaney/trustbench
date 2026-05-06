@@ -1,0 +1,55 @@
+{
+  "task_id": "cc6.4-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:23:21.424059",
+  "score": {
+    "task_id": "cc6.4-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "Rachel Simmons",
+          "Terminated",
+          "24 hours",
+          "badge deactivation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CCTV",
+          "90 days",
+          "30 days",
+          "retention",
+          "Appendix A"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3692,
+    "output_tokens": 1087
+  },
+  "raw_response": "Certainly! Below are identified compliance findings based on review of Helios Systems\u2019 physical security policy and the provided badge access log, in relation to **SOC 2 CC6.4** (restricting physical access to facilities):\n\n---\n\n### 1. **Access Granted to Terminated Employee**\n\n**Policy Section:** 4.3 Termination and Deactivation\n\n**Gap Explanation:**  \nThe badge access log shows Rachel Simmons (employee_status: \"Terminated\", termination_date: 2025-11-15) was granted access on 2025-11-17 (entry_id ACL-0947), two days after her termination. Policy 4.3 requires badge deactivation within 24 hours of termination, but this access was not revoked as mandated.\n\n**Severity:** **Critical**\n\n---\n\n### 2. **No Evidence of Denied Access or Failed Attempts in Access Log**\n\n**Policy Section:** 3.1 Badge Access System, Appendix A (\"Failed attempt lockout\")\n\n**Gap Explanation:**  \nThe log only contains \"Granted\" events, with no \"Denied\" or failed access attempts shown. The system is configured for lockouts and anti-passback (Policy 3.1, Appendix A), so a lack of denied/failed attempts over an entire quarter (and across multiple restricted doors) is not expected. Either incidents are not being logged, are omitted from sampling, or monitoring/reporting is incomplete.\n\n**Severity:** **Medium**\n\n---\n\n### 3. **No Contractor or Visitor Badge Evidence in Logs**\n\n**Policy Section:** 4.2 Badge Types, 6 Visitor Management\n\n**Gap Explanation:**  \nAll entries in the log are for employees. The policy states contractors (yellow badges) and visitors (orange badges) use the badge system, and specific escort and check-in/out processes are required for visitors. The absence of any such entries suggests either contractors/visitors aren't being properly logged/tracked, or sample log is incomplete.\n\n**Severity:** **Medium**\n\n---\n\n### 4. **Policy Retention Period Discrepancy (CCTV footage)**\n\n**Policy Section:** 5.3 Retention; Appendix A: System Configuration Summary\n\n**Gap Explanation:**  \nPolicy states \"All CCTV footage shall be retained for a minimum of 90 days,\" while Appendix A (system configuration) states Milestone XProtect \"Retention period: 30 days.\" This creates ambiguity as to actual data retention, risking non-compliance with stated control requirements.\n\n**Severity:** **Low**\n\n---\n\n### 5. **No Evidence of Quarterly Access Review Outcomes**\n\n**Policy Section:** 4.4 Quarterly Access Review\n\n**Gap Explanation:**  \nPolicy mandates a quarterly review of all badge access authorizations and review/flagging of \"stale\" accounts (not used in 90+ days). No evidence (minutes, findings, or revocation results) of these reviews is present in the submitted records or in the log itself.\n\n**Severity:** **Medium**\n\n---\n\n### 6. **No Indication of Second Authentication (PIN) at Server Room Access**\n\n**Policy Section:** 3.2 Access Points (Server rooms require Badge + PIN)\n\n**Gap Explanation:**  \nThe log shows access to AP-SRV-01 and AP-SRV-02 (\"Restricted\" zone) for multiple employees but does not indicate whether the required PIN step was successfully performed, only \"Granted\" status. For SOC 2, evidence of dual-factor authentication at critical zones may be required.\n\n**Severity:** **Low**\n\n---\n\n### 7. **No Evidence of Visitor Escort or End-of-Day Badge Deactivation**\n\n**Policy Section:** 6.3 Escort, 6.4 Check-Out\n\n**Gap Explanation:**  \nThere are no visitor records in the log and no audit evidence that visitors are properly escorted or that their badges are being deactivated per end-of-day requirements.\n\n**Severity:** **Low**\n\n---\n\n## Summary Table\n\n| Title                                             | Policy Section         | Reason for Gap                                                | Severity |\n|---------------------------------------------------|-----------------------|---------------------------------------------------------------|----------|\n| Access Granted to Terminated Employee             | 4.3                   | Badge not deactivated within required 24hrs                   | Critical |\n| No Evidence of Denied/Failed Access Attempts      | 3.1, App A            | Missing expected log entries for failed access                | Medium   |\n| No Contractor/Visitor Badge Evidence in Logs      | 4.2, 6                | No entries for non-employee badge types                       | Medium   |\n| Policy Retention Period Discrepancy (CCTV)        | 5.3, App A            | Policy says 90d, config says 30d                              | Low      |\n| No Evidence of Quarterly Access Review Outcomes   | 4.4                   | No review/audit results provided                              | Medium   |\n| No Indication of Second Authentication (PIN)      | 3.2                   | Access log doesn't show PIN use at restricted areas           | Low      |\n| No Evidence of Visitor Escort or Badge Deactivation| 6.3, 6.4              | No visitor logs or evidence of end-of-day badge removal       | Low      |\n\n---\n\n**Remediation should prioritize deactivation of terminated personnel\u2019s badges (Critical), review log completeness and quarterly review evidence, and ensure all relevant access types and authentication factors are auditable.**"
+}

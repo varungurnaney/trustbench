@@ -1,0 +1,77 @@
+{
+  "task_id": "cc9.1-5-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:56:31.003617",
+  "score": {
+    "task_id": "cc9.1-5-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.42857142857142855,
+    "f1": 0.6,
+    "score": 0.6,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Databricks",
+          "qualified opinion",
+          "CC6.3",
+          "role-based access",
+          "risk assessment",
+          "Section 4.3",
+          "30 days",
+          "not completed"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Cloudflare",
+          "Twilio",
+          "139 days",
+          "143 days",
+          "Section 4.1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Databricks",
+          "CUEC",
+          "encryption key",
+          "CMK",
+          "rotation",
+          "not confirmed",
+          "infrastructure team",
+          "pending"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3029,
+    "output_tokens": 3815
+  },
+  "raw_response": "## Overall Assessment\n\nVega Solutions has a structured vendor risk management program with defined vendor tiers, SOC 2 review requirements, CUEC validation, contract requirements, and business review expectations. The vendor inventory and SOC 2 tracker show that most Critical and High vendors have current SOC 2 reviews and documented CUEC follow-up.\n\nHowever, **CC9.1 is not fully met for the Q4 2025 observation period** because several key vendor risk mitigation activities are either incomplete, untimely, or not evidenced\u2014most notably the handling of a **qualified SOC 2 report for Databricks**, a Critical vendor processing customer PII and behavioral data.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **No formal risk assessment documented for Databricks qualified SOC 2 opinion** | **POL-VRM-007, Section 4.3 \u2013 Qualified Opinion Handling**; SOC 2 Review Tracker, VG-V-005 Databricks | Databricks, a **Critical vendor**, received a qualified SOC 2 opinion for CC6.3 related to inconsistent enforcement of role-based access controls over production data stores. The policy requires a formal risk assessment within 30 days of review, including impact analysis, compensating controls, remediation commitments, and risk acceptance or remediation requirements. The review was completed on **August 12, 2025**, making the assessment due by **September 11, 2025**. The tracker states: \u201cNo formal risk assessment documented.\u201d This means Vega did not formally evaluate or accept the risk associated with a Critical vendor\u2019s access control deficiency. | **High** |\n| 2 | **Databricks CUEC validation is overdue and unresolved** | **POL-VRM-007, Section 4.2 \u2013 CUEC Validation**; SOC 2 Review Tracker, VG-V-005 Databricks | The Databricks SOC 2 report identified a CUEC requiring Vega to manage and rotate encryption keys for data at rest using customer-managed keys. Policy requires CUECs to be validated within 30 days of SOC 2 review completion. As of the tracker, the validation status remains: \u201cPending \u2014 infrastructure team has not confirmed CMK rotation configuration.\u201d Because Databricks processes customer PII and behavioral data, failure to validate encryption key management weakens Vega\u2019s mitigation of vendor-related data protection risk. | **High** |\n| 3 | **High-tier vendor SOC 2 reviews were not completed within required timelines** | **POL-VRM-007, Section 4.1 \u2013 SOC 2 Report Review**; SOC 2 Review Tracker, VG-V-010 Cloudflare and VG-V-011 Twilio | Policy requires High vendors\u2019 SOC 2 reports to be reviewed within 120 days of report issuance. Two High vendors exceeded this requirement: **Cloudflare** report issued August 1, 2025, reviewed December 18, 2025, approximately 139 days later; **Twilio** report issued July 15, 2025, reviewed December 5, 2025, approximately 143 days later. Delayed reviews reduce Vega\u2019s ability to timely identify vendor control issues, CUECs, exceptions, or risks impacting customer request metadata and customer phone numbers. | **Medium** |\n| 4 | **Active High vendors appear to have expired contracts during the Q4 observation period** | **Vendor Contract Summary, Key Vendor Contract Terms**; Vendor Inventory | The contract summary shows **Datadog** contract end date of **September 30, 2025** and **Zendesk** contract end date of **August 31, 2025**, yet both vendors are listed as **Active** in the Q4 vendor inventory. No evidence was provided of renewal, extension, or replacement agreements. If contracts expired, Vega may lack enforceable SLAs, incident notification requirements, liability protections, data return/destruction rights, and other contractual risk mitigation terms for active High vendors. | **High** |\n| 5 | **Contractual risk mitigation requirements are not fully evidenced for all Critical and High vendors** | **POL-VRM-007, Section 5 \u2013 Contractual Requirements**; Vendor Contract Summary | The policy requires vendor contracts to include data protection obligations, right to audit, 72-hour incident notification, data return/destruction, and cyber insurance for Critical and High vendors. The contract summary does not include all High vendors\u2014Cloudflare, Twilio, and MongoDB Atlas are missing from the table. In addition, **PagerDuty**, a High vendor, is listed as having **no right to audit**, which conflicts with policy requirements. This limits Vega\u2019s ability to verify vendor controls and enforce risk mitigation rights. | **Medium** |\n| 6 | **Business review evidence does not demonstrate required content or full operating effectiveness** | **POL-VRM-007, Section 4.4 \u2013 Business Reviews**; Vendor Inventory | The policy requires Critical vendor quarterly business reviews and High vendor semi-annual reviews covering SLA performance, incident history, and security posture. The inventory provides only a \u201clast business review\u201d date, such as December 12, 2025 for Critical vendors and October 15, 2025 for High vendors. No review minutes, SLA performance results, incident history, security posture updates, or action items were provided. Dates alone do not demonstrate that vendor disruption risks and performance issues were assessed or mitigated as required. | **Medium** |\n| 7 | **Vendor disruption and exit risk mitigation is not sufficiently documented for Critical vendors** | **CC9.1 Control Objective**; **POL-VRM-007, Sections 4.4, 5, and 6** | CC9.1 requires the entity to identify, select, and develop risk mitigation activities for risks arising from business disruptions and vendor use. The evidence shows vendor tiering, SOC 2 reviews, and contract terms, but does not show documented continuity planning, exit strategies, alternative service options, recovery considerations, or dependency risk analysis for Critical vendors such as AWS, Snowflake, Stripe, Okta, and Databricks. SLAs and termination clauses alone do not demonstrate that Vega has developed sufficient mitigation plans for vendor outages or service disruptions. | **Medium** |\n\n---\n\n## Conclusion\n\nVega\u2019s vendor risk management framework is reasonably designed in several areas, including tiering, SOC 2 review requirements, CUEC tracking, and contractual expectations. However, the control is **not operating effectively for Q4 2025** due to unresolved issues with a Critical vendor\u2019s qualified SOC 2 opinion, overdue CUEC validation, late SOC 2 reviews for High vendors, and incomplete evidence of contractual and business disruption risk mitigation."
+}

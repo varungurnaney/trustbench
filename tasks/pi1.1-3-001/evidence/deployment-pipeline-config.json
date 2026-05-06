@@ -1,0 +1,163 @@
+{
+  "pipeline": {
+    "name": "pinnacle-saas-platform",
+    "version": "2.4.1",
+    "last_modified": "2025-06-15T14:22:00Z",
+    "modified_by": "carlos.rivera@pinnacle.io",
+    "repository": "github.com/pinnacle-cloud/saas-platform",
+    "trigger": {
+      "branches": ["main"],
+      "events": ["push", "pull_request"]
+    }
+  },
+  "stages": [
+    {
+      "name": "build",
+      "order": 1,
+      "type": "build",
+      "enabled": true,
+      "steps": [
+        {
+          "name": "checkout",
+          "action": "actions/checkout@v4",
+          "timeout_minutes": 5
+        },
+        {
+          "name": "setup-java",
+          "action": "actions/setup-java@v4",
+          "config": {
+            "java-version": "21",
+            "distribution": "temurin"
+          }
+        },
+        {
+          "name": "compile",
+          "command": "mvn clean compile",
+          "timeout_minutes": 10
+        },
+        {
+          "name": "unit-tests",
+          "command": "mvn test -Pcoverage",
+          "timeout_minutes": 15,
+          "fail_on": {
+            "test_failure": true,
+            "coverage_below": 80
+          }
+        },
+        {
+          "name": "sast-scan",
+          "action": "sonarqube-scan",
+          "config": {
+            "project_key": "pinnacle-saas",
+            "quality_gate": "strict",
+            "fail_on_critical": true
+          }
+        }
+      ],
+      "on_failure": "abort_pipeline"
+    },
+    {
+      "name": "docker-build",
+      "order": 2,
+      "type": "build",
+      "enabled": true,
+      "steps": [
+        {
+          "name": "build-image",
+          "command": "docker build -t pinnacle-saas:${GIT_SHA} .",
+          "timeout_minutes": 10
+        },
+        {
+          "name": "push-to-ecr",
+          "command": "docker push ${ECR_REPO}/pinnacle-saas:${GIT_SHA}",
+          "timeout_minutes": 5
+        },
+        {
+          "name": "container-scan",
+          "action": "trivy-scan",
+          "config": {
+            "severity": "CRITICAL,HIGH",
+            "exit_code": 0
+          }
+        }
+      ],
+      "on_failure": "abort_pipeline"
+    },
+    {
+      "name": "production-approval",
+      "order": 3,
+      "type": "approval",
+      "enabled": true,
+      "config": {
+        "required_approvers": ["release-managers"],
+        "minimum_approvals": 1,
+        "timeout_hours": 48,
+        "notification": {
+          "channel": "#release-approvals",
+          "mention": "@release-managers"
+        }
+      }
+    },
+    {
+      "name": "production-deploy",
+      "order": 4,
+      "type": "deploy",
+      "enabled": true,
+      "environment": "production",
+      "steps": [
+        {
+          "name": "deploy-ecs",
+          "command": "aws ecs update-service --cluster prod --service pinnacle-saas --force-new-deployment",
+          "timeout_minutes": 15
+        },
+        {
+          "name": "wait-stable",
+          "command": "aws ecs wait services-stable --cluster prod --service pinnacle-saas",
+          "timeout_minutes": 10
+        }
+      ],
+      "rollback": {
+        "enabled": true,
+        "strategy": "previous_task_definition",
+        "health_check_timeout": 300
+      }
+    },
+    {
+      "name": "post-deploy-verification",
+      "order": 5,
+      "type": "test",
+      "enabled": true,
+      "steps": [
+        {
+          "name": "smoke-tests",
+          "command": "npm run smoke-tests -- --env production",
+          "timeout_minutes": 10
+        },
+        {
+          "name": "health-check",
+          "command": "curl -sf https://api.pinnacle.io/health || exit 1",
+          "retries": 3,
+          "retry_delay_seconds": 30
+        }
+      ],
+      "on_failure": "trigger_rollback"
+    }
+  ],
+  "notifications": {
+    "on_success": {
+      "slack_channel": "#deployments",
+      "message": "Production deployment successful: ${GIT_SHA}"
+    },
+    "on_failure": {
+      "slack_channel": "#deployments",
+      "pagerduty": "platform-oncall",
+      "message": "Production deployment FAILED: ${GIT_SHA}"
+    }
+  },
+  "metadata": {
+    "created": "2024-08-20",
+    "last_audit": "2025-03-15",
+    "owner": "Platform Engineering",
+    "classification": "internal"
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "task_id": "cc8.1-4-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:18:17.177402",
+  "score": {
+    "task_id": "cc8.1-4-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.8571428571428571,
+    "f1": 0.923076923076923,
+    "score": 0.923076923076923,
+    "gaps_detected": 6,
+    "gaps_total": 6,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-414",
+          "DB failover",
+          "holiday freeze"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "deployed during freeze"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-410",
+          "log4j",
+          "holiday freeze",
+          "CISO",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-411",
+          "48",
+          "business hours",
+          "retrospective",
+          "SLA"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-411",
+          "maya.jackson",
+          "segregation",
+          "deployed",
+          "developer"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "quorum",
+          "Security Lead",
+          "absent",
+          "high risk",
+          "customer data",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-007",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "post-implementation",
+          "verification",
+          "missing",
+          "No",
+          "2 hours"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-008",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-412",
+          "maya.jackson",
+          "security review",
+          "segregation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3611,
+    "output_tokens": 1526
+  },
+  "raw_response": "Below is a readiness assessment of Stratos Inc.'s Q4 2025 compliance with **CC8.1: Change Management** (SOC 2). Findings are directly supported by your evidence. For each, I reference the relevant document, the precise gap, and severity.\n\n---\n\n### **1. Missing Post-Implementation Verification on High-Risk Change**\n\n- **Section:** Change request log, Change Management Policy (Section 3.5: Post-Implementation Review)\n- **Why It's a Gap:**  \n  Ticket **CHG-409** (\"Add customer data export endpoint,\" High risk) shows `post_impl_verified: No` and blank `post_impl_date`. Policy requires all changes, *especially high risk*, to have documented post-implementation verification within 2 hours. No evidence of completion.\n- **Severity:** **High**\n- **Notes:** This is a direct breach of post-implementation review requirements for high-risk changes, increasing the risk of undetected deployment issues.\n\n---\n\n### **2. High-Risk Change Approved Without Security Lead Present**\n\n- **Section:** CAB meeting minutes (Nov 18, 2025), Change Management Policy (Section 3.2: Approval; Section 3.4: High/Critical changes require Security review)\n- **Why It's a Gap:**  \n  **CHG-409** was approved at a CAB meeting where only 2 of 3 members attended and the Security Lead was *absent*. For high-risk changes, the policy states quorum is mandatory, and the Security team must review all high/critical risks. No evidence in notes of an exception or compensating control.\n- **Severity:** **High**\n- **Notes:** The minutes explicitly note this absence for a high-risk change. While the policy emphasizes Security must review high-risk changes, the log and minutes provide no evidence this occurred.\n\n---\n\n### **3. Emergency and Retrospective CAB Reviews Sometimes Outside Required Window**\n\n- **Section:** Change Management Policy (Section 3.2: Retrospective CAB Review within 48 business hours), Change request log, CAB meeting minutes\n- **Why It's a Gap:**  \n  **CHG-411 (ETL emergency fix)** and **CHG-414 (DB failover)** were reviewed by CAB at the next scheduled meeting, which occurred **6 business days** after implementation\u2014exceeding the required 48 business hours.\n    - CHG-411: Deployed Dec 1 (Mon), reviewed Dec 9 (Tue)\n    - CHG-414: Deployed Dec 22 (Mon), reviewed Dec 30 (Tue); though holidays possibly stretch the definition, 6 business days is still a violation even accounting for Dec 23\u201327 as holidays.\n- **Severity:** **Medium**\n- **Notes:** Consistently missing the CAB's timeliness requirement for emergency changes undermines the effectiveness of change oversight, but these are less egregious than quorum/test/segregation breaches.\n\n---\n\n### **4. Segregation of Duties Violation \u2014 Developer as Security Reviewer**\n\n- **Section:** Change request log (CHG-412), Change Management Policy (Section 3.3: Segregation of Duties, 3.4: Security Review)\n- **Why It's a Gap:**  \n  For **CHG-412** (Update TLS cipher suites, High risk), both the *developer and the security reviewer* are listed as \"maya.jackson\". Policy states the developer cannot be the approver and that high-risk changes require security review before deployment. Best practice expects that the security review is performed by someone independent of the change's author for true segregation.\n- **Severity:** **Medium**\n- **Notes:** While technically, someone on the security team reviewed it, a single individual fulfilling both roles on a high-risk change is a meaningful control gap.\n\n---\n\n### **5. Policy Exception: Standard Change Implemented During Freeze Without Required Approval**\n\n- **Section:** Change request log (CHG-410), Change Management Policy (Section 5: Change Freeze)\n- **Why It's a Gap:**  \n  **CHG-410** (\"Patch log4j dependency,\" Standard) was deployed on **Nov 26** during the holiday freeze, despite policy stating *all* emergency changes during freeze require CISO approval. There is no documented CISO approval.\n- **Severity:** **Low**\n- **Notes:** A standard, low-risk patch is unlikely to pose significant risk, and the absence of CISO approval may be a minor process oversight, but it's a breach of the documented freeze policy.\n\n---\n\n### **6. CAB Quorum Not Met for High-Risk Change Approval**\n\n- **Section:** CAB meeting minutes (Nov 18, 2025; Dec 30, 2025), Change Management Policy (Section 3.2: Approval)\n- **Why It's a Gap:**  \n  **CHG-409** (High risk) approved at a CAB without Security Lead\u2014explicitly failing quorum.  \n  **CHG-414** (Emergency, Critical) was approved retroactively at a CAB also without Security Lead, but CISO approval was obtained via Slack in real time, partially mitigating risk for the emergency.  \n- **Severity:** **High (for CHG-409)**  \n  **Low (for CHG-414 emergency)** due to compensating control (CISO approval).\n\n---\n\n### **Summary Table**\n\n| Finding Title                                              | Section                             | Gap                                                                   | Severity |\n|-----------------------------------------------------------|-------------------------------------|------------------------------------------------------------------------|----------|\n| 1. Missing Post-Implementation Verification                | Change log, Policy 3.5              | High-risk change with no documented verification                       | High     |\n| 2. High-Risk CAB Approval Without Security Lead            | CAB mins, Policy 3.2, 3.4           | High-risk change approved in CAB w/o Security Lead / security review   | High     |\n| 3. Untimely CAB Reviews of Emergencies                    | Change log, CAB mins, Policy 3.2     | Emergency change CAB reviews >48 business hours after change           | Medium   |\n| 4. Developer as Own Security Reviewer                     | Change log (CHG-412), Policy 3.4     | High-risk change security reviewed by its own developer                | Medium   |\n| 5. Standard Change During Freeze Without CISO Approval     | Change log, Policy 5                 | Patch deployed during freeze without required CISO approval            | Low      |\n| 6. CAB Quorum Not Met for High-Risk Change (CHG-409)      | CAB mins, Policy 3.2                 | High-risk change CAB approved with insufficient quorum (no Sec Lead)   | High     |\n| 6b. CAB Quorum Not Met for Emergency (CHG-414; mitigated) | CAB mins, Policy 3.2                 | Emergency CAB without Security Lead, but CISO approval as compensating | Low      |\n\n---\n\n## Final Notes\n\n- Key control deficiencies are concentrated around **high-risk change approvals**, **timeliness of CAB oversight for emergencies**, and **segregation of duties**.\n- Chronic procedural gaps on a high-risk change (CHG-409) are the most severe.\n- The team frequently adheres to policy for standard and normal risk changes, but corners are sometimes cut for urgent or holiday-period changes.\n\n**If you have follow-up questions or want tailored remediation guidance for any specific gap, please advise!**"
+}

@@ -1,0 +1,81 @@
+{
+  "task_id": "cc6.1-1-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:24:15.370322",
+  "score": {
+    "task_id": "cc6.1-1-002",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 0.75,
+    "precision": 0.3,
+    "f1": 0.4285714285714285,
+    "score": 0.75,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely",
+          "timeframe",
+          "hours",
+          "immediate",
+          "revocation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "production",
+          "MFA",
+          "multi-factor",
+          "server",
+          "coverage",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "evidence",
+          "artifact",
+          "retention",
+          "format",
+          "stored"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 893,
+    "output_tokens": 1349
+  },
+  "raw_response": "Below is an assessment of the NovaTech Solutions Access Control Policy against SOC 2 **CC6.1 (Logical Access Security)**. Each identified gap or area for improvement is detailed per your requested format.\n\n---\n\n## Findings\n\n---\n\n### 1. Weakness: Lack of Explicit Coverage of All Protected Information Assets\n\n**Section:** Scope\n\n**Why it\u2019s a gap:**  \nThe policy states that it applies to \"production systems, internal applications, corporate network, and cloud infrastructure (AWS)\", but does not explicitly mention all types of protected information assets, such as endpoints (laptops, workstations, mobile devices), backups, development environments, SaaS applications (beyond AWS), and information processed/stored offsite or by third parties. SOC 2 expects all 'protected information assets' to be covered explicitly.\n\n**Severity:** Medium\n\n---\n\n### 2. Weakness: No Mention of Logical Network Segmentation\n\n**Section:** (Missing; not addressed)\n\n**Why it\u2019s a gap:**  \nCC6.1 expects organizations to have some logical network segmentation (e.g., separation of production and development environments, restricted network zones for sensitive data). The policy does not reference whether network architecture enforces such logical controls.\n\n**Severity:** Medium\n\n---\n\n### 3. Weakness: No Specifics on Logging of Access to Sensitive Data\n\n**Section:** Monitoring\n\n**Why it\u2019s a gap:**  \nWhile monitoring of failed logins and privileged session recording are mentioned, there is no explicit requirement to log access to sensitive data or critical applications (beyond privileged sessions), nor clarity on retention periods for access logs other than privileged accounts. SOC 2 expects robust logging for sensitive resources and evidence storage.\n\n**Severity:** Medium\n\n---\n\n### 4. Weakness: Incomplete Guidance for Access Revocation Timeliness\n\n**Section:** 6.1 Termination\n\n**Why it\u2019s a gap:**  \nThe policy states, \"Access to all systems should be removed in a timely manner\" after termination, but does not specify a required timeframe (e.g., within 24 hours). Lack of defined timelines may result in inconsistent revocation practices.\n\n**Severity:** Medium\n\n---\n\n### 5. Weakness: Insufficient Requirement for Review Documentation Retention\n\n**Section:** 5.2 Review Process\n\n**Why it\u2019s a gap:**  \nThe policy says review completion \"is documented and retained,\" but doesn\u2019t specify how long access review records must be kept or where (e.g., for at least one year, as typical for SOC 2 evidence). This may weaken compliance auditability.\n\n**Severity:** Low\n\n---\n\n### 6. Weakness: Incomplete Authentication Requirements for All Systems\n\n**Section:** 4.2 Multi-Factor Authentication\n\n**Why it\u2019s a gap:**  \nMFA is required for VPN, cloud (AWS), and some email scenarios, but there is no policy requiring MFA for other critical systems (e.g., on-prem production servers, internal admin consoles, privileged accounts in non-cloud systems). SOC 2 expects strong authentication for all sensitive access.\n\n**Severity:** High\n\n---\n\n### 7. Weakness: No Explicit Visitor or Third-Party Access Controls\n\n**Section:** Scope (and throughout)\n\n**Why it\u2019s a gap:**  \nWhile third-party personnel are within scope, there are no procedures specified for onboarding/offboarding vendor users, managing temporary/visitor access, or enforcing least privilege for non-employee access. This is important for environments where third-party or vendor access is required.\n\n**Severity:** Low\n\n---\n\n### 8. Weakness: Weak Guidance on Service Account Management\n\n**Section:** (Implied in Role Definitions / Privileged Access, but not explicit)\n\n**Why it\u2019s a gap:**  \nThe policy focuses on individual access but does not mention service accounts (system/application-level non-human accounts), which can be exploited if poorly managed. SOC 2 expects these to be uniquely identified, controlled, and reviewed.\n\n**Severity:** Medium\n\n---\n\n### 9. Weakness: No Explicit Anti-Phishing or Credential Protection Controls\n\n**Section:** Authentication\n\n**Why it\u2019s a gap:**  \nWhile password policies and MFA are mentioned, there is no reference to controls aimed at preventing credential theft (e.g., anti-phishing training, controls restricting password sharing by policy, technical controls against credential compromise). SOC 2 expects multiple layers for safeguarding credentials.\n\n**Severity:** Low\n\n---\n\n### 10. Weakness: No Mention of Periodic Policy Review against Current Threats\n\n**Section:** Approval/Next Review\n\n**Why it\u2019s a gap:**  \nThe policy is scheduled for annual review but does not require review in response to material changes (e.g., new threats, regulatory change, major breaches). SOC 2 expects organizations to adapt policies based on evolving risks.\n\n**Severity:** Low\n\n---\n\n## Summary Table\n\n| # | Title                                               | Section         | Severity |\n|---|-----------------------------------------------------|-----------------|----------|\n| 1 | Incomplete Asset Coverage                           | Scope           | Medium   |\n| 2 | Lack of Logical Network Segmentation                | (Missing)       | Medium   |\n| 3 | Lack of Sensitive Data Access Logging               | Monitoring      | Medium   |\n| 4 | No Timely Revocation Standard                       | 6.1 Termination | Medium   |\n| 5 | Insufficient Review Documentation Retention         | 5.2 Reviews     | Low      |\n| 6 | Incomplete MFA Coverage                             | 4.2 MFA         | High     |\n| 7 | Inadequate 3rd-Party Access Controls                | Scope/Others    | Low      |\n| 8 | Service Account Management Omitted                  | (Implied)       | Medium   |\n| 9 | No Credential Theft Controls                        | Authentication  | Low      |\n|10 | No Threat-Driven Policy Review Requirement          | Approval/Review | Low      |\n\n---\n\n## Recommendations\n\n- Expand scope and asset definitions.\n- Include explicit MFA requirement for all sensitive or privileged access.\n- Define strict timelines for access revocation.\n- Require logging and regular review for all sensitive access, not just failed logins or privileged sessions.\n- Cover service account and third-party access in detail.\n- Specify retention requirements for review artifacts.\n- Mandate policy reviews on major changes, not just annually.\n- Consider addressing anti-phishing and credential security controls in the policy.\n\n---\n\n**Note:** None of the identified findings are immediately \"Critical\" since the foundations are strong, but item #6 (MFA for all sensitive/privileged access) should be prioritized as \"High\" due to the current threat landscape and common audit expectations."
+}

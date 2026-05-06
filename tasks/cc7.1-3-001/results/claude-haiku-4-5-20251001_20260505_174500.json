@@ -1,0 +1,93 @@
+{
+  "task_id": "cc7.1-3-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:45:00.782788",
+  "score": {
+    "task_id": "cc7.1-3-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.5714285714285714,
+    "f1": 0.7272727272727273,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "eu-west-1",
+          "10.20.6.0",
+          "10.20.7.0",
+          "GDPR",
+          "Critical",
+          "100% coverage",
+          "data residency",
+          "zero scan",
+          "production"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "10.10.20.0",
+          "IoT",
+          "Building Management",
+          "FW-REQ-2025-0892",
+          "firewall rule"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "10.10.21.0",
+          "Lab",
+          "Research",
+          "separate AD domain",
+          "credentials",
+          "not provisioned",
+          "100% coverage"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "81.8%",
+          "100%",
+          "18 of 22",
+          "4 subnets",
+          "coverage gap",
+          "Section 3.3"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3876,
+    "output_tokens": 2567
+  },
+  "raw_response": "# CC7.1 Compliance Assessment \u2014 NimbusCore Inc.\n\n## Executive Summary\n\nNimbusCore Inc. has established a comprehensive vulnerability management policy with clear scan frequencies, remediation SLAs, and tracking procedures. However, the Q4 2025 scan coverage report reveals **significant gaps in detection and monitoring coverage** that directly contradict the stated policy requirement of \"100% of registered subnets\" in each scan cycle. Four of 22 registered subnets (18.2%) remain unscanned, including two **Critical-classified production subnets** containing customer data subject to GDPR.\n\n---\n\n## Findings\n\n### Finding 1: Subnet Coverage Falls Below Policy Requirement\n\n**Document Reference:** POL-VM-003, Section 3.3 + Q4 2025 Coverage Report\n\n**The Gap:**\n- **Policy requirement:** \"Scan coverage must achieve 100% of registered subnets each scan cycle.\"\n- **Actual performance:** 18 of 22 subnets (81.8%) scanned in Q4 2025\n- **Unscanned subnets:** 4 subnets remain outside detection scope for the entire quarter\n\n**Why This is a Gap:**\nThe policy explicitly mandates 100% coverage. The 18.2% coverage gap represents a direct violation of the control's stated objective: \"uses detection and monitoring procedures to identify changes to configurations.\" Subnets without scanning cannot identify configuration changes or newly discovered vulnerabilities. The policy also requires that \"any gaps in coverage must be documented and remediated within one scan cycle,\" but these gaps persisted across the entire Q4 observation period (90 days).\n\n**Severity:** **CRITICAL**\n\n---\n\n### Finding 2: Critical-Classified Production Subnets Remain Unscanned\n\n**Document Reference:** Asset Inventory (SUB-021, SUB-022) + Q4 2025 Coverage Report\n\n**The Gap:**\nTwo subnets containing production assets are unscanned:\n\n| Subnet ID | CIDR | Name | Classification | Asset Count | Reason for Non-Coverage |\n|-----------|------|------|-----------------|-------------|------------------------|\n| SUB-021 | 10.20.6.0/24 | AWS Production VPC \u2014 eu-west-1a | **Critical** | 68 | Qualys Cloud Agent not deployed \u2014 data residency review blocking |\n| SUB-022 | 10.20.7.0/24 | AWS Production VPC \u2014 eu-west-1b | **Critical** | 42 | Qualys Cloud Agent not deployed \u2014 data residency review blocking |\n\n**Why This is a Gap:**\nThese subnets house 110 production assets handling GDPR-regulated customer data. The asset inventory designates both as \"Critical\" classification, indicating high-risk information assets. The policy scope states the control applies to \"all information assets,\" and these are among the most sensitive. Leaving critical production workloads outside the vulnerability detection program creates an unmonitored exposure to both known and newly discovered vulnerabilities for an extended period (expected remediation: end of Q1 2026 \u2014 potentially 6+ months of non-coverage).\n\nThis creates a material gap in the organization's ability to fulfill CC7.1's requirement to \"identify changes to configurations that result in the introduction of new vulnerabilities.\"\n\n**Severity:** **CRITICAL**\n\n---\n\n### Finding 3: Production IoT/Building Management Subnet Unscanned Due to Stalled Firewall Change\n\n**Document Reference:** Q4 2025 Coverage Report (not_scanned_subnets) + Asset Inventory (SUB-019)\n\n**The Gap:**\n- **Subnet:** 10.10.20.0/24 (IoT and Building Management)\n- **Asset count:** 28 assets\n- **Classification:** Production, Medium\n- **Reason for non-coverage:** Firewall rule request (FW-REQ-2025-0892) pending since **October 15, 2025** \u2014 75+ days unresolved at time of Q4 report generation\n\n**Why This is a Gap:**\nIoT and building management systems are known high-risk attack surfaces due to legacy firmware, poor patch management, and often-critical operational functions. A 75+ day delay in enabling vulnerability scanning represents a prolonged blind spot in an operational technology (OT) environment. \n\nThe policy requires coverage gaps be \"remediated within one scan cycle\" (approximately 30 days for most asset classes). This subnet exceeded that remediation window by 45+ days. The coverage report notes the issue is \"escalated\" but provides no evidence of compensating controls (e.g., manual assessment, alternative scanning method) during the scanning gap.\n\n**Severity:** **HIGH**\n\n---\n\n### Finding 4: Lab/Research Network Lacks Scanning Credentials Despite Production Status Registration\n\n**Document Reference:** Asset Inventory (SUB-020) + Q4 2025 Coverage Report\n\n**The Gap:**\n- **Subnet:** 10.10.21.0/24 (Lab and Research Network)\n- **Asset count:** 15 assets\n- **Status in inventory:** Listed as \"Production\" environment (despite \"Non-Production\" label in coverage report)\n- **Reason for non-coverage:** \"Scan credentials not provisioned \u2014 lab environment uses separate AD domain\"\n\n**Why This is a Gap:**\nThe policy Section 3.4 requires \"All infrastructure scans must use credentialed scanning.\" This subnet was never onboarded to the scanning program due to lack of credential provisioning, despite being registered in the enterprise asset inventory since February 2024. This represents a procedural control failure: the subnet was added to scope but the prerequisite technical control (credential management) was never completed.\n\nWhile labeled \"Non-Production,\" the asset inventory's date of registration (2024-02-01) and location in the primary on-premises data center suggests these research assets may interact with production systems or contain sensitive intellectual property warranting vulnerability monitoring.\n\n**Severity:** **MEDIUM**\n\n---\n\n### Finding 5: Incomplete Asset Discovery in Scanned Subnets\n\n**Document Reference:** Q4 2025 Coverage Report (summary section) + Asset Inventory\n\n**The Gap:**\n- **Assets in inventory:** 1,247\n- **Assets discovered by scanning:** 1,089\n- **Discovery rate:** 87.3%\n- **Missing assets:** 158 (13.7% of inventory not detected by scanners)\n\n**Why This is a Gap:**\nEven within the 18 subnets that were successfully scanned, the scanner only detected 87.3% of expected assets. This indicates either:\n1. Assets in the inventory are incorrectly registered/obsolete\n2. Firewall rules or network segmentation are preventing scanner access to assets that should be in scope\n3. Asset inventory is not synchronized with actual deployed infrastructure\n\nThis undermines the reliability of the vulnerability scan results. Undetected assets represent potential blind spots for vulnerability identification, contradicting CC7.1's requirement to detect \"changes to configurations.\"\n\n**Severity:** **HIGH**\n\n---\n\n### Finding 6: No Evidence of Compensating Controls for Coverage Gaps\n\n**Document Reference:** Policy Section 6 (Risk Acceptance) + Q4 2025 Coverage Report\n\n**The Gap:**\nThe policy requires risk acceptance requests to include \"documented compensating controls\" and \"CISO approval\" with \"annual re-review.\" The Q4 coverage report documents four coverage gaps but provides no evidence of:\n- Risk acceptance documentation\n- Compensating controls (manual vulnerability assessments, alternate scanning methods, network segmentation validation, etc.)\n- CISO sign-off on the gaps\n- Planned remediation timelines aligned with asset criticality\n\n**Why This is a Gap:**\nWithout documented risk acceptance and compensating controls, the coverage gaps represent unmanaged risk rather than consciously accepted risk. CC7.1 requires the entity to \"use detection and monitoring procedures to identify changes to configurations.\" Leaving subnets unscanned with no alternative detection mechanism fails to fulfill this requirement and violates the organization's own policy governance.\n\n**Severity:** **HIGH**\n\n---\n\n### Finding 7: Scan Frequency May Not Meet Policy for All Critical Assets\n\n**Document Reference:** POL-VM-003, Section 3.2 + Q4 2025 Coverage Report dates\n\n**The Gap:**\nPolicy defines scan frequency as:\n- **Internet-facing assets:** Weekly\n- **Internal production systems:** Bi-weekly\n\nThe unscanned Critical-classified EU production subnets (SUB-021, SUB-022) are classified as internet-facing production workloads. These should receive weekly scans per policy but have received zero scans across the entire Q4 observation period.\n\nThe on-premises production subnets show scans in late December (last scan: 2025-12-28/29), but without granular weekly scan logs, it's unclear whether these maintained the bi-weekly frequency throughout the quarter.\n\n**Why This is a Gap:**\nNo scan history is provided to validate compliance with the stated scan frequencies. The most recent scans appear clustered at quarter-end, suggesting they may be driven by reporting deadlines rather than consistent cadence. For critical production assets, this may represent compliance drift.\n\n**Severity:** **MEDIUM**\n\n---\n\n## Summary Table\n\n| Finding | Category | Severity | Policy Section |\n|---------|----------|----------|-----------------|\n| Coverage 18.2% vs. 100% requirement | Control Failure | **CRITICAL** | 3.3 |\n| Critical EU production subnets unscanned | Detection Blind Spot | **CRITICAL** | Scope + 3.3 |\n| IoT subnet unscanned 75+ days | Remediation SLA Miss | **HIGH** | 3.3 + 5.2 |\n| Asset discovery rate 87.3% | Incomplete Detection | **HIGH** | 3.2\u20133.3 |\n| No compensating controls documented | Risk Acceptance Failure | **HIGH** | 6 |\n| Lab subnet lacks credentials | Operational Failure | **MEDIUM** | 3.4 |\n| Scan frequency validation unavailable | Compliance Verification Gap | **MEDIUM** | 3.2 |\n\n---\n\n## Conclusion\n\n**NimbusCore Inc. is NOT in compliance with CC7.1.** The vulnerability management program fails to \"use detection and monitoring procedures to identify changes to configurations\" across all registered information assets. Critical gaps exist in:\n\n1. **Scope coverage** \u2014 18.2% of subnets remain unscanned\n2. **Critical asset monitoring** \u2014 Production GDPR-regulated workloads lack any vulnerability detection\n3. **Remediation governance** \u2014 Coverage gaps exceed policy-defined remediation windows with no documented risk acceptance\n4. **Detective completeness** \u2014 Nearly 14% of registered assets are not detected by scanners\n\n**Immediate remediation required:**\n- Resolve EU production subnet data residency review (escalate to executive level if legal/compliance is blocking)\n- Resolve IoT subnet firewall rule request (75+ day delay is unjustifiable)\n- Provision lab credentials or formally declassify subnet from scope\n- Implement compensating controls for any accepted gaps\n- Validate asset discovery rate and reconcile inventory\n- Establish weekly attestation of scan frequency compliance"
+}

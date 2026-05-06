@@ -1,0 +1,71 @@
+{
+  "id": "cc7.3-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.3",
+  "control_description": "The entity responds to identified security incidents by executing a defined incident response program to understand, contain, remediate, and communicate security incidents, as appropriate.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/incident-response-plan.md",
+      "type": "policy",
+      "description": "NovaBridge Technologies incident response plan defining roles, severity levels, response procedures, and post-incident activities"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the incident response plan for NovaBridge Technologies and assess whether it adequately addresses SOC 2 CC7.3 requirements for incident response, containment, remediation, and communication. Identify any gaps or missing elements.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No external communication or notification plan for customers, regulators, or third parties",
+      "description": "The IRP has no section addressing external communications during or after a security incident. There is no procedure for notifying affected customers, no regulatory notification workflow (e.g., GDPR 72-hour notification, state breach notification laws), no designated external communications lead, and no pre-approved notification templates. For a SaaS company handling customer data, the absence of an external communication plan means the organization has no defined process for meeting legal notification requirements or maintaining customer trust during a breach. CC7.3 explicitly requires the entity to 'communicate security incidents, as appropriate.'",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "The IRP covers detection, triage, containment, eradication, recovery, evidence preservation, and post-mortem — but has zero mention of external communications. Section 5 covers response procedures but only addresses internal Slack channels. There is no customer notification timeline, no regulatory notification process, no media/PR handling, and no legal coordination for breach disclosure. For a data breach (P1), NovaBridge would have no playbook for informing affected parties.",
+      "detection_criteria": {
+        "required_keywords": ["external communication", "customer notification", "regulatory notification", "breach notification", "72-hour", "no communication plan", "disclosure"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No defined criteria for severity escalation or downgrade during an active incident",
+      "description": "Section 2.1 defines severity levels (P1-P4) but there is no procedure for re-classifying an incident's severity as new information emerges. A P3 suspicious activity investigation could reveal an active data breach (warranting P1), but the IRP provides no trigger criteria, decision authority, or process for escalating severity mid-incident. Similarly, there is no process for downgrading a P1 that turns out to be less severe.",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "Severity is assigned at triage but incidents evolve. The IRP has no escalation criteria — for example, 'if customer data exposure is confirmed during a P3 investigation, escalate to P1.' Without this, an incident could remain at P3 while actually being a data breach requiring P1 response timelines.",
+      "detection_criteria": {
+        "required_keywords": ["severity escalation", "re-classification", "downgrade", "P3 to P1", "evolve", "mid-incident", "trigger criteria"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Annual tabletop exercise is the only form of IRP testing",
+      "description": "Section 8.1 states the IRP is tested annually through a single tabletop exercise. The plan covers multiple incident types (data breach, ransomware, unauthorized access, service outages) but only one scenario is tested per year. There are no simulation exercises, no purple team exercises, and no requirement to test different scenarios across years. A single annual tabletop cannot validate the organization's ability to execute across the full range of incident types defined in the plan.",
+      "evidence_sources": ["evidence/incident-response-plan.md"],
+      "expected_reasoning": "One tabletop per year means only one scenario is tested. Ransomware response may be tested one year but data breach response never validated. The IRP defines 4 severity levels with distinct SLAs and procedures, but testing covers only one scenario annually.",
+      "detection_criteria": {
+        "required_keywords": ["annual tabletop", "single exercise", "one scenario", "testing frequency", "simulation", "insufficient testing"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "5 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["incident_response", "communication_plan", "single_document", "policy_review"]
+  }
+}

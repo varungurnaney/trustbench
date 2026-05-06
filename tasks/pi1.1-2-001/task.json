@@ -1,0 +1,50 @@
+{
+  "id": "pi1.1-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "PI1.1",
+  "control_description": "The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/sdlc-policy.md",
+      "type": "policy",
+      "description": "Arcadia Data Systems SDLC policy defining quality gates, SAST severity SLAs, and code review requirements"
+    },
+    {
+      "path": "evidence/sonarqube-findings-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "SonarQube SAST scan findings for Q4 2025 with 40 findings across multiple projects and severity levels"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the SDLC policy and SonarQube static analysis findings for Arcadia Data Systems. Assess whether SOC 2 PI1.1 requirements for processing integrity are met. Cross-reference the SAST findings against the policy's remediation SLAs to identify any compliance gaps that affect the integrity of software processing.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Three High-severity SAST vulnerabilities open past the 30-day SLA with no remediation plan",
+      "description": "Three High-severity vulnerabilities have exceeded the 30-day remediation SLA defined in Section 4.1 of the SDLC policy: SQ-8906 (SSRF in WebhookController.java, first detected September 14 — 105 days, unassigned), SQ-8913 (Log Injection in AuthController.java, first detected August 22 — 128 days, unassigned), and SQ-8920 (XXE in LegacyXmlParser.java, first detected September 8 — 111 days, unassigned). All three are unassigned with no documented remediation plan. The policy requires High-severity findings to be resolved within 30 calendar days. These findings directly impact processing integrity: SSRF can lead to unauthorized data access, log injection can corrupt audit trails affecting processing accuracy verification, and XXE can lead to data exfiltration or denial of service affecting processing completeness.",
+      "evidence_sources": ["evidence/sonarqube-findings-q4-2025.csv", "evidence/sdlc-policy.md"],
+      "expected_reasoning": "The auditor should filter the CSV for High-severity findings and calculate days since first_detected. SQ-8906 (Sep 14, 105 days), SQ-8913 (Aug 22, 128 days), and SQ-8920 (Sep 8, 111 days) all exceed the 30-day SLA from Section 4.1. All three are unassigned and have notes indicating no action has been taken. This is a pattern of neglect for High-severity security findings that affect processing integrity.",
+      "detection_criteria": {
+        "required_keywords": ["SQ-8906", "SQ-8913", "SQ-8920", "30-day SLA", "High", "unassigned", "SSRF", "Log Injection", "XXE", "Section 4.1"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "15 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["processing_integrity", "SAST", "SonarQube", "SLA_breach", "static_analysis", "SSRF", "XXE"]
+  }
+}

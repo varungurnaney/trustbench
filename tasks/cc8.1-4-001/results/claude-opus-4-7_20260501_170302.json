@@ -1,0 +1,154 @@
+{
+  "task_id": "cc8.1-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T17:03:02.810320",
+  "score": {
+    "task_id": "cc8.1-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 6,
+    "gaps_total": 6,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-414",
+          "DB failover",
+          "holiday freeze"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "CHG-415"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-410",
+          "log4j",
+          "holiday freeze",
+          "Thanksgiving",
+          "CISO",
+          "November 26",
+          "approval",
+          "maintenance window"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-411",
+          "48",
+          "business hours",
+          "retrospective",
+          "SLA",
+          "late",
+          "exceeded"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-407",
+          "CHG-411",
+          "maya.jackson",
+          "alice.chen",
+          "segregation",
+          "SRE",
+          "deployed",
+          "same person",
+          "developer"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "quorum",
+          "Security Lead",
+          "absent",
+          "high risk",
+          "customer data",
+          "November 18",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-007",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "post-implementation",
+          "verification",
+          "missing",
+          "No",
+          "2 hours"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-008",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-412",
+          "maya.jackson",
+          "security review",
+          "same person",
+          "developed",
+          "segregation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5762,
+    "output_tokens": 3561
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC8.1 Change Management\n\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Control:** CC8.1 \u2014 Change Management\n**Sample Size:** 15 changes (CHG-401 through CHG-415)\n\n---\n\n## Executive Summary\n\nOverall, Stratos Inc. has a documented and largely operating change management process. CAB meetings are held regularly, emergency changes are tracked, and most changes follow the prescribed workflow. However, several control deficiencies were identified across segregation of duties, CAB quorum, post-implementation verification, and emergency change timeliness. Findings are detailed below.\n\n---\n\n## Findings\n\n### Finding 1: Segregation of Duties Violation \u2014 Developer Deployed Own Change\n\n**Related to:** Policy \u00a73.3 (Segregation of Duties) \u2014 \"Production deployments are executed by the SRE team, not the development team.\"\n\n**Evidence:**\n- **CHG-407** (Fix SSO callback): Developed by maya.jackson; deployed by maya.jackson.\n- **CHG-411** (ETL timeout fix): Developed by alice.chen; deployed by alice.chen.\n\n**Gap:** Two emergency changes were deployed by the same engineer who developed them, violating the explicit SoD requirement that production deployments be executed by SRE. While these were emergencies, the policy provides no exception to the deployment-by-SRE rule \u2014 only the approval mechanism (verbal VP Eng) is relaxed for emergencies.\n\n**Severity:** High\n\n---\n\n### Finding 2: Security Review Performed by Change Developer (Self-Review)\n\n**Related to:** Policy \u00a73.3 (Segregation of Duties) and \u00a73.4 (Testing \u2014 High/Critical risk requires Security team review).\n\n**Evidence:** **CHG-412** (Update TLS cipher suites, High risk) \u2014 developed by maya.jackson; the supporting \"security-review.pdf\" was also performed by maya.jackson (per the notes column: \"Security review by maya.jackson (same person who developed the change)\").\n\n**Gap:** The independent Security review required for High/Critical risk changes was performed by the change developer herself. This defeats the purpose of an independent control gate. Maya is the Security Lead, but the policy intent is independence between developer and reviewer roles.\n\n**Severity:** High\n\n---\n\n### Finding 3: High-Risk Change Approved Without CAB Quorum (Security Lead Absent)\n\n**Related to:** Policy \u00a73.2 (Approval) \u2014 \"Quorum: VP Engineering + Security Lead + at least one other CAB member.\"\n\n**Evidence:** **CHG-409** (Customer data export endpoint, High risk) was approved at the November 18, 2025 CAB meeting where Security Lead was absent (quorum NOT met, 2/3). The minutes themselves note this exception.\n\n**Gap:** A high-risk change involving customer data export was approved without the Security Lead present, in direct violation of the quorum requirement. High-risk and customer-data-related changes are precisely the cases where Security Lead participation is most critical. The change was approved and deployed (2025-11-22) anyway.\n\n**Severity:** High\n\n---\n\n### Finding 4: Post-Implementation Verification Missing\n\n**Related to:** Policy \u00a73.5 (Post-Implementation Review) \u2014 \"Change owner verifies successful deployment within 2 hours \u2026 recorded in the Jira ticket.\"\n\n**Evidence:** **CHG-409** \u2014 `post_impl_verified = No`, no post-implementation date recorded.\n\n**Gap:** No evidence of post-deployment verification for a High-risk customer-data change. Combined with Finding 3, CHG-409 has compounding control failures.\n\n**Severity:** Medium\n\n---\n\n### Finding 5: Emergency Change Retrospective CAB Review Exceeded 48-Business-Hour SLA\n\n**Related to:** Policy \u00a72 / \u00a73.2 \u2014 Emergency changes require \"retrospective CAB review within 48 business hours.\"\n\n**Evidence:**\n- **CHG-411** (ETL fix): Deployed 2025-12-01; retrospective CAB review on 2025-12-09 \u2014 **6 business days later** (per ticket notes).\n- **CHG-414** (DB failover): Deployed 2025-12-22; retrospective CAB review on 2025-12-30 \u2014 also 6 business days, though partially mitigated by the Dec 23\u201327 holiday closure.\n\n**Gap:** CHG-411 has no holiday justification and clearly exceeds the 48-business-hour SLA. CHG-414 is borderline but, given holidays, may be acceptable; however, the policy does not contain a holiday-extension provision, so technically both miss the requirement.\n\n**Severity:** Medium (CHG-411 is a clear breach; CHG-414 is mitigated by circumstance but documents a policy gap).\n\n---\n\n### Finding 6: Holiday Freeze Change Without Documented CISO Approval\n\n**Related to:** Policy \u00a75 (Change Freeze) \u2014 \"Emergency changes during freeze periods require CISO approval in addition to VP Engineering.\" Holiday freeze: December 20 \u2013 January 2.\n\n**Evidence:** **CHG-410** (Patch log4j dependency) \u2014 Deployed 2025-11-26 14:00 UTC. Notes state: \"Deployed during holiday freeze. No CISO approval documented.\"\n\n**Gap:** The ticket itself flags this issue. However, note that November 26 falls within the **Thanksgiving freeze (Nov 25-30)**, and CHG-410 is classified as a Standard change, not Emergency. The policy's CISO requirement is for *emergency* changes during freeze. That said, a Standard change should generally not be deployed during a freeze without approval, and the auditor cannot determine whether this should have been treated as Emergency. At minimum, the lack of documentation around a freeze-window deployment is a gap.\n\n**Severity:** Medium\n\n---\n\n### Finding 7: Standard Change Deployed Outside Maintenance Window\n\n**Related to:** Policy \u00a72 (Standard changes \u2014 \"Implementation Window: Business hours\") and SC-001 conditions (\"Applied during maintenance window; auto-rollback enabled\").\n\n**Evidence:** **CHG-410** deployed 2025-11-26 14:00 UTC \u2014 outside the Saturday 02:00\u201306:00 UTC maintenance window. Note that the policy is internally inconsistent: \u00a72 says Standard changes deploy in \"business hours,\" but SC-001 conditions require the maintenance window.\n\n**Gap:** Deployment occurred outside any defined window for SC-001-class changes (it's neither business hours nor the Saturday maintenance window \u2014 it appears to be a Wednesday afternoon UTC). Additionally, the policy itself is internally contradictory regarding Standard change windows and should be clarified.\n\n**Severity:** Low (deployment timing); Medium (policy ambiguity should be resolved).\n\n---\n\n### Finding 8: Emergency Change Approval via Slack DM \u2014 Insufficient Audit Trail\n\n**Related to:** Policy \u00a73.2 \u2014 \"All approvals recorded in Jira ticket comments with approver name and timestamp.\"\n\n**Evidence:** **CHG-414** notes state CISO approval was obtained \"via Slack DM at 03:02.\" There is no indication this was preserved or attached to the Jira ticket.\n\n**Gap:** Slack DMs are ephemeral (depending on retention settings) and not automatically captured in the change record. CISO approval for a holiday-freeze emergency change should be evidenced in the ticket itself (screenshot, copy-paste, or formal record), not solely in a private Slack thread.\n\n**Severity:** Low\n\n---\n\n### Finding 9: Verbal Emergency Approvals Not Independently Evidenced\n\n**Related to:** Policy \u00a73.2 \u2014 Emergency change approvals must be recorded with \"approver name and timestamp.\"\n\n**Evidence:** CHG-403, CHG-407, CHG-411, CHG-414 all show \"Derek Huang (verbal)\" as approver with a timestamp in the change log. There is no separate corroborating evidence (e.g., recorded acknowledgment, follow-up email).\n\n**Gap:** While verbal approvals are explicitly permitted by policy, the only record is a self-attested entry in the same ticket the requestor created. For the four emergency changes (notably CHG-403 and CHG-414, both requested AND approved as logged by raj.patel), there is no independent confirmation that Derek Huang actually granted approval at the stated time. Recommend follow-up acknowledgment in writing (Slack/email) be retained.\n\n**Severity:** Low\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Developer deployed own emergency change (CHG-407, CHG-411) | High |\n| 2 | Security review by change developer (CHG-412) | High |\n| 3 | High-risk change approved without CAB quorum (CHG-409) | High |\n| 4 | Missing post-implementation verification (CHG-409) | Medium |\n| 5 | Emergency retrospective CAB review SLA breach (CHG-411) | Medium |\n| 6 | Freeze-window deployment without documented approval (CHG-410) | Medium |\n| 7 | Standard change outside defined window / policy ambiguity (CHG-410) | Low\u2013Medium |\n| 8 | Emergency approval via Slack DM not preserved in ticket (CHG-414) | Low |\n| 9 | Verbal emergency approvals lack independent corroboration | Low |\n\n---\n\n## Recommendations Prior to Type II Audit\n\n1. **Update the policy** to explicitly require an SRE (not the developer) to perform emergency deployments, or define a clear exception path with CISO/VP Eng sign-off.\n2. **Enforce independent Security review** \u2014 the Security Lead cannot review her own development work. Designate a backup reviewer.\n3. **Enforce quorum** \u2014 no high-risk change should be approved without Security Lead. Defer or use written async approval.\n4. **Automate post-implementation verification reminders** in Jira to prevent gaps like CHG-409.\n5. **Resolve policy inconsistency** between \u00a72 and SC-001 regarding Standard change windows.\n6. **Require approvals to be captured in Jira**, not Slack DMs. If Slack is used for speed, paste the approval thread into the ticket.\n7. **Retroactive remediation:** Document a management response and corrective action for CHG-409 specifically \u2014 this change has three overlapping deficiencies and is the highest-risk individual item in the sample."
+}

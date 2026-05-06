@@ -1,0 +1,58 @@
+{
+  "task_id": "cc6.6-2-001",
+  "model": "gpt-4o",
+  "timestamp": "2026-05-05T17:13:49.124362",
+  "score": {
+    "task_id": "cc6.6-2-001",
+    "model": "gpt-4o",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "FW-018",
+          "9300",
+          "0.0.0.0/0",
+          "Elasticsearch",
+          "sg-prod-analytics",
+          "outbound",
+          "data exfiltration"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "FW-019",
+          "webhook",
+          "0.0.0.0/0",
+          "partner",
+          "inbound"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1184,
+    "output_tokens": 587
+  },
+  "raw_response": "When reviewing the production firewall rules for compliance with SOC 2 CC6.6 system boundary protection requirements, it is important to assess each rule for adherence to the principle of least privilege, appropriate source/destination restrictions, and alignment with security best practices. Below are findings from the review:\n\n---\n\n### Finding 1: Overly Permissive Inbound Rule on sg-prod-alb-public\n**Section**: FW-001, FW-002  \n**Gap Explanation**: The inbound rules to `sg-prod-alb-public` allow all IP addresses (0.0.0.0/0) to access HTTP and HTTPS services. While allowing HTTP/HTTPS traffic from the internet is necessary for a public web application, ensure proper web application firewall (WAF) and rate limiting are in place to mitigate potential attacks.  \n**Severity**: Medium\n\n### Finding 2: Unrestricted Outbound Rule on sg-prod-app-tier\n**Section**: FW-008  \n**Gap Explanation**: The rule allows outbound HTTPS traffic to 0.0.0.0/0 from the application tier for third-party API calls. While third-party API calls might be necessary, this rule should be restricted to specific IP ranges or domain names of trusted third-party services to limit exposure.  \n**Severity**: Medium\n\n### Finding 3: Unrestricted Outbound Rule on sg-prod-analytics\n**Section**: FW-018  \n**Gap Explanation**: This rule permits outbound traffic to 0.0.0.0/0 on TCP port 9300 (commonly used for Elasticsearch), which could expose data to unauthorized external networks. Ensure this is restricted to known external IP addresses or networks for secure data exports.  \n**Severity**: High\n\n### Finding 4: Unrestricted Inbound Rule on sg-prod-webhook\n**Section**: FW-019  \n**Gap Explanation**: This rule allows inbound HTTPS traffic to 0.0.0.0/0 for webhooks. While necessary for partner integrations, it's recommended that this rule be restricted to known partner IP addresses or ranges to prevent unauthorized access.  \n**Severity**: Medium\n\n### Finding 5: Lack of Egress Filter on Internal Security Groups\n**Section**: Multiple (e.g., FW-013 on sg-prod-bastion and others)  \n**Gap Explanation**: Several security groups, including `sg-prod-bastion`, have broad outbound rules without filtering on specific IP addresses or services. Implementing egress filters for internal services can help control and monitor outgoing connections and prevent unauthorized data exfiltration.  \n**Severity**: Medium\n\n---\n\nThese findings highlight areas where security measures could be enhanced to better align with SOC 2 CC6.6 requirements, focusing on implementing least privilege principles, appropriate access restrictions, and alignment with security best practices. Addressing these issues would help mitigate external threats effectively."
+}

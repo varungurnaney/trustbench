@@ -1,0 +1,102 @@
+{
+  "id": "cc8.1-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC8.1",
+  "control_description": "The entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures to meet its objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/change-management-policy.md",
+      "type": "policy",
+      "description": "Crestline SaaS change management policy defining testing requirements, rollback criteria, and CAB process"
+    },
+    {
+      "path": "evidence/change-log-q4-2025.csv",
+      "type": "log",
+      "description": "Change log for Q4 2025 (12 changes) including test pass rates, rollback events, and deployment status"
+    },
+    {
+      "path": "evidence/cab-meeting-minutes-q4.md",
+      "type": "report",
+      "description": "CAB meeting minutes for Q4 2025 documenting approvals and rollback reviews"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/incident-report-change503.md",
+      "type": "report",
+      "description": "Incident report for CHANGE-503 rollback with root cause analysis and corrective actions"
+    }
+  ],
+  "prompt": "You are auditing Crestline SaaS's SOC 2 Type II compliance for control CC8.1 (Change Management) covering Q4 2025 (October 1 - December 31, 2025). Review all provided evidence including the change management policy, change log, CAB meeting minutes, and incident report. Assess whether changes were properly authorized, tested, and deployed. Some changes may appear problematic but were handled correctly per policy. Focus on genuine control gaps rather than operational events that were managed appropriately.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "CHANGE-503 failed in production and was rolled back -- but rollback followed policy correctly",
+      "description": "CHANGE-503 (GraphQL subscriptions) was deployed on October 21 and rolled back 30 minutes later when the error rate reached 4.7%, exceeding the 2% rollback threshold in policy Section 3.6. The rollback was completed in 8 minutes, well within the 15-minute rollback window. The incident was reviewed at the October 27 CAB meeting, root cause was documented, and a corrective change (CHANGE-504) was approved and successfully deployed. The failed deployment itself is not a control failure -- the rollback process worked as designed.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/incident-report-change503.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Deployment failed in production → error rate exceeded threshold → rollback initiated within policy timeframe → incident documented → CAB reviewed → corrective change deployed. The rollback control worked. A failed deployment is not a CC8.1 finding when the rollback process is effective.",
+      "detection_criteria": {
+        "required_keywords": ["CHANGE-503", "GraphQL", "rollback", "4.7%", "failed deployment", "control failure"],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": ["handled correctly", "rollback worked", "rollback process effective", "not a finding", "per policy", "properly managed", "control operated"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "CHANGE-510 rolled back due to node affinity conflict -- but rollback followed policy correctly",
+      "description": "CHANGE-510 (K8s node pool scaling) was rolled back on December 9 due to pod scheduling failures caused by node affinity misconfiguration. The rollback was completed in 6 minutes. The root cause was documented, and CHANGE-511 (the fix) was approved at the December 15 CAB meeting and deployed successfully. As with CHANGE-503, the failed deployment was properly handled through the rollback process.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/cab-meeting-minutes-q4.md"],
+      "expected_reasoning": "Second rollback in Q4 → rollback executed per policy → root cause documented → corrective change created and approved → control operated as designed. Two rollbacks may suggest a testing gap but each individual rollback was managed correctly.",
+      "detection_criteria": {
+        "required_keywords": ["CHANGE-510", "node pool", "rollback", "pod scheduling", "failed"],
+        "minimum_keyword_matches": 2,
+        "exclusion_keywords": ["rollback followed", "handled per policy", "properly managed", "not a finding", "rollback effective"]
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "CHANGE-506 deployed to production with no testing evidence",
+      "description": "CHANGE-506 (SCIM provisioning endpoint) is classified as High risk. Policy Section 3.2 requires all Normal changes to include testing evidence including staging environment validation, automated test results with a minimum 95% pass rate, and test results attached to the Jira ticket. High risk changes additionally require load testing results. The change log shows the testing_evidence column is empty and test_pass_rate is 'N/A' for CHANGE-506. The CAB minutes from November 10 note that 'formal testing evidence not yet attached to Jira ticket at time of approval. Lisa indicated test results would be uploaded before deployment.' The change was deployed on November 11 and marked Completed with no testing evidence ever attached. A SCIM endpoint handling user provisioning and deprovisioning is security-sensitive and was deployed without any documented testing.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/cab-meeting-minutes-q4.md", "evidence/change-management-policy.md"],
+      "expected_reasoning": "Change log shows CHANGE-506 has empty testing_evidence and N/A test_pass_rate. CAB minutes acknowledge testing was not attached at approval time. Policy Section 3.2 requires testing evidence for all Normal changes. The change was deployed and completed without testing artifacts. This is a genuine control failure — testing was promised but never delivered.",
+      "detection_criteria": {
+        "required_keywords": ["CHANGE-506", "SCIM", "testing evidence", "empty", "N/A", "not attached", "Section 3.2", "no testing"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Two rollbacks in Q4 suggest staging environment does not adequately mirror production",
+      "description": "Both Q4 rollbacks (CHANGE-503 and CHANGE-510) occurred because of issues that were not detectable in the staging environment: CHANGE-503 failed due to WebSocket connection pooling at production scale (2 staging nodes vs. 12 production nodes), and CHANGE-510 failed due to node affinity conflicts with production-only DaemonSets. While each individual rollback was handled correctly, the pattern indicates a systemic gap in staging environment fidelity. The change management policy Section 3.2 requires staging validation but does not address staging-production parity. If the staging environment cannot replicate production conditions, the testing control is weakened for infrastructure-level changes.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/incident-report-change503.md", "evidence/cab-meeting-minutes-q4.md"],
+      "expected_reasoning": "Two rollbacks in one quarter, both caused by staging-production differences. CHANGE-503: staging has 2 nodes vs production 12. CHANGE-510: staging lacks production DaemonSets. Pattern suggests staging is not a reliable testing proxy for infrastructure changes. The policy requires staging testing but does not ensure staging mirrors production.",
+      "detection_criteria": {
+        "required_keywords": ["CHANGE-503", "CHANGE-510", "staging", "production", "parity", "fidelity", "2 nodes", "rollback pattern", "infrastructure"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["change_management", "red_herring", "rollback", "testing_evidence", "staging_parity", "SCIM"]
+  }
+}

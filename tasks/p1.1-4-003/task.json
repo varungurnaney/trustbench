@@ -1,0 +1,105 @@
+{
+  "id": "p1.1-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "P1.1",
+  "control_description": "The entity provides notice to data subjects about its privacy practices to meet the entity's objectives related to privacy.",
+  "difficulty": 4,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/privacy-policy.md",
+      "type": "policy",
+      "description": "Verdant Fintech privacy policy describing data collection, sharing, and processing practices"
+    },
+    {
+      "path": "evidence/third-party-data-sharing-agreements.csv",
+      "type": "spreadsheet",
+      "description": "Register of third-party data sharing agreements with processor details and data categories shared"
+    },
+    {
+      "path": "evidence/privacy-impact-assessment-summary.md",
+      "type": "report",
+      "description": "Summary of Privacy Impact Assessments (PIAs) conducted for Verdant Fintech data processing activities"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/employee-training-completion-report.csv",
+      "type": "report",
+      "description": "Employee security awareness training completion report — not directly relevant to P1.1"
+    },
+    {
+      "path": "evidence/change-management-log-q4.csv",
+      "type": "log",
+      "description": "Change management log for Q4 2025 — not relevant to P1.1"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 readiness assessment for Verdant Fintech, a financial technology company providing personal finance management tools. Review all provided documents and assess compliance with P1.1 (Privacy Notice). Cross-reference the privacy policy against the third-party data sharing agreements and privacy impact assessment summary. Not all documents may be relevant to P1.1. Identify contradictions between the privacy notice and actual data sharing practices, and evaluate the completeness of the privacy notice.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Privacy policy lists 4 third-party processors but sharing agreements register shows 7 active agreements",
+      "description": "The privacy policy Section 5 ('Third-Party Service Providers') explicitly names 4 processors: AWS (hosting), Stripe (payments), Twilio (SMS notifications), and Zendesk (customer support). However, the third-party data sharing agreements register shows 7 active agreements. The three undisclosed processors are: (1) DSA-2025-005 — Plaid Inc., receiving bank account credentials and transaction history for account aggregation; (2) DSA-2025-006 — Experian, receiving name, SSN, and date of birth for credit score retrieval; (3) DSA-2025-007 — Braze Inc., receiving email, name, financial goal data, and behavioral segments for marketing automation. These are significant data flows involving highly sensitive financial information that are not disclosed in the privacy notice.",
+      "evidence_sources": ["evidence/privacy-policy.md", "evidence/third-party-data-sharing-agreements.csv"],
+      "expected_reasoning": "Privacy policy Section 5 names 4 processors → sharing agreements register shows 7 active → 3 undisclosed: Plaid (bank credentials), Experian (SSN/credit), Braze (financial behavioral data) → privacy notice materially incomplete for most sensitive data categories.",
+      "detection_criteria": {
+        "required_keywords": ["Plaid", "Experian", "Braze", "undisclosed", "DSA-2025-005", "DSA-2025-006", "DSA-2025-007", "not listed", "Section 5", "bank credentials", "SSN"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Experian credit check sharing involves SSN transmission not disclosed as a data collection category",
+      "description": "The third-party data sharing agreement DSA-2025-006 with Experian shows that Verdant Fintech transmits Social Security Numbers (SSN) to Experian for credit score retrieval. However, the privacy policy Section 2 ('Information We Collect') does not list SSN or government-issued identification numbers as a category of personal information collected. Data subjects are not informed that their SSN is collected, stored, or transmitted to a third party. The privacy impact assessment PIA-2025-003 notes 'SSN collected at credit check enrollment and transmitted to Experian via encrypted API' — confirming the data flow exists but is undisclosed in the privacy notice.",
+      "evidence_sources": ["evidence/third-party-data-sharing-agreements.csv", "evidence/privacy-policy.md", "evidence/privacy-impact-assessment-summary.md"],
+      "expected_reasoning": "DSA-2025-006 shows SSN transmitted to Experian → privacy policy Section 2 does not list SSN as collected data → PIA-2025-003 confirms SSN collection and transmission → privacy notice fails to disclose collection of this highly sensitive data element.",
+      "detection_criteria": {
+        "required_keywords": ["SSN", "Social Security", "Experian", "DSA-2025-006", "PIA-2025-003", "not listed", "Section 2", "undisclosed", "credit"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Privacy impact assessment for Plaid integration is 14 months overdue for annual review",
+      "description": "The privacy impact assessment summary shows PIA-2025-002 (Plaid bank account aggregation) was completed on October 12, 2023 with a 'next review date' of October 12, 2024. As of the audit date (December 31, 2025), this PIA has not been reviewed for 14 months past its scheduled review date. The PIA notes significant risks including 'bank credential transmission' and 'persistent OAuth token storage.' Verdant Fintech's own PIA policy (referenced in the summary header) requires annual review of all PIAs. This stale PIA means privacy risks may have changed without reassessment.",
+      "evidence_sources": ["evidence/privacy-impact-assessment-summary.md"],
+      "expected_reasoning": "PIA-2025-002 completed Oct 2023 → next review Oct 2024 → currently Dec 2025 → 14 months overdue → PIA covers high-risk processing (bank credentials via Plaid) → annual review requirement not met → privacy risk assessment is stale.",
+      "detection_criteria": {
+        "required_keywords": ["PIA-2025-002", "Plaid", "October 2023", "October 2024", "overdue", "annual review", "stale", "bank credential"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Braze marketing automation receives financial goal data but privacy policy limits marketing data to email and name",
+      "description": "The third-party data sharing agreement DSA-2025-007 with Braze shows data categories shared include 'email address, first name, financial goal category, savings target amount, investment risk profile, behavioral engagement segments.' The privacy policy Section 5 states: 'We share only the minimum information necessary with each provider — typically limited to your email address and name for communications purposes.' The sharing of financial goal categories, savings targets, and investment risk profiles with a marketing platform goes well beyond 'email address and name' and involves sensitive financial behavioral data being used for marketing segmentation.",
+      "evidence_sources": ["evidence/third-party-data-sharing-agreements.csv", "evidence/privacy-policy.md"],
+      "expected_reasoning": "DSA-2025-007 shows Braze receives financial goals, savings targets, investment risk profiles → privacy policy claims only email and name shared for communications → financial behavioral data shared for marketing segmentation far exceeds disclosed scope.",
+      "detection_criteria": {
+        "required_keywords": ["Braze", "DSA-2025-007", "financial goal", "savings target", "investment risk", "email and name", "minimum", "exceeds", "marketing"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 3,
+    "tags": ["third_party_sharing", "privacy_impact_assessment", "financial_data", "undisclosed_processors", "SSN_collection", "cross_reference", "noise_documents"]
+  }
+}

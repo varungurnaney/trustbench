@@ -1,0 +1,67 @@
+{
+  "task_id": "a1.2-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:09:26.863586",
+  "score": {
+    "task_id": "a1.2-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "2 tables",
+          "PostgreSQL version"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "application functionality",
+          "deferred",
+          "January",
+          "Section 5.1",
+          "incomplete"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "192 minutes",
+          "235 minutes",
+          "RTO",
+          "5-minute margin"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3079,
+    "output_tokens": 2592
+  },
+  "raw_response": "## Findings\n\n### 1. Q4 restore test was incomplete because application validation was deferred  \n**Related document section:** Backup and Recovery Policy, Section 5.1 \u201cQuarterly Restore Tests,\u201d requirement 4; Q4 Restore Test Report, `phase_4_application_validation`\n\n**Why it\u2019s a gap:**  \nThe policy requires each quarterly restore test to validate post-restore application functionality, including API health checks, background job processing, and user authentication flow. The Q4 2025 restore test explicitly states that application functionality validation was **deferred to January 8, 2026** due to engineering team unavailability.\n\nBecause the Q4 observation period ended December 31, 2025, the required quarterly restore test was not fully completed within the period. Database restore and checksum validation were performed, but Apex did not demonstrate that the restored environment could support application operations as required by policy and A1.2 availability objectives.\n\nThe January scheduling is a planned remediation, but it is not a compensating control for the Q4 requirement because the validation did not occur during the observation period.\n\n**Severity:** Medium\n\n---\n\n### 2. RTO pass conclusion is not fully supported by end-to-end recovery validation  \n**Related document section:** Backup and Recovery Policy, Section 3 \u201cRecovery Objectives\u201d and Section 5.1 requirements 3 and 4; Q3 and Q4 Restore Test Reports, `rto_assessment` and `restore_timeline`\n\n**Why it\u2019s a gap:**  \nApex reports that the Q4 restore completed in **235 minutes against a 240-minute RTO**, resulting in a pass with only a 5-minute margin. However, the Q4 test did not include application validation, which is required by policy. Therefore, the reported RTO result appears to reflect database/infrastructure restoration only, not full application recovery readiness.\n\nThis is also visible in the Q3 report: the RTO validation ended at 13:12 with a reported duration of 192 minutes, while application validation continued until 13:42. Although Q3 would still have remained within the 240-minute target if measured end-to-end, the reporting method suggests that Apex may not be measuring RTO consistently through completion of application-level validation.\n\nFor Q4, because application validation was deferred and the reported margin was only 5 minutes, Apex cannot demonstrate that full recovery, including application functionality, would have completed within the 4-hour RTO.\n\n**Severity:** Medium\n\n---\n\n### 3. Restore testing evidence does not cover all in-scope production systems  \n**Related document section:** Backup and Recovery Policy, Section 2 \u201cScope\u201d and Section 5.1 \u201cQuarterly Restore Tests\u201d\n\n**Why it\u2019s a gap:**  \nThe policy scope includes multiple production assets:\n\n- PostgreSQL database clusters `apex-db-prod-01` through `apex-db-prod-04`\n- S3 application file storage buckets: `apex-prod-assets` and `apex-prod-uploads`\n- HashiCorp Vault configuration and secrets\n\nThe Q3 and Q4 restore test reports only evidence restore testing for one database source system: `apex-db-prod-01`. No evidence was provided showing quarterly restore testing for the other production database clusters, S3 file storage, or Vault configuration/secrets.\n\nAs a result, Apex has not demonstrated that all in-scope production systems can be restored in accordance with its backup and recovery policy or availability commitments.\n\n**Severity:** Medium\n\n---\n\n### 4. Restore testing does not demonstrate achievement of the 4-hour RPO  \n**Related document section:** Backup and Recovery Policy, Section 3 \u201cRecovery Objectives,\u201d Section 4.2 \u201cWAL Archiving,\u201d and Section 5.1 \u201cQuarterly Restore Tests\u201d\n\n**Why it\u2019s a gap:**  \nThe policy defines a **4-hour RPO** and requires continuous WAL archiving with a maximum 15-minute lag. However, the restore test evidence focuses on restoration of the most recent full backup from the prior day and does not show validation of point-in-time recovery, WAL replay, or confirmation that recoverable data loss would remain within the 4-hour RPO.\n\nFor example, the Q4 test restored backup `BKP-2025-1219`, a full backup from the prior day, but the report does not evidence recovery to a point within four hours of the test scenario or validate WAL archive completeness and replay.\n\nWithout RPO-specific testing or monitoring evidence, Apex cannot fully demonstrate that backup and recovery processes meet its stated recovery objective.\n\n**Severity:** Medium\n\n---\n\n## Notes on items not raised as findings\n\n- The Q3 data integrity anomaly involving two partitioned tables appears to have been investigated, manually validated, and remediated through the October PostgreSQL DR upgrade from 15.3 to 15.4. The Q4 restore test showed all 512 tables passed checksum verification, so this does not appear to be an open gap.\n- The Q4 database restore and checksum validation were completed successfully, and the PostgreSQL version remediation from Q3 was appropriately reflected in the change log."
+}

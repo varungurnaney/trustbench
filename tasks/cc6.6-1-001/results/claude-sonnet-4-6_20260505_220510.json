@@ -1,0 +1,85 @@
+{
+  "task_id": "cc6.6-1-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T22:05:10.611803",
+  "score": {
+    "task_id": "cc6.6-1-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_only",
+    "recall": 0.75,
+    "precision": 0.375,
+    "f1": 0.5,
+    "score": 0.75,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "subnet",
+          "public",
+          "private",
+          "boundary"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "environment",
+          "production"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAF",
+          "web application firewall",
+          "IDS",
+          "IPS",
+          "public-facing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "should",
+          "where feasible",
+          "internal",
+          "encryption",
+          "mandatory",
+          "must",
+          "PHI",
+          "permissive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 737,
+    "output_tokens": 2331
+  },
+  "raw_response": "# SOC 2 CC6.6 Readiness Assessment \u2014 Orion Health Network Security Policy\n\n**Control:** CC6.6 \u2014 Logical access security measures protecting against external threats\n**Document Reviewed:** POL-NET-2024-008 v1.4\n**Assessment Date:** Current\n**Auditor Note:** This assessment evaluates policy sufficiency only. Technical evidence (e.g., AWS configurations, firewall rule exports, VPN logs) would be required to validate operating effectiveness.\n\n---\n\n## Summary Judgment\n\n> **Not Ready.** The policy establishes a reasonable architectural foundation but contains several gaps that would prevent a SOC 2 auditor from concluding that CC6.6 is adequately addressed at the policy level alone. Three findings are rated High severity and would require remediation or compensating controls before an opinion could be issued.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Internal Traffic Encryption Is Advisory, Not Mandatory\n\n**Section:** 4.2 \u2014 Internal Traffic\n**Severity:** \ud83d\udd34 High\n\n**Gap:**\nThe policy states internal service-to-service communication *\"should use encrypted channels where feasible\"* \u2014 permissive, best-effort language that creates no enforceable requirement. CC6.6 requires protection against threats at and across system boundaries, which includes lateral movement within the environment. An attacker who breaches the perimeter could intercept unencrypted internal traffic (e.g., API calls containing PHI, session tokens, database queries) with no policy violation occurring.\n\n**What's Missing:**\n- A clear mandate (e.g., *\"must\"*) for encrypting internal traffic\n- Definition of what constitutes an acceptable exception and how exceptions are approved\n- Minimum protocol requirements (TLS version, cipher suites) for internal channels\n- Treatment of database connections specifically, which are entirely unaddressed\n\n---\n\n### Finding 2: No Intrusion Detection or Prevention Controls Referenced\n\n**Section:** Policy-wide (no applicable section exists)\n**Severity:** \ud83d\udd34 High\n\n**Gap:**\nThe policy makes no mention of intrusion detection or prevention systems (IDS/IPS), AWS WAF, AWS Shield, or equivalent controls. CC6.6 explicitly calls for measures that protect against threats *originating outside system boundaries* \u2014 detection and active blocking of attack patterns (e.g., SQLi, XSS, credential stuffing, DDoS) are foundational to meeting this intent. VPC Flow Logs forwarded to a SIEM (Section 6) provide visibility into network flows but do not constitute threat detection or prevention at the application layer.\n\n**What's Missing:**\n- Web Application Firewall (WAF) requirements for public-facing endpoints\n- DDoS protection policy (e.g., AWS Shield Standard vs. Advanced thresholds)\n- IDS/IPS requirements or reference to a compensating detection control\n- Defined alert and response thresholds tied to external threat signatures\n\n---\n\n### Finding 3: Security Group and NACL Governance Is Insufficiently Defined\n\n**Section:** 3.3 \u2014 Firewall and Access Control\n**Severity:** \ud83d\udd34 High\n\n**Gap:**\nThe policy states security group rules *\"must follow least privilege principles\"* and *\"must specify the minimum ports and source ranges required\"* but provides no enforceable governance mechanism around this requirement. Without defined controls for how rules are reviewed, approved, and audited, this statement is aspirational rather than operative. Overly permissive security groups (e.g., `0.0.0.0/0` on non-standard ports) are one of the most common sources of external exposure in AWS environments and a frequent SOC 2 finding.\n\n**What's Missing:**\n- A change approval process for security group modifications\n- Prohibition of specific high-risk rule patterns (e.g., unrestricted inbound `0.0.0.0/0`)\n- Periodic review cadence for existing security group rules\n- Reference to automated enforcement tools (e.g., AWS Config rules, SCPs)\n\n---\n\n### Finding 4: VPN Access Requirements Are Underspecified\n\n**Section:** 5 \u2014 VPN Access\n**Severity:** \ud83d\udfe0 Medium\n\n**Gap:**\nThe policy requires VPN + MFA for administrative access to production, which is a positive control. However, several implementation details necessary for CC6.6 compliance are absent. An auditor cannot assess whether the VPN control is operating effectively without understanding the minimum standards it enforces.\n\n**What's Missing:**\n- Acceptable VPN client and protocol specifications (e.g., OpenVPN, WireGuard, IPSec \u2014 and prohibited protocols)\n- Certificate or credential requirements for VPN authentication\n- Definition of \"administrative access\" \u2014 it is unclear whether this applies to all SSH/RDP, AWS Console access, kubectl, database clients, or some subset\n- Session timeout and idle disconnection requirements\n- What MFA factors are acceptable (TOTP, hardware key, SMS \u2014 noting SMS is generally considered insufficient)\n- What happens to access if VPN is unavailable (break-glass procedure)\n\n---\n\n### Finding 5: No Egress Controls or Exfiltration Prevention\n\n**Section:** 3.3 \u2014 Firewall and Access Control / Policy-wide\n**Severity:** \ud83d\udfe0 Medium\n\n**Gap:**\nThe policy addresses inbound traffic controls thoroughly but is entirely silent on outbound (egress) traffic. CC6.6's focus on external threats encompasses data exfiltration \u2014 a compromised internal workload could establish outbound connections to attacker-controlled infrastructure without any policy violation. NAT gateways are mentioned in Section 3.2 as architectural components but no requirements govern what traffic is permitted to flow through them.\n\n**What's Missing:**\n- Egress filtering requirements (allowlisting known-good destinations vs. deny-by-default)\n- Restrictions on outbound ports/protocols from application and database subnets\n- Controls for detecting anomalous outbound traffic volume or destination (beyond raw Flow Log collection)\n\n---\n\n### Finding 6: No Third-Party or Vendor Network Access Controls\n\n**Section:** Policy-wide (no applicable section exists)\n**Severity:** \ud83d\udfe0 Medium\n\n**Gap:**\nThe policy does not address network access granted to third parties (e.g., implementation partners, SaaS vendors with VPC peering, support vendors with temporary access). CC6.6 requires that external threat vectors be addressed, and third-party network connections represent a non-trivial boundary that must be governed. The absence of any such policy leaves open a significant external access path.\n\n**What's Missing:**\n- Requirements for third-party network access (e.g., VPC peering governance, PrivateLink use cases)\n- Time-bound and least-privilege requirements for vendor-granted access\n- Review and termination procedures for third-party connections\n\n---\n\n### Finding 7: TLS Minimum Version Not Enforced for Internal Downgrade Scenarios\n\n**Section:** 4.1 \u2014 External Traffic\n**Severity:** \ud83d\udfe1 Low\n\n**Gap:**\nSection 4.1 correctly mandates TLS 1.2 or higher for external endpoints, but the policy does not address protocol downgrade attack prevention (e.g., HSTS requirements, TLS 1.0/1.1 explicit prohibition, cipher suite restrictions). AWS ALB supports legacy TLS versions by default depending on the selected security policy. Without explicit prohibition of weaker protocols, a misconfigured ALB could silently accept TLS 1.0 connections without violating any documented policy requirement.\n\n**What's Missing:**\n- Explicit prohibition of TLS 1.0 and 1.1\n- Minimum acceptable cipher suite standards or reference to an approved AWS ALB security policy\n- HSTS header requirements for browser-facing endpoints\n\n---\n\n### Finding 8: SIEM Forwarding Referenced Without Defined Response Obligations\n\n**Section:** 6 \u2014 Monitoring\n**Severity:** \ud83d\udfe1 Low\n\n**Gap:**\nVPC Flow Log forwarding to a SIEM is noted, which supports detection capability. However, CC6.6 is better served when monitoring is paired with defined response thresholds. The policy does not describe what alerts are generated from Flow Log analysis, who reviews them, or what response timeframes are expected. Without this, the monitoring activity may exist in practice but cannot be evaluated for adequacy at the policy level.\n\n**What's Missing:**\n- Reference to alert rules or use cases derived from Flow Log analysis\n- Defined ownership for monitoring review\n- Cross-reference to an incident response policy for escalation handling\n\n---\n\n## Consolidated Findings Summary\n\n| # | Title | Section | Severity |\n|---|-------|---------|----------|\n| 1 | Internal traffic encryption is advisory, not mandatory | 4.2 | \ud83d\udd34 High |\n| 2 | No IDS/IPS or WAF controls referenced | Policy-wide | \ud83d\udd34 High |\n| 3 | Security group governance is insufficiently defined | 3.3 | \ud83d\udd34 High |\n| 4 | VPN access requirements are underspecified | 5 | \ud83d\udfe0 Medium |\n| 5 | No egress controls or exfiltration prevention | 3.3 / Policy-wide | \ud83d\udfe0 Medium |\n| 6 | No third-party network access policy | Policy-wide | \ud83d\udfe0 Medium |\n| 7 | TLS downgrade attack prevention not addressed | 4.1 | \ud83d\udfe1 Low |\n| 8 | SIEM monitoring lacks defined response obligations | 6 | \ud83d\udfe1 Low |\n\n---\n\n## Recommended Next Steps\n\n1. **Immediate (pre-audit):** Remediate Findings 1\u20133. These represent substantive control gaps that cannot be compensated by evidence alone.\n2. **Short-term:** Address Findings 4\u20136 through policy amendment or by referencing existing complementary policies (e.g., a Vendor Management Policy that covers Finding 6).\n3. **Before evidence collection:** Ensure technical configurations (WAF rules, security group exports, VPN config) are aligned with any revised policy language \u2014 policy and evidence must be consistent or neither will satisfy the auditor."
+}

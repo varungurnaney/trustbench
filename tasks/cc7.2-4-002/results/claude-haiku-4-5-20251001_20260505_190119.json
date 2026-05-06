@@ -1,0 +1,88 @@
+{
+  "task_id": "cc7.2-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T19:01:19.761862",
+  "score": {
+    "task_id": "cc7.2-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.6666666666666666,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "TUNE-303",
+          "GuardDuty",
+          "cryptocurrency",
+          "SEC-EXC-2025-020",
+          "CISO approval",
+          "compensating controls"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "TUNE-305",
+          "RULE-055",
+          "database privilege escalation",
+          "CISO approval NOT obtained",
+          "no expiration",
+          "Section 4.3",
+          "Maria Santos",
+          "no exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Not Reviewed",
+          "Thanksgiving",
+          "holiday",
+          "weekly review",
+          "Section 5.2",
+          "privileged activity",
+          "sign-off"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "alert tuning"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3108,
+    "output_tokens": 2216
+  },
+  "raw_response": "# CC7.2 Compliance Assessment \u2014 Polaris Financial\n## SOC 2 Readiness Audit | Q4 2025\n\n---\n\n## FINDINGS SUMMARY\n\n| Finding | Severity | Status |\n|---------|----------|--------|\n| 1. Alert Rule Disabled Without CISO Approval | **Critical** | Non-Conformance |\n| 2. Disabled Alert Rule Without Expiration Date | **High** | Non-Conformance |\n| 3. Privileged Activity Review Coverage Gap | **High** | Non-Conformance |\n| 4. SIEM Integration Delay Exceeded Policy Timeline | **Medium** | Remediated (Expired Exception) |\n\n---\n\n## FINDING 1: Alert Rule Disabled Without CISO Approval\n\n**Policy Section:** POL-SEC-MON-003, Section 4.3 \u2014 Disabled Alert Rules\n\n**Related Evidence:** Alert Tuning Log (TUNE-305)\n\n**Gap Description:**\n\nAlert rule RULE-055 (Database privilege escalation) was disabled on 2025-11-20 by Kevin Park with approval from Maria Santos (Security Operations Lead) **only**. The policy explicitly requires:\n\n> \"No alert rule may be disabled without: Documented justification, **CISO approval**, Compensating detection control, Maximum 90-day disable period, Re-evaluation before re-enabling\"\n\n**TUNE-305 states:** *\"Security Operations Lead approved \u2014 **CISO approval NOT obtained**.\"*\n\n**Evidence of Non-Conformance:**\n- TUNE-305 approved_by column shows \"Maria Santos\" (SOL), not \"Andre Williams (CISO)\"\n- Explicit notation acknowledges CISO approval was not obtained\n- No indication CISO approval was obtained subsequently\n- No expiration date set despite policy requirement for \"maximum 90-day disable period\"\n\n**Control Impact:**\n\nThis represents a direct violation of compensating control requirements. While CloudTrail and manual DBA log review provide some visibility, the loss of automated real-time alerting on a critical control (database privilege escalation) reduces the entity's ability to promptly detect anomalies.\n\n**Severity:** **CRITICAL**\n\n---\n\n## FINDING 2: Disabled Alert Rule Lacks Expiration Date and Re-evaluation Plan\n\n**Policy Section:** POL-SEC-MON-003, Section 4.3 \u2014 Disabled Alert Rules\n\n**Related Evidence:** Alert Tuning Log (TUNE-305)\n\n**Gap Description:**\n\nTUNE-305 status shows: *\"Active \u2014 **no expiration date set**\"*\n\nThe policy requires:\n- Maximum 90-day disable period\n- Re-evaluation before re-enabling\n\nTUNE-305 has been active since November 20, 2025 (43+ days as of the assessment date) with **no documented expiration date and no scheduled re-evaluation**. The justification cites a pending vendor fix (\"pending vendor fix to exclude maintenance windows\"), but no timeline for vendor resolution or rule re-enablement is documented.\n\n**Evidence of Non-Conformance:**\n- Expiration date field is blank/null\n- No scheduled re-evaluation date documented\n- Compensating controls are minimal (\"basic\" CloudTrail + manual weekly review)\n- Rule could theoretically remain disabled indefinitely\n\n**Control Impact:**\n\nAbsence of expiration dates and re-evaluation schedules creates a permanent exception drift, where disabled rules become institutional blind spots. This violates the principle of compensating controls being temporary measures pending permanent remediation.\n\n**Severity:** **HIGH**\n\n---\n\n## FINDING 3: Privileged Activity Review Coverage Gap \u2014 Thanksgiving and Holiday Weeks\n\n**Policy Section:** POL-SEC-MON-003, Section 5.2 \u2014 Privileged Activity Review\n\n**Related Evidence:** Weekly Privileged Activity Review Reports, weeks ending 2025-11-23 and 2025-12-21\n\n**Gap Description:**\n\nThe policy requires:\n\n> \"Privileged activity reports must be reviewed **weekly** by the Security Operations Lead with sign-off documentation.\"\n\nTwo weeks in Q4 2025 show no review:\n\n| Week | Status | Reason Stated |\n|------|--------|---------------|\n| 2025-11-23 | Not Reviewed, No sign-off | \"Thanksgiving week \u2014 review not conducted\" |\n| 2025-12-21 | Not Reviewed, No sign-off | \"Holiday week \u2014 review not conducted\" |\n\nWhile these are lower-activity periods, the policy contains **no exception clause** for holidays or reduced-activity weeks. The requirement is stated unconditionally as \"must be reviewed weekly.\"\n\n**Evidence of Non-Conformance:**\n- Two weeks with zero sign-off documentation\n- No pre-approved holiday exception procedure documented\n- Policy Section 5.2 specifies \"weekly\" with no carve-outs for calendar events\n- Privileged activity monitoring (Section 5.1) includes critical activities (root account, IAM modifications, security group changes) that could occur during holidays\n\n**Risk Context:**\n\nWhile Q4 2025 shows minimal privileged activity during these weeks (entries marked \"N/A\"), there is no preventive control ensuring reviews would occur if activity *did* happen. This is a procedural gap.\n\n**Severity:** **HIGH**\n\n---\n\n## FINDING 4: SIEM Integration Delay Exceeded Policy Timeline\n\n**Policy Section:** POL-SEC-MON-003, Section 3.1 \u2014 SIEM Coverage\n\n**Related Evidence:** Security Exception Register (SEC-EXC-2025-021)\n\n**Gap Description:**\n\nThe policy requires:\n\n> \"All production services must be integrated with the SIEM (Splunk Enterprise Security) **within 5 business days of deployment**.\"\n\n**SEC-EXC-2025-021 documents:**\n- Service deployed: September 10, 2025\n- SIEM integration delayed until: December 12, 2025\n- Duration of non-compliance: ~65 calendar days (39+ business days)\n- Policy deadline: September 15, 2025 (5 business days post-deployment)\n\n**Compensating Controls:** CloudWatch Logs with 7-year retention, manual log review twice weekly, FedRAMP-compliant Fluent Bit parser in development.\n\n**Assessment Note:**\n\nThis exception has now **expired** (expiration date 2025-12-15) and SIEM integration is confirmed completed (\"Parser deployed and validated. 14 alert rules configured.\"). The control violation occurred during Q4 2025 but has been remediated by the assessment date.\n\n**Severity:** **MEDIUM**\n\n**Status:** Remediated \u2014 exception properly expired and integration completed. This represents a historical gap with compensating controls in place and now resolved.\n\n---\n\n## PROPERLY MANAGED EXCEPTION (No Finding)\n\n**SEC-EXC-2025-020: GuardDuty Cryptocurrency Mining Alert Disabled**\n\n**Why This Is Compliant:**\n\n- \u2705 CISO approval obtained (Andre Williams)\n- \u2705 Documented justification (false positives on ML GPU instances)\n- \u2705 Expiration date set (2026-01-30 \u2014 90 days from approval)\n- \u2705 Compensating controls documented: CloudTrail, CrowdStrike, GPU utilization dashboards, job tagging\n- \u2705 Re-evaluation performed (2025-12-15 review confirmed: \"no anomalous GPU activity detected\")\n\nThis exception follows all requirements of POL-SEC-MON-003 Section 4.3 and represents a properly managed control exception.\n\n---\n\n## DOCUMENTS REVIEWED FOR RELEVANCE\n\n| Document | Relevance | Notes |\n|----------|-----------|-------|\n| Security Exception Register | \u2705 **High** | Two exceptions reviewed; one non-compliant (SEC-EXC-2025-021 now remediated), one compliant (SEC-EXC-2025-020) |\n| POL-SEC-MON-003 | \u2705 **Critical** | Defines CC7.2 control requirements; all findings traced to specific policy sections |\n| Privileged Activity Reports | \u2705 **High** | Assesses coverage of Section 5.2 requirement; identified two weeks without sign-off |\n| Alert Tuning Log | \u2705 **High** | Identifies alert rule management gaps; TUNE-305 and TUNE-303 reviewed for compliance with Section 4.3 |\n| System Uptime Report | \u274c **Not Relevant** | Operational availability metric; not related to monitoring or anomaly detection effectiveness |\n\n---\n\n## SUMMARY ASSESSMENT\n\n**Overall Control Status:** **NON-CONFORMANT**\n\nPolaris Financial demonstrates **strong foundational monitoring capabilities** (comprehensive log sources, alert infrastructure, privileged activity tracking), but the assessment identified **two active control violations** (Findings 1 & 2) and **one procedural gap** (Finding 3) that prevent a \"conformant\" rating.\n\n**Critical Issues Requiring Immediate Remediation:**\n1. Obtain retroactive CISO approval for TUNE-305 or re-enable alert rule\n2. Set expiration date and re-evaluation trigger for TUNE-305 (maximum 90 days from current date)\n3. Document holiday/reduced-activity exception policy and apply retroactively to Q4 2025\n\n**Audit Recommendation:** \n\nConditional pass pending correction of Findings 1, 2, and 3. The organization's monitoring infrastructure is mature, but governance and exception management require tightening to meet SOC 2 CC7.2 standards."
+}

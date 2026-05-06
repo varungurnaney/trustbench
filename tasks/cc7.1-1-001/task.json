@@ -1,0 +1,71 @@
+{
+  "id": "cc7.1-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "To meet its objectives, the entity uses detection and monitoring procedures to identify changes to configurations that result in the introduction of new vulnerabilities, and susceptibilities to newly discovered vulnerabilities.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/vulnerability-management-policy.md",
+      "type": "policy",
+      "description": "Cirrus Technologies vulnerability management policy covering scanning, assessment, and remediation procedures"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the vulnerability management policy for Cirrus Technologies. Assess whether it adequately addresses SOC 2 CC7.1 requirements for detection and monitoring of vulnerabilities. Identify any gaps or missing elements that an auditor would flag.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No defined scan frequency — policy uses vague language",
+      "description": "Section 3.3 states vulnerability scans shall be performed 'on a regular basis' but does not define a specific frequency (e.g., weekly, monthly, quarterly). CC7.1 requires that detection procedures identify susceptibilities to newly discovered vulnerabilities in a timely manner. Without a defined scan cadence, there is no measurable, enforceable standard for how frequently scans occur. An auditor cannot verify compliance with an undefined schedule.",
+      "evidence_sources": ["evidence/vulnerability-management-policy.md"],
+      "expected_reasoning": "Section 3.3 uses the phrase 'on a regular basis' which is vague and unenforceable. Industry standard is at minimum monthly scanning for infrastructure and weekly for internet-facing assets. The absence of a defined frequency means the organization cannot demonstrate consistent scan execution.",
+      "detection_criteria": {
+        "required_keywords": ["Section 3.3", "regular basis", "scan frequency", "undefined", "cadence", "measurable", "weekly", "monthly"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No remediation SLA timeframes defined by severity",
+      "description": "Section 5.2 states remediation should be performed 'in a timely manner commensurate with the severity and risk of the vulnerability' but does not define specific SLA timeframes for each severity level (e.g., Critical: 15 days, High: 30 days, Medium: 90 days). Without defined SLAs, there is no objective standard for measuring remediation timeliness. The aging analysis in Section 6.2 is meaningless without benchmarks to measure against.",
+      "evidence_sources": ["evidence/vulnerability-management-policy.md"],
+      "expected_reasoning": "Section 5.2 uses 'timely manner commensurate with severity' which is subjective and unenforceable. Industry standards define specific remediation SLAs per severity tier. Without explicit deadlines, the organization cannot track SLA compliance, escalate overdue items, or report on remediation performance.",
+      "detection_criteria": {
+        "required_keywords": ["Section 5.2", "timely manner", "remediation SLA", "no timeframe", "severity", "Critical", "days", "undefined"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No requirement for authenticated scanning",
+      "description": "Section 3.1 lists scanning tools but the policy does not mention authenticated (credentialed) scanning. Unauthenticated scans miss many vulnerabilities that are only detectable with system-level access, such as missing OS patches, local privilege escalation flaws, and application-level configuration issues. Without authenticated scanning, vulnerability coverage is incomplete.",
+      "evidence_sources": ["evidence/vulnerability-management-policy.md"],
+      "expected_reasoning": "The scanning section lists tools but does not specify whether scans are authenticated or unauthenticated. Credentialed scanning is an industry best practice that significantly increases detection coverage. Its absence means the scanning program may be missing a large class of vulnerabilities.",
+      "detection_criteria": {
+        "required_keywords": ["authenticated", "credentialed", "unauthenticated", "coverage", "missing", "patches", "local"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["vulnerability_management", "policy_review", "scan_frequency", "remediation_SLA", "single_document"]
+  }
+}

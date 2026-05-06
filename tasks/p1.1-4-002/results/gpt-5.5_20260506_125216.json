@@ -1,0 +1,79 @@
+{
+  "task_id": "p1.1-4-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T12:52:16.789075",
+  "score": {
+    "task_id": "p1.1-4-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "respect_opt_out",
+          "false",
+          "GA4 migration"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "migration",
+          "unchanged"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "3 years",
+          "5 years",
+          "Health Assessment",
+          "retention"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "nh_health_session",
+          "health assessment",
+          "analytics category",
+          "sensitive"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4994,
+    "output_tokens": 3486
+  },
+  "raw_response": "## P1.1 Readiness Assessment Findings \u2014 Privacy Notice\n\n| # | Finding title | Document section(s) | Why this is a gap | Severity |\n|---|---|---|---|---|\n| 1 | **Privacy policy retention disclosure conflicts with actual retention schedule for health and research data** | Privacy Policy \u00a76 \u201cData Retention\u201d; Data Retention Schedule rows 3 and 9 | The privacy policy states that Nextera Health retains \u201cpersonal health information for a maximum of 3 years after your last interaction.\u201d However, the retention schedule states that **Health Assessment Data** is retained for **5 years after last assessment**, and **Research Participation Data**, including survey responses and research consent records, is retained for **10 years after study completion**. These are materially longer periods involving sensitive health-related data. Data subjects are therefore not being accurately notified of how long their information may be retained. | **High** |\n| 2 | **Analytics opt-out notice is inconsistent with CookieBot configuration** | Privacy Policy \u00a75 \u201cYour Choices\u201d; CookieBot configuration \u2014 `analytics.respect_opt_out: false` | The privacy policy tells users they can opt out of non-essential analytics tracking and that Nextera Health \u201cwill not track your usage for analytics purposes once you opt out.\u201d However, the CookieBot configuration shows that the analytics category has `respect_opt_out` set to **false**, with a note that this was temporarily disabled during a GA4 migration. The target remediation date was **2025-11-01**, but the last scan date is **2025-12-20**, indicating the setting remained in place after the target date. This means the notice overstates the effectiveness of the user\u2019s analytics opt-out choice. | **High** |\n| 3 | **Data sharing disclosures omit key analytics and marketing technology providers** | Privacy Policy \u00a77 \u201cData Sharing\u201d; CookieBot configuration \u2014 analytics and marketing cookies | The privacy policy lists service provider categories and examples: AWS, Stripe, SendGrid, and Intercom. However, the CookieBot configuration shows use of additional third-party technologies that may receive personal data or identifiers, including **Google Analytics 4, Mixpanel, Datadog RUM, Facebook Pixel, and LinkedIn Insight Tag**. These providers are not disclosed in the privacy policy\u2019s data sharing section. Because the platform handles health-related data and user journey information, the omission limits transparency to data subjects. | **High** |\n| 4 | **\u201cWe do not share with advertisers\u201d statement appears inconsistent with marketing pixel deployment** | Privacy Policy \u00a77 \u201cData Sharing\u201d; CookieBot configuration \u2014 marketing cookies | The privacy policy states: \u201cWe do not sell your personal information or share it with advertisers.\u201d However, the CookieBot configuration includes **Facebook Pixel** and **LinkedIn Insight Tag** for campaign attribution. Even if deployed only after marketing consent, these tools typically involve disclosure of identifiers and event data to advertising platforms. The policy does not explain this distinction or disclose advertising/marketing measurement partners, making the statement potentially misleading. | **High** |\n| 5 | **Cookie notice understates the sensitivity and purpose of health journey tracking** | CookieBot configuration \u2014 analytics category, `nh_health_session`; Privacy Policy \u00a7\u00a72\u20133 and \u00a75 | The `nh_health_session` cookie is placed under \u201cAnalytics & Performance,\u201d but its internal note states that it records which specific health assessment modules a user completed, such as cardiovascular, mental health, nutrition, and sleep, and tracks wellness journey stage for the personalization engine. This is more sensitive than standard analytics and may involve health-related profiling or personalization. The category description focuses on improving user experience and does not clearly distinguish this health-related tracking from ordinary analytics cookies. | **Medium** |\n\n## Notes on items reviewed but not raised as findings\n\n- The **network architecture overview** is not directly relevant to P1.1 privacy notice readiness.\n- The consent export shows pre-v4.0 consents were migrated with reference to a DPO assessment, and the evidence states the consent scope was unchanged. Based on the provided information, this alone is not a P1.1 gap.\n- The policy does disclose many core privacy notice elements, including categories of data collected, purposes of processing, legal bases, data subject rights, DPO contact details, and account deletion rights. The primary issues are accuracy and completeness when compared against operational evidence."
+}

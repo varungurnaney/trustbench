@@ -1,0 +1,59 @@
+{
+  "task_id": "p1.1-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:39:51.014078",
+  "score": {
+    "task_id": "p1.1-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "footnote",
+          "analytics",
+          "exempt",
+          "indefinitely",
+          "retention",
+          "longitudinal"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "_ga",
+          "Mixpanel",
+          "mp_",
+          "strictly_necessary",
+          "consent_required",
+          "false",
+          "analytics"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3768,
+    "output_tokens": 3036
+  },
+  "raw_response": "# Compliance Readiness Assessment: SOC 2 P1.1 (Privacy Notice)\n\n## Summary\n\nThe evidence provided demonstrates that Crestline SaaS has invested in formal privacy infrastructure (a defined retention schedule, geo-aware consent banner via OneTrust, documented legal bases). However, several material gaps exist that undermine the entity's ability to provide accurate and complete notice to data subjects as required by P1.1. The most significant issues involve (1) misclassification of advertising/analytics cookies as \"strictly necessary,\" which directly contradicts notice provided to users, and (2) an indefinite retention exemption for product telemetry that lacks an end date, review cadence, or disclosure mechanism.\n\nFindings are detailed below.\n\n---\n\n## Finding 1: Analytics Cookies Misclassified as \"Strictly Necessary\"\n\n**Document Section:** OneTrust configuration \u2192 `cookie_categories.strictly_necessary.cookies` (entries `_ga`, `_ga_MEASUREMENT_ID`, `_gid`, `mp_crestline_mixpanel`)\n\n**Gap:** Four third-party analytics cookies (Google Analytics `_ga`, `_ga_MEASUREMENT_ID`, `_gid`, and Mixpanel `mp_crestline_mixpanel`) are placed in the \"Strictly Necessary\" category, which the configuration declares `consent_required: false` and `always_active: true`. The category description states these cookies are \"essential for the website to function and cannot be switched off.\" Analytics and product telemetry cookies are not technically necessary for site operation; the stated purposes (\"capacity planning,\" \"longitudinal trend analysis,\" \"service reliability tracking\") are business analytics purposes that do not meet the strict-necessity standard under EU ePrivacy/GDPR or the consent definitions communicated to users. This means the privacy notice presented to data subjects (the consent banner) materially misrepresents the nature of these cookies and deprives users \u2014 particularly EU/EEA users where `default_consent: \"opt-in\"` \u2014 of the ability to refuse them. This is a direct failure of P1.1's requirement that notice accurately describe privacy practices.\n\n**Severity:** **Critical**\n\n---\n\n## Finding 2: Indefinite Retention of Product Analytics with No Disclosed End Date\n\n**Document Section:** Retention schedule \u2192 Row 7 (Product Analytics and Telemetry) and Footnote 3\n\n**Gap:** Row 7 lists the retention period as \"See footnote 3,\" which discloses that analytics/telemetry data (including IP addresses \u2014 personal data under GDPR) is retained **indefinitely** under an executive exemption granted 2024-03-15. The data category includes IP addresses, session IDs, and user agent strings, which are personal data. P1.1 requires the entity to provide notice of retention practices; an indefinite retention period without a defined trigger for deletion, no disclosed maximum period, and no scheduled review of the exemption fails to provide meaningful notice. Furthermore, the schedule references \"Crestline SaaS Privacy Policy v4.2\" as the controlling notice \u2014 auditors should verify the policy actually discloses indefinite analytics retention; if not, the public notice contradicts internal practice.\n\n**Severity:** **Critical**\n\n---\n\n## Finding 3: No Periodic Review of the Indefinite-Retention Exemption\n\n**Document Section:** Retention schedule \u2192 Footnote 3\n\n**Gap:** Footnote 3 explicitly states: \"No periodic review of this exemption is scheduled.\" Even where extended retention is justified, P1.1 (and supporting criteria around governance) requires that retention practices be reviewed to ensure ongoing alignment with stated purposes and that notice remains accurate. A standing exemption without review is not auditable and creates risk that the basis for retention (legitimate interest) is no longer valid yet still represented in notice as legitimate.\n\n**Severity:** **High**\n\n---\n\n## Finding 4: Marketing/Targeting Cookies Retain Data Longer Than the Schedule Implies\n\n**Document Section:** Retention schedule Row 5 (Marketing Consent Records) vs. OneTrust targeting cookies (`_fbp`, `_gcl_au`, `li_fat_id`)\n\n**Gap:** While marketing consent records are subject to a 2-year retention rule, the targeting cookies set on the user's browser are administered by third parties (Meta, Google, LinkedIn) and are not addressed in the data retention schedule. The notice provided to data subjects does not appear to cover what these third parties do with the data after collection, nor whether Crestline has data processing agreements that bound retention. P1.1 requires notice about disclosures to third parties and how they handle the data.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 5: \"Rest of World\" Default Consent of \"Implied\" Without Explicit Notice Mechanism\n\n**Document Section:** OneTrust configuration \u2192 `geo_rules.rest_of_world`\n\n**Gap:** For users outside EU/EEA and California, default consent is set to \"implied\" with an `informational` banner and `granular_categories: false`. This means users in jurisdictions such as Brazil (LGPD), Canada (PIPEDA/Quebec Law 25), UK (UK GDPR), and several US states (Colorado, Virginia, Connecticut, etc.) \u2014 many of which require opt-in or granular consent \u2014 receive only an informational notice. The privacy notice mechanism is therefore insufficient to meet local notice/choice requirements that Crestline's privacy program likely commits to.\n\n**Severity:** **High**\n\n---\n\n## Finding 6: Application Logs and Support Tickets May Contain PII Beyond What Notice Discloses\n\n**Document Section:** Retention schedule Rows 4 (Support Tickets) and 8 (Application Logs)\n\n**Gap:** Row 4 notes \"May contain PII shared by customer during troubleshooting,\" and Row 8 notes \"Logs may contain request parameters with PII.\" Neither row identifies a defined data minimization control or scrubbing process, and the data elements column does not enumerate the types of PII that may end up in these stores. P1.1 requires that notice describe the categories of personal information collected; if PII enters these systems incidentally and is retained for 2 years, the privacy notice must disclose this category \u2014 and a control should exist to either scrub or classify it.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 7: Inconsistent Cookie Duration vs. Stated Retention Policy\n\n**Document Section:** OneTrust configuration (`_ga`, `_ga_MEASUREMENT_ID` durations of 730 days) vs. Retention schedule Row 11 (Cookie Consent Preferences: 2 years after last site visit)\n\n**Gap:** Several cookies have durations (e.g., 730 days for `_ga`) that may exceed both the consent record (`cookie_consent` cookie, 365 days) and the documented OneTrust scan cadence. If a user's consent cookie expires after 365 days but analytics cookies persist for 730 days, the user could be tracked for a period longer than their valid consent \u2014 a notice/consent integrity problem.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 8: No Evidence That the Privacy Policy (v4.2) Reflects the Retention Schedule\n\n**Document Section:** Retention schedule \u2192 Footnote 4\n\n**Gap:** Footnote 4 references \"Crestline SaaS Privacy Policy v4.2 (effective 2025-01-01),\" but the privacy policy itself is not included in evidence. P1.1 is fundamentally about the **notice** to data subjects; without the policy text, the auditor cannot verify that the categories, retention periods, legal bases, and third-party disclosures in the operational schedule are actually communicated externally. This is a documentation/evidence gap rather than a control failure, but it must be remediated before completion of audit fieldwork.\n\n**Severity:** **High**\n\n---\n\n## Recommended Remediation Priorities\n\n1. **Immediately reclassify** `_ga`, `_ga_MEASUREMENT_ID`, `_gid`, and `mp_crestline_mixpanel` from Strictly Necessary to Performance/Analytics, requiring consent.\n2. **Define a maximum retention period** for product telemetry (Row 7), or implement IP truncation/pseudonymization to remove personal data from indefinitely retained datasets, and **disclose this in the privacy notice**.\n3. **Establish an annual review cadence** for any retention exemptions, with sign-off by the Privacy Team (not solely Engineering).\n4. **Obtain and review Privacy Policy v4.2** to confirm public notice aligns with the operational retention schedule.\n5. **Reassess \"rest of world\" default consent** against jurisdictions where the entity has users (UK, Brazil, Canada, multi-state US).\n6. **Implement PII scanning/scrubbing** for application logs and support tickets, or explicitly disclose the incidental collection in the privacy notice."
+}

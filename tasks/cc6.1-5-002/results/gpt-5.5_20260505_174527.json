@@ -1,0 +1,74 @@
+{
+  "task_id": "cc6.1-5-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:45:27.192677",
+  "score": {
+    "task_id": "cc6.1-5-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.25,
+    "f1": 0.3333333333333333,
+    "score": 0.3333333333333333,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Diana Vasquez",
+          "TERM-Q4-024",
+          "holiday",
+          "on-call",
+          "staffing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Marcus Hall",
+          "TERM-Q4-016",
+          "involuntary",
+          "AWS",
+          "access key"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5371,
+    "output_tokens": 2730
+  },
+  "raw_response": "## Overall Assessment\n\nCrestPoint\u2019s termination/offboarding control appears generally designed appropriately and operated effectively for most Q4 2025 terminations. However, the evidence shows several deviations, including one high-risk involuntary termination where Okta was not disabled within the policy target and AWS IAM access remained active for five days, plus a separate holiday staffing gap that caused late revocation across Okta, AWS, and SaaS access.\n\nBased on the evidence, the control is **not fully operating effectively for Q4 2025** without remediation or additional compensating evidence.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Involuntary Termination Not Disabled Within 1-Hour Target | Access Control Policy \u00a76.2 \u2014 Involuntary Termination; Termination Log TERM-Q4-016; Okta Audit Log | Marcus Hall was involuntarily terminated on 2025-11-14 at 10:00, HR notification was sent at 10:05, but Okta was not disabled until 2025-11-15 at 08:00. The policy requires Okta suspension \u201cimmediately\u201d with a target of within 1 hour for involuntary terminations. The termination log marks the Okta SLA as met, but this appears to apply the 24-hour standard rather than the stricter involuntary termination requirement. | High |\n| 2 | AWS IAM Access Key Missed for Five Days After Termination | Access Control Policy \u00a76.1 \u2014 Employee Termination; Termination Log TERM-Q4-016 | Marcus Hall\u2019s AWS IAM access was not deactivated until 2025-11-19, five days after his 2025-11-14 termination. Policy requires cloud infrastructure access to be removed within 24 hours. The note states the access key was missed in the initial offboarding checklist. Although no API usage was observed during the gap, the former employee retained active cloud access for several days after an involuntary termination. | High |\n| 3 | Holiday Staffing Gap Caused Late Revocation for Voluntary Termination | Access Control Policy \u00a76.1 \u2014 Employee Termination; \u00a78 \u2014 Exceptions; Termination Log TERM-Q4-024; Okta Audit Log | Diana Vasquez was terminated on 2025-12-19 at 16:30, but Okta was not disabled until 2025-12-22 at 09:15, approximately 64.75 hours later. AWS IAM and SaaS access were also not revoked until 2025-12-22. The stated cause was lack of IT on-call staffing during the holiday schedule. The policy requires Okta, AWS, and SaaS access revocation within 24 hours and does not provide a blanket holiday exception. No CISO-approved exception or documented compensating control was provided. | Medium |\n| 4 | Termination SLA Reporting Does Not Correctly Reflect Involuntary Termination Requirements | Access Control Policy \u00a76.2 \u2014 Involuntary Termination; \u00a77 \u2014 Monitoring; Termination Log TERM-Q4-016 | The termination log marks Marcus Hall\u2019s Okta SLA as \u201cYes\u201d even though the account was disabled approximately 22 hours after HR notification and therefore missed the 1-hour target for involuntary terminations. This indicates the monitoring/reporting process may not distinguish between voluntary and involuntary SLA requirements, reducing management\u2019s ability to identify and remediate control failures. | Medium |\n| 5 | Offboarding Checklist Failed to Identify All Access Types | Access Control Policy \u00a76.1 \u2014 Employee Termination; Termination Log TERM-Q4-016 | The offboarding checklist was marked \u201cComplete\u201d even though an AWS IAM access key was missed and remained active for five days. This suggests the checklist does not reliably validate all access paths, especially non-SSO or cloud-native credentials. Because the policy states all cloud infrastructure access must be removed within 24 hours, the checklist completion status is not sufficiently reliable evidence of complete revocation. | High |\n| 6 | Incomplete Evidence of Enhanced Involuntary Termination Procedures | Access Control Policy \u00a76.2 \u2014 Involuntary Termination | For involuntary terminations, the policy requires additional controls, including immediate Okta suspension, termination of active sessions, manager confirmation of no data exfiltration concerns, and legal hold if requested. The evidence demonstrates some session activity and account locks, but does not provide complete support that manager confirmation or legal hold evaluation occurred for involuntary terminations. | Medium |\n| 7 | Termination Population Data Quality Issues | Termination Log | The termination log contains duplicate employee IDs assigned to different individuals: EMP-3401 is used for both James Rivera and Diana Vasquez, and EMP-3389 is used for both Fatima Al-Rashid and Kevin Nakamura. This creates concerns over the accuracy and reliability of the termination population and could impair reconciliation between HR records, Okta accounts, AWS IAM users, and SaaS accounts. | Low |\n| 8 | Access Review Ownership May Not Have Been Updated Timely After Termination | Access Control Policy \u00a75.1 \u2014 Quarterly Access Reviews; Q4 Access Review Records; Termination Log TERM-Q4-005 | The GitHub Enterprise access review lists Tyler Morrison as system owner. Tyler Morrison was terminated on 2025-10-14, while the GitHub review was completed on 2025-10-22 by another reviewer. Although delegation may be appropriate, the record does not show that system ownership was formally reassigned after Tyler\u2019s termination. This creates a risk that access review ownership records are not updated promptly when personnel leave. | Low |"
+}

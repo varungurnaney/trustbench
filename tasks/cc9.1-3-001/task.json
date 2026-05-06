@@ -1,0 +1,68 @@
+{
+  "id": "cc9.1-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC9.1",
+  "control_description": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions or from the use of vendors and business partners.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/vendor-management-policy.md",
+      "type": "policy",
+      "description": "Arctura Systems vendor risk management policy defining DPA requirements, vendor tiers, and assessment procedures"
+    },
+    {
+      "path": "evidence/vendor-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Vendor inventory listing 16 active vendors with tier, data classification, and service details"
+    },
+    {
+      "path": "evidence/dpa-tracker.csv",
+      "type": "spreadsheet",
+      "description": "Data Processing Agreement tracker showing execution status for all vendors that process personal data"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Arctura Systems' vendor management program for the Q4 2025 observation period (October 1 - December 31, 2025). Review the vendor management policy, vendor inventory, and DPA tracker. Assess whether CC9.1 requirements for vendor risk mitigation are met. Cross-reference the vendor inventory against the DPA tracker to identify any gaps in data protection coverage.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Three vendors processing personal data have no executed DPA",
+      "description": "Cross-referencing the vendor inventory (16 vendors) against the DPA tracker (13 entries) reveals that three vendors processing personal data do not have executed DPAs. Specifically: (1) Amplitude Analytics (ARC-V-009, High tier) processes customer behavioral data including pseudonymized user IDs and IP addresses, (2) Intercom Inc. (ARC-V-012, High tier) processes customer PII including names and email addresses for in-app messaging, and (3) FullStory Inc. (ARC-V-014, High tier) processes customer session recordings that may capture PII entered in forms. Policy Section 3.1 requires a DPA to be executed before granting any vendor access to personal data. All three vendors were onboarded before October 2025 and have been processing data throughout the observation period without DPA coverage.",
+      "evidence_sources": ["evidence/vendor-inventory.csv", "evidence/dpa-tracker.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "The auditor should count 16 vendors in the vendor inventory and 13 entries in the DPA tracker. By cross-referencing vendor names and checking which vendors process personal data (data_classification column), the auditor identifies that Amplitude, Intercom, and FullStory are missing from the DPA tracker despite processing customer data. The policy explicitly requires DPAs before granting access to personal data.",
+      "detection_criteria": {
+        "required_keywords": ["Amplitude", "Intercom", "FullStory", "DPA", "missing", "16 vendors", "13", "personal data", "Section 3.1"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "DPA tracker does not include data processing scope or data types for any vendor",
+      "description": "The DPA tracker lists vendor names, execution dates, and renewal dates, but does not document what data each vendor is authorized to process, the purpose of processing, or the categories of data subjects. Policy Section 3.2 requires that DPAs 'specify the categories of personal data processed, the purpose of processing, and data subject categories.' Without this information in the tracker, there is no centralized record to verify that DPA scope matches actual data processing activities. The organization cannot efficiently detect scope creep where a vendor begins processing data types not covered by their DPA.",
+      "evidence_sources": ["evidence/dpa-tracker.csv", "evidence/vendor-management-policy.md"],
+      "expected_reasoning": "The DPA tracker is minimal — it confirms DPA execution but not DPA scope. Policy Section 3.2 requires tracking of data categories and purposes. The tracker as implemented cannot support scope verification, which is a control design weakness.",
+      "detection_criteria": {
+        "required_keywords": ["DPA tracker", "scope", "data categories", "purpose", "Section 3.2", "data types", "scope creep"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "18 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["vendor_management", "DPA", "data_processing_agreement", "cross_reference", "coverage_gap"]
+  }
+}

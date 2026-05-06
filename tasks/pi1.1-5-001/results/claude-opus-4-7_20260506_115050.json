@@ -1,0 +1,61 @@
+{
+  "task_id": "pi1.1-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:50:50.062222",
+  "score": {
+    "task_id": "pi1.1-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2222222222222222,
+    "f1": 0.3636363636363636,
+    "score": 0.3636363636363636,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "2.1%",
+          "5% threshold",
+          "SESSION_TIMEOUT_MIN",
+          "CIRCUIT_BREAKER_THRESHOLD",
+          "RETRY_BACKOFF_MS",
+          "behavioral",
+          "environment parity",
+          "staging",
+          "production",
+          "processing integrity"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Exception Register",
+          "40 days",
+          "Under Review",
+          "documented exceptions",
+          "CDR-411"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3976,
+    "output_tokens": 3278
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment: PI1.1 Control Review\n## Nexus Cloud Platform \u2014 Q4 2025\n\n---\n\n## Executive Summary\n\nWhile the configuration drift percentage (2.1%) is technically below the 5% policy threshold defined in POL-SDLC-013 \u00a74.2, the audit identifies **multiple processing integrity gaps** that undermine the spirit and operational effectiveness of PI1.1. The drift includes parameters that materially alter application behavior \u2014 not merely scaling \u2014 and the policy's documentation requirement has been ignored for 40+ consecutive days. Numerical compliance with the threshold does **not** equate to control effectiveness.\n\n---\n\n## Findings\n\n### Finding 1: Behavioral Configuration Drift Misclassified as Scaling Parameters\n\n**Related Section:** POL-SDLC-013 \u00a74.2 (Environment Parity); Drift reports CDR-408 through CDR-414\n\n**Gap:** Platform Engineering has characterized the 11 drifted parameters as \"scaling and performance\" differences that are environment-specific and therefore acceptable. However, several drifted parameters change **application behavior**, not just capacity:\n\n- **SESSION_TIMEOUT_MIN** (staging=60, production=30): Users experience different session lifecycle behavior. Code paths governing re-authentication, token refresh, and session expiry are validated against a 60-minute window in staging but execute against 30 minutes in production. Bugs in session boundary logic would not surface in staging tests.\n- **CIRCUIT_BREAKER_THRESHOLD** (staging=10, production=5): Circuit breaker trips at different failure counts, meaning resilience and failover code paths execute differently. A staging validation showing healthy behavior does not predict production circuit-trip behavior.\n- **RETRY_BACKOFF_MS** (staging=1000, production=200): Different retry timing affects race conditions, downstream load patterns, and idempotency assumptions.\n- **CACHE_TTL_SECONDS** (staging=300, production=120): Cache invalidation timing differences can mask staleness bugs and concurrency issues.\n\nThis directly contradicts policy language: *\"code validated in staging must behave identically in production.\"* PI1.1 requires that processing objectives \u2014 including completeness and accuracy \u2014 be validated. Staging validation under these parameters provides **false assurance** that production processing will behave as tested.\n\n**Severity:** **High**\n\n---\n\n### Finding 2: Failure to Document Exceptions in Environment Parity Exception Register\n\n**Related Section:** POL-SDLC-013 \u00a74.2 (\"Acceptable drift\")\n\n**Gap:** Policy requires that *\"Known and documented differences \u2026 must be recorded in the Environment Parity Exception Register with justification.\"* For 40 consecutive days (Nov 19 \u2013 Dec 29, 2025), 10 newly-introduced drift parameters have remained undocumented in the register. CDR-411 explicitly states: *\"No Environment Parity Exception Register entries filed.\"* CDR-414 confirms this persisted through end of Q4.\n\nThis is a direct, sustained, observable policy violation. It also undermines the auditor's ability to evaluate whether drift is intentional and risk-assessed, which is the entire purpose of the register. The control is not operating as designed.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: \"Under Review\" Status Has Persisted Without Resolution for 40+ Days\n\n**Related Section:** POL-SDLC-013 \u00a74.2 (Drift reporting); CDR-408 through CDR-414\n\n**Gap:** The drift was first flagged on Nov 19, 2025 as \"Under Review\" (Medium severity). Six consecutive weekly scans (CDR-408 through CDR-414) carry the same \"Under Review\" status without progression to either (a) remediation, or (b) documented exception. The policy implies a remediation/exception decision workflow but defines no SLA for non-Critical findings \u2014 and even where no SLA exists, an indefinite \"Under Review\" state is a control breakdown. This signals that the drift management process has no closure mechanism, which is a design deficiency in addition to the operating deficiency.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 4: Threshold Design Allows Material Drift to Remain Sub-Threshold\n\n**Related Section:** POL-SDLC-013 \u00a74.2 (5% drift tolerance)\n\n**Gap:** The 5% tolerance is calculated as a simple ratio of drifted parameters to total parameters (11/525 = 2.1%). This calculation methodology weights all parameters equally regardless of risk. A future change could drift 25 additional parameters \u2014 including authentication, encryption, or data validation settings \u2014 and remain under the 5% threshold. The policy does not:\n\n- Differentiate critical/security/behavioral parameters from cosmetic ones\n- Require any drift in pre-defined \"critical\" parameters to be flagged regardless of percentage\n- Define what parameter classes constitute the denominator\n\nFor PI1.1, processing integrity controls must be tied to processing objectives, not arbitrary numerical thresholds. The current threshold design is a **policy weakness** that enables technically-compliant-but-substantively-noncompliant states such as the one observed.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: Performance Test Baseline Validity Compromised\n\n**Related Section:** Deployment pipeline `staging-validation` stage; specifically `performance-tests` step (`--baseline production`)\n\n**Gap:** The staging-validation stage runs performance tests with `--baseline production`, meaning staging behavior is benchmarked against production metrics. With 11 parameters drifted \u2014 including DB_POOL_MAX (20 vs. 50), WORKER_THREAD_COUNT (4 vs. 16), BATCH_SIZE (100 vs. 500), and RATE_LIMIT_PER_MIN (1000 vs. 5000) \u2014 staging is structurally incapable of meeting production baselines, or conversely, staging tests pass under conditions that will not exist in production. The gating control is therefore either chronically failing (and presumably overridden) or providing no meaningful signal. This degrades PI1.1 assurance that production processing will be complete, accurate, and timely.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: Change CHG-8892 Bypassed Environment Parity Review\n\n**Related Section:** POL-SDLC-013 \u00a74.2; CDR-408 notes\n\n**Gap:** Per CDR-408, Platform Engineering performed production performance tuning on Nov 18 (CHG-8892) ahead of Black Friday traffic. Ten parameters were modified in production **without corresponding staging changes** and **without filing exceptions**. The change record evidently did not include an environment-parity impact assessment, suggesting the change management process does not enforce the SDLC policy's parity requirement at change-approval time. This is a **process integration gap** between Change Management and SDLC controls.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Drift Reporting Audience Limited to Platform Engineering\n\n**Related Section:** POL-SDLC-013 \u00a74.2 (\"Drift reporting\")\n\n**Gap:** Policy states drift scan results are reported only to \"the Platform Engineering team lead\" \u2014 the same team that introduces and is responsible for remediating drift. There is no independent oversight (e.g., to the AppSec team, VP Engineering, or compliance function) and no escalation path defined for prolonged unresolved drift. This is the apparent root cause of Findings 2 and 3: the team responsible for the violation is also the sole recipient of the report. Segregation of duties / oversight is insufficient.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 8: Change Freeze Period Drift Not Addressed\n\n**Related Section:** POL-SDLC-013 \u00a74.3 (Change Freeze); CDR-413\n\n**Gap:** CDR-413 notes the drift persisted through change freeze week. Policy permits only \"Critical production fixes\" with CTO approval during freeze. While not deploying anything during freeze is correct, the existence of an unresolved drift state going *into* a freeze \u2014 knowing it cannot be remediated for the freeze duration \u2014 should have triggered either pre-freeze remediation or formal CTO-acknowledged risk acceptance. Neither is evidenced.\n\n**Severity:** **Low**\n\n---\n\n## Overall Conclusion on PI1.1\n\n**The control is NOT operating effectively for Q4 2025**, despite numerical compliance with the 5% threshold. Processing objectives for completeness and accuracy depend on staging validation being a faithful predictor of production behavior. The drifted parameters \u2014 particularly session timeout, circuit breaker threshold, and retry backoff \u2014 break that predictive relationship. Combined with 40 days of undocumented exceptions, the situation represents a **substantive PI1.1 deficiency that should be reported in the Type II opinion** unless management remediates and provides evidence of a sustained operating period before the audit period closes.\n\n### Recommended Remediation Priorities\n1. **Immediate:** File Environment Parity Exception Register entries with formal risk assessment for each of the 11 parameters, or remediate to parity.\n2. **Short-term:** Reclassify behavioral parameters (session, circuit breaker, retry, cache) and remediate those to parity even if scaling parameters remain divergent.\n3. **Policy revision:** Introduce parameter classification (behavioral vs. capacity), require exception register entries within a defined SLA (e.g., 7 days), and add independent oversight to drift reporting.\n4. **Pipeline:** Update performance-test baseline strategy to account for documented capacity differences, or use staging-scaled baselines."
+}

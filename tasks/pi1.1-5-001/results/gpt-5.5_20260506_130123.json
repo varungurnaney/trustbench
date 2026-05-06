@@ -1,0 +1,60 @@
+{
+  "task_id": "pi1.1-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T13:01:23.111659",
+  "score": {
+    "task_id": "pi1.1-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "2.1%",
+          "5% threshold",
+          "SESSION_TIMEOUT_MIN",
+          "CIRCUIT_BREAKER_THRESHOLD",
+          "RETRY_BACKOFF_MS",
+          "environment parity",
+          "staging",
+          "production",
+          "processing integrity"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Exception Register",
+          "40 days",
+          "Under Review",
+          "Section 4.2",
+          "documented exceptions"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2498,
+    "output_tokens": 2183
+  },
+  "raw_response": "## Overall Assessment\n\nPI1.1 is **not fully met for Q4 2025** with respect to accurate processing and environment parity.\n\nAlthough the measured configuration drift remained below the SDLC policy\u2019s **5% critical threshold**, the drift includes parameters that affect application behavior, failure handling, session management, caching, throughput, and timing. Therefore, the situation is technically below the quantitative threshold but still represents a **processing integrity risk**, particularly because the differences persisted for 40 days without documented exceptions or remediation.\n\n---\n\n## Finding 1: Persistent Undocumented Environment Drift\n\n**Related document section:**  \nSDLC Policy, Section 4.2 \u2014 Environment Parity  \nConfiguration Drift Reports CDR-408 through CDR-414\n\n**Why it\u2019s a gap:**  \nThe SDLC policy allows known staging-production differences only when they are documented in the Environment Parity Exception Register with justification. Beginning November 19, 2025, 11 drifted parameters were identified and persisted through December 29, 2025. The reports repeatedly state that no Environment Parity Exception Register entries were filed.\n\nEven though the drift percentage was only 2.1%, the policy requires documentation for acceptable drift regardless of whether the 5% threshold is exceeded. The repeated \u201cUnder Review\u201d status for 40 days indicates the drift was neither remediated nor formally accepted.\n\nThis weakens the entity\u2019s ability to demonstrate that processing objectives for accurate processing are consistently defined and enforced.\n\n**Severity:** Medium\n\n---\n\n## Finding 2: Behavior-Affecting Parameters Were Treated as Routine Scaling Differences\n\n**Related document section:**  \nSDLC Policy, Section 4.2 \u2014 Environment Parity  \nConfiguration Drift Reports CDR-408 through CDR-414\n\n**Why it\u2019s a gap:**  \nEngineering characterized the drift as \u201cscaling and performance parameters,\u201d but several parameters affect application behavior beyond infrastructure sizing. Examples include:\n\n- `SESSION_TIMEOUT_MIN`: staging 60 minutes vs. production 30 minutes  \n- `RETRY_BACKOFF_MS`: staging 1000 ms vs. production 200 ms  \n- `CIRCUIT_BREAKER_THRESHOLD`: staging 10 vs. production 5  \n- `CACHE_TTL_SECONDS`: staging 300 vs. production 120  \n- `RATE_LIMIT_PER_MIN`: staging 1000 vs. production 5000  \n- `BATCH_SIZE`: staging 100 vs. production 500  \n\nThese differences can affect user session handling, retry behavior, error handling, freshness of cached data, throughput, batch completeness, and timeliness of processing. As a result, staging may not accurately represent production processing behavior.\n\nFor PI1.1, processing objectives should define what constitutes accurate and timely processing. Allowing behavior-impacting differences without explicit justification or testing criteria creates ambiguity over whether staging validation provides meaningful assurance over production processing accuracy.\n\n**Severity:** High\n\n---\n\n## Finding 3: The 5% Drift Threshold Is Not Risk-Based\n\n**Related document section:**  \nSDLC Policy, Section 4.2 \u2014 Configuration Drift Tolerance\n\n**Why it\u2019s a gap:**  \nThe policy defines a 5% drift threshold based on total configuration parameters. However, this aggregate percentage-based threshold does not account for the criticality of individual parameters.\n\nA small number of high-impact configuration differences could materially affect processing accuracy or timeliness while remaining below the 5% threshold. In this case, 11 drifted parameters represented only 2.1% of total parameters, but several directly influence processing behavior.\n\nThe control design therefore allows a technically compliant state that may still undermine processing integrity. PI1.1 requires processing objectives to define complete, accurate, and timely processing; the current threshold does not sufficiently distinguish between low-risk environmental differences and parameters that affect processing outcomes.\n\n**Severity:** Medium\n\n---\n\n## Finding 4: Staging Validation May Not Provide Reliable Assurance Over Production Processing\n\n**Related document section:**  \nDeployment Pipeline Configuration \u2014 Staging Validation  \nSDLC Policy, Section 4.1 \u2014 Pipeline Stages  \nSDLC Policy, Section 4.2 \u2014 Environment Parity\n\n**Why it\u2019s a gap:**  \nThe deployment pipeline requires staging validation, including integration tests, performance tests, QA signoff, and a 24-hour minimum validation period. The performance tests compare staging results against a production baseline.\n\nHowever, because staging and production had persistent configuration differences, the staging validation results may not be representative of production behavior. Differences in database pool size, Redis connections, worker thread count, batch size, rate limits, cache TTL, retry timing, and circuit breaker thresholds could cause staging tests to pass while production behaves differently under similar conditions.\n\nThis undermines the processing integrity objective that code validated in staging should behave identically in production.\n\n**Severity:** High\n\n---\n\n## Finding 5: No Timely Resolution or Escalation for Under-Threshold Drift\n\n**Related document section:**  \nSDLC Policy, Section 4.2 \u2014 Drift Reporting and Configuration Drift Tolerance  \nConfiguration Drift Reports CDR-408 through CDR-414\n\n**Why it\u2019s a gap:**  \nThe policy defines a 24-hour remediation requirement for drift above 5%, but it does not clearly define required resolution timeframes, escalation procedures, or approval requirements for drift below 5% that remains undocumented or potentially material.\n\nThe Q4 evidence shows the same 11 drifted parameters remained unresolved or undocumented from November 19 through December 29. The reports remained in \u201cUnder Review\u201d status, with no documented exception and no remediation.\n\nThis creates a control gap because under-threshold drift can persist indefinitely, even when it affects processing behavior.\n\n**Severity:** Medium"
+}

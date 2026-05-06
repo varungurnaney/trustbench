@@ -1,0 +1,72 @@
+{
+  "task_id": "cc6.6-5-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:18:20.080826",
+  "score": {
+    "task_id": "cc6.6-5-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.25,
+    "precision": 0.16666666666666666,
+    "f1": 0.2,
+    "score": 0.2,
+    "gaps_detected": 1,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "admin API",
+          "bypass",
+          "API Gateway",
+          "WAF",
+          "boundary policy",
+          "compensating controls"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "0.3%",
+          "VPN CIDR"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 9174,
+    "output_tokens": 1525
+  },
+  "raw_response": "Below are the independent auditor findings regarding CC6.6, based on the supplied penetration test, network architecture, boundary security policy, and 30 days of production access logs. Each finding includes a title, source/reference, rationale, and a severity rating. Coverage is provided for both strengths and potential gaps.\n\n---\n\n### **1. Admin API Bypasses Standard Boundary Protections**\n\n- **Document Section(s):**\n  - Penetration Test: Finding CS-APXF-2025-002\n  - Network Architecture: \"Admin API\" section\n  - Policy: Section 3.5 (Emergency Administrative Access), Section 5 (Exceptions)\n\n- **Why it's a gap:**\n  - **What\u2019s missing/insufficient:**  \n    The admin API endpoint (`admin-api.internal.apexfintech.net:8443`) can be accessed directly from the VPN, bypassing the WAF and API Gateway (core boundary controls required by policy Section 3.2). While access requires strong authentication (Okta SSO + MFA, mTLS client certificate), and traffic is limited to the Tailscale VPN CIDR, the endpoint is outside the main DMZ boundary architecture and thus lacks WAF-layer protections (OWASP filtering, bot defense, central logging/monitoring at the gateway, etc.). This exception is documented and risk-accepted (per policy Section 5), but it constitutes a deviation from the intended boundary model.\n\n- **Severity:** **Medium**  \n  - **Rationale:**  \n    The admin API is NOT internet-facing; it\u2019s accessible only via tightly controlled VPN, employs mTLS, SSO+MFA, and has IP allowlisting. Usage is minimal (0.3% of production requests, exclusively from SRE/admin sources). The risk is acknowledged, accepted by the CISO, and compensating controls are in place\u2014including enhanced logging and access restrictions. The exception has a defined expiration and review process.  \n    However, from a strict SOC 2 perspective, it is a moderate gap: the endpoint lies outside the systemic, monitored boundary, and exceptions always warrant ongoing attention. The strong compensating controls adequately reduce risk below \"high.\"\n\n---\n\n### **2. Timely Remediation of Penetration Test Findings**\n\n- **Document Section(s):**\n  - Penetration Test: All findings & summary\n  - Policy: Section 4.3 (Pen test remediation SLAs)\n  - Logs (to cross-check ongoing issues)\n\n- **Why it's a gap:**\n  - **What\u2019s missing/insufficient:**  \n    Not a gap. All penetration test findings rated \"medium\" or lower were remediated within the required window, except the admin API boundary bypass (which is a formally accepted risk, not an overdue remediation). Remediation evidence is present for all other issues (HTTP headers, TLS settings, error handling, DNS zone transfer).\n\n- **Severity:** **None** (No gap)  \n  - PT policy is being followed. No critical/high findings; everything else is resolved or risk-accepted with compensating controls.\n\n---\n\n### **3. Comprehensive System Boundary Enforcement**\n\n- **Document Section(s):**\n  - Network Security Policy: Section 3.2 (DMZ/Boundary), 4.1, 4.3\n  - Architecture doc: Traffic flows, segmentation\n  - Logs: API traffic routing\n\n- **Why it's a gap:**\n  - **What\u2019s missing/insufficient:**  \n    There is no evidence of internet-exposed services bypassing the WAF/API Gateway; all customer/API traffic is routed through the defined DMZ controls. Service-to-service communication is mTLS-protected in the VPC. Network segmentation appears strictly enforced.\n\n- **Severity:** **None** (No gap)  \n  - The boundary architecture is being enforced as required, with only the narrow admin API exception.\n\n---\n\n### **4. Continuous Boundary Monitoring and Logging**\n\n- **Document Section(s):**\n  - Policy: Section 4.4 (Boundary traffic logging, anomaly alerting)\n  - Logs: API Gateway/admin API access logs for 30 days\n\n- **Why it's a gap:**\n  - **What\u2019s missing/insufficient:**  \n    No gap: Access logs show 99.7% of requests traverse the API Gateway (WAF-protected), with the remainder matched exactly to the admin API CIDR (VPN range). There are no unexplained direct accesses; no out-of-range source IPs; WAF blocks are recorded and error rates are low. Logging and monitoring appear complete and effective.\n\n- **Severity:** **None** (No gap)  \n  - Controls as designed are working. All administrative/VPN traffic is accounted for; alerting and logging per policy are in place.\n\n---\n\n### **5. Policy Exception and Review Process**\n\n- **Document Section(s):**\n  - Policy: Section 5 (Exceptions)\n  - Pen Test: Remediation notes for Finding 002 (risk acceptance, compensating controls, expiration)\n\n- **Why it's a gap:**\n  - **What\u2019s missing/insufficient:**  \n    Exceptions are handled according to the written process: risk acceptance for the admin API is signed by the CISO, justified, with compensating controls enumerated, and a review/expiration date (one year). This adequately fulfills SOC 2 requirement for management of deviations from boundary policy.\n\n- **Severity:** **Low** (Minor process risk due to deviation, but well managed)  \n  - The process suffices. A low rating is given because any deviation (even well-governed) increases risk, but controls and oversight are strong.\n\n---\n\n### **Summary Table**\n\n| Title                                                  | Relevant Section(s)                                             | Gap Description                                                                                          | Severity      |\n|--------------------------------------------------------|-----------------------------------------------------------------|----------------------------------------------------------------------------------------------------------|--------------|\n| Admin API Bypasses Standard Boundary Protections        | PenTest 002, Network Arch (Admin API), Policy 3.5, 5            | Direct VPN access to admin API bypasses WAF/API Gateway (outside DMZ); mitigated by strong controls      | Medium       |\n| Timely Remediation of Penetration Test Findings         | PenTest Findings, Policy 4.3                                    | No gap; all items remediated or managed.                                                                 | None         |\n| Comprehensive System Boundary Enforcement               | Policy 3.2, Arch Traffic Flows, Logs                            | No gap; architectural requirements enforced as written, except controlled admin API exception             | None         |\n| Continuous Boundary Monitoring and Logging              | Policy 4.4, Access Logs                                         | No gap; logs/monitoring show only authorized/admin traffic outside Gateway, with alerting present         | None         |\n| Policy Exception and Review Process                     | Policy 5, PenTest 002 Exception                                 | Exception (admin API) documented, reviewed by CISO, with controls & expiration date                       | Low          |\n\n---\n\n## **Conclusion**\n\n**Apex Fintech\u2019s system boundary controls are generally well-designed and implemented, and meet CC6.6 with the exception of the admin API endpoint, which is allowed to bypass WAF/API Gateway protections in favor of operational reliability. This deviation is carefully managed, formally risk-accepted, and protected with strong compensating controls. No other material deficiencies are identified. Continued review of this exception at expiration is recommended to ensure risk remains appropriately mitigated.**\n\nIf you require recommended actions or potential language for a SOC 2 management representation letter or exception, please indicate."
+}

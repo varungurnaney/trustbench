@@ -1,0 +1,87 @@
+{
+  "task_id": "a1.2-5-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-01T18:18:46.267180",
+  "score": {
+    "task_id": "a1.2-5-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "failed",
+          "gap",
+          "RPO",
+          "WAL"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Q4",
+          "quarterly",
+          "missing",
+          "observation period",
+          "control"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RTO",
+          "exceed",
+          "growth",
+          "4 hours",
+          "data volume"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "WAL",
+          "evidence",
+          "verify",
+          "RPO",
+          "4 hour",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5754,
+    "output_tokens": 3706
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2013 Control A1.2\n## NexGen Platform | Q4 2025 Observation Period\n\n---\n\n## FINDINGS SUMMARY\n\n| # | Finding | Severity | Audit Exception Risk |\n|---|---------|----------|---------------------|\n| 1 | Backup Failures Not Formally Escalated | High | **Yes** |\n| 2 | Missing Incremental Backup Evidence | High | **Yes** |\n| 3 | Lack of Formalized Remediation Process | High | **Yes** |\n| 4 | No Documented RTO Risk Mitigation | Medium | Possible |\n| 5 | Missing Semi-Annual DR Failover Test Evidence | Medium | **Yes** |\n| 6 | Incomplete Backup Verification Documentation | Low | No |\n\n---\n\n## DETAILED FINDINGS\n\n### **FINDING #1: Backup Failures Not Formally Escalated**\n\n**Title:** Two Production Backup Failures Lack Documented Root Cause Analysis and Escalation\n\n**Document Section:** Policy Section 5 (Incident Response for Availability Events) and Backup Execution Logs\n\n**Gap Description:**\nThe Q4 2025 backup logs show two production backup failures:\n- **2025-11-03**: Disk full on staging volume (auto-cleanup triggered)\n- **2025-11-16**: Network timeout to GCS (intermittent connectivity issue)\n\n**Issues:**\n- No documented escalation per the Incident Response Plan (Policy 5.0)\n- No root cause analysis (RCA) provided\n- No corrective actions documented\n- No evidence that infrastructure/monitoring was adjusted to prevent recurrence\n- The 2025-11-03 failure shows manual recovery (04:30 re-run), but no preventive measures documented for disk capacity\n\n**Why This Matters:**\n- Backup failures are critical to data recovery capability\n- The policy explicitly states \"P1 availability incidents escalated per Incident Response Plan\" \u2014 backup failures that prevent recovery capability should be treated as P1\n- Without documented escalation and RCA, there's no evidence that management was informed of recovery capability gaps\n- Auto-cleanup on disk-full scenarios is reactive, not proactive; capacity planning should have prevented this\n\n**Severity:** **HIGH**\n\n**Audit Exception Risk:** **YES** \u2014 SOC 2 requires evidence that control failures are identified, escalated, and remediated. Two production backup failures without documented escalation = control deficiency.\n\n**Remediation Recommendation:**\n- Require immediate RCA documentation for both failures\n- Implement automated alerting for backup staging disk capacity (threshold at 70%)\n- Establish formal backup failure escalation procedure with mandatory P1 triage within 1 hour\n- Add backup failure monitoring to Datadog alerting configuration\n- Document corrective actions taken and track to closure\n\n---\n\n### **FINDING #2: Missing Incremental Backup Execution Evidence**\n\n**Title:** No Operational Evidence for Incremental Backups (Every 4 Hours) Required by Policy\n\n**Document Section:** Policy Section 3.1 (Backup Requirements)\n\n**Gap Description:**\nThe policy explicitly requires:\n- **Incremental backup: Every 4 hours**\n- **WAL archiving: Continuous (point-in-time recovery capability)**\n\n**Provided Evidence:**\n- Backup logs show **only daily full backups** for the entire Q4 2025 period (92 days)\n- **Zero evidence** of incremental backup execution\n- **Zero evidence** of WAL archiving verification\n\n**Why This Matters:**\n- The stated RPO (Recovery Point Objective) is **4 hours** \u2014 this is only achievable via incremental backups or WAL archiving\n- Without incremental backups, data loss between daily backups could exceed 4 hours, violating the stated RPO\n- If production fails at 23:59 UTC, the latest recovery point is ~22 hours old (previous day's 02:00 backup)\n- WAL archiving should provide continuous recovery capability but there is no verification log provided\n\n**Severity:** **HIGH**\n\n**Audit Exception Risk:** **YES** \u2014 This is a material gap between policy and execution. An auditor will conclude either:\n  1. The policy is not accurately reflecting actual controls (policy discrepancy), OR\n  2. Incremental backups are not running (control failure)\n  \nEither scenario is an audit exception.\n\n**Remediation Recommendation:**\n- Provide full documentation of incremental backup execution for Q4 2025 (separate logs from daily logs if they exist)\n- Provide WAL archiving verification logs showing continuous operation\n- If incremental backups are NOT currently implemented, update Policy 3.1 to reflect reality, or implement incremental backups immediately\n- Document the rationale for 4-hour RPO and confirm it aligns with actual recovery capability\n- Include incremental backup status in daily operational reporting\n\n---\n\n### **FINDING #3: Lack of Formalized Backup Failure Remediation Process**\n\n**Title:** No Documented Procedure for Backup Failure Detection, Escalation, and Resolution\n\n**Document Section:** Policy Section 3.3 (Backup Verification) and Section 5 (Incident Response)\n\n**Gap Description:**\nThe policy states:\n- \"Automated backup integrity checks run daily\"\n- \"Automated monitoring alerts via Datadog for latency, error rate, and uptime\"\n\n**However:**\n- No evidence that backup job failures trigger automated alerts\n- No documented procedure for backup failure remediation\n- The 2025-11-03 failure shows manual re-run at 04:30 UTC, but:\n  - No documentation of who discovered the failure\n  - No documentation of detection time\n  - No evidence of alert acknowledgment or response SLA\n- No escalation matrix or on-call procedures for backup failures\n\n**Why This Matters:**\n- Automated monitoring is only effective if failures are detected and acted upon\n- Manual discovery of backup failures is not a reliable control\n- Without documented escalation procedures, there's no consistency in response\n- The 2.5-hour gap between initial failure (02:00) and re-run (04:30) indicates no immediate alert was triggered\n\n**Severity:** **HIGH**\n\n**Audit Exception Risk:** **YES** \u2014 SOC 2 Type II specifically requires evidence of **monitoring** AND **response**. Monitoring without formalized remediation is insufficient.\n\n**Remediation Recommendation:**\n- Document backup failure remediation procedure with:\n  - Alert thresholds (failure on first occurrence, timeout thresholds, etc.)\n  - Escalation path (who is paged, time-to-respond SLA)\n  - Investigation checklist\n  - Resolution tracking and closure criteria\n- Implement automated alerting for backup job failures (Datadog or equivalent)\n- Add backup failure response to on-call runbook\n- Maintain backup failure incident log for 12 months\n- Conduct monthly review of backup failure incidents\n\n---\n\n### **FINDING #4: Increasing Restore Duration vs. RTO \u2014 No Documented Risk Mitigation**\n\n**Title:** Restore Test Shows Growing Data Volume; Q3 Restore Approaching RTO Limit with No Mitigation Plan\n\n**Document Section:** Policy Section 4 (Disaster Recovery) and Quarterly Restore Test Results\n\n**Gap Description:**\nRestore test results show:\n- **Q2 2025** (June 15): 165 minutes to restore\n- **Q3 2025** (Sept 20): 210 minutes to restore\n- **RTO requirement**: 4 hours (240 minutes) for core API\n\n**Trend Analysis:**\n- 45-minute increase over 3 months\n- At this rate: restore time will exceed RTO by Q2 2026 (~270 minutes projected)\n- Q3 test notes explicitly flag this risk: *\"Growth in data volume increasing restore time \u2014 may exceed RTO by Q2 2026 if trend continues.\"*\n\n**Issues:**\n- No documented mitigation plan\n- No capacity planning for future restore times\n- No discussion of alternative recovery strategies (e.g., streaming restores, parallel recovery, database sharding)\n- No update to RTO/RPO if they cannot be met\n\n**Why This Matters:**\n- The stated RTO cannot be met if restore takes 270+ minutes\n- SOC 2 A1.2 requires monitoring AND appropriate response to control deficiencies\n- Identifying a trend (Q3 notes) without action is insufficient\n- By the next audit (2026), this will be a material finding if unaddressed\n\n**Severity:** **MEDIUM**\n\n**Audit Exception Risk:** **Possible** \u2014 This may not be a direct audit exception now (RTO still met in Q3), but:\n- If no mitigation is implemented by Q2 2026, it **will** be an exception\n- The entity has documented notice of the risk and taken no action = demonstrates a control weakness\n- An auditor will ask: \"What is your plan to maintain RTO as data grows?\"\n\n**Remediation Recommendation:**\n- Conduct capacity planning analysis:\n  - Project data growth and restore times through 2026\n  - Identify recovery strategy changes needed (parallel streams, optimized restore paths, etc.)\n- Document RTO/RPO review policy (e.g., quarterly assessment vs. actual restore time)\n- Implement restore time monitoring (add to Datadog dashboard)\n- If RTO cannot be maintained with current approach, escalate to product/engineering leadership and update policy with revised RTO or alternative recovery strategy\n- Execute next restore test (Q4 2025, due by end of December) and document trend analysis\n\n---\n\n### **FINDING #5: Missing Semi-Annual DR Failover Test Evidence**\n\n**Title:** No Evidence of Semi-Annual Disaster Recovery Failover Test Execution\n\n**Document Section:** Policy Section 4 (Disaster Recovery)\n\n**Gap Description:**\nThe policy states:\n- **\"DR failover tested semi-annually\"**\n\n**Provided Evidence:**\n- Quarterly restore tests documented for Q2 and Q3 2025\n- **Zero evidence of DR failover tests** for the observation period (Q4 2025)\n- No documentation of prior semi-annual failover tests (e.g., H1 2025)\n\n**Issues:**\n- Restore tests \u2260 failover tests:\n  - Restore test: Validate backup restoration to staging\n  - Failover test: Validate actual failover to DR site (us-east1), run production workload there, failback\n- A restore test proves the backup is restorable; it does NOT prove:\n  - Network/routing to DR site works\n  - DNS failover works\n  - Application configuration is correct in DR\n  - Database replication/sync is working\n  - Failback procedures work\n\n**Why This Matters:**\n- The policy explicitly requires semi-annual failover testing\n- No failover test evidence = policy non-compliance\n- Restore tests alone do not validate the full DR infrastructure\n- A failure to failover could render recovery capability unusable in a real incident\n\n**Severity:** **MEDIUM**\n\n**Audit Exception Risk:** **YES** \u2014 SOC 2 Type II requires evidence that disaster recovery controls are **tested and operating**. Missing semi-annual failover test evidence = control not tested per policy.\n\n**Remediation Recommendation:**\n- Immediately schedule and execute a DR failover test (if not already completed in Dec 2025)\n- Document failover test results including:\n  - Pre-failover state (primary active, DR standby)\n  - Failover execution time\n  - Data consistency validation (primary \u2194 DR)\n  - Application availability in DR\n  - Failback execution and validation\n  - Any issues encountered and resolution\n- Establish semi-annual failover test schedule (e.g., March and September)\n- Track in change management system with sign-offs from SRE and VP Engineering\n- Update next review date: policy next review should be April 2026, but failover test should be executed before then\n\n---\n\n### **FINDING #6: Incomplete Backup Verification Documentation**\n\n**Title:** Backup Integrity Checks Verified in Logs, but No Centralized Summary or Metrics Reporting\n\n**Document Section:** Policy Section 3.3 (Backup Verification)\n\n**Gap Description:**\nThe policy states:\n- \"Automated backup integrity checks run daily \u2014 verify backup file completeness and checksums\"\n\n**Provided Evidence:**\n- Backup logs show `checksum_verified: yes` for 90 of 92 backups\n- The two failed backups appropriately show `checksum_verified: no`\n- However:\n  - No centralized daily/monthly backup integrity report\n  - No executive summary of verification status\n  - No metrics (% of backups with successful checksums, etc.)\n\n**Why This Matters (Context):**\n- This is a **minor gap** because the underlying control is present and functioning\n- The backup logs **do** show verification occurring\n- However, SOC 2 relies on documentary evidence; a decentralized log is harder to audit\n- No monthly/quarterly summary means auditor must manually review all 92 rows\n\n**Severity:** **LOW**\n\n**Audit Exception Risk:** **No** \u2014 The control is in place and evidence exists; this is a documentation/reporting efficiency issue, not a control failure.\n\n**Remediation Recommendation (Optional):**\n- Generate monthly backup integrity report summarizing:\n  - Total backups executed\n  - Successful checksums\n  - Failed backups and remediation\n  - Backup sizes and growth trend\n- Add to monthly operations reporting\n- This improves auditability and operational transparency (no material control gap)\n\n---\n\n## SUMMARY TABLE: AUDIT READINESS\n\n| Finding | Severity | Exception? | Must Fix Before Audit? |\n|---------|----------|-----------|------------------------|\n| #1 \u2013 Backup Failures Not Escalated | HIGH | **YES** | **IMMEDIATE** |\n| #2 \u2013 Missing Incremental Backups | HIGH | **YES** | **IMMEDIATE** |\n| #3 \u2013 No Remediation Procedure | HIGH | **YES** | **IMMEDIATE** |\n| #4 \u2013 RTO Trend Risk | MEDIUM | Possible | Before Q2 2026 |\n| #5 \u2013 Missing DR Failover Test | MEDIUM | **YES** | **Before Audit** |\n| #6 \u2013 Backup Verification Reporting | LOW | No | Optional/Best Practice |\n\n---\n\n## OVERALL CONTROL A1.2 ASSESSMENT\n\n**Current Status:** \u26a0\ufe0f **NOT READY FOR SOC 2 TYPE II AUDIT**\n\n**Key Findings:**\n1. **Critical Gap**: Two production backup failures in Q4 with no documented escalation or remediation\n2. **Policy-Execution Mismatch**: Incremental backups required by policy but not evidenced in logs\n3. **Missing Control Procedure**: Backup failure response process not formalized\n4. **Test Evidence Incomplete**: DR failover testing not evidenced per policy requirements\n5. **Emerging Risk**: Restore time growth approaching RTO limits with no mitigation plan\n\n**Audit Expectation:**\nAn external SOC 2 auditor will issue a **CONTROL DEFICIENCY** (possibly **MATERIAL WEAKNESS** if viewed as pervasive) unless:\n- Findings #1, #2, #3, and #5 are remediated with documentation\n- Backup failure escalation/response procedures are formalized and operating\n- Evidence of Q4 2025 incremental backup execution OR policy update is provided\n- DR failover test is executed and documented\n\n**Recommended Timeline:**\n- **Week 1**: RCA for backup failures (#1), formalize escalation procedure (#3)\n- **Week 2**: Clarify incremental backup status and provide evidence (#2)\n- **Week 3**: Schedule and execute DR failover test (#5)\n- **Week 4**: Address RTO risk mitigation planning (#4)\n- **Pre-Audit**: Compile centralized control evidence package with all 6 findings addressed"
+}

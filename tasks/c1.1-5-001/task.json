@@ -1,0 +1,117 @@
+{
+  "id": "c1.1-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "C1.1",
+  "control_description": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/encryption-standards-policy.md",
+      "type": "policy",
+      "description": "Vanguard Risk Solutions encryption standards policy defining algorithm requirements, key rotation schedules, and grace periods"
+    },
+    {
+      "path": "evidence/encryption-posture-audit-q4.csv",
+      "type": "report",
+      "description": "Q4 2025 encryption posture audit showing compliance status for all production resources including two items flagged as 'Review Needed'"
+    },
+    {
+      "path": "evidence/key-rotation-status.csv",
+      "type": "log",
+      "description": "Key rotation status log showing rotation dates, delays, and grace period compliance"
+    },
+    {
+      "path": "evidence/network-architecture-summary.md",
+      "type": "architecture_diagram",
+      "description": "Network architecture summary documenting east-west traffic encryption including unencrypted cross-VPC analytics pipeline"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Vanguard Risk Solutions' encryption controls under C1.1 and CC6.7. Review all provided evidence to assess whether data protection controls are operating effectively. Several issues in this assessment require professional judgment to determine materiality and severity. For each finding, provide your assessment of whether the issue represents a significant control deficiency, a minor variance, or an acceptable risk given the context. Consider the difference between policy violations and actual security risk, and whether compensating factors mitigate identified gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "AES-128 used for webhook-payload-key instead of required AES-256 for Confidential data",
+      "description": "The encryption posture audit shows webhook-payload-key uses AES-128-GCM for webhook payloads classified as Confidential. Policy Section 3.1 requires AES-256 for Confidential data. The auditor must exercise judgment on materiality: AES-128 remains cryptographically secure with no known practical attacks, and the data is also encrypted in transit via TLS. However, the policy explicitly mandates AES-256 for Confidential data, and there is no exception in the register. The question is whether this is a material policy deviation or a low-risk variance. A strict reading of the policy makes this a violation; a risk-based assessment might view AES-128-GCM as providing adequate protection. The auditor should note the policy requires AES-256, AES-128 is technically non-compliant, but the actual security risk is low.",
+      "evidence_sources": ["evidence/encryption-posture-audit-q4.csv", "evidence/encryption-standards-policy.md"],
+      "expected_reasoning": "The auditor must weigh policy compliance vs. actual risk. AES-128 is cryptographically sound and not a security vulnerability. However, the policy explicitly requires AES-256 for Confidential data, and no exception exists. A reasonable auditor would flag this as a policy deviation requiring remediation or a formal exception, while noting the low actual security risk. The severity should be medium (policy violation) rather than critical (no actual security exposure).",
+      "detection_criteria": {
+        "required_keywords": ["webhook-payload-key", "AES-128", "AES-256", "Confidential", "policy requires", "cryptographically", "materiality", "exception"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Unencrypted cross-VPC analytics traffic carrying Confidential data between vpc-prod and vpc-data",
+      "description": "The network architecture document (Section 3.3) shows that traffic between the production Kubernetes cluster and the analytics pipeline in vpc-data uses HTTP (port 8080) with no TLS — neither at the network layer nor the application layer. This traffic carries Confidential customer analytics events including user_id, event_type, and session_data. The policy (Section 4.2) requires TLS 1.2+ for service-to-service communication handling Confidential data. The compensating argument is that VPC peering traffic stays on AWS's private backbone and never traverses the public internet. The auditor must determine: does the AWS private network provide sufficient protection, or does the policy's requirement for TLS on Confidential data apply regardless of network path? Industry best practices increasingly recommend encryption of all internal traffic, but neither NIST nor SOC 2 criteria explicitly mandate encryption of traffic within a cloud provider's private network. The CISO reviewed and signed this architecture document.",
+      "evidence_sources": ["evidence/network-architecture-summary.md", "evidence/encryption-standards-policy.md"],
+      "expected_reasoning": "The auditor faces a judgment call. Policy Section 4.2 says Confidential data service-to-service communication 'must use TLS 1.2+'. The cross-VPC analytics traffic is Confidential and uses HTTP. Strictly, this violates the policy. However: (1) VPC peering traffic is private, (2) the CISO reviewed the architecture, (3) NIST/SOC 2 don't explicitly require private network encryption. A reasonable auditor might note this as a policy compliance gap while acknowledging the lower actual risk compared to internet-facing unencrypted traffic. The trend toward zero-trust/encrypt-everything suggests this should be remediated.",
+      "detection_criteria": {
+        "required_keywords": ["vpc-prod", "vpc-data", "HTTP", "unencrypted", "Confidential", "VPC peering", "analytics", "private network", "cross-VPC", "port 8080"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "low",
+      "title": "APP-PROD-006 notification key rotation completed 15 days late — 1 day beyond 14-day grace period",
+      "description": "The key rotation status shows APP-PROD-006 (notification-encryption-key) was due October 1, 2025 and completed October 16 — 15 days late, exceeding the 14-day grace period by exactly 1 day. The CISO was notified on October 10 per policy, and the delay was caused by a re-encryption batch job failure requiring restart. The auditor must determine: is a 1-day overage beyond the grace period a material deficiency or a minor variance? The policy (Section 6.1) states rotation delays beyond 14 days 'require CISO notification and documented justification' — which was done. The key was eventually rotated successfully. This is not a missed rotation — it was a delayed rotation with proper escalation. Compare this to APP-PROD-003 which completed exactly at the 14-day boundary and APP-PROD-001 which completed 3 days late (within grace).",
+      "evidence_sources": ["evidence/key-rotation-status.csv", "evidence/encryption-standards-policy.md"],
+      "expected_reasoning": "The auditor must weigh several factors: (1) only 1 day beyond grace period, (2) CISO was notified per procedure, (3) delay caused by technical failure not negligence, (4) rotation was completed, (5) but it IS technically non-compliant. Looking at the pattern: 3 of 4 rotations that have occurred were late to some degree (3 days, 14 days, 15 days). While each individual delay may be minor, the pattern suggests the 12-month rotation cycle may be too tight for the re-encryption process. A reasonable auditor would note the technical compliance violation while recognizing the low actual risk.",
+      "detection_criteria": {
+        "required_keywords": ["APP-PROD-006", "notification", "15 days", "14-day grace", "1 day", "CISO notified", "batch job failure", "variance", "pattern"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Pattern of key rotation delays suggests systemic process weakness",
+      "description": "Examining all completed application key rotations during the audit period reveals a concerning pattern: APP-PROD-001 was 3 days late, APP-PROD-003 was 14 days late (at the grace boundary), and APP-PROD-006 was 15 days late (beyond grace). Three out of four completed rotations were late. While each individual delay might be explainable, the pattern suggests the manual rotation process is consistently failing to meet the scheduled timeline. The auditor must determine whether this represents a systemic control weakness (the rotation process is not reliable) or a series of isolated incidents (each with its own explanation). The policy defines a 12-month rotation cycle with a 14-day grace, but the evidence suggests the operational process cannot consistently meet this standard.",
+      "evidence_sources": ["evidence/key-rotation-status.csv", "evidence/encryption-standards-policy.md"],
+      "expected_reasoning": "A competent auditor looks beyond individual instances to identify patterns. 75% of completed rotations were late. This suggests either: (a) the rotation schedule is unrealistic, (b) the manual rotation process needs automation, or (c) rotation is not prioritized appropriately. The auditor should recommend either extending the rotation cycle, automating the rotation process, or both. This is a process maturity issue that rises above any individual late rotation.",
+      "detection_criteria": {
+        "required_keywords": ["pattern", "3 out of 4", "75%", "systemic", "rotation", "late", "process", "APP-PROD-001", "APP-PROD-003", "APP-PROD-006", "automation"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "low",
+      "title": "ML model S3 bucket uses AES-128 KMS encryption instead of AES-256 for Confidential data",
+      "description": "The encryption posture audit shows vrs-prod-ml-models uses SSE-KMS with AES-128 instead of the required AES-256 for Confidential data. The models contain trained weights derived from Confidential customer data but no PII in the model files themselves. The auditor must assess materiality: (1) ML model weights do not expose individual customer data even if decrypted, (2) AES-128 is cryptographically secure, (3) but the policy requires AES-256 for Confidential data. This is similar to the webhook-payload-key issue and suggests a broader pattern of AES-128 being used where AES-256 is required for Confidential data.",
+      "evidence_sources": ["evidence/encryption-posture-audit-q4.csv", "evidence/encryption-standards-policy.md"],
+      "expected_reasoning": "Similar analysis to F-001: AES-128 is secure but the policy requires AES-256. The data type matters — ML model weights are one step removed from the original customer data. However, two instances of AES-128 for Confidential data (this plus webhooks) suggest either the policy is too strict or enforcement is inconsistent. The auditor should note both instances as a pattern.",
+      "detection_criteria": {
+        "required_keywords": ["vrs-prod-ml-models", "AES-128", "AES-256", "Confidential", "SSE-KMS", "ML model", "trained weights", "derived"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["encryption_standards", "AES-128_vs_AES-256", "key_rotation", "east-west_traffic", "judgment", "materiality", "grace_period", "cross-VPC", "pattern_detection"]
+  }
+}

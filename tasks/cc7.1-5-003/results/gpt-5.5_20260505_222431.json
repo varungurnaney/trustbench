@@ -1,0 +1,83 @@
+{
+  "task_id": "cc7.1-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T22:24:31.140275",
+  "score": {
+    "task_id": "cc7.1-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.3,
+    "f1": 0.4285714285714285,
+    "score": 0.4285714285714285,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Unknown",
+          "Not tracked",
+          "VULN-10005",
+          "VULN-10011",
+          "all severity tiers"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "post-patch rescan",
+          "Section 6.2",
+          "48 hours",
+          "Not performed",
+          "CHG-2025-1203",
+          "CHG-2025-1207"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "VULN-10014",
+          "VULN-10020",
+          "SLA Breached",
+          "no risk acceptance"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "consistent",
+          "process gap"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6864,
+    "output_tokens": 4104
+  },
+  "raw_response": "## Overall Readiness Assessment for CC7.1\n\nCascade Systems has evidence of an operating vulnerability management program, including weekly scanning, broad subnet coverage, emergency patching for Critical vulnerabilities, and post-validation for many standard changes. However, the Q4 2025 evidence shows material process gaps in SLA tracking, post-patch rescanning, remediation evidence, and reporting completeness. Based on the evidence reviewed, CC7.1 is **partially operating but not fully ready** for a clean SOC 2 Type II audit conclusion without remediation or additional evidence.\n\n---\n\n## Findings\n\n| # | Finding Title | Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | High severity vulnerabilities are not being tracked in accordance with policy | **Q4 2025 Remediation SLA Dashboard**; **Vulnerability Management Policy Sections 4.1, 4.2, 4.3, 4.4** | The policy requires SLA tracking for all severity tiers, including SLA deadline, status, days remaining/past due, owner, and escalation status. However, High vulnerabilities VULN-10005 through VULN-10011 have blank or incomplete tracking fields, with SLA status shown as \u201cUnknown\u201d or \u201cNot tracked.\u201d This prevents management from demonstrating SLA adherence, escalation, or timely remediation for High-risk vulnerabilities. | **High** |\n| 2 | Multiple emergency patches lack required 48-hour post-patch vulnerability rescans | **Patch Management Change Records**; **Vulnerability Management Policy Section 6.2** | Policy requires a vulnerability rescan within 48 hours of patch deployment to confirm remediation. Several emergency changes show \u201cNot performed\u201d for post-scan confirmation, including CHG-2025-1203, CHG-2025-1207, CHG-2025-1208, CHG-2025-1210, CHG-2025-1211, and CHG-2025-1212. These relate to High vulnerabilities such as PAN-OS, BeyondTrust, FortiOS, RDS, FortiManager, and Ivanti. Without timely rescans, Cascade cannot demonstrate that patches actually removed the vulnerability. | **High** |\n| 3 | SLA dashboard does not align with patch records for several vulnerabilities | **Q4 2025 Remediation SLA Dashboard**; **Patch Management Change Records** | Cross-referencing the dashboard with change records shows discrepancies. For example, VULN-10005 for corp-dc-08 appears untracked in the SLA dashboard, but CHG-2025-1209 shows patching and post-scan confirmation. VULN-10009 for jump-srv-06 is untracked, but CHG-2025-1210 and CHG-2025-1226 indicate patching activity. VULN-10015 remains open in the SLA dashboard, while CHG-2025-1221 indicates NTLMv1 was disabled and validated. These inconsistencies indicate the vulnerability tracker is not reliably updated after remediation activities. | **Medium** |\n| 4 | Medium vulnerabilities breached SLA without documented risk acceptance | **Q4 2025 Remediation SLA Dashboard**; **Vulnerability Management Policy Sections 4.1, 4.3, 5.1, 5.2** | VULN-10014 and VULN-10020 are Medium vulnerabilities marked as SLA breached. VULN-10014 specifically notes \u201cno risk acceptance,\u201d despite referencing future application retirement. VULN-10020 references a planned migration but does not include documented risk acceptance or validated compensating controls. Policy requires risk acceptance with business justification, compensating controls, approval, and revalidation where remediation is deferred. | **Medium** |\n| 5 | Authenticated scanning was not successful for all discovered assets | **Q4 2025 Scan Coverage Report Sections 1, 4, 5**; **Vulnerability Management Policy Sections 3.3, 3.4** | The scan report shows 22 authentication failures across 962 discovered assets, including 15 corporate workstations with stopped local scan agents, 5 staging instances with Vault credential sync issues, and 2 network devices with TACACS+ timeouts. Policy requires credentialed scanning. Authentication failures reduce scan depth and may prevent detection of configuration or patch-related vulnerabilities. | **Medium** |\n| 6 | Asset discovery was below full inventory coverage | **Q4 2025 Scan Coverage Report Sections 1 and 4**; **Vulnerability Management Policy Section 3.3** | The report states 100% subnet coverage, but only 962 of 980 CMDB assets were discovered, an asset discovery rate of 98.2%. Eighteen assets were not scanned or discovered, including offline workstations, terminated staging containers, and powered-off development instances. While explanations are provided, there is no evidence of follow-up scanning, exception handling, or compensating monitoring to ensure these assets were assessed. | **Medium** |\n| 7 | SLA reporting is incomplete relative to policy requirements | **Q4 2025 Remediation SLA Dashboard**; **Vulnerability Management Policy Section 4.4** | The policy requires monthly SLA compliance reporting with per-tier compliance rates, MTTR by severity, breach counts by severity, and aging distribution. The provided dashboard lists vulnerabilities but does not provide the required per-tier metrics. Additionally, the evidence description refers to 25 vulnerabilities, while the dashboard contains 32 records, indicating potential reporting completeness or data quality issues. | **Low** |\n| 8 | Change record evidence contains data quality inconsistencies | **Patch Management Change Records** | Several change record issues reduce audit reliability. CHG-2025-1201 and CHG-2025-1223 appear to document the same October corporate workstation patch cycle with overlapping KBs and target fleet but different dates. CHG-2025-1211 is dated September 18, outside the Q4 audit period, but appears in the Q4 patch evidence. CHG-2025-1203 states \u201cpost_scan_date: Not performed,\u201d while the notes state a later weekly scan occurred. These inconsistencies make it harder to rely on the change log as complete and accurate evidence of control operation. | **Low** |\n| 9 | Emergency patch process is inconsistently integrated with vulnerability tickets | **Patch Management Change Records**; **Q4 2025 Remediation SLA Dashboard** | Several emergency patch records explicitly state that related vulnerability tickets were not updated, including VULN-10007, VULN-10008, VULN-10009, VULN-10010, and VULN-10011. This indicates a workflow gap between change execution and vulnerability management closure. As a result, Cascade may patch systems operationally but fail to maintain evidence that vulnerabilities were remediated within SLA. | **Medium** |\n| 10 | Penetration test evidence does not sufficiently support ongoing CC7.1 operation | **Annual Penetration Test Executive Summary** | The penetration test provides useful point-in-time assurance but does not demonstrate continuous vulnerability monitoring, scan coverage, SLA tracking, or post-patch validation for Q4. It should not be relied upon as primary evidence for the operational effectiveness of CC7.1 vulnerability management controls. | **Low** |"
+}

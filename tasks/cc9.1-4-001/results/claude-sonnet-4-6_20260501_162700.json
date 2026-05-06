@@ -1,0 +1,126 @@
+{
+  "task_id": "cc9.1-4-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T16:27:00.367723",
+  "score": {
+    "task_id": "cc9.1-4-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5714285714285714,
+    "f1": 0.7272727272727273,
+    "score": 0.7272727272727273,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "DataRobot",
+          "SOC 2",
+          "exception",
+          "VEXC-2025-001",
+          "compensating"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "HubSpot",
+          "SOC 2",
+          "not provided",
+          "exception",
+          "VEXC-2025-002",
+          "ISO 27001",
+          "alternative"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Stripe",
+          "carve-out",
+          "GCP",
+          "subservice",
+          "independent",
+          "assessment",
+          "policy"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Snowflake",
+          "pending",
+          "review",
+          "90 days",
+          "Critical",
+          "PII",
+          "not completed",
+          "SOC 2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "High",
+          "business review",
+          "N/A",
+          "SendGrid",
+          "HubSpot",
+          "Zendesk",
+          "Amplitude"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "carve-out",
+          "subservice",
+          "Amplitude",
+          "GCP",
+          "independent",
+          "assessment"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2520,
+    "output_tokens": 3302
+  },
+  "raw_response": "# CC9.1 Readiness Assessment \u2014 Vendor & Business Partner Risk Mitigation\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Control:** CC9.1 \u2014 Risk Mitigation for Vendors and Business Partners\n\n---\n\n## Assessment Methodology\n\nFor each vendor, I cross-referenced: (1) policy requirements by tier, (2) actual inventory status, (3) exception register entries, and (4) compensating controls where applicable. Gaps are only flagged where a genuine, unmitigated deficiency exists relative to policy requirements and the SOC 2 Type II audit period.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Snowflake SOC 2 Report Review Not Completed Within Required Timeframe\n\n**Document Reference:** POL-VRM-002 \u00a74.1; Vendor Inventory (Snowflake row)\n\n**Gap Description:**\nSnowflake is classified as Critical, which requires annual SOC 2 Type II report review. The report covers the period January 1\u2013December 31, 2025, and was received on December 15, 2025. As of the close of the observation period (December 31, 2025), the review is documented as \"Pending.\" Policy \u00a74.1 requires that Critical vendor SOC 2 reports be reviewed within 90 days of issuance, but more immediately, a completed review should be observable within the audit window for a Critical vendor actively processing Customer PII and analytics data.\n\nThere is no exception on file for Snowflake, and no compensating controls are documented to address the gap in completed review. Until the review is finalized, CUECs, subservice organizations (AWS and Azure, inclusive), any findings, and scope adequacy remain unassessed and undocumented.\n\n**Severity:** High\n\n**Rationale:** Snowflake is a Critical-tier vendor handling Customer PII. The absence of a completed review \u2014 with no exception or compensating control in place \u2014 means risk mitigation activities for this vendor are incomplete during the audit period. While the 90-day policy clock has not technically expired (report issued December 15), the review was not completed before period close, leaving an observable gap in the Q4 2025 evidence set.\n\n---\n\n### Finding 2: HubSpot SOC 2 Report Not Obtained \u2014 Exception Adequacy Borderline\n\n**Document Reference:** POL-VRM-002 \u00a73, \u00a74.1; Vendor Inventory (HubSpot row); Exception Register (VEXC-2025-002)\n\n**Gap Description:**\nHubSpot is a High-tier vendor handling customer contact information. Policy requires an annual SOC 2 Type II report (or equivalent) review. Despite requests beginning October 2025, the report has not been provided by the vendor.\n\nA CISO-approved exception (VEXC-2025-002, approved November 1, 2025) is on file and documents compensating controls: a 200-question security questionnaire, review of HubSpot's Trust Center, and confirmed ISO 27001 certification. These are substantive compensating controls that partially address the gap.\n\nHowever, two issues remain:\n\n1. **Subservice organization risk is unmitigated.** HubSpot uses AWS and GCP under the carve-out method. Under policy \u00a74.2, when a vendor uses the carve-out method, Quantum must independently assess the subservice organizations. No evidence of independent assessment of AWS or GCP in the context of HubSpot's use exists in the exception or inventory record. (Note: AWS is assessed independently as a Critical vendor, but that assessment covers Quantum's direct use of AWS, not HubSpot's use of AWS/GCP on Quantum's behalf.)\n\n2. **The exception does not document a path to resolution beyond \"escalated to account executive.\"** There is no documented escalation timeline, no contingency plan if the report is not provided before the exception expires (February 1, 2026), and no consideration of whether continued use of this vendor is appropriate if SOC 2 evidence remains unavailable.\n\n**Severity:** Medium\n\n**Rationale:** The exception is CISO-approved and compensating controls are reasonable for the questionnaire component. The finding is not rated High solely due to those controls. However, the unaddressed carve-out subservice org assessment gap and the lack of a resolution plan are genuine, undocumented risks that an auditor would flag.\n\n---\n\n### Finding 3: Stripe Carve-Out Subservice Organizations Not Independently Assessed\n\n**Document Reference:** POL-VRM-002 \u00a74.2; Vendor Inventory (Stripe row)\n\n**Gap Description:**\nStripe is a Critical-tier vendor processing Customer PII and financial data, including payment card data. The SOC 2 report review notes identify that Stripe uses AWS and GCP under the **carve-out method**. Policy \u00a74.2 explicitly states: \"If carve-out method is used, Quantum must independently assess the subservice organization.\"\n\nThe vendor inventory contains no documentation of an independent assessment of AWS or GCP in the context of Stripe's subservice relationship. No exception exists for this gap. While AWS is a direct vendor to Quantum, that independent assessment covers Quantum's own infrastructure use \u2014 it does not constitute an assessment of AWS as Stripe's subservice provider (different scope, controls environment, and CUEC obligations may apply).\n\n**Severity:** High\n\n**Rationale:** Stripe processes payment card and PII data at the Critical tier. The carve-out gap means Quantum has not assessed the controls environment for the infrastructure underpinning Stripe's payment processing. This is a direct, unmitigated violation of a specific policy requirement with no exception on file.\n\n---\n\n### Finding 4: Amplitude and SendGrid Carve-Out Subservice Organizations Not Independently Assessed\n\n**Document Reference:** POL-VRM-002 \u00a74.2; Vendor Inventory (Amplitude and SendGrid rows)\n\n**Gap Description:**\nBoth Amplitude (High tier, customer behavioral data) and SendGrid (High tier, customer email addresses) use AWS (and GCP in Amplitude's case) under the **carve-out method**. Policy \u00a74.2 requires independent assessment of carve-out subservice organizations. No independent assessments are documented for either vendor's subservice organizations, and no exceptions exist.\n\nThis finding is grouped because it reflects the same systemic gap as Finding 3 \u2014 the carve-out subservice assessment requirement appears to be broadly unenforced \u2014 but involves High-tier rather than Critical-tier vendors.\n\n**Severity:** Medium\n\n**Rationale:** Both vendors handle customer data and are subject to the policy requirement. The risk is somewhat lower than Stripe given data sensitivity and tier classification, but the gap is unmitigated and undocumented.\n\n---\n\n### Finding 5: No Business Reviews Conducted for High-Tier Vendors\n\n**Document Reference:** POL-VRM-002 \u00a74.3; Vendor Inventory (SendGrid, HubSpot, Zendesk, Amplitude rows)\n\n**Gap Description:**\nPolicy \u00a74.3 requires quarterly business reviews for Critical vendors, documented in Vanta. While the policy does not explicitly mandate business reviews for High-tier vendors, this finding pertains to a related gap: all four active High-tier vendors (SendGrid, HubSpot, Zendesk, Amplitude) show \"N/A\" in the `last_business_review` field. For vendors handling Customer PII or customer contact data, the absence of any documented business review \u2014 even informal \u2014 during the observation period represents a gap in ongoing monitoring activity under CC9.1.\n\nMore importantly, Zendesk (High tier, Customer PII) had an **SOC 2 finding documented**: \"inadequate access review frequency,\" with vendor remediation confirmed. Without a business review on record, there is no documented evidence that remediation was followed up on or verified within the audit period, beyond the initial confirmation note.\n\n**Severity:** Medium (Zendesk remediation tracking component elevated concern; overall pattern is Medium)\n\n**Rationale:** The policy does not explicitly require business reviews for High-tier vendors, which limits the severity. However, the absence of any documented ongoing monitoring for High-tier vendors handling sensitive customer data, and specifically the lack of remediation follow-up documentation for Zendesk, represents a gap auditors will probe. If the intent is that only Critical vendors receive business reviews, the policy should be explicit, and an alternative monitoring mechanism for High-tier vendors should be documented.\n\n---\n\n### Finding 6: Zendesk SOC 2 Finding \u2014 Remediation Evidence Insufficiently Documented\n\n**Document Reference:** POL-VRM-002 \u00a74.1; Vendor Inventory (Zendesk row)\n\n**Gap Description:**\nZendesk's SOC 2 report review (completed August 10, 2025, covering April 2024\u2013March 2025) identified one finding: \"inadequate access review frequency.\" The inventory notes that \"vendor remediation confirmed,\" but provides no detail on how remediation was confirmed, what evidence was reviewed, when confirmation occurred, or whether a remediation tracking record exists in Vanta.\n\nPolicy \u00a74.1 states: \"Reports with qualified opinions or significant findings require risk assessment and remediation tracking.\" The inventory record does not demonstrate that a formal risk assessment was performed or that remediation is being actively tracked, only that it was \"confirmed\" in a single notation.\n\n**Severity:** Medium\n\n**Rationale:** The finding was identified and some follow-up occurred, which is better than no action. However, \"confirmed\" without supporting documentation is not sufficient to demonstrate remediation tracking under the policy, and an auditor will request the underlying evidence. Zendesk also handles Customer PII, raising the stakes for this gap.\n\n---\n\n### Finding 7: Lattice Misclassified \u2014 Employee PII Handled Under Medium Tier Without Adequate Assessment\n\n**Document Reference:** POL-VRM-002 \u00a72; Data Classification Policy; Vendor Inventory (Lattice row)\n\n**Gap Description:**\nLattice is classified as Medium tier, with the inventory noting a security questionnaire was completed at onboarding (March 2024). However, Lattice processes **Employee PII** (HR performance management data), and the Data Classification Policy classifies PII as **Confidential** (and potentially Restricted, depending on content \u2014 HR data can include sensitive personal information). The vendor tier classification criteria define Critical as processing \"customer PII\" and High as accessing \"internal data\" that integrates with production systems. Employee PII is not explicitly addressed in the tiering criteria.\n\nA DPA is signed, which partially addresses the data protection gap. However, given that employee PII (names, performance data, potentially compensation data) is Confidential or Restricted under the Data Classification Policy, a biennial review cycle and onboarding-only questionnaire may be insufficient. No SOC 2 review is required or documented. Additionally, Lattice uses AWS under the carve-out method, and no independent assessment of that subservice organization is documented.\n\nThis is a classification gap in the policy itself that creates a downstream monitoring gap for this vendor.\n\n**Severity:** Low\n\n**Rationale:** A DPA is in place, and the policy's tiering criteria focus on customer PII, not employee PII, creating an ambiguity rather than a clear violation. The gap is real but stems from a policy drafting gap rather than a process failure. Severity is Low but should be flagged for policy remediation.\n\n---\n\n## Summary Table\n\n| # | Finding Title | Vendor(s) | Policy Section | Severity |\n|---|---------------|-----------|----------------|----------|\n| 1 | Snowflake SOC 2 review not completed within audit period | Snowflake | \u00a74.1 | **High** |\n| 2 | HubSpot SOC 2 not obtained; carve-out subservice orgs unassessed; exception lacks resolution plan | HubSpot | \u00a73, \u00a74.1, \u00a74.2 | **Medium** |\n| 3 | Stripe carve-out subservice organizations not independently assessed | Stripe | \u00a74.2 | **High** |\n| 4 | Amplitude and SendGrid carve-out subservice organizations not independently assessed | Amplitude, SendGrid | \u00a74.2 | **Medium** |\n| 5 | No documented ongoing monitoring or business reviews for High-tier vendors | SendGrid, HubSpot, Zendesk, Amplitude | \u00a74.3 | **Medium** |\n| 6 | Zendesk SOC 2 finding remediation inadequately documented | Zendesk | \u00a74.1 | **Medium** |\n| 7 | Lattice potential tier misclassification \u2014 Employee PII under Medium tier | Lattice | \u00a72 | **Low** |\n\n---\n\n## Observations Not Flagged as Findings\n\nThe following apparent gaps were reviewed and determined to be **adequately mitigated**:\n\n- **DataRobot (no SOC 2):** Exception VEXC-2025-001 is CISO-approved, substantive compensating controls are documented (security questionnaire, encryption, SSO, right-to-audit, quarterly review), and the vendor is new (onboarded September 2025). This is appropriate exception management.\n- **Figma, PagerDuty, ContractWorks:** Tier classifications are consistent with policy criteria (Medium/Low, no customer PII or production system access). Assessment requirements are met per policy.\n- **Okta SOC 2 report period (April 2024\u2013March 2025, reviewed June 2025):** Within the 90-day review window. AWS subservice org is inclusive. No gaps identified.\n- **AWS, Datadog SOC 2 reviews:** Clean opinions, inclusive method, CUECs documented, business reviews current. No gaps identified.\n\n---\n\n## Systemic Observation\n\nThe carve-out subservice organization assessment requirement (\u00a74.2) appears to be applied inconsistently across the vendor portfolio. Stripe, Amplitude, SendGrid, HubSpot, and Lattice all use carve-out subservice organizations with no documented independent assessments. This pattern suggests the policy requirement may not be operationally embedded \u2014 the program may lack a defined process for executing these assessments. This should be addressed programmatically rather than vendor-by-vendor."
+}

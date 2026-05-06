@@ -1,0 +1,88 @@
+{
+  "task_id": "cc6.1-4-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-01T18:18:27.701745",
+  "score": {
+    "task_id": "cc6.1-4-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-etl",
+          "exception",
+          "EXC-2025-004",
+          "approved",
+          "compensating"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "terraform",
+          "editor",
+          "expired",
+          "April",
+          "deleted"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "monitoring",
+          "expired",
+          "December 28",
+          "renewal",
+          "exception",
+          "still",
+          "active"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-etl",
+          "2023",
+          "rotation",
+          "compensating",
+          "audit"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2740,
+    "output_tokens": 1816
+  },
+  "raw_response": "# CC6.1 Compliance Assessment \u2014 Vantage Corp\n## Q4 2025 Readiness Review\n\n---\n\n## FINDINGS\n\n### 1. **Expired Security Exceptions Without Timely Remediation**\n\n**Related Document:** CISO-approved security exceptions; GCP service account configuration\n\n**Gap Description:**  \nThree service account key exceptions (EXC-2025-001, EXC-2025-002, EXC-2025-003) expired between July and April 2025, yet their associated service account keys remain active in GCP as of December 28, 2025:\n\n- **legacy-etl@**: Exception EXC-2025-001 expired 2025-07-20; key still present (created 2023-01-15, no expiration)\n- **monitoring-agent@**: Exception EXC-2025-002 expired 2025-12-10; key still present (created 2025-06-15, no expiration)\n- **terraform-import@**: Exception EXC-2025-003 expired 2025-04-08; key still present (created 2025-03-10, no expiration, last used 2025-03-12)\n\nThe policy (Section 5) prohibits manual service account key creation and requires exceptions. Once exceptions expire, compensating controls and approval lapse, leaving keys in an unauthorized state.\n\n**Severity:** **Critical**\n\n---\n\n### 2. **Terraform Import Service Account Retains Editor Privileges Beyond Exception Scope**\n\n**Related Document:** GCP service account configuration; Access Control Policy (Section 5); CISO exceptions\n\n**Gap Description:**  \nThe `terraform-import@` service account retains `roles/editor` (full project-level access) with an expired exception (EXC-2025-003, expired 2025-04-08). The exception explicitly stated the key was \"to be deleted after import\" and was \"time-limited to 30 days.\" The key has not been used since 2025-03-12 but:\n\n- The key remains active with no expiration date (expires \"9999-12-31\")\n- No evidence that the editor role was rescoped or revoked post-import\n- No Jira ticket completion or deletion confirmation provided\n\nThis violates the principle of least privilege and the control objective to \"protect information assets from security events.\"\n\n**Severity:** **Critical**\n\n---\n\n### 3. **Service Account Key Rotation Policy Not Documented or Enforced**\n\n**Related Document:** Access Control Policy; GCP service account configuration\n\n**Gap Description:**  \nThe Access Control Policy defines authentication, provisioning, and access review cadences (Sections 2, 3, 6) but does not specify a key rotation schedule for service account keys. The exceptions reference rotation practices (e.g., EXC-2025-002: \"key rotated every 6 months\") but:\n\n- No organization-wide key rotation policy is cited\n- The monitoring-agent key (created 2025-06-15) would be due for rotation as of December 2025, with no evidence of a rotation having occurred\n- The legacy-etl key (created 2023-01-15) has never been rotated despite being active for 2+ years\n\n**Severity:** **High**\n\n---\n\n### 4. **Privileged Service Accounts Lack Quarterly Review Evidence**\n\n**Related Document:** Access Control Policy (Section 6); GCP service account configuration\n\n**Gap Description:**  \nThe policy mandates \"Service accounts reviewed quarterly,\" with a review date field in the exceptions register. However:\n\n- No documented quarterly access review records are provided for Q4 2025 (due by December 31, 2025)\n- The exception register shows review dates only for Q1\u2013Q3 2025; no Q4 2025 reviews are recorded\n- Service accounts with elevated permissions (ci-deploy with `roles/container.developer` and `roles/storage.objectAdmin`; legacy-etl with `roles/bigquery.dataEditor` and `roles/storage.objectAdmin`) lack current attestation\n\n**Severity:** **High**\n\n---\n\n### 5. **Legacy ETL Service Account Lacks Documented Migration Plan or Timeline**\n\n**Related Document:** CISO-approved security exceptions; Access Control Policy\n\n**Gap Description:**  \nException EXC-2025-004 (active, expires 2026-01-15) states that \"migration to Cloud Composer planned for Q1 2026\" but:\n\n- No detailed migration plan, acceptance criteria, or rollback procedure is provided\n- The compensating control \"monthly migration status check\" is listed but no evidence of checks is included\n- The service account operates on legacy on-premises infrastructure that \"does not support workload identity,\" creating ongoing dependency on prohibited key-based auth\n- If migration slips beyond Q1 2026, exception renewal would be required; no succession plan is evident\n\nThis creates ongoing risk and suggests incomplete planning for remediation.\n\n**Severity:** **Medium**\n\n---\n\n### 6. **Workload Identity Binding Verification Missing**\n\n**Related Document:** GCP service account configuration; Access Control Policy (Section 5)\n\n**Gap Description:**  \nThe policy mandates workload identity federation for all service account authentication. The GCP configuration shows workload identity bindings for some accounts:\n\n- app-backend, ci-deploy, data-export have bindings\n- legacy-etl, monitoring-agent, terraform-import do **not** have bindings\n\nFor the three accounts **without bindings**, there is no documented evidence that:\n- Workload identity pools exist or have been configured for their respective runtimes\n- The omission is authorized via exception\n- Alternative identity mechanisms (e.g., the keys themselves) are the intended control\n\nThe policy does not clarify whether the absence of bindings is non-compliance or indicates migration-in-progress.\n\n**Severity:** **Medium**\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Severity | Status | Immediate Action Required |\n|---------|----------|--------|---------------------------|\n| Expired exceptions with active keys | Critical | Non-Compliant | Revoke keys; audit exception enforcement process |\n| Terraform import editor role post-expiration | Critical | Non-Compliant | Revoke editor role or re-approve via new exception |\n| Key rotation policy undocumented | High | Non-Compliant | Document policy; enforce rotation schedule |\n| Q4 2025 quarterly reviews missing | High | Non-Compliant | Complete and document Q4 reviews by audit date |\n| Legacy ETL migration plan unclear | Medium | At-Risk | Provide detailed migration plan with milestones |\n| Workload identity binding gaps | Medium | Unclear | Clarify status of legacy-etl, monitoring-agent, terraform-import |\n\n---\n\n## RECOMMENDATIONS\n\n1. **Immediate (Before SOC 2 attestation):**\n   - Revoke the three expired-exception service account keys (legacy-etl, monitoring-agent, terraform-import) or re-approve with renewed exceptions\n   - Rescope or revoke terraform-import's editor role\n   - Complete Q4 2025 quarterly service account reviews and document sign-off\n\n2. **Short-term (30 days):**\n   - Formalize and document a service account key rotation policy (e.g., annual rotation, or per-risk assessment)\n   - Clarify workload identity federation status for all three non-conforming accounts\n   - Establish an automated alert for expiring exceptions (currently managed manually)\n\n3. **Medium-term (Q1 2026):**\n   - Execute legacy ETL migration to Cloud Composer per plan\n   - Implement automated key expiration enforcement (keys should have defined lifespans)\n\n---\n\n**Assessment Date:** December 28, 2025  \n**Assessed Against:** CC6.1 (COSO TSC)  \n**Status:** Not Ready for attestation without remediation of Critical findings"
+}

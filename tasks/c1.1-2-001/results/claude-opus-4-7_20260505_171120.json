@@ -1,0 +1,90 @@
+{
+  "task_id": "c1.1-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:11:20.760830",
+  "score": {
+    "task_id": "c1.1-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-reporting",
+          "TLS 1.0",
+          "deprecated",
+          "CBC",
+          "financial reports",
+          "Confidential",
+          "enterprise clients"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-011",
+          "legacy-reporting",
+          "auto-renewal",
+          "No",
+          "expires",
+          "manual"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-007",
+          "internal-tools",
+          "auto-renewal",
+          "manual",
+          "expires"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-reporting",
+          "HSTS",
+          "disabled",
+          "downgrade",
+          "production",
+          "Confidential"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3791,
+    "output_tokens": 2918
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: C1.1 & CC6.7 - Encryption in Transit\n**Entity**: Crestline Data Systems\n**Period**: Q4 2025 (October 1 - December 31, 2025)\n**Controls**: C1.1 (Confidential Information Identification/Maintenance), CC6.7 (Transmission of Information)\n\n---\n\n## Findings\n\n### Finding 1: Legacy Reporting Portal Using Deprecated TLS 1.0 with Weak Cipher\n**Section**: TLS Configuration Audit Report \u2014 `legacy-reporting.crestline.com`\n**Gap**: This production endpoint serves **Confidential** data (quarterly financial reports to enterprise clients) over **TLS 1.0** with `TLS_RSA_WITH_AES_128_CBC_SHA`. TLS 1.0 has been deprecated by the IETF (RFC 8996, March 2021) and is prohibited by PCI DSS. The cipher suite uses RSA key exchange (no forward secrecy) and CBC mode (vulnerable to BEAST/Lucky13 attacks). Additionally, HSTS is disabled and the certificate has no auto-renewal configured. This is a direct failure of CC6.7 requirements to protect confidential information during transmission using strong cryptographic protocols.\n**Severity**: **Critical**\n\n---\n\n### Finding 2: HashiCorp Vault Endpoint Lacks HSTS and Auto-Renewal Despite Restricted Classification\n**Section**: TLS Configuration Audit Report \u2014 `vault.crestline.net` (port 8200)\n**Gap**: Vault stores secrets/credentials (Restricted data classification) but the endpoint has no HSTS enabled and no certificate auto-renewal. Manual renewal of a Restricted-data endpoint creates risk of service outage or, worse, expired certificate acceptance. While TLS 1.2 with ECDHE-AES256-GCM is acceptable, the operational controls are inconsistent with the data sensitivity.\n**Severity**: **High**\n\n---\n\n### Finding 3: Internal Production Certificates Lack Auto-Renewal\n**Section**: Certificate Inventory \u2014 CERT-007, CERT-008, CERT-009, CERT-010, CERT-011\n**Gap**: Five certificates have `auto_renewal_enabled = No`, including one **production** certificate (CERT-011: `legacy-reporting.crestline.com`) and four internal certificates supporting Vault, Jenkins, monitoring, and internal tools. Manual renewal processes are prone to human error and increase the likelihood of expiration-related outages or fallback to unencrypted communication. CERT-011 expires 2026-01-30 \u2014 within ~30 days of the assessment period end \u2014 and depends on a manual process by the Analytics Team.\n**Severity**: **High**\n\n---\n\n### Finding 4: Inconsistent TLS 1.3 Adoption Across Production Endpoints\n**Section**: TLS Configuration Audit Report \u2014 multiple production endpoints\n**Gap**: Only 3 of 14 TLS-bearing production/internal endpoints use TLS 1.3 (`api`, `app`, `cdn`). The remaining endpoints \u2014 including `payments.crestline.com` (Restricted/PCI scope), `admin-api.crestline.com` (Restricted), `dashboard.crestline.com`, `webhooks.crestline.com`, and `mail.crestline.com` \u2014 operate on TLS 1.2. While TLS 1.2 with strong cipher suites remains acceptable, the lack of a uniform standard suggests no documented minimum-TLS policy. For C1.1, the entity should demonstrate consistent treatment of confidential information.\n**Severity**: **Medium**\n\n---\n\n### Finding 5: Webhook and Staging Endpoints Use 128-bit AES Where 256-bit is Standard Elsewhere\n**Section**: TLS Configuration Audit Report \u2014 `webhooks.crestline.com`, `staging-app.crestline.com`\n**Gap**: `webhooks.crestline.com` (Confidential) negotiates `TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256` while peer production endpoints negotiate AES-256-GCM. While AES-128-GCM is cryptographically sound, the inconsistency points to undocumented/uncentralized cipher suite policy. Webhook traffic frequently carries customer event payloads (Confidential data).\n**Severity**: **Low**\n\n---\n\n### Finding 6: HSTS Not Enabled on Internal/Restricted Endpoints\n**Section**: TLS Configuration Audit Report \u2014 internal-tools, grafana, kibana, vault, jenkins, internal-tools\n**Gap**: All internal-environment endpoints have HSTS disabled, including those handling Restricted data (Vault). HSTS prevents protocol downgrade and SSL-stripping attacks. Internal-only scope does not eliminate risk given insider/lateral-movement threat models.\n**Severity**: **Medium**\n\n---\n\n### Finding 7: Data Classification Scheme Not Evidenced as Formally Defined\n**Section**: TLS Configuration Audit Report \u2014 `data_classification` column\n**Gap**: The audit report references four classifications (Public, Internal, Confidential, Restricted), but no data classification policy, handling matrix, or asset inventory mapping has been provided. C1.1 specifically requires the entity to **identify and maintain** confidential information \u2014 without a documented classification standard and inventory, the auditor cannot verify how Confidential data is identified, who owns the determination, or that controls are mapped to classifications. Apparent inconsistencies (e.g., `cdn.crestline.com` is \"Internal\" but serves public assets; `mail.crestline.com` SMTP relay is \"Confidential\" without justification) reinforce this concern.\n**Severity**: **High**\n\n---\n\n### Finding 8: Partner SFTP Endpoint Lacks Certificate/Key Lifecycle Evidence\n**Section**: TLS Configuration Audit Report \u2014 `partner-sftp.crestline.com`\n**Gap**: The SFTP/SSH endpoint shows `N/A` for certificate expiry, auto-renewal, and last_scan_date. While SSH host key management differs from X.509 PKI, the entity must still demonstrate host key rotation, partner public key management, and configuration auditing for an endpoint classified as Confidential. No evidence has been supplied.\n**Severity**: **Medium**\n\n---\n\n### Finding 9: Reliance on RSA-2048 Without Documented Cryptographic Standard\n**Section**: Certificate Inventory \u2014 all certificates\n**Gap**: Every certificate uses RSA (no ECDSA), with most at 2048-bit. While compliant with NIST SP 800-131A through 2030, no documented cryptographic standard has been provided defining minimum key sizes, approved algorithms, or migration plans for post-quantum readiness. CERT-002 (payments) and CERT-009 (Vault) appropriately use RSA-4096, but this appears ad-hoc rather than policy-driven.\n**Severity**: **Low**\n\n---\n\n### Finding 10: Certificate Monitoring Alert Thresholds Inconsistent\n**Section**: Certificate Inventory \u2014 `monitoring_alert_days` column\n**Gap**: Alert thresholds vary from 14 to 60 days with no apparent rationale. Short 14-day windows on Let's Encrypt certs (CERT-004, CERT-005, CERT-006) leave little buffer if auto-renewal fails \u2014 particularly for CERT-004 which has only a 90-day validity window. The threshold should reflect the renewal mechanism's reliability and the criticality of the endpoint.\n**Severity**: **Low**\n\n---\n\n## Summary\n\n| Severity | Count |\n|----------|-------|\n| Critical | 1 |\n| High | 3 |\n| Medium | 3 |\n| Low | 3 |\n\n**Top remediation priorities before Type II audit:**\n1. **Immediately** decommission or upgrade `legacy-reporting.crestline.com` from TLS 1.0; consider isolating it from confidential data flows until remediated.\n2. Enable auto-renewal on all production certificates (CERT-011 is the highest priority).\n3. Produce and approve a formal data classification policy and minimum cryptographic standard (TLS version, cipher suites, key sizes, HSTS requirements) \u2014 this is foundational evidence for C1.1.\n4. Enable HSTS on all internal endpoints handling Restricted data (Vault first)."
+}

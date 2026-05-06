@@ -1,0 +1,71 @@
+{
+  "id": "cc9.1-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC9.1",
+  "control_description": "The entity identifies, selects, and develops risk mitigation activities for risks arising from potential business disruptions or from the use of vendors and business partners.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/vendor-management-policy.md",
+      "type": "policy",
+      "description": "Meridian Cloud vendor management policy defining vendor assessment and monitoring procedures"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the vendor management policy for Meridian Cloud Inc. Assess whether it adequately addresses SOC 2 CC9.1 requirements for identifying and mitigating risks from vendor and business partner relationships. Identify any gaps or missing elements that an auditor would flag.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No vendor risk tiering or classification system",
+      "description": "The policy treats all vendors identically regardless of the sensitivity of data they access, their level of system integration, or their criticality to business operations. CC9.1 requires the entity to identify risks arising from vendor use — a flat vendor management approach without tiering means Critical vendors processing customer PII receive the same oversight as Low-risk vendors with no data access. Without tiering, the organization cannot allocate assessment resources proportionally to risk or enforce differentiated monitoring requirements.",
+      "evidence_sources": ["evidence/vendor-management-policy.md"],
+      "expected_reasoning": "The policy has no vendor classification or tiering system. There is no distinction between vendors that process customer PII, vendors with production access, and vendors with no data access. SOC 2 CC9.1 requires risk identification and appropriate mitigation — a one-size-fits-all approach fails to identify which vendors pose the greatest risk.",
+      "detection_criteria": {
+        "required_keywords": ["tiering", "classification", "no distinction", "all vendors", "risk", "proportional", "customer PII", "same oversight"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No right-to-audit clause requirement in vendor contracts",
+      "description": "Section 5 lists contractual requirements for vendors but does not include a right-to-audit clause. Without the right to audit, Meridian Cloud cannot independently verify vendor security controls, validate SOC 2 report findings, or conduct on-site assessments. This is a fundamental gap in vendor risk mitigation — the organization is entirely dependent on vendor self-attestation and third-party audit reports without any mechanism to independently verify claims.",
+      "evidence_sources": ["evidence/vendor-management-policy.md"],
+      "expected_reasoning": "Section 5 (Contractual Requirements) lists data protection, incident notification, data destruction, and insurance — but omits right-to-audit. A right-to-audit clause is a standard vendor management control that enables independent verification. Its absence means the entity cannot exercise oversight beyond requesting reports.",
+      "detection_criteria": {
+        "required_keywords": ["right-to-audit", "Section 5", "contractual", "missing", "independent", "verify", "oversight"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No defined frequency for ongoing vendor assessments",
+      "description": "Section 4 states that vendors shall be assessed 'periodically based on business need' but does not define a specific reassessment frequency (e.g., annually, biennially). Without a defined cadence, there is no enforceable standard for when vendors must be re-evaluated. An auditor cannot verify compliance with a subjective schedule.",
+      "evidence_sources": ["evidence/vendor-management-policy.md"],
+      "expected_reasoning": "Section 4 uses the phrase 'periodically based on business need' which is vague and unenforceable. Industry standard is at minimum annual reassessment for vendors processing sensitive data. Without a defined frequency, vendor risk assessments may lapse indefinitely.",
+      "detection_criteria": {
+        "required_keywords": ["periodically", "business need", "frequency", "undefined", "reassessment", "annual", "cadence"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["vendor_management", "policy_review", "right_to_audit", "vendor_tiering", "single_document"]
+  }
+}

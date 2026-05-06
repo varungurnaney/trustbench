@@ -1,0 +1,93 @@
+{
+  "id": "p1.1-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "P1.1",
+  "control_description": "The entity provides notice to data subjects about its privacy practices to meet the entity's objectives related to privacy.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/dsar-log.csv",
+      "type": "log",
+      "description": "Data Subject Access Request log tracking all DSARs received, response timelines, and completion status for Orion Cloud Services"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "GDPR DSAR response deadline extension register documenting approved extensions under Article 12(3)"
+    },
+    {
+      "path": "evidence/privacy-policy.md",
+      "type": "policy",
+      "description": "Orion Cloud Services privacy policy describing data subject rights and DSAR procedures"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/vendor-security-questionnaire-summary.md",
+      "type": "report",
+      "description": "Summary of vendor security questionnaire responses — not relevant to P1.1"
+    },
+    {
+      "path": "evidence/incident-response-plan-overview.md",
+      "type": "policy",
+      "description": "Incident response plan overview — not relevant to P1.1"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 readiness assessment for Orion Cloud Services covering Q3-Q4 2025. Review all provided documents and assess compliance with P1.1 (Privacy Notice) with particular attention to how the organization handles Data Subject Access Requests (DSARs). Cross-reference the DSAR log with the exception register and privacy policy to identify genuine compliance gaps. Note that not all documents may be relevant. Be careful to distinguish between situations that appear to be violations but have proper justification and situations that represent actual compliance failures.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "DSAR-2025-014 responded in 35 days but has valid Article 12(3) extension",
+      "description": "DSAR-2025-014 (submitted by Marcus Henriksson on September 8, 2025) was responded to on October 13, 2025 — 35 calendar days after submission, exceeding the standard 30-day GDPR deadline. However, the exception register shows extension EXT-2025-006 was properly invoked on September 22 (within the original 30-day window) under GDPR Article 12(3), extending the deadline by 30 days to November 7, 2025. The extension was approved by the DPO (Dr. Anna Kowalski) with documented justification: the request involved data across 7 integrated systems requiring manual cross-referencing. The data subject was notified of the extension on September 23. The response was actually delivered 25 days before the extended deadline. This is NOT a finding — a competent auditor should recognize the proper use of the extension mechanism.",
+      "evidence_sources": ["evidence/dsar-log.csv", "evidence/exception-register.csv"],
+      "expected_reasoning": "DSAR-2025-014 appears to exceed 30 days → check exception register → EXT-2025-006 shows valid Art. 12(3) extension filed within the original window → DPO-approved → data subject notified → response delivered well within extended deadline → not a violation.",
+      "detection_criteria": {
+        "required_keywords": ["DSAR-2025-014", "Henriksson", "extension", "Article 12(3)", "EXT-2025-006", "approved", "not a finding", "valid", "properly"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["violation", "breach", "non-compliant", "gap", "deficiency"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "DSAR-2025-017 has no response after 60+ days with no extension filed",
+      "description": "DSAR-2025-017 (submitted by Lena Bergstrom on October 15, 2025) has a status of 'In Progress' with no response date recorded. As of the audit date (December 31, 2025), this request has been open for 77 days with no response delivered. The exception register shows NO extension was filed for DSAR-2025-017 — there is no EXT record matching this DSAR. The 30-day GDPR deadline passed on November 14, 2025, and the request remains unresolved. The assigned analyst (Thomas Muller) has a note stating 'pending legal review of scope' but no formal extension was communicated to the data subject. This is a clear GDPR Article 12(3) violation and a P1.1 control failure.",
+      "evidence_sources": ["evidence/dsar-log.csv", "evidence/exception-register.csv"],
+      "expected_reasoning": "DSAR-2025-017 submitted Oct 15 → no response recorded → 77 days elapsed → no extension in the exception register → 30-day deadline passed Nov 14 without response or extension → data subject not notified of delay → clear compliance failure.",
+      "detection_criteria": {
+        "required_keywords": ["DSAR-2025-017", "Bergstrom", "no response", "77 days", "60 days", "no extension", "overdue", "In Progress", "November 14"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Privacy policy does not disclose DSAR response extension possibility to data subjects",
+      "description": "The privacy policy Section 7 ('Exercising Your Rights') states: 'We will respond to all data subject access requests within 30 calendar days of receipt.' The policy does not mention the possibility of a deadline extension under GDPR Article 12(3), the criteria under which an extension may be invoked, or the 60-day maximum extension period. While Orion does use extensions in practice (as evidenced by the exception register), data subjects are not informed upfront that their request response may be delayed. P1.1 requires the privacy notice to accurately describe the entity's privacy practices — omitting the extension mechanism creates an incomplete notice.",
+      "evidence_sources": ["evidence/privacy-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "The policy promises a 30-day response without mentioning the extension mechanism. The exception register shows extensions are used in practice. The notice should transparently disclose that extensions are possible, under what conditions, and for how long. This is a notice completeness issue.",
+      "detection_criteria": {
+        "required_keywords": ["Section 7", "30 calendar days", "extension", "not mentioned", "not disclosed", "Article 12(3)", "incomplete", "notice"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 3,
+    "tags": ["DSAR", "data_subject_rights", "red_herring", "GDPR_Article_12", "extension_mechanism", "response_deadline", "noise_documents"]
+  }
+}

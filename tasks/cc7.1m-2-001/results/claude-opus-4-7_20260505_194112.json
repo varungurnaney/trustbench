@@ -1,0 +1,60 @@
+{
+  "task_id": "cc7.1m-2-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T19:41:12.017174",
+  "score": {
+    "task_id": "cc7.1m-2-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PATCH-4023",
+          "KB5045890",
+          "jump-srv-01",
+          "10:45",
+          "outside maintenance window",
+          "business hours",
+          "Wednesday"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "PATCH-4013",
+          "monitoring-srv-01",
+          "Grafana",
+          "14:22",
+          "business hours",
+          "no maintenance window",
+          "High"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5296,
+    "output_tokens": 2182
+  },
+  "raw_response": "# CC7.1 Compliance Readiness Assessment \u2014 Ridgeline Systems\n\n## Scope of Review\nReviewed POL-MAINT-003 v3.1 (System Maintenance Policy) and Q4 2025 patching records (35 deployments, PATCH-4001 through PATCH-4035). Cross-referenced each patch deployment against defined maintenance windows (MW-PROD-1, MW-PROD-2, MW-CORP, MW-DB) and emergency change procedures.\n\n## Overall Assessment\nThe maintenance policy is well-defined with clear windows, patching SLAs by severity, and emergency procedures. The vast majority of patches (33 of 35) were applied within designated maintenance windows with proper change tickets. However, **two deployments violated policy controls**, and one represents a significant control breakdown.\n\n---\n\n## Findings\n\n### Finding 1: Critical Patch Deployed Outside Maintenance Window Without Emergency Change Approval\n\n- **Related Section:** Policy \u00a73.2 (Maintenance Window Requirements), \u00a76 (Emergency Maintenance); Evidence record PATCH-4023\n- **Gap Description:** PATCH-4023 (KB5045890, Critical RDP Security Patch on jump-srv-01) was applied on Wednesday, November 12, 2025 at 10:45 UTC \u2014 outside any designated maintenance window and during business hours. The record explicitly states: *\"Emergency change not approved. Deployer notes: 'Patch is critical \u2014 applied immediately upon availability.'\"* Policy \u00a76 requires emergency maintenance outside maintenance windows to receive approval from the IT Director or designee, with documented justification. The deployer (Kevin Ortiz) bypassed this control entirely. While the patch was a Critical severity (which the policy allows to be deployed at \"any time with approval\"), the explicit lack of approval represents a direct policy violation and a control bypass on a security-sensitive system (jump server providing privileged access).\n- **Severity:** **High**\n- **Recommendation:** Document a retroactive exception with root cause; reinforce the emergency change approval workflow; consider implementing a technical control (e.g., change management gating) that prevents production deployments without an approved CHG ticket type matching the deployment timing.\n\n---\n\n### Finding 2: High-Severity Patch Deployed Outside Maintenance Window During Business Hours\n\n- **Related Section:** Policy \u00a73.2 (Maintenance Window Requirements), \u00a74.1 (Patch Schedule \u2013 High severity should deploy in \"Next available MW-PROD\"); Evidence record PATCH-4013\n- **Gap Description:** PATCH-4013 (USN-7133-1, Grafana 10.4.1 Security Update on monitoring-srv-01) was applied on Wednesday, October 15, 2025 at 14:22 UTC during business hours. The maintenance window field is recorded as \"N/A,\" with the note: *\"Applied during business hours \u2014 no maintenance window.\"* Per \u00a74.1, High-severity patches should be deployed in the next available MW-PROD window. There is no documented emergency change approval for this deployment. While monitoring-srv-01 may be considered lower-impact than core production, the policy does not exempt monitoring infrastructure from maintenance window requirements, and CHG-2025-3420 was issued as a standard (not emergency) change ticket.\n- **Severity:** **Medium**\n- **Recommendation:** Either (a) update the policy to formally classify monitoring/observability infrastructure under a different tier with documented allowable deployment timing, or (b) enforce that all High-severity patches follow MW-PROD scheduling. Document this instance with retroactive justification.\n\n---\n\n### Finding 3: Policy Does Not Require Documented Verification of Emergency Approvals in Patch Records\n\n- **Related Section:** Policy \u00a74.3 (Patch Records), \u00a76 (Emergency Maintenance)\n- **Gap Description:** \u00a74.3 lists required patch record fields (date/time, system, patch ID, deployer, change ticket, result) but does not require the patch record to capture: (a) whether emergency approval was obtained, (b) the approving authority's name, or (c) the justification for out-of-window deployment. The fact that PATCH-4023's lack of approval was discoverable only via free-text deployer notes \u2014 rather than a structured field \u2014 demonstrates the control weakness. Without a structured approval field, similar violations could go undetected during routine review.\n- **Severity:** **Medium**\n- **Recommendation:** Update the patch record schema to include \"Emergency Approval Required (Y/N),\" \"Approver Name,\" and \"Approval Ticket/Justification\" as mandatory fields when maintenance_window = N/A.\n\n---\n\n### Finding 4: No Evidence of Patch Testing in Staging Prior to Production\n\n- **Related Section:** Policy \u00a74.2 (Patch Testing)\n- **Gap Description:** \u00a74.2 mandates that \"all patches must be tested in staging before production deployment.\" The provided patch records contain no field, link, or reference to staging test results, test dates, or test outcomes. While testing may be occurring and documented in the change tickets (CHG-2025-XXXX), no evidence of staging validation was provided as part of this evidence package. Auditors performing CC7.1 testing would be unable to verify policy adherence to \u00a74.2 from these records alone.\n- **Severity:** **Low** (evidentiary gap; may be resolved by producing change tickets)\n- **Recommendation:** Either link staging test evidence within patch records or provide a sample of corresponding change tickets demonstrating staging validation prior to production deployment.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Critical patch deployed outside MW without emergency approval (PATCH-4023) | High |\n| 2 | High-severity patch deployed during business hours, no MW (PATCH-4013) | Medium |\n| 3 | Patch record schema lacks structured emergency approval fields | Medium |\n| 4 | No staging test evidence within patch records | Low |\n\n## Conclusion\nRidgeline Systems demonstrates **substantial but not full compliance** with CC7.1. The control framework is sound, but the November 12 deployment of a critical patch without emergency approval is a clear control failure that should be remediated before a SOC 2 Type II audit window. With corrective action on Finding 1 and tightening of records (Findings 3\u20134), the entity should be well-positioned to meet CC7.1 requirements."
+}

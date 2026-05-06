@@ -1,0 +1,81 @@
+{
+  "id": "a1.2-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "A1.2",
+  "control_description": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup and recovery infrastructure, and recovery plan procedures to meet its objectives. Backup and recovery processes include procedures for recovery of data, systems, and infrastructure to meet the entity's availability commitments and system requirements.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/availability-policy.md",
+      "type": "policy",
+      "description": "Zenith Cloud availability and disaster recovery policy defining RPO/RTO targets and DR testing requirements"
+    },
+    {
+      "path": "evidence/dr-failover-test-report.json",
+      "type": "report",
+      "description": "Q4 2025 DR failover test report showing the full failover completed in 5 hours 32 minutes against a 4-hour RTO"
+    },
+    {
+      "path": "evidence/backup-monitoring-logs.csv",
+      "type": "log",
+      "description": "Backup monitoring logs for Q4 2025 showing daily backup operations"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Zenith Cloud's backup and disaster recovery controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the availability policy, DR failover test report, and backup monitoring logs. Assess compliance with A1.2. The DR failover test exceeded the stated RTO. Consider whether this represents a control failure or whether the test itself provides value despite the RTO breach. Use professional judgment.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "DR failover test exceeded 4-hour RTO by 92 minutes — 5 hours 32 minutes total",
+      "description": "The Q4 DR failover test took 5 hours 32 minutes (332 minutes) to achieve full service restoration, exceeding the 4-hour (240-minute) RTO by 92 minutes (38.3% over target). The timing breakdown shows: database failover 145 minutes, application deployment in DR 98 minutes, DNS propagation and health check validation 52 minutes, cache warming and performance validation 37 minutes. The primary delay was in the application deployment phase — the DR environment's Kubernetes cluster required scaling from warm standby (2 nodes) to full production capacity (8 nodes), which took longer than expected due to container image pull times. The judgment element: does this test represent a control failure (RTO was not met) or does the test itself demonstrate control effectiveness (the organization tested, identified bottlenecks, and can now remediate)? The report documents specific remediation actions: pre-pull container images in DR, increase warm standby capacity to 4 nodes, implement parallel database and application failover.",
+      "evidence_sources": ["evidence/dr-failover-test-report.json", "evidence/availability-policy.md"],
+      "expected_reasoning": "The auditor must weigh multiple factors: (1) The RTO was clearly exceeded — this is a factual control failure. (2) The organization proactively tested and identified the gap — this demonstrates control awareness. (3) The root cause (container scaling) is remediable and specific remediation actions are documented. (4) The database was restored within 145 minutes — core data was available well within the RTO. (5) However, 'service restoration' per policy Section 3.2 means 'all Tier 1 services fully operational' which was not achieved until 332 minutes. The strict interpretation is that this is an RTO breach and a finding. The pragmatic interpretation is that DR testing is inherently about finding weaknesses, and finding them in a test is far better than finding them in an actual disaster.",
+      "detection_criteria": {
+        "required_keywords": ["5 hours 32 minutes", "332 minutes", "4-hour RTO", "exceeded", "92 minutes", "container image", "Kubernetes", "scaling", "warm standby"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "DR failover test revealed DNS propagation took 52 minutes — policy assumes 15-minute DNS failover",
+      "description": "Policy Section 3.4 states: 'DNS failover via Route 53 health checks with expected propagation within 15 minutes.' The actual DR test showed DNS propagation and health check validation took 52 minutes — 3.5x the expected duration. The test report attributes this to health check evaluation period (30 seconds x 3 consecutive failures = 90 seconds), DNS TTL of 60 seconds, and 'unexpected caching behavior in downstream CDN layer requiring manual cache invalidation.' The manual cache invalidation step is not documented in the DR runbook, suggesting the DR procedure is incomplete. The judgment: is a 37-minute DNS delay (52 minus 15 expected) material, or is DNS propagation inherently variable and this is within acceptable operational variance?",
+      "evidence_sources": ["evidence/dr-failover-test-report.json", "evidence/availability-policy.md"],
+      "expected_reasoning": "The policy assumes 15-minute DNS failover. Reality was 52 minutes. The CDN cache invalidation step was not in the runbook — indicating the DR procedure has a documentation gap. The auditor should consider whether DNS propagation is a controllable variable and whether the runbook should account for CDN cache behavior.",
+      "detection_criteria": {
+        "required_keywords": ["DNS propagation", "52 minutes", "15 minutes", "Route 53", "CDN cache", "manual invalidation", "runbook", "Section 3.4"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "DR warm standby capacity insufficient — scaling from 2 to 8 nodes created 98-minute application deployment delay",
+      "description": "The DR environment maintains a warm standby with 2 Kubernetes nodes. The production environment runs 8 nodes. During the failover test, scaling from 2 to 8 nodes took 98 minutes due to EC2 instance provisioning (18 minutes), container image pulls across 6 new nodes (45 minutes), and pod scheduling and health check stabilization (35 minutes). Policy Section 3.3 states the DR environment should be 'capable of assuming full production load within the RTO window.' The warm standby design with only 25% of production capacity creates a structural bottleneck that makes meeting the 4-hour RTO difficult. The judgment: should the organization increase warm standby capacity (at significant cost) or is the current approach acceptable given that real disasters may have different characteristics than planned tests?",
+      "evidence_sources": ["evidence/dr-failover-test-report.json", "evidence/availability-policy.md"],
+      "expected_reasoning": "The DR warm standby at 25% capacity requires significant scaling during failover, consuming 98 of the 240-minute RTO budget on application deployment alone. This is a design issue, not an operational failure. The organization must decide whether to invest in higher warm standby capacity or accept the RTO risk. The auditor should note this as a control design weakness.",
+      "detection_criteria": {
+        "required_keywords": ["warm standby", "2 nodes", "8 nodes", "98 minutes", "container image", "scaling", "25%", "Section 3.3", "structural"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 7
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["backup", "disaster_recovery", "RTO", "failover_test", "judgment_call", "Kubernetes", "DNS", "warm_standby"]
+  }
+}

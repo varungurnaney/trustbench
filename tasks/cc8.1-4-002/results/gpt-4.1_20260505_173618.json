@@ -1,0 +1,82 @@
+{
+  "task_id": "cc8.1-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:36:18.360979",
+  "score": {
+    "task_id": "cc8.1-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 2,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "rollback",
+          "control failure"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-510",
+          "rollback",
+          "failed"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-506",
+          "SCIM",
+          "testing evidence",
+          "N/A"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHANGE-503",
+          "CHANGE-510",
+          "staging",
+          "production",
+          "parity",
+          "2 nodes"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3331,
+    "output_tokens": 1155
+  },
+  "raw_response": "Certainly! Here is an audit of Crestline SaaS\u2019s change management practices for Q4 2025 under SOC 2 CC8.1, based on your evidence:\n\n---\n\n## 1. **Missing Testing Evidence for CHANGE-506**\n- **Section:** Change Log, CAB Meeting Minutes, Change Management Policy \u00a73.2\n- **Why it's a Gap:** The change log for CHANGE-506 (\u201cImplement SCIM provisioning endpoint,\u201d high risk) lists \u201cN/A\u201d under \u201ctesting evidence\u201d and has no pass rate. CAB minutes confirm no test results were attached to the Jira ticket at the time of approval, and deployment occurred on Nov 11. Per policy \u00a73.2, \u201call Normal and Emergency changes must include testing evidence prior to production deployment,\u201d and \u201ctest results attached to the Jira ticket.\u201d While Lisa indicated test results would be uploaded later, there is no evidence they were present prior to deployment, nor attached to the ticket post-deployment within the evidence provided. This breaks the requirement for high-risk \u201cNormal\u201d changes to be tested and evidenced before going live.\n- **Severity:** **High**\n\n---\n\n## 2. **Staging Environment Not Parity With Production for WebSockets**\n- **Section:** Incident Report (CHANGE-503), Change Management Policy \u00a73.2, Change Log, CAB Minutes\n- **Why it's a Gap:** CHANGE-503 failed in production due to connection pool exhaustion that didn\u2019t manifest in staging, as the staging environment was significantly smaller (2 nodes vs. 12 in production). Although the problem was detected and managed via rapid rollback, and prompt corrective actions followed (load test scope updated, environment parity evaluation planned), the lack of appropriate scale in testing means high-risk changes were not adequately validated prior to deployment. This is nonconformance with policy \u00a73.2 (\u201cHigh risk changes additionally require load testing results\u201d) because the environment did not provide valid test assurance.\n- **Severity:** **Medium** (mitigated by immediate detection/rollback and CAPA, but remains a process weakness)\n\n---\n\n## 3. **No Approval Recorded for Standard Change (CHANGE-512)**\n- **Section:** Change Log, Change Management Policy \u00a72, \u00a74\n- **Why it's a Gap:** CHANGE-512 (SSL certificate renewal) was deployed under the \u201cStandard\u201d category, which requires pre-approval via catalog (SC-002). The policy (\u00a72, \u00a74) allows Standard changes to proceed without CAB review, but evidence should show how \u201cstandardness\u201d and inclusion in the catalog was confirmed and who authorized it. While the change log notes SC-002 as the reason, there is no affirmative evidence of pre-approval or periodic catalog review aside from the policy itself. This could be improved for traceability (note: this is a minor documentation process issue, not a control failure).\n- **Severity:** **Low**\n\n---\n\n## 4. **Emergency Change Approval and CAB Retrospective for CHANGE-507**\n- **Section:** Change Log, CAB Minutes, Change Management Policy \u00a72, \u00a73.3\n- **Why it's a Gap:** For emergency change CHANGE-507 (curl CVE), the policy requires \u201cVP Eng verbal + retro CAB within 72 hours.\u201d CAB minutes indicate retro review on Nov 17, two days after Nov 15 deployment, meeting the window. The verbal approval and retrospective are both recorded in CAB minutes and in the log. **No gap found here.**\n- **Severity:** N/A (No finding; included for completeness)\n\n---\n\n## 5. **All Rollback Requirements Properly Followed**\n- **Section:** Incident Report (e.g., CHANGE-503, CHANGE-510), Change Management Policy \u00a73.6, Change Log, CAB Minutes\n- **Why it's a Gap:** Not a gap. All rollback procedures (prompt initiation, execution within required time, root cause analysis, post-mortem/CAB retro review) appear to be followed meticulously, including root-cause analysis and corrective action documentation.\n- **Severity:** N/A (No finding; included for completeness)\n\n---\n\n# Summary Table\n\n| # | Title                                                      | Section(s)                        | Nature of Gap                                                             | Severity |\n|---|------------------------------------------------------------|-----------------------------------|---------------------------------------------------------------------------|----------|\n| 1 | Missing Testing Evidence for CHANGE-506                    | Change Log, CAB Minutes, Policy   | No required testing evidence attached for high-risk Normal change          | High     |\n| 2 | Inadequate Staging Parity for High-Risk Testing (CHANGE-503)| Incident, CAB, Policy, Log        | Staging not scaled to expose real-world risk during required load testing  | Medium   |\n| 3 | Standard Change Lacks Explicit Catalog Approval Record      | Change Log, Policy                | No explicit record of pre-approval/catalog inclusion for a \u201cstandard\u201d change | Low      |\n| 4 | Emergency Change Process (CHANGE-507): No Gap              | Change Log, CAB, Policy           | N/A - emergency change handled per policy                                 | N/A      |\n| 5 | Rollback Requirements: No Gap                              | Incident, Policy, Log, CAB        | Rollback and lessons learned handled per policy                           | N/A      |\n\n---\n\n**In summary:** The most significant gap is the lack of documented required testing for CHANGE-506 (High). The lack of production-scale parity in staging for high-risk, load-tested production changes is a lesser but clear process control opportunity (Medium). Rollbacks and emergency changes were handled as required. Standard changes would benefit from better catalog membership evidence (Low), but this is not a severe gap.\n\nLet me know if you need detailed remediation recommendations for each gap."
+}

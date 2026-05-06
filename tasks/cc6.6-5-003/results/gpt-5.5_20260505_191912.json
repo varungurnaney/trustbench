@@ -1,0 +1,75 @@
+{
+  "task_id": "cc6.6-5-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T19:19:12.920024",
+  "score": {
+    "task_id": "cc6.6-5-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.4,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "shared VPC",
+          "crestline-shared-compute",
+          "staging",
+          "production ML",
+          "Section 3.3",
+          "SEC-EXC-2025-012",
+          "cost optimization",
+          "VPC boundary"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "pcx-0xsharedprod01",
+          "10.0.20.0/23",
+          "staging",
+          "ML overflow",
+          "production data",
+          "route table",
+          "lateral movement",
+          "pivot"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "monitoring",
+          "broad",
+          "data subnets"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3688,
+    "output_tokens": 2525
+  },
+  "raw_response": "## Overall Assessment\n\n**CC6.6 is not fully met for the Q4 2025 observation period.**  \nCrestline AI has implemented some logical access controls, including security groups, private subnets, VPC Flow Logs, IAM role separation, and an approved security exception. However, the architecture materially weakens production boundary protection by placing **staging workloads and production ML training overflow workloads in the same shared VPC** and by allowing connectivity between the shared VPC and production data subnets.\n\nFrom a SOC 2 perspective, **cost optimization does not, by itself, justify reduced production isolation** where the organization\u2019s own policy requires dedicated VPCs and prohibits production/non-production peering or shared network boundaries. The compensating controls reduce risk but do not fully replace the stronger boundary provided by separate VPCs and tighter route-level segmentation.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Production and staging workloads share the same VPC boundary | **VPC architecture export** \u2014 `crestline-shared-compute`; **Network Segmentation Policy** Sections 3.1, 3.2, 3.3; **Cost Optimization Review** Section 1 | The shared VPC hosts both `staging-workloads` and `production-ml-training-overflow`. This directly conflicts with the policy requirement that each environment operate in a dedicated VPC and that production and non-production environments be logically isolated. Security groups and Kubernetes namespace isolation reduce risk but do not provide the same boundary strength as separate VPCs. A compromise of a staging workload could create a pivot path toward production ML overflow resources within the same VPC. | **High** |\n| 2 | Cross-environment peering allows the shared VPC to route to production data subnets | **VPC architecture export** \u2014 `pcx-0xsharedprod01`; **Network Segmentation Policy** Section 3.3 | There is an active VPC peering connection between the shared VPC and the production VPC, with routing from shared to production data subnets `10.0.20.0/23`. Because the shared VPC also contains staging workloads, this creates a cross-environment connectivity path that the policy explicitly prohibits. The evidence does not demonstrate that routing is restricted only to the production ML overflow subnets or that production data subnet security groups/NACLs block all staging-originated traffic. | **High** |\n| 3 | Compensating controls for the shared VPC exception are not sufficient to fully offset the boundary reduction | **Security Exception Register** \u2014 `SEC-EXC-2025-012`; **Cost Optimization Review** Risk Assessment; **Network Segmentation Policy** Section 7 | The exception is approved and active, but it accepts a **High** risk architecture where production and staging share a network boundary. Compensating controls listed include security groups, Kubernetes namespace isolation, IAM role separation, and VPC Flow Logs. These are useful, but they do not fully compensate for the lack of dedicated production/non-production VPC isolation. In particular, Kubernetes namespace isolation alone is not a network boundary unless supported by enforced NetworkPolicies or equivalent controls, which were not evidenced. | **High** |\n| 4 | Exception monitoring evidence is incomplete for the Q4 2025 observation period | **Security Exception Register** \u2014 `SEC-EXC-2025-012`; **Network Segmentation Policy** Section 7 | The exception requires monthly review of cross-subnet traffic patterns. The register shows a last review date of **2025-10-15**, but there is no evidence provided for November or December 2025 reviews. For Q4 readiness, the auditor cannot conclude that the compensating detective control operated throughout the observation period. | **Medium** |\n| 5 | Staging outbound access is overly broad within the shared VPC | **VPC architecture export** \u2014 security group `sg-shared-staging`, rule `sgr-shared-005`; **Network Segmentation Policy** Section 6 | The staging security group permits outbound TCP/443 to `0.0.0.0/0`. In a shared VPC that is peered with production, broad egress increases the risk of unauthorized access, command-and-control communication, or lateral movement attempts. The evidence does not show egress allowlisting, DNS filtering, or controls ensuring that staging cannot initiate traffic toward production-routable destinations. | **Medium** |\n\n---\n\n## Auditor Conclusion\n\nCrestline AI has documented the risk and obtained CISO approval for the shared VPC architecture, but the design remains inconsistent with the organization\u2019s own segmentation policy and weakens production system boundary protections. The $367K annual savings may be a valid business consideration, but it does not eliminate the CC6.6 risk.\n\nFor SOC 2 readiness, this should be treated as a **control design gap** unless Crestline AI can either:\n\n1. Move production ML overflow workloads into a dedicated production VPC or separate production-owned VPC boundary; or  \n2. Provide stronger compensating controls, such as subnet-specific route tables, NACL enforcement, explicit production data security group restrictions to only ML overflow subnets, enforced Kubernetes NetworkPolicies, continuous flow-log monitoring evidence, and documented monthly exception reviews."
+}

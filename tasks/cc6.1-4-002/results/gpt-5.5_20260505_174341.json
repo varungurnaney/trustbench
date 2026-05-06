@@ -1,0 +1,85 @@
+{
+  "task_id": "cc6.1-4-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:43:41.852107",
+  "score": {
+    "task_id": "cc6.1-4-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "exception",
+          "compensating",
+          "approved"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "rachel.nguyen",
+          "departure",
+          "November",
+          "console",
+          "active"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-jenkins-legacy",
+          "Key 1",
+          "rotation",
+          "compensating control",
+          "EXC-2025-019"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "marco.silva",
+          "AdministratorAccess",
+          "direct",
+          "CyberArk",
+          "bypass",
+          "privileged"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4465,
+    "output_tokens": 3124
+  },
+  "raw_response": "## CC6.1 Readiness Assessment Findings \u2014 Q4 2025\n\n### Finding 1 \u2014 Direct AWS IAM Human Accounts Bypass Centralized Okta SSO\n\n**Related document / section:**  \n- Access Control Policy, Section 3.1 \u2014 Identity Provider  \n- AWS IAM Credential Report, human IAM users with `password_enabled = true`\n\n**Why this is a gap:**  \nThe Access Control Policy requires all human user authentication to be managed through Okta and prohibits direct application authentication unless documented in the exception register. However, the AWS IAM credential report shows multiple human IAM users with password-based console access enabled and recent usage, including:\n\n- `wei.zhang`\n- `david.park`\n- `rachel.nguyen`\n- `marco.silva`\n- `lisa.chen`\n- `tom.okafor`\n- `priya.kapoor`\n\nAlthough MFA is enabled for these users, the accounts appear to be direct AWS IAM identities rather than federated Okta-managed access. No approved exception was provided for these direct human IAM accounts.\n\nThis weakens centralized identity governance, access revocation, monitoring consistency, and enforcement of standard SSO policies.\n\n**Severity:** High\n\n---\n\n### Finding 2 \u2014 Standing Privileged AWS Administrator Access Not Managed Through PAM\n\n**Related document / section:**  \n- Access Control Policy, Section 3.3 \u2014 Privileged Access Management  \n- AWS IAM Credential Report, user `marco.silva`\n\n**Why this is a gap:**  \nThe policy requires privileged production access to be managed through CyberArk using just-in-time access, dual approval, 2-hour maximum session duration, session recording, and credential rotation after checkout.\n\nThe AWS IAM credential report shows user `marco.silva` has:\n\n- `AdministratorAccess`\n- Password access enabled\n- MFA enabled\n- Active AWS access key\n- Recent access key use on `2025-12-28`\n- No group assignment indicating role-based governance\n- No documented exception in the exception register\n\nThis represents persistent, standing administrator access outside the documented privileged access management process. The presence of an active access key further increases risk because privileged API access may bypass CyberArk session controls and recording.\n\n**Severity:** High\n\n---\n\n### Finding 3 \u2014 Departing User Account Appears to Remain Active After Transition\n\n**Related document / section:**  \n- Access Control Policy, Section 6.1 \u2014 Employee Termination  \n- Q4 2025 Change Management Records, `CHG-2025-Q4-018`  \n- AWS IAM Credential Report, user `rachel.nguyen`\n\n**Why this is a gap:**  \nThe change record `CHG-2025-Q4-018` references \u201cRachel Nguyen transition to Orbit Systems\u201d and states that knowledge base access was to be transferred by November 15 before departure. However, the AWS IAM credential report dated December 30 shows `rachel.nguyen` still has:\n\n- Password access enabled\n- MFA enabled\n- `PowerUserAccess`\n- Last password use on `2025-12-15`\n\nIf Rachel Nguyen\u2019s departure or transfer occurred around November 15, this indicates the AWS account was not timely disabled or deprovisioned in accordance with the offboarding policy. The account also retains elevated access.\n\nIf Rachel was still an active Stratos user during this period, management should provide HR status evidence and business justification for continued AWS access.\n\n**Severity:** High\n\n---\n\n### Finding 4 \u2014 Legacy Jenkins Service Account Exception Controls Not Fully Operating\n\n**Related document / section:**  \n- Access Control Policy, Section 3.4 \u2014 Service Account Management  \n- Security Exception Register, `EXC-2025-019` \u2014 Legacy Jenkins CI/CD static credentials  \n- AWS IAM Credential Report, user `svc-jenkins-legacy`  \n- Q4 2025 Change Management Records, `CHG-2025-Q4-004`\n\n**Why this is a gap:**  \nThe policy requires service account credentials to rotate every 90 days. The approved exception for the legacy Jenkins CI/CD static credentials allows continued use only with compensating controls, including key rotation every 90 days and disabling old keys within 7 days of rotation.\n\nThe AWS IAM credential report shows `svc-jenkins-legacy` has:\n\n- Two active access keys\n- Access Key 1 last rotated on `2024-01-10`\n- Access Key 1 still active as of `2025-12-30`\n- Access Key 2 last rotated on `2025-06-01`\n- Access Key 2 last used on `2025-12-29`\n\nThis indicates the compensating controls in the exception are not being fully followed. Specifically, the old key appears to remain active well beyond the 7-day post-rotation window, and the currently used key has not been rotated within the required 90-day period.\n\nAdditionally, the Q4 change record shows migration from Jenkins to GitHub Actions was completed on `2025-10-28`, yet the legacy Jenkins service account remained active and was still used on `2025-12-29`.\n\n**Severity:** High"
+}

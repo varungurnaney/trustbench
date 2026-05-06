@@ -1,0 +1,83 @@
+{
+  "task_id": "cc7.2-1-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T11:45:02.859451",
+  "score": {
+    "task_id": "cc7.2-1-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "undefined",
+          "Section 3.1",
+          "HIPAA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "privileged",
+          "privilege escalation",
+          "IAM"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "periodically",
+          "should",
+          "undefined",
+          "log review",
+          "frequency",
+          "Section 5"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "slow query",
+          "database",
+          "data access",
+          "PHI",
+          "audit"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 839,
+    "output_tokens": 2337
+  },
+  "raw_response": "# SOC 2 CC7.2 Readiness Assessment\n## Beacon Health \u2014 Security Monitoring and Alerting Policy (BHC-SEC-POL-004)\n\n---\n\n### Assessment Summary\n\nCC7.2 requires that the entity **(1) monitors system components for anomalies** indicative of malicious acts, natural disasters, and errors, and **(2) analyzes anomalies to determine whether they represent security events**. The policy demonstrates a reasonable operational monitoring foundation but contains several significant gaps against CC7.2's specific requirements. Seven findings are identified below.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: No Formal Security Event Classification or Analysis Process\n\n| Attribute | Detail |\n|---|---|\n| **Related Section** | Section 4.3 \u2014 Alert Response; Section 5 \u2014 Log Review |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap Description:**\nCC7.2 explicitly requires that anomalies be *analyzed to determine whether they represent security events*. The policy assigns triage responsibility to the on-call SRE but provides no defined process for classifying anomalies as security events versus operational issues. There is no escalation path to a security analyst or incident response function, no reference to a security event classification framework (e.g., severity tiers, event taxonomy), and no defined criteria for what constitutes a confirmed security event warranting further action. An auditor will find no evidence that the entity can demonstrate this analytical step is occurring in a structured, repeatable way.\n\n**What's Needed:** A documented triage and classification procedure that distinguishes security events from operational anomalies, with defined criteria, responsible parties (including security personnel, not just SRE), and escalation triggers.\n\n---\n\n### Finding 2: Log Review Procedures Are Undefined and Unenforceable\n\n| Attribute | Detail |\n|---|---|\n| **Related Section** | Section 5 \u2014 Log Review |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap Description:**\nSection 5 states that security-relevant logs \"should be reviewed periodically,\" which fails on multiple dimensions relevant to CC7.2. The word *should* is aspirational rather than mandatory. *Periodically* provides no defined frequency. There is no specification of which logs are reviewed, by whom, using what process, or how findings are documented and acted upon. This section, as written, would not provide an auditor with reasonable assurance that proactive anomaly detection through log review is actually occurring. It cannot be tested against evidence because no measurable standard exists.\n\n**What's Needed:** Mandatory, frequency-specific log review requirements (e.g., daily automated correlation, weekly manual review of authentication logs) with defined scope, responsible role, documentation requirements, and a process for recording and following up on findings.\n\n---\n\n### Finding 3: Incomplete Coverage of Anomaly Types Required by CC7.2\n\n| Attribute | Detail |\n|---|---|\n| **Related Section** | Section 4.1 \u2014 Alert Categories |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap Description:**\nCC7.2 requires monitoring for anomalies indicative of **malicious acts**, **natural disasters**, and **errors**. The current alert categories address some operational errors and a limited set of security signals (failed logins, geographic anomalies), but the following categories are absent:\n\n- **Privilege escalation or unauthorized access attempts** \u2014 no alerts for changes to IAM roles, privileged account usage, or access to sensitive data outside normal patterns\n- **Data exfiltration indicators** \u2014 no monitoring of anomalous data transfer volumes via VPC Flow Logs (logs are collected but no corresponding alert is defined)\n- **Malware or lateral movement indicators** \u2014 no host-based or network-based behavioral detection\n- **Availability-impacting events** (natural disasters / infrastructure failures) \u2014 SSL expiry and resource exhaustion are noted, but there is no mention of disaster or availability scenarios such as multi-AZ failures, region degradation, or backup failures\n\nFor a healthcare entity handling EHR data, the absence of data-access anomaly detection is particularly significant given HIPAA obligations that intersect with CC7.2.\n\n**What's Needed:** Expanded alert coverage mapped explicitly to the three CC7.2 threat categories, with particular attention to PHI access anomalies, privilege changes, and availability-threatening events.\n\n---\n\n### Finding 4: Database Monitoring Is Materially Incomplete\n\n| Attribute | Detail |\n|---|---|\n| **Related Section** | Section 3.1 \u2014 Log Collection |\n| **Severity** | \ud83d\udd34 Critical |\n\n**Gap Description:**\nOnly the *slow query log* is collected from the database layer. For a healthcare platform storing EHR data, this means that general query activity, access to sensitive tables, bulk data reads, failed authentication to the database, schema changes, and privileged database operations are entirely outside the monitoring scope. This represents a significant blind spot for detecting unauthorized data access or exfiltration \u2014 precisely the type of malicious act CC7.2 is designed to surface. An auditor would flag this as a high-risk gap given the sensitivity of the data involved.\n\n**What's Needed:** Collection of database audit logs including authentication events, DDL/DML activity on sensitive tables, privileged user actions, and access pattern anomalies, with corresponding alerting thresholds.\n\n---\n\n### Finding 5: Warning and Informational Alerts Lack Adequate Response Timeliness\n\n| Attribute | Detail |\n|---|---|\n| **Related Section** | Section 4.2 \u2014 Alert Routing; Section 4.3 \u2014 Alert Response |\n| **Severity** | \ud83d\udfe0 High |\n\n**Gap Description:**\nWarning-level alerts are routed to a Slack channel and addressed only during business hours, and informational alerts are reviewed only weekly via dashboards. CC7.2 requires timely detection and analysis of anomalies. A security-relevant anomaly classified as a \"warning\" \u2014 such as an unusual geographic access pattern or a rising error rate \u2014 could represent an active security event. Deferring review until the next business day (or next week) creates a detection gap that undermines the control's effectiveness. There is also no guarantee that Slack alerts are formally acknowledged, tracked, or resolved, as opposed to being seen and dismissed.\n\n**What's Needed:** A defined maximum response time for warning-level alerts (e.g., same-day triage regardless of business hours for security-relevant warning categories), a tracking mechanism to ensure alerts are not lost, and a formal closure/disposition record.\n\n---\n\n### Finding 6: No Defined Baseline or Anomaly Thresholds for Behavioral Detection\n\n| Attribute | Detail |\n|---|---|\n| **Related Section** | Section 4.1 \u2014 Alert Categories |\n| **Severity** | \ud83d\udfe0 High |\n\n**Gap Description:**\nThe alerting thresholds defined (e.g., >1% error rate, >90% CPU, >10 failed logins/hour) appear to be static, fixed values with no documented basis in observed baseline behavior. CC7.2 implies that anomalies are meaningful deviations from expected behavior. Without documented baselines, static thresholds may generate excessive noise (reducing response effectiveness) or miss genuine anomalies that fall below the threshold. Furthermore, the \"unusual geographic access patterns\" alert references no definition of what constitutes \"unusual,\" making it untestable by an auditor.\n\n**What's Needed:** Documentation of how thresholds were established, a process for periodic threshold review and tuning, and explicit definitions for subjective alert criteria such as \"unusual geographic access.\"\n\n---\n\n### Finding 7: Metrics and Reporting Do Not Include Security Event Outcomes\n\n| Attribute | Detail |\n|---|---|\n| **Related Section** | Section 6 \u2014 Metrics and Reporting |\n| **Severity** | \ud83d\udfe1 Medium |\n\n**Gap Description:**\nMonthly reporting to the CISO covers alert volume, mean time to acknowledge, and uptime. While these operational metrics are useful, they do not address security-specific outcomes required to demonstrate CC7.2 effectiveness. Notably absent are: the number of anomalies escalated as confirmed security events, disposition of those events, false positive rates, and any trending analysis of threat indicators. Without security event outcome reporting, management has no visibility into whether the monitoring program is successfully identifying and resolving security threats \u2014 and an auditor has no management-level evidence that the control is functioning as intended.\n\n**What's Needed:** Addition of security-specific metrics to CISO reporting, including confirmed security event counts, event disposition outcomes, detection-to-escalation time, and false positive/negative trend analysis.\n\n---\n\n## Summary Table\n\n| # | Finding Title | Section | Severity |\n|---|---|---|---|\n| 1 | No Formal Security Event Classification or Analysis Process | \u00a74.3, \u00a75 | \ud83d\udd34 Critical |\n| 2 | Log Review Procedures Are Undefined and Unenforceable | \u00a75 | \ud83d\udd34 Critical |\n| 3 | Incomplete Coverage of CC7.2 Anomaly Types | \u00a74.1 | \ud83d\udd34 Critical |\n| 4 | Database Monitoring Is Materially Incomplete | \u00a73.1 | \ud83d\udd34 Critical |\n| 5 | Warning/Informational Alerts Lack Adequate Response Timeliness | \u00a74.2, \u00a74.3 | \ud83d\udfe0 High |\n| 6 | No Defined Baseline or Anomaly Thresholds for Behavioral Detection | \u00a74.1 | \ud83d\udfe0 High |\n| 7 | Metrics and Reporting Do Not Include Security Event Outcomes | \u00a76 | \ud83d\udfe1 Medium |\n\n---\n\n## Overall Readiness Assessment\n\n> **Not Ready for Audit** \u2014 The policy has four Critical findings, two of which (Findings 1 and 2) go to the *core analytical requirement* of CC7.2. The control as documented would likely result in an **exception** if tested during a SOC 2 Type II examination. Remediation should prioritize Findings 1\u20134 before audit fieldwork begins, as these represent either absent controls or untestable policy language that no compensating evidence could readily overcome."
+}

@@ -1,0 +1,68 @@
+{
+  "task_id": "a1.2-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:08:33.433225",
+  "score": {
+    "task_id": "a1.2-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "partition pruning"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "application functionality",
+          "deferred",
+          "January",
+          "Section 5.1",
+          "incomplete",
+          "holiday"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "235 minutes",
+          "RTO",
+          "5-minute margin",
+          "data growth",
+          "Q1 2026"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4816,
+    "output_tokens": 2121
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: Control A1.2\n## Apex Digital Inc. \u2014 Backup and Recovery Controls\n**Observation Period:** October 1 \u2013 December 31, 2025\n\n---\n\n## Summary\n\nThe backup and recovery policy (POL-BKP-007) is well-defined with clear RPO/RTO targets, backup schedules, restore testing requirements, and retention. Q3 2025 testing was substantially complete with a documented anomaly properly remediated. Q4 2025 testing, however, has gaps that warrant attention. Several findings are identified below.\n\n---\n\n## Finding 1: Q4 Restore Test Incomplete \u2014 Application Validation Phase Deferred\n\n**Related Section:** Policy Section 5.1 (Quarterly Restore Tests), Requirement 4; Q4 2025 Restore Test Report \u2014 `phase_4_application_validation`\n\n**Why it's a gap:** Policy Section 5.1 explicitly requires that each quarterly restore test validate \"Application functionality validation post-restore (API health checks, background job processing, user authentication flow).\" The Q4 test report shows Phase 4 was deferred to January 8, 2026 due to \"engineering team unavailability during holiday period.\" This means the Q4 test as executed did not satisfy all four mandatory validation criteria. The test report itself acknowledges this: \"Restore test incomplete per policy Section 5.1 requirement 4.\" For the Q4 observation period ending December 31, 2025, no complete quarterly restore test exists on record. There is also no evidence of a documented exception, risk acceptance, or compensating control approved by the CISO for this deviation.\n\n**Severity:** **High** \u2014 This is a direct, self-acknowledged failure to execute a control as designed during the observation period. While Q3 demonstrated full validation capability, the auditor cannot rely on Q3 evidence to satisfy Q4 testing requirements. Auditors typically expect each test cycle to stand on its own.\n\n---\n\n## Finding 2: RTO Margin Erosion \u2014 Inadequate Capacity Planning Response\n\n**Related Section:** Policy Section 3 (Recovery Objectives); Q4 Test Report \u2014 `rto_assessment`, `quarter_over_quarter`\n\n**Why it's a gap:** The Q4 restore time (235 minutes) is within the 240-minute RTO but only by a 5-minute margin, down from 48 minutes in Q3 \u2014 a 22.4% increase in restore time against 19.1% data growth. The trend indicates the next test cycle will likely breach RTO without intervention. While the test technically PASSED, the policy obligates the entity to \"meet its availability commitments.\" The change log shows no remediation change ticket opened in Q4 for parallel restore optimization, archival strategy, or RTO recalibration despite the test lead's explicit recommendation and \"concerning\" sign-off comment. Forward-looking risk management is part of A1.2 (\"monitors environmental protections... and recovery plan procedures to meet its objectives\").\n\n**Severity:** **Medium** \u2014 The control is currently operating within tolerance, but the absence of a tracked remediation plan is a monitoring/responsiveness gap. Severity would escalate to High if Q1 2026 breaches RTO without action.\n\n---\n\n## Finding 3: Lack of Tracked Remediation for Identified Test Recommendations\n\n**Related Section:** Q4 Test Report \u2014 `recommendations`; Change Management Log\n\n**Why it's a gap:** The Q4 test produced four specific recommendations (parallel restore evaluation, data archival strategy, scheduling improvements, RTO recalibration). The change management log for Q4 contains no entries traceable to these recommendations. There is no documented ticketing, owner assignment, or target date for any of them. By contrast, the Q3 test correctly produced CHG-2025-0412 (DR PostgreSQL upgrade) which closed the partition pruning issue \u2014 demonstrating the entity *can* operate this remediation loop. The Q4 break in that loop suggests the closure process is informal and not consistently applied.\n\n**Severity:** **Medium** \u2014 Indicates a weakness in the \"monitors... and maintains\" elements of A1.2.\n\n---\n\n## Finding 4: Holiday-Period Scheduling Not Addressed in Policy\n\n**Related Section:** Policy Section 5.1 (Quarterly Restore Tests)\n\n**Why it's a gap:** The root cause of Finding 1 is that the Q4 test was scheduled on December 20, when key engineering personnel were unavailable. The policy does not require tests to be scheduled with cross-functional resource availability in mind, nor does it require an exception/approval process when a phase cannot be executed. A mature control would either (a) require tests to be scheduled when all required personnel are available, or (b) require formal CISO-approved deviation documentation with a defined make-up timeline. Neither is present.\n\n**Severity:** **Low** \u2014 Policy design weakness; addressable via a minor policy amendment.\n\n---\n\n## Items Reviewed and Assessed as Acceptable\n\n- **Q3 2025 test:** All four phases executed; the partition pruning anomaly was investigated, root-caused, and remediated via CHG-2025-0412 before Q4. This is exemplary handling of a test exception.\n- **Backup schedule, retention, RPO design, encryption key rotation (CHG-2025-0445), and DR PostgreSQL upgrade (CHG-2025-0412):** Operating effectively based on evidence provided.\n- **Failure handling procedures (Section 6):** Demonstrated functional via the November 2 RDS failover (CHG-2025-0431) \u2014 47-second automatic failover with no data loss.\n\n---\n\n## Recommended Auditor Actions Before Attestation\n\n1. Obtain evidence that Phase 4 of the Q4 test was executed on January 8, 2026, with a passing result, and treat it as supplementary (not substitute) evidence.\n2. Request a formally documented and approved exception for the deferred Phase 4, signed by the CISO, dated within the observation period.\n3. Request a remediation tracker showing ownership and target dates for the four Q4 recommendations, particularly RTO capacity planning.\n4. Consider whether the Q4 test failure to fully execute as designed constitutes a control deficiency at the test-of-operating-effectiveness level for A1.2."
+}

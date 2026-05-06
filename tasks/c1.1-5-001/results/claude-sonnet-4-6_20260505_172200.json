@@ -1,0 +1,117 @@
+{
+  "task_id": "c1.1-5-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T17:22:00.980664",
+  "score": {
+    "task_id": "c1.1-5-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4166666666666667,
+    "f1": 0.5882352941176471,
+    "score": 0.5882352941176471,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "webhook-payload-key",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "policy requires",
+          "materiality",
+          "exception"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vpc-prod",
+          "vpc-data",
+          "HTTP",
+          "unencrypted",
+          "Confidential",
+          "VPC peering",
+          "analytics",
+          "private network",
+          "cross-VPC",
+          "port 8080"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "APP-PROD-006",
+          "notification",
+          "15 days",
+          "14-day grace",
+          "1 day",
+          "CISO notified",
+          "batch job failure",
+          "variance",
+          "pattern"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "pattern",
+          "rotation",
+          "late",
+          "process",
+          "APP-PROD-001",
+          "APP-PROD-003",
+          "APP-PROD-006"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "vrs-prod-ml-models",
+          "AES-128",
+          "AES-256",
+          "Confidential",
+          "SSE-KMS",
+          "ML model",
+          "trained weights",
+          "derived"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4667,
+    "output_tokens": 3585
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 Control C1.1 / CC6.7\n**Entity:** Vanguard Risk Solutions\n**Assessment Date:** December 2025\n**Auditor Review Scope:** Encryption posture across data in transit and at rest\n\n---\n\n## Executive Summary\n\nThe evidence package is materially complete and demonstrates a generally mature encryption program. The majority of production resources meet or exceed policy requirements. However, four findings were identified across the evidence set. Two findings represent clear policy violations with measurable security exposure. One finding requires professional judgment regarding materiality. One finding is a minor, self-correcting variance. Each is assessed below with full rationale.\n\n---\n\n## Finding 1: Unencrypted Cross-VPC Analytics Pipeline Transmitting Confidential Data\n\n**Document Reference:** ARCH-NET-003, Section 3.3; POL-ENC-005, Section 4.2\n\n### What the Evidence Shows\n\nThe analytics ingestion service in `vpc-prod` transmits customer data \u2014 including `user_id`, `event_type`, and `session_data` \u2014 to the analytics pipeline in `vpc-data` over plain HTTP (port 8080) with no application-layer TLS and no network-layer encryption. The data is classified as Confidential. The network architecture document acknowledges this explicitly and offers a compensating control argument based on AWS private network isolation.\n\n### Why This Is a Gap\n\n**Policy violation is unambiguous.** POL-ENC-005 Section 4.2 states:\n\n> *\"Service-to-service communication handling Restricted or Confidential data must use TLS 1.2 or higher.\"*\n\nThis requirement is categorical \u2014 it does not include an exception for intra-cloud or VPC-peered traffic. The compensating control argument advanced in ARCH-NET-003 (traffic stays on AWS backbone) does not satisfy the policy's plain language and has not been formally approved as an exception under POL-ENC-005 Section 8, which requires CISO approval, documented compensating controls, and quarterly review. CISO review of the architecture document on December 5 does not constitute a formal exception approval under the policy's own terms.\n\n**The security risk is real, not theoretical.** VPC peering does not encrypt traffic. AWS documentation confirms this. Within-cloud interception scenarios include:\n\n- Misconfigured routing tables directing traffic through unintended paths\n- A compromised EC2 instance or container within either VPC with network capture capability (e.g., via a privileged pod or host network mode)\n- AWS support or hypervisor-level access scenarios\n- Future infrastructure changes (e.g., Transit Gateway migration) that could inadvertently route traffic differently\n\nThe compensating control argument conflates *network isolation* with *encryption*. These are distinct controls addressing distinct threat categories. Defense in depth principles \u2014 foundational to SOC 2 \u2014 treat them as complementary, not substitutable.\n\n**SOC 2 and industry standards support a finding here.** While the architecture document correctly notes that SOC 2 does not prescribe specific technical controls, CC6.7 requires that the entity \"restricts the transmission of confidential information to authorized parties using encryption.\" The absence of any encryption on a confidential data channel leaves this criterion unmet for this data flow, regardless of network-layer isolation.\n\n### Severity: **High**\n\n**Rationale:** This is a documented, ongoing violation of the entity's own encryption policy on a channel carrying Confidential production data. The absence of a formal exception approval compounds the finding. Remediation is technically straightforward (enabling TLS on the REST endpoint or extending the Istio service mesh to cover this traffic path). The finding does not rise to Critical because the channel is logically isolated, the data is Confidential rather than Restricted (no direct PII or payment data is identified in the data elements listed), and there is no evidence of actual interception. However, an auditor cannot accept an undocumented compensating control that contradicts the written policy.\n\n**Recommended Management Response:** Implement TLS 1.2+ on the analytics ingestion REST API endpoint, or alternatively extend the Istio mTLS service mesh to cover the cross-VPC connection via PrivateLink or a mesh gateway. If remediation is deferred, obtain formal CISO exception approval with documented compensating controls and a remediation timeline.\n\n---\n\n## Finding 2: webhook-payload-key Using AES-128 for Confidential Data\n\n**Document Reference:** Q4 2025 Encryption Posture Audit (resource: `webhook-payload-key`); POL-ENC-005, Section 3.1\n\n### What the Evidence Shows\n\nThe `webhook-payload-key` application key, used to encrypt webhook payloads containing Confidential customer event data (account activity notifications), implements AES-128-GCM. The Q4 audit flags this as \"Review Needed\" with the notation that policy requires AES-256 for Confidential data.\n\n### Why This Is a Gap\n\n**Policy violation is direct.** POL-ENC-005 Section 3.1 specifies:\n\n| Data Classification | Minimum Standard |\n|---|---|\n| Confidential (customer data) | AES-256 |\n\nAES-128 does not meet this minimum for Confidential data. The audit correctly identifies this as non-compliant.\n\n**Professional judgment on materiality.** A reasonable auditor must weigh whether AES-128 represents actual security risk or a purely procedural gap:\n\n- AES-128 is not broken. It provides approximately 128 bits of security and is considered computationally secure by NIST through the foreseeable future. The cryptographic community does not consider AES-128 weak.\n- However, the organization has made a deliberate policy decision to require AES-256 for Confidential data, likely to provide a margin of safety against advances in cryptanalysis, to align with contractual commitments, and to meet SOC 2 commitments made to customers.\n- The gap between what was promised (AES-256) and what is implemented (AES-128) creates a control deficiency under C1.1 independent of whether AES-128 is inherently insecure.\n- Webhook payloads containing account activity notifications may be transmitted to external partners or stored in logs, expanding the exposure surface.\n\nThere is no evidence in the audit that this was identified previously or that a remediation timeline has been established.\n\n### Severity: **Medium**\n\n**Rationale:** The cryptographic risk of AES-128 is low in absolute terms \u2014 no practical attack exists. However, the policy non-compliance is clear and documented, the data classification (Confidential) is above the threshold where AES-128 is permitted, and there is no evidence of a formal exception or remediation plan. This is a policy violation that must be remediated or formally excepted, but it does not represent an imminent security crisis. The finding would escalate to High if the webhook payloads were determined to contain Restricted data (PII or payment data), or if the gap had been previously identified and unresolved across multiple audit cycles.\n\n**Recommended Management Response:** Re-key the `webhook-payload-key` to AES-256-GCM on the next scheduled rotation cycle or on an accelerated basis. Update the key in all consuming systems. Confirm that re-encryption of any stored webhook payloads is completed. Document the gap and remediation timeline.\n\n---\n\n## Finding 3: vrs-prod-ml-models S3 Bucket Using AES-128 for Confidential Data\n\n**Document Reference:** Q4 2025 Encryption Posture Audit (resource: `vrs-prod-ml-models`); POL-ENC-005, Section 3.1 and 5.2\n\n### What the Evidence Shows\n\nThe `vrs-prod-ml-models` S3 bucket, classified as Confidential and containing ML model artifacts derived from Confidential customer data, uses SSE-KMS with AES-128 rather than the AES-256 required for Confidential data. The audit notes that model files contain \"trained weights derived from Confidential customer data\" but \"no PII in model files.\"\n\n### Why This Is a Gap and Why Judgment Is Required\n\n**The policy violation is the same as Finding 2** \u2014 AES-128 applied where AES-256 is required for Confidential data. POL-ENC-005 Section 5.2 requires SSE-KMS for Confidential S3 data, and Section 3.1 requires AES-256 for Confidential classification.\n\n**The materiality question here is more nuanced than Finding 2.** The audit note that model weights contain no direct PII is relevant context. ML model weights are derivative artifacts: they encode statistical patterns from training data but generally do not permit reconstruction of individual records. The confidentiality risk of model weight exposure is primarily around intellectual property and competitive sensitivity rather than direct customer data exposure. This does not eliminate the policy gap, but it contextualizes the risk as somewhat lower than, for example, an application key directly encrypting customer records.\n\nHowever, this distinction does not remove the finding. The organization has classified these artifacts as Confidential, which triggers the AES-256 requirement. An auditor cannot re-classify assets on management's behalf during a readiness assessment.\n\n**Both Findings 2 and 3 appearing simultaneously** is itself a process concern \u2014 it suggests the Q4 audit review process has not been triggering timely remediation actions. The audit was conducted December 15, 2025; both items are flagged \"Review Needed\" with no documented remediation timeline visible in the evidence.\n\n### Severity: **Medium**\n\n**Rationale:** Same policy basis as Finding 2. Assessed at the same severity level. The absence of direct PII in model files is a mitigating factor that distinguishes this from Finding 2 (where customer event data is directly involved), but the classification-based policy obligation is identical. The two medium findings together reinforce a process concern about the speed of remediation following audit identification.\n\n**Recommended Management Response:** Migrate the `vrs-prod-ml-models` bucket to SSE-KMS with AES-256 (update the KMS key configuration and re-encrypt existing objects). Evaluate whether the Confidential classification remains appropriate given the nature of model artifact contents, and if reclassification is pursued, follow the formal data classification review process.\n\n---\n\n## Finding 4: APP-PROD-006 notification-encryption-key \u2014 Grace Period Exceedance by One Day\n\n**Document Reference:** Key Rotation Status Log (APP-PROD-006)\n\n### What the Evidence Shows\n\nThe `notification-encryption-key` was rotated 15 days after its due date of October 1, 2025. The policy grace period is 14 calendar days. The key was completed 1 day beyond the grace period. The log confirms:\n\n- CISO was notified on October 10 (9 days after due date, within the grace period notification window)\n- Delay was caused by a re-encryption batch job failure requiring restart\n- Re-encryption of data completed October 20\n\n### Why This Is a Minor Variance\n\n**The exceedance is real but minimal.** One day beyond a 14-day grace period is a technical policy breach. The auditor cannot simply ignore it.\n\n**Significant mitigating factors are present:**\n\n1. The root cause (batch job failure) is documented and specific \u2014 this is not a process breakdown but a technical failure with a clear cause\n2. CISO was notified on October 10, which is *within* the grace period \u2014 policy notification requirements were met\n3. Re-encryption of data completed within a reasonable timeframe (October 20, 5 days after key rotation)\n4. All four KMS CMKs are current, and other application key rotations are either on time or not yet due\n5. This appears to be an isolated incident rather than a pattern\n\n**Pattern analysis matters here.** Reviewing the full key rotation log, APP-PROD-001 was 3 days late (within grace, no concern), APP-PROD-003 was exactly 14 days late (at the boundary, technically within grace), and APP-PROD-006 was 15 days late (1 day over). The presence of three consecutive delayed rotations all performed by the same individual (Michael Torres) is worth noting as a process observation, though none individually represents a material control failure.\n\n### Severity: **Low**\n\n**Rationale:** The policy exceedance is documented and acknowledged. The 1-day overage on a 14-day grace period, with CISO notification completed timely and a documented technical root cause, does not represent a material control failure. In a SOC 2 examination context, this finding is unlikely to rise to the level of an exception if properly disclosed and if management demonstrates corrective action (e.g., improving batch job resilience or adding monitoring alerts for failed re-encryption jobs). The pattern of late rotations across three instances warrants a management observation but does not change the severity of this individual finding.\n\n**Recommended Management Response:** Implement automated alerting for re-encryption batch job failures with escalation procedures that allow earlier intervention. Consider adding a buffer (e.g., beginning rotation 7 days before due date for Confidential keys) to absorb technical delays within the grace period. Document the root cause and corrective action for audit file completeness.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Document Reference | Policy Violated | Exception on File? |\n|---|---|---|---|---|---|\n| 1 | Unencrypted cross-VPC analytics pipeline (HTTP, no TLS) | **High** | ARCH-NET-003 \u00a73.3; POL-ENC-005 \u00a74.2 | Internal communications encryption requirement | No |\n| 2 | webhook-payload-key using AES-128 for Confidential data | **Medium** | Q4 Audit; POL-ENC-005 \u00a73.1 | Minimum algorithm standard for Confidential data | No |\n| 3 | vrs-prod-ml-models using AES-128 for Confidential data | **Medium** | Q4 Audit; POL-ENC-005 \u00a73.1, \u00a75.2 | Minimum algorithm standard for Confidential data | No |\n| 4 | notification-encryption-key rotation 1 day past grace period | **Low** | Key Rotation Log (APP-PROD-006); POL-ENC-005 \u00a76.1 | Key rotation grace period | Partial \u2014 CISO notified, cause documented |\n\n---\n\n## Overall Readiness Assessment\n\nVanguard Risk Solutions demonstrates a **generally mature encryption program** with strong performance in the following areas: comprehensive Istio mTLS enforcement in the production Kubernetes cluster, compliant encryption-at-rest across all RDS instances, EBS volumes, and the majority of S3 buckets, and a functioning key management program with automated KMS rotation.\n\n**Readiness for SOC 2 examination is conditional** on remediation or formal exception documentation for Findings 1, 2, and 3 prior to the examination period. Finding 1 carries the highest risk of resulting in an audit exception if unaddressed, as it represents a clear policy violation on a production Confidential data channel with no approved compensating control documentation. Findings 2 and 3 are likely to result in a noted exception without remediation, as both are identified in the entity's own Q4 audit with no documented remediation timeline.\n\nFinding 4 is unlikely to affect the audit outcome given the documented mitigating circumstances, but should be included in the management representation letter with a description of corrective actions taken."
+}

@@ -1,0 +1,61 @@
+{
+  "task_id": "pi1.1-5-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T13:02:19.377812",
+  "score": {
+    "task_id": "pi1.1-5-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 0.4444444444444445,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "PR-7813",
+          "rounding",
+          "HALF_UP",
+          "HALF_EVEN",
+          "no post-deploy review",
+          "24 hours",
+          "Tier 1",
+          "VP Engineering",
+          "financial"
+        ],
+        "total_keywords": 12,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "$3.17",
+          "REC-9034",
+          "bank reconciliation",
+          "rounding error",
+          "HALF_UP",
+          "HALF_EVEN"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5453,
+    "output_tokens": 3378
+  },
+  "raw_response": "## Overall Assessment\n\nPI1.1 is **partially met but not fully ready** for SOC 2 Type II reliance for Q4 2025. The SDLC policy defines several processing integrity objectives for financial transaction systems, including input validation, record count reconciliation, amount reconciliation, discrepancy thresholds, and audit trails. However, the evidence shows gaps in emergency change compensating controls, reconciliation coverage, review evidence, and timeliness objectives.\n\n---\n\n## Findings\n\n### 1. Emergency Rounding Fix Lacked Required Post-Deploy Review\n\n**Related section:**  \n- SDLC Policy \u00a73.2 Emergency Change Process  \n- PR-7813  \n- REC-9034\n\n**Why it\u2019s a gap:**  \nPR-7813 was an emergency Tier 1 payment processor change deployed on November 28, 2025 to fix a settlement rounding error. The SDLC policy requires a comprehensive post-deploy review within 24 hours, including correctness verification, regression risk assessment, test coverage analysis, follow-up actions, and sign-off by an uninvolved Senior Engineer.\n\nThe PR record explicitly states: **\u201cNo post-deploy review performed as of Dec 29.\u201d** This means the required compensating control was not completed for more than 30 days after deployment. Because the change affected settlement total aggregation and was related to an actual financial discrepancy of $3.17, this is a significant processing integrity gap.\n\n**Severity:** High\n\n---\n\n### 2. Emergency Deadlock Fix Post-Deploy Review Appears Late\n\n**Related section:**  \n- SDLC Policy \u00a73.2 Emergency Change Process  \n- PR-7808  \n- REC-9026\n\n**Why it\u2019s a gap:**  \nPR-7808 was an emergency Tier 1 payment processor change deployed on November 5, 2025 at 05:15 UTC to resolve a settlement batch deadlock. The post-deploy review was completed by Bob Chen on November 6 at 14:00.\n\nBased on the deployment time in the reconciliation log, the review occurred approximately **32 hours and 45 minutes after deployment**, exceeding the policy requirement of completion within 24 hours. The review did include evidence of correctness verification, regression risk assessment, and follow-up action, so the control was substantially performed, but not within the required timeframe.\n\n**Severity:** Medium\n\n---\n\n### 3. Incomplete Q4 Daily Reconciliation Coverage\n\n**Related section:**  \n- SDLC Policy \u00a76.2 Data Reconciliation  \n- Settlement batch reconciliation logs\n\n**Why it\u2019s a gap:**  \nThe policy requires daily reconciliation reports for financial transaction pipelines. The evidence provided includes 40 reconciliation entries for Q4 2025, but Q4 contains significantly more calendar days and business processing days.\n\nThere are notable gaps in the reconciliation log coverage, including missing entries for multiple periods in November and December. For example, after November 10, the next entry is November 24, and December entries are limited to selected dates. Without complete daily reconciliation evidence, Quantum cannot demonstrate that complete and accurate processing was consistently verified throughout the audit period.\n\n**Severity:** High\n\n---\n\n### 4. Finance Operations Review of Daily Reconciliations Not Evidenced\n\n**Related section:**  \n- SDLC Policy \u00a76.2 Data Reconciliation  \n- Settlement batch reconciliation logs\n\n**Why it\u2019s a gap:**  \nThe policy states: **\u201cDaily reconciliation reports are reviewed by the Finance Operations team.\u201d** However, most reconciliation records show `reviewed_by = automated`. Only failed reconciliations identify named reviewers, and those names are not clearly tied to Finance Operations.\n\nAutomated reconciliation is useful, but it does not by itself evidence Finance Operations review unless the policy permits automated review or there is separate evidence showing Finance Operations monitoring, approval, or exception review. The current evidence does not demonstrate that the required daily review control operated as designed.\n\n**Severity:** Medium\n\n---\n\n### 5. Accuracy Objective Did Not Fully Address Bank Settlement Rounding Requirements\n\n**Related section:**  \n- SDLC Policy \u00a76.2 Data Reconciliation  \n- REC-9034  \n- PR-7813\n\n**Why it\u2019s a gap:**  \nREC-9034 identified a $3.17 discrepancy between source and destination settlement totals. The root cause was a mismatch between the system\u2019s rounding mode, `HALF_UP`, and the bank reconciliation expectation, which required `HALF_EVEN`.\n\nThis indicates that the processing objective for \u201caccurate\u201d settlement processing was not sufficiently defined to include the required external bank rounding methodology. The reconciliation process detected the issue only after the bank reconciliation file was received, meaning the internal source-to-destination check alone was insufficient to confirm settlement accuracy against the external processing requirement.\n\n**Severity:** High\n\n---\n\n### 6. Timeliness Processing Objectives Are Not Clearly Defined\n\n**Related section:**  \n- SDLC Policy \u00a76 Processing Integrity  \n- Settlement batch reconciliation logs  \n- PI1.1 requirement\n\n**Why it\u2019s a gap:**  \nPI1.1 requires the entity to define what constitutes complete, accurate, and timely processing. The policy defines completeness and accuracy more clearly through schema validation, record counts, amount reconciliation, discrepancy thresholds, and audit trails. However, it does not clearly define timeliness objectives for financial transaction processing.\n\nFor example, the policy does not define:\n\n- Required batch completion deadlines  \n- Maximum acceptable reconciliation delay  \n- Cutoff times for settlement processing  \n- Timeframe for correcting reconciliation failures  \n- Timeliness expectations for downstream bank files or customer-impacting transactions\n\nThe logs show scheduled and execution times, but without a documented timeliness objective, it is difficult to determine whether processing was timely.\n\n**Severity:** Medium\n\n---\n\n### 7. Escalation for Incomplete Emergency Reviews Not Evidenced\n\n**Related section:**  \n- SDLC Policy \u00a73.3 Consequences  \n- PR-7813\n\n**Why it\u2019s a gap:**  \nThe policy states that emergency changes without completed post-deploy reviews are escalated to the VP Engineering weekly. PR-7813 had no post-deploy review completed as of December 29, more than four weeks after deployment.\n\nNo evidence was provided showing weekly escalation to the VP Engineering, corrective tracking, or remediation follow-up for the overdue review. Because emergency changes bypass normal pre-merge review, escalation is an important compensating control. Its absence further weakens reliance on emergency change governance for Tier 1 systems.\n\n**Severity:** Medium"
+}

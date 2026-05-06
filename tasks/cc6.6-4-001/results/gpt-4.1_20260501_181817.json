@@ -1,0 +1,87 @@
+{
+  "task_id": "cc6.6-4-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:18:17.207390",
+  "score": {
+    "task_id": "cc6.6-4-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.42857142857142855,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "sg-0a1b2c3d4e5f60008",
+          "EXC-NET-2025-003",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "prod-webhook-receiver",
+          "webhooks.prismcloud.io"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "notification service",
+          "unencrypted HTTP",
+          "TLS-008"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "TLS-014",
+          "Elasticsearch",
+          "TLS 1.2",
+          "PII"
+        ],
+        "total_keywords": 4,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8255,
+    "output_tokens": 1681
+  },
+  "raw_response": "Certainly! Below is a structured list of **CC6.6 control findings** based on your provided evidence, with cross-references and severity rating.\n\n---\n\n### **1. Unencrypted Internal Notification Service**\n**Section:**  \n- TLS configuration audit (`TLS-008`, Notification Service)  \n- AWS Security Group Export (`prod-notification-service`, sg-0a1b2c3d4e5f60006)\n\n**Why it's a gap:**  \n- TLS is not configured for the internal Notification Service (port 8080); internal service-to-service traffic is transmitted in plaintext HTTP.\n- The **Network Security Policy** (Section 5.2: Inter-Service Communication) explicitly states that all inter-service communication in production must use encrypted protocols (HTTPS/TLS 1.2+), and unencrypted HTTP is **prohibited**.\n- No approved exception for this gap is found in the exception register.\n\n**Severity:**  \n**High**  \n- Inter-service traffic without TLS is a common vector for privilege escalation and lateral movement, and explicitly violates written policy with no exception.\n\n---\n\n### **2. Lack of WAF on Webhook Receiver Public Endpoint**\n**Section:**  \n- AWS Security Group Export (`prod-webhook-receiver`, sg-0a1b2c3d4e5f60011; notes field)\n- Network Security Policy (Section 4.1: WAF Requirements)\n\n**Why it's a gap:**  \n- The Webhook Receiver (webhooks.prismcloud.io, 443) is a public endpoint exposed to the internet.\n- It does not have a WAF association (\"No WAF association configured\") according to both the security group export and WAF association details.\n- **Policy** mandates all public-facing HTTP/HTTPS endpoints be protected by AWS WAF.\n\n**Severity:**  \n**High**  \n- Public endpoints handling webhooks from third parties are susceptible to a broad spectrum of automated and targeted attacks. Policy non-compliance here could enable remote exploitation.\n\n---\n\n### **3. Use of TLS 1.2 for Elasticsearch Service with PII**\n**Section:**  \n- TLS configuration audit (`TLS-014`, Elasticsearch Cluster)\n- Network Security Policy (Section 5.3: TLS Configuration Standards)\n- Exception Register (no relevant exception found)\n\n**Why it's a gap:**  \n- Elasticsearch internal endpoint, which handles customer PII (search indices contain user data), uses only TLS 1.2.\n- Policy requires TLS 1.3 for new deployments, and a migration plan for older ones. The evidence indicates this is a legacy deployment; however, **no current approved exception** is in the exception register for this endpoint.\n- The exception for a legacy internal load balancer using TLS 1.2 is now expired (EXC-NET-2025-001); Redis cache uses TLS 1.2 but is non-PII and has an active exception.\n\n**Severity:**  \n**Medium**  \n- TLS 1.2 is still widely used/acceptable, but handling PII without a formal exception and migration plan is a direct policy gap.\n\n---\n\n### **4. Cross-VPC Production-Staging Connection (with strong compensating controls)**\n**Section:**  \n- AWS Security Group Export (`prod-data-sync-cross-vpc`, sg-0a1b2c3d4e5f60008)\n- Exception Register (EXC-NET-2025-003)\n- Network Security Policy (Section 3.1: Environment Isolation)\n\n**Why it's a gap:**  \n- Cross-VPC peering and allow-all rules exist between production and staging (\u201callow all traffic\u201d), which contravenes strict environment separation required by policy (cross-environment traffic is prohibited unless explicitly approved).\n- However, a **high-risk exception (EXC-NET-2025-003) is approved, in force, time-limited, with heavy compensating controls** (IP allowlist, encrypted IPsec tunnel, PII stripping, audit logging, monthly review).\n\n**Severity:**  \n**Low**  \n- Gap is fully documented, risk-assessed, and appropriately controlled as per policy exception process.\n\n---\n\n### **5. Redis Cache Using TLS 1.2 (Non-PII; Exception Approved)**\n**Section:**  \n- TLS configuration audit (`TLS-007`, Redis ElastiCache)\n- Exception Register (EXC-NET-2025-004)\n- Network Security Policy (Section 5.2: Inter-Service Communication)\n\n**Why it's a gap:**  \n- Redis internal endpoint uses TLS 1.2 (not 1.3), potentially deviating from preferred standard.\n- **Exception is documented, in effect, low risk, no PII handled, justified by vendor support limitations.**\n\n**Severity:**  \n**Low**  \n- Gap is justified, managed, and documented per exception process. No action needed unless circumstances change.\n\n---\n\n### **6. WAF Alerting/Monitoring Evidence Not Demonstrated**\n**Section:**  \n- Network Security Policy (Section 4.2: WAF Monitoring)\n\n**Why it's a gap:**  \n- Policy states WAF logs must be sent to SIEM (Splunk) and reviewed daily; effectiveness is reported monthly.\n- No explicit evidence was provided to show that **WAF logs are actually reviewed daily or that effectiveness is reported monthly** (e.g., screenshots or documented reports).\n- Not a policy failure but missing evidence in this readiness assessment.\n\n**Severity:**  \n**Low**  \n- More an evidence/documentation gap than operational risk. Should be remediated before fieldwork/final audit.\n\n---\n\n### **7. Explicit Documentation for VPN and Remote Access Controls Not Evident**\n**Section:**  \n- Network Security Policy (Section 6: VPN and Remote Access)\n\n**Why it's a gap:**  \n- Policy mandates VPN with IKEv2, AES-256, and MFA, logs retained 12 months.\n- No direct evidence provided showing VPN implementation, configuration, or log retention.\n- Not a direct technical risk, but lack of evidence leaves the control\u2019s effectiveness technically *unverified*.\n\n**Severity:**  \n**Low**  \n- Evidence gap rather than a control weakness; requires documentary remediation for full attestation.\n\n---\n\n## **Summary Table**\n\n| # | Title                                               | Section                                                             | Reason                                      | Severity |\n|---|-----------------------------------------------------|---------------------------------------------------------------------|---------------------------------------------|----------|\n| 1 | Unencrypted Internal Notification Service           | TLS Audit (`TLS-008`), SG Export (`prod-notification-service`)      | Plain HTTP for internal service comms       | High     |\n| 2 | Lack of WAF on Webhook Receiver Public Endpoint     | SG Export (`prod-webhook-receiver`), Policy 4.1                     | Public endpoint without WAF                 | High     |\n| 3 | TLS 1.2 Used for Elasticsearch w/ PII, No Exception| TLS Audit (`TLS-014`), Policy 5.3                                   | PII with legacy TLS, no valid exception     | Medium   |\n| 4 | Cross-VPC Conn. w/ Compensating Controls            | SG Export (`prod-data-sync-cross-vpc`), Exception EXC-NET-2025-003  | Policy deviation, but exception in effect   | Low      |\n| 5 | Redis TLS 1.2 (Non-PII; Exception Approved)         | TLS Audit (`TLS-007`), Exception EXC-NET-2025-004                   | Fully documented exception                  | Low      |\n| 6 | WAF Alerting/Monitoring Evidence Not Shown          | Policy 4.2                                                          | No evidence logs are reviewed/monitored     | Low      |\n| 7 | VPN/Remote Access Controls: No Evidence Provided    | Policy 6                                                            | Lack of implementation evidence             | Low      |\n\n---\n\n**NOTE:**  \n- Items #1 and #2 represent **significant policy non-compliance** with meaningful security risk and should be prioritized for remediation.\n- Items #3\u2013#5 are lower risk or justified; #3 requires either exception documentation or a migration plan.\n- Items #6\u2013#7 are documentation/evidence gaps to remediate for full attestation readiness, not direct operational risk."
+}

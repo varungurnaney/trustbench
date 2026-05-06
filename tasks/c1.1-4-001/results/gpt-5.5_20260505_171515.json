@@ -1,0 +1,82 @@
+{
+  "task_id": "c1.1-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T17:15:15.264853",
+  "score": {
+    "task_id": "c1.1-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "approved",
+          "compensating"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "partner-data-sync",
+          "CBC",
+          "AES-128",
+          "Restricted",
+          "PII",
+          "customer names",
+          "account numbers"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "bft-prod-ml-training",
+          "SSE-S3",
+          "SSE-KMS",
+          "PII"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "partner-data-sync",
+          "Restricted",
+          "production"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4725,
+    "output_tokens": 4995
+  },
+  "raw_response": "## Readiness Assessment Findings \u2014 C1.1 / CC6.7\n\nOverall, Bridgeport has evidence of a data classification approach, encryption policy, S3 encryption inventory, TLS scanning, and an approved exception process. I did **not** treat exception-covered items such as `bft-prod-ml-training` SSE-S3, the Prometheus HTTP endpoint, or AES-128 webhook payload encryption as standalone findings because they have active CISO-approved exceptions with documented compensating controls.\n\n### Findings\n\n| # | Finding title | Related document / section | Why it is a gap | Severity |\n|---|---|---|---|---|\n| 1 | **PII assets are not consistently classified as Restricted** | **Data Protection and Encryption Policy \u2014 Section 3: Data Classification**; **S3 bucket encryption audit** rows for `bft-prod-partner-sftp` and `bft-prod-ml-training` | The policy defines **Restricted** data as including PII, financial data, and credentials. However, some assets marked `contains_pii = Yes` are classified only as **Confidential**, including `bft-prod-partner-sftp` and `bft-prod-ml-training`. This weakens C1.1 because the entity is not consistently identifying and maintaining confidential/restricted information according to its own classification standard. The ML bucket has an exception for SSE-S3 vs. SSE-KMS, but that exception does not resolve the classification inconsistency. | **Medium** |\n| 2 | **Restricted partner data sync endpoint uses noncompliant TLS cipher without an active exception** | **TLS configuration audit** row for `partner-data-sync.bridgeportft.com`; **Data Protection and Encryption Policy \u2014 Sections 4.1 and 4.3**; **Security exceptions register** | `partner-data-sync.bridgeportft.com` is a production endpoint handling Restricted data and PII, including customer names and account numbers. It uses `TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256`. The policy requires AES-256, with AES-128 acceptable only for non-Restricted data with documented justification. No active exception is listed for this endpoint. The prior legacy cipher exception, `EXC-2025-009`, is expired and relates to `partner-sftp.bridgeportft.com`, not this endpoint. | **High** |\n| 3 | **Field-level encryption for Restricted data is not evidenced** | **Data Protection and Encryption Policy \u2014 Section 3: Data Classification**; **S3 bucket encryption audit**; **TLS configuration audit** | The policy requires Restricted data to have encryption in transit, encryption at rest, and **field-level encryption**. The evidence demonstrates bucket-level encryption and TLS posture, but it does not show whether field-level encryption is implemented for Restricted data stores or services such as customer data, payment tokens, backups, partner data sync, or customer export services. This is a CC6.7 readiness gap because the organization cannot demonstrate the full encryption requirement for Restricted data based on the provided evidence. | **Medium** |"
+}

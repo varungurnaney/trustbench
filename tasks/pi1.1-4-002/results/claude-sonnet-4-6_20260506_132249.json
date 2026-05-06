@@ -1,0 +1,71 @@
+{
+  "task_id": "pi1.1-4-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T13:22:49.805577",
+  "score": {
+    "task_id": "pi1.1-4-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "DIC-4510",
+          "manual reprocessing"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DIC-4527",
+          "153",
+          "bulk import",
+          "without user notification",
+          "partial file",
+          "file contents not validated",
+          "MIME type",
+          "schema"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "webhook",
+          "URL",
+          "internal network",
+          "VALIDATION GAP",
+          "Section 5.1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5093,
+    "output_tokens": 2599
+  },
+  "raw_response": "# PI1.1 Compliance Assessment \u2014 Horizon Data Corp\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Control:** PI1.1 \u2014 Processing objectives define what constitutes complete, accurate, and timely processing\n\n---\n\n## Executive Summary\n\nThe evidence reviewed demonstrates a generally mature processing integrity program. Automated integrity checks are consistently executed across core pipelines, API input validation is well-structured for most endpoints, and the SDLC policy establishes meaningful baseline requirements. However, four substantive control gaps were identified \u2014 two of which are high severity and directly implicate PI1.1's requirements for complete and accurate processing. The remaining findings reflect medium and low severity deficiencies that, if left unaddressed, could expand into material gaps.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Bulk Import Partial Acceptance Without User Notification\n\n**Document:** Data Integrity Check Logs \u2014 DIC-4527\n**Severity: High**\n\n#### Observation\nOn November 12, 2025, the bulk-import-validation pipeline processed a file of 12,000 expected records and accepted only 11,847. The action field documents the root cause: *\"153 rows rejected due to malformed CSV \u2014 missing delimiters in rows 4501\u20134653. Importer accepted partial file without user notification.\"*\n\n#### Why This Is a Gap\nPI1.1 requires that processing objectives define what constitutes **complete** processing. Completeness, at a minimum, means that when processing deviates from expected inputs \u2014 rejecting 1.275% of a submitted dataset \u2014 the submitting party is informed so they can take corrective action. Three failures compound here:\n\n1. **Silent partial acceptance.** The system ingested a materially incomplete file and treated it as a successful transaction from the user's perspective. The submitter had no basis to know their data was not fully processed.\n2. **No corrective action documented.** Unlike DIC-4510, where a discrepancy triggered an alert and manual reprocessing was completed within four hours, DIC-4527 records no remediation of the 153 rejected rows. There is no indication the submitter was contacted or that the missing records were ever recovered.\n3. **Systemic design flaw confirmed by API configuration.** The bulk-import endpoint configuration independently corroborates this finding: its `note` field states *\"File contents are not validated against entity schema before processing. Only MIME type is checked.\"* This means the gap is not an isolated runtime anomaly \u2014 it reflects an architectural deficiency in how bulk imports are validated prior to processing.\n\nThe combination of a logged failure, absence of user notification, no documented remediation, and a configuration-level acknowledgment of the gap elevates this beyond an isolated incident.\n\n---\n\n### Finding 2: Webhook Endpoint Accepts Unrestricted Internal Network URIs\n\n**Document:** API Input Validation Configuration \u2014 `/api/v2/webhooks`, `url` field\n**Severity: High**\n\n#### Observation\nThe webhook registration endpoint accepts any URI for the `url` field. The configuration explicitly acknowledges: *\"VALIDATION GAP: No URL scheme restriction or domain allowlist enforced. Accepts any URI including internal network addresses.\"*\n\n#### Why This Is a Gap\nWhile this finding has an obvious security dimension (server-side request forgery), it is also a processing integrity gap under PI1.1. Webhook delivery is a data output mechanism \u2014 it is how processing results are communicated to downstream systems and customers. If a webhook URL resolves to an internal network address:\n\n- Processing outputs may be **delivered to unintended destinations**, undermining the accuracy and completeness of output distribution.\n- **Legitimate webhook consumers** may never receive processing notifications, effectively making processing invisible to the intended recipient.\n- The entity cannot demonstrate that its processing objectives \u2014 which must include correct and complete delivery of outputs \u2014 are being met for webhook-driven integrations.\n\nSDLC Policy Section 5.1 requires all external-facing API endpoints to validate inputs against OpenAPI schemas, and Section 3.2 requires AppSec review for changes to data processing logic. The self-documented validation gap suggests either that this deficiency was identified during development and not remediated, or that it was identified post-deployment without a remediation timeline. Neither scenario is consistent with the policy's requirements.\n\n---\n\n### Finding 3: Bulk Import File Content Not Validated Against Entity Schema Pre-Processing\n\n**Document:** API Input Validation Configuration \u2014 `/api/v2/bulk-import`, endpoint-level `note`\n**Severity: Medium**\n\n#### Observation\nThe bulk-import endpoint configuration contains a documented limitation: *\"File contents are not validated against entity schema before processing. Only MIME type is checked.\"* This is a standing architectural gap independent of the DIC-4527 incident.\n\n#### Why This Is a Gap\nSDLC Policy Section 5.1 requires that all external-facing API endpoints validate inputs against OpenAPI schemas. A MIME type check confirms only that a file is presented as CSV or XLSX \u2014 it provides no assurance that the file's contents conform to the expected entity schema (correct columns, required fields, valid data types). Without pre-processing schema validation:\n\n- Malformed records may be partially processed before rejection, creating intermediate data states.\n- The system cannot reliably define what constitutes **accurate** input for bulk operations, which is a prerequisite for PI1.1.\n- As evidenced by DIC-4527, runtime failures are the only detection mechanism, and those failures may not trigger user notification.\n\nThis finding is rated Medium rather than High because it represents a policy non-conformance and architectural gap, but its operational impact depends on the frequency and nature of bulk imports. DIC-4527 demonstrates the gap is reachable in practice, which prevents a Low rating.\n\n---\n\n### Finding 4: Inventory-Sync Pipeline Has No Checksum or Field-Level Integrity Check\n\n**Document:** Data Integrity Check Logs \u2014 all inventory-sync entries (DIC-4503, DIC-4506, DIC-4509, DIC-4515, DIC-4521, DIC-4530, DIC-4536, DIC-4542)\n**Severity: Medium**\n\n#### Observation\nAll eight inventory-sync executions across Q4 2025 use exclusively `record_count` as the check type. No checksum, hash comparison, or field-level validation check is logged for this pipeline at any point in the quarter.\n\n#### Why This Is a Gap\nRecord count parity confirms that the **number** of records transferred matches between source and destination. It does not confirm that the **content** of those records is accurate. A scenario in which 52,341 records are transferred with corrupted field values \u2014 incorrect quantities, corrupted product identifiers, transposed pricing data \u2014 would pass a record count check while representing a complete failure of processing accuracy.\n\nPI1.1 requires that processing objectives define what constitutes **accurate** processing. For inventory data, accuracy extends beyond record presence to field-level correctness. By contrast, the payment-reconciliation pipeline applies checksum validation on every run, and the order-ingestion pipeline's record count failure (DIC-4510) triggered an appropriate alert and remediation. The inventory pipeline's exclusive reliance on record counts is inconsistent with the accuracy standards the entity applies to other pipelines.\n\nThis is rated Medium because the record count checks are consistently executed and there are no logged failures, but the control design is insufficient to detect content-level corruption.\n\n---\n\n### Finding 5: Gaps in Inventory-Sync and Order-Ingestion Check Frequency During October\n\n**Document:** Data Integrity Check Logs \u2014 October 2025 entries\n**Severity: Low**\n\n#### Observation\nThe inventory-sync pipeline ran on October 1, 2, 3, 7, and 14 \u2014 and then has no logged entries until November 17. Order-ingestion similarly has no entries between October 21 and November 3. These gaps are not accompanied by any documented explanation (scheduled maintenance, pipeline pause, change in processing frequency).\n\n#### Why This Is a Gap\nPI1.1 requires that processing objectives define what constitutes **timely** processing. Consistent execution of integrity checks is one mechanism by which the entity demonstrates that timely processing is being monitored and verified. Multi-week gaps in check execution for pipelines that otherwise run at regular intervals raise the question of whether processing continued unmonitored during those periods, or whether the absence of log entries reflects an undetected execution failure.\n\nThis is rated Low because the gaps may reflect legitimate scheduling changes that are not captured in the evidence provided (e.g., a separate change management record). The auditor should request supplemental evidence \u2014 such as a pipeline schedule configuration or change ticket \u2014 to either substantiate or close this observation.\n\n---\n\n## Summary Table\n\n| # | Finding | Source Document | Severity |\n|---|---------|----------------|----------|\n| 1 | Bulk import partial acceptance without user notification | Integrity Logs \u2014 DIC-4527 | **High** |\n| 2 | Webhook endpoint accepts unrestricted internal network URIs | API Validation Config \u2014 `/api/v2/webhooks` | **High** |\n| 3 | Bulk import file contents not validated against entity schema pre-processing | API Validation Config \u2014 `/api/v2/bulk-import` | **Medium** |\n| 4 | Inventory-sync pipeline relies solely on record count; no content integrity check | Integrity Logs \u2014 all inventory-sync entries | **Medium** |\n| 5 | Unexplained gaps in inventory-sync and order-ingestion check frequency | Integrity Logs \u2014 October 2025 | **Low** |\n\n---\n\n## Noted Strengths\n\nThe following observations support a positive control environment and should be acknowledged in the final report:\n\n- **DIC-4510 response** demonstrates an effective detective and corrective control cycle: a three-record discrepancy in order-ingestion triggered an alert, and manual reprocessing was completed within four hours. This is evidence that the integrity check framework, when functioning as designed, operates effectively.\n- **Payment-reconciliation** applied checksum validation on every scheduled run throughout the quarter with no failures, indicating strong accuracy controls for the highest-risk financial pipeline.\n- **API validation configuration** is well-structured for five of six endpoints, with explicit field-level constraints, type enforcement, enumeration restrictions, and rate limiting \u2014 consistent with Section 5.1 of the SDLC policy.\n- **The SDLC policy** establishes clear, tiered requirements for input validation, code review, and security-sensitive changes that, if consistently followed, would prevent the category of gaps identified in Findings 2 and 3.\n\n---\n\n## Recommended Management Actions\n\n| Priority | Action |\n|----------|--------|\n| Immediate | Investigate the 153 records from DIC-4527 \u2014 determine whether they were recovered, notify the submitting party, and document disposition |\n| Immediate | Remediate the webhook URL validation gap by enforcing HTTPS-only scheme and implementing a domain allowlist or blocklist for internal address ranges |\n| Short-term | Implement pre-processing schema validation for bulk-import file contents prior to ingestion |\n| Short-term | Add checksum or field-level integrity checks to the inventory-sync pipeline |\n| Short-term | Implement user-facing error notification for all partial-acceptance scenarios in bulk processing |\n| Near-term | Obtain supplemental evidence or documentation explaining October check frequency gaps for inventory-sync and order-ingestion |"
+}

@@ -1,0 +1,53 @@
+{
+  "task_id": "cc9.1-3-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T22:34:23.718581",
+  "score": {
+    "task_id": "cc9.1-3-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.5,
+    "precision": 0.14285714285714285,
+    "f1": 0.22222222222222224,
+    "score": 0.42857142857142855,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Amplitude",
+          "FullStory",
+          "DPA",
+          "missing",
+          "personal data",
+          "Section 3.1"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "DPA tracker"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1871,
+    "output_tokens": 2371
+  },
+  "raw_response": "# CC9.1 Compliance Assessment Report\n**Arctura Systems Inc. | Q4 2025 Observation Period**\n\n---\n\n## FINDINGS SUMMARY\n\n| Severity | Count |\n|----------|----\n| Critical | 2 |\n| High | 3 |\n| Medium | 2 |\n| **Total** | **7** |\n\n---\n\n## DETAILED FINDINGS\n\n### 1. Missing DPA for Amplitude Analytics\n**Policy Section:** POL-VRM-004, Section 3.1 & 3.2\n\n**Gap Description:**\nAmplitude Analytics (ARC-V-009) is classified as High tier and processes customer behavioral data including pseudonymized user IDs and IP addresses. According to the policy, DPAs must be executed before granting vendors access to personal data. The DPA tracker shows NO entry for Amplitude Analytics, despite the vendor being active since September 2023 (over 14 months at time of review).\n\n**Why It's a Gap:**\n- Policy explicitly requires DPAs for all High-tier vendors processing personal data\n- Amplitude processes customer personal data (behavioral tracking of identifiable individuals via IP/user ID)\n- Absence of DPA means no contractual framework governing data processing obligations, sub-processor notifications, or breach notification requirements\n- Creates regulatory exposure under GDPR/CCPA for uncontrolled personal data transfers\n\n**Severity:** **CRITICAL**\n\n---\n\n### 2. Missing DPA for FullStory Inc.\n**Policy Section:** POL-VRM-004, Section 3.1 & 3.2\n\n**Gap Description:**\nFullStory Inc. (ARC-V-014) is classified as High tier and explicitly processes customer session data that \"may include PII in form fields.\" The DPA tracker contains NO entry for FullStory, despite being active since June 2024 (6 months at time of review).\n\n**Why It's a Gap:**\n- Session recording tools routinely capture form submissions containing names, emails, and other sensitive personal identifiers\n- Policy requires DPAs for vendors processing any category of personal data at High tier\n- Without a DPA, there are no contractual safeguards for PII capture, retention limits, or deletion obligations\n- Vendor has unilateral control over collected customer PII without defined processing restrictions\n\n**Severity:** **CRITICAL**\n\n---\n\n### 3. Missing DPA for Lattice (Employee PII)\n**Policy Section:** POL-VRM-004, Section 3.1 & 3.2\n\n**Gap Description:**\nLattice (ARC-V-015) is classified as Medium tier and processes employee PII (performance data, compensation, reviews, etc.). The DPA tracker shows an executed DPA dated August 10, 2023, with renewal date August 10, 2026. However, the vendor inventory classification of \"Medium\" and \"Employee PII\" suggests this vendor should have a DPA\u2014and it does\u2014but this creates a **classification inconsistency** (see separate finding below).\n\n**Why It's a Gap:**\n*Note: This is partially mitigated by the existence of a DPA, but the classification system creates ambiguity.* The policy states Medium-tier vendors need DPAs only \"if they process personal data,\" which Lattice does. The DPA exists and is current, so this finding is **partially resolved** but flags the classification inconsistency noted in Finding #5.\n\n**Severity:** **Medium** (DPA exists, but classification logic needs clarification)\n\n---\n\n### 4. SOC 2 Review Overdue - Stripe Inc.\n**Policy Section:** POL-VRM-004, Section 4.1\n\n**Gap Description:**\nStripe Inc. (ARC-V-003) is classified as Critical tier. The DPA tracker shows a renewal date of July 10, 2024. The policy requires Critical vendors' SOC 2 Type II reports be reviewed \"within 90 days of issuance.\" \n\nAt Q4 2025 (October-December 2025), Stripe's most recent SOC 2 renewal date was July 10, 2024\u2014over 15 months old. No evidence of a 2025 SOC 2 review is provided.\n\n**Why It's a Gap:**\n- Critical vendors require annual SOC 2 reviews per policy\n- No SOC 2 status update provided for Stripe since July 2024\n- 15-month gap exceeds the policy's 90-day review window\n- Lack of current SOC 2 documentation means controls over payment processing and customer PII handling are unvalidated\n\n**Severity:** **HIGH**\n\n---\n\n### 5. Classification Inconsistency - Lattice Tier Assignment\n**Policy Section:** POL-VRM-004, Section 2 & Vendor Inventory\n\n**Gap Description:**\nLattice (ARC-V-015) is assigned Medium tier in the vendor inventory, with the note \"Employee PII.\" However, the policy's tier criteria state:\n\n- **Critical Tier:** \"Processes customer PII, has production access, or provides core infrastructure\"\n- **High Tier:** \"Accesses customer data (including pseudonymized), integrates with production\"\n- **Medium Tier:** \"Accesses internal systems only\"\n\nLattice processes employee PII, which constitutes internal personal data. The current Medium tier classification is defensible under \"internal systems only,\" but creates ambiguity since employee data is personal data requiring DPA coverage. The policy should clarify whether employee PII warrants High tier classification.\n\n**Why It's a Gap:**\n- Ambiguity in tier definitions creates risk of inconsistent vendor classifications\n- Other vendors processing customer behavioral data (Amplitude, FullStory) are correctly classified as High\n- If employee PII is treated as equivalent to customer data, Lattice should be reclassified to High tier\n- Inconsistent application of risk criteria undermines the control framework\n\n**Severity:** **MEDIUM**\n\n---\n\n### 6. Missing SOC 2 Status Entry - Amplitude Analytics\n**Policy Section:** POC-VRM-004, Section 4.1\n\n**Gap Description:**\nAmplitude Analytics (ARC-V-009) is classified as High tier and requires annual SOC 2 reviews per policy. The vendor inventory lists SOC 2 status as \"Current,\" but:\n- No SOC 2 report review date is documented\n- No corresponding entry exists in the DPA tracker (Finding #1)\n- No evidence of SOC 2 report in supporting documentation\n\n**Why It's a Gap:**\n- High-tier vendors require SOC 2 Type II reports reviewed within 120 days of issuance\n- \"Current\" status is unsubstantiated without documentation\n- Without SOC 2 evidence, controls over customer data security cannot be validated\n- Compounds the risk created by missing DPA (Finding #1)\n\n**Severity:** **HIGH**\n\n---\n\n### 7. Missing SOC 2 Status Entry - FullStory Inc.\n**Policy Section:** POL-VRM-004, Section 4.1\n\n**Gap Description:**\nFullStory Inc. (ARC-V-014) is classified as High tier and requires annual SOC 2 reviews. The vendor inventory lists SOC 2 status as \"Current,\" but:\n- No review date or report evidence is provided\n- Vendor has been active only since June 2024 (6 months); unclear if initial SOC 2 was assessed\n- No supporting documentation included in evidence package\n\n**Why It's a Gap:**\n- High-tier vendors require SOC 2 Type II reports reviewed within 120 days of receipt\n- \"Current\" status cannot be verified from provided evidence\n- Session recording tools handling PII demand validated security controls\n- Absence of SOC 2 documentation creates unmitigated risk for sensitive customer data\n\n**Severity:** **HIGH**\n\n---\n\n## SUMMARY OF GAPS\n\n| Finding | Vendor | Issue | Risk |\n|---------|--------|-------|------|\n| #1 | Amplitude Analytics | Missing DPA | Uncontrolled personal data processing |\n| #2 | FullStory Inc. | Missing DPA | Uncontrolled PII in session recordings |\n| #3 | Lattice | Classification ambiguity | Potential under-assessment of data risk |\n| #4 | Stripe Inc. | Overdue SOC 2 review (15 mo.) | Unvalidated payment processing controls |\n| #5 | Lattice | Tier classification unclear | Inconsistent risk assessment framework |\n| #6 | Amplitude Analytics | Missing SOC 2 documentation | Unvalidated data security controls |\n| #7 | FullStory Inc. | Missing SOC 2 documentation | Unvalidated session data controls |\n\n---\n\n## CONTROL ASSESSMENT\n\n**Overall CC9.1 Compliance: NOT MET**\n\n**Rationale:**\nWhile Arctura Systems has established a comprehensive vendor risk management policy with appropriate controls, execution gaps prevent full compliance with CC9.1 requirements:\n\n1. **Critical gaps** in DPA coverage for two High-tier vendors processing personal data (Amplitude, FullStory) represent direct violations of stated policy requirements\n2. **Lack of current SOC 2 evidence** for multiple vendors undermines ongoing monitoring and risk mitigation\n3. **Classification ambiguities** create risk of inconsistent application of controls\n\nThe policy framework is sound, but implementation gaps in documentation and DPA execution must be remediated.\n\n---\n\n## REMEDIATION PRIORITY\n\n**Immediate (Before Attestation Deadline):**\n- Execute DPAs for Amplitude Analytics and FullStory Inc.\n- Obtain and review current SOC 2 reports for Stripe (2025), Amplitude, and FullStory\n- Document SOC 2 review dates and control assessment conclusions\n\n**Near-Term (30 days):**\n- Clarify vendor tier classification criteria to address employee vs. customer PII distinction\n- Implement automated DPA tracking tied to vendor data classification\n- Establish quarterly compliance certification process for SOC 2 status\n\n**Ongoing:**\n- Institute quarterly audits of vendor inventory vs. DPA tracker reconciliation\n- Set calendar reminders for SOC 2 review deadlines (90 days for Critical, 120 days for High)"
+}

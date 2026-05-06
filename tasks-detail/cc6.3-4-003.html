@@ -1,0 +1,49 @@
+---
+layout: default
+title: "cc6.3-4-003"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>cc6.3-4-003</h2>
+    <p class="section-subtitle">CC6.3 · D4 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D4</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">1</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">58%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are auditing Vertex Financial's SOC 2 Type II compliance for control CC6.3 (Data Access Authorization). Vertex is a fintech company handling payment card data (PCI scope) and financial records. Review all provided evidence to assess data access authorization controls. Not all documents may be relevant. Cross-reference the Snowflake access grants against the policy and exception register. Identify genuine findings only — some apparent issues may have valid exceptions.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/data-access-policy.md</code> — Vertex Financial data access authorization policy with RBAC, classification, and DLP requirements</li>
+<li><code>evidence/snowflake-access-export.csv</code> — Snowflake data warehouse role and grant export as of December 22, 2025</li>
+<li><code>evidence/exception-register.csv</code> — CISO-approved exception register for data access policy deviations</li>
+<li><code>evidence/data-retention-policy.md</code> — Vertex Financial data retention and archival policy — not directly relevant to CC6.3 access authorization <span style="color:var(--orange)">[noise]</span></li>
+<li><code>evidence/pen-test-summary-q4.md</code> — Q4 2025 penetration test executive summary — not relevant to CC6.3 <span style="color:var(--orange)">[noise]</span></li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="difficulty d4">red_herring</span></td><td>low</td><td><strong>COMPLIANCE_AUDITOR role has SELECT on all schemas including PCI-scoped tables — but authorized under EXC-2025-088</strong><br><span style="font-size:13px;color:var(--text-dim)">The Snowflake export shows the COMPLIANCE_AUDITOR role has SELECT on all databases and schemas, including PCI-scoped tables (cardholder_data, transactions, payment_methods). This initially appears to ...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>critical</td><td><strong>User j.crawford (Risk team) has ACCOUNTADMIN role granting full Snowflake administrative privileges</strong><br><span style="font-size:13px;color:var(--text-dim)">The Snowflake export shows j.crawford (Jason Crawford, Risk Analytics) has been granted the ACCOUNTADMIN role — Snowflake's most privileged built-in role. ACCOUNTADMIN can create and drop databases, m...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>MARKETING_ANALYTICS role has SELECT on cardholder_data table with no data masking policy applied</strong><br><span style="font-size:13px;color:var(--text-dim)">The Snowflake export shows the MARKETING_ANALYTICS role has SELECT on VERTEX_PROD.PAYMENTS.cardholder_data. Unlike the COMPLIANCE_AUDITOR role (which has dynamic data masking applied), the MARKETING_A...</span></td></tr>
+<tr><td><strong>F-004</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Service account SVC_DATA_PIPELINE has SYSADMIN role — exceeds minimum necessary for ETL operations</strong><br><span style="font-size:13px;color:var(--text-dim)">The Snowflake export shows SVC_DATA_PIPELINE with the SYSADMIN role, which grants the ability to create and manage databases, schemas, and all database objects. Policy Section 5.1 requires service acc...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-low">46%</td><td>100%</td><td>30%</td><td>46%</td><td>3/3</td><td>9</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-mid">75%</td><td>100%</td><td>60%</td><td>75%</td><td>3/3</td><td>4</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-high">100%</td><td>100%</td><td>100%</td><td>100%</td><td>3/3</td><td>3</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-low">55%</td><td>100%</td><td>38%</td><td>55%</td><td>3/3</td><td>7</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-low">46%</td><td>100%</td><td>30%</td><td>46%</td><td>3/3</td><td>9</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-bad">25%</td><td>100%</td><td>14%</td><td>25%</td><td>3/3</td><td>20</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.3-4-003">GitHub</a></p></footer>
+</div>

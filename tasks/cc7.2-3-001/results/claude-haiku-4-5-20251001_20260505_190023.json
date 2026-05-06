@@ -1,0 +1,72 @@
+{
+  "task_id": "cc7.2-3-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T19:00:23.266672",
+  "score": {
+    "task_id": "cc7.2-3-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.42857142857142855,
+    "f1": 0.6,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "customer-identity-resolution",
+          "CAS-SVC-013",
+          "October 20",
+          "7 business days",
+          "SEC-5892",
+          "not integrated",
+          "1.2M events",
+          "Fluent Bit"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "zero alert rules",
+          "CAS-SVC-013",
+          "Section 4.1",
+          "data access anomaly",
+          "authentication failures"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "quarterly audit",
+          "Section 5",
+          "reconciliation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2713,
+    "output_tokens": 2317
+  },
+  "raw_response": "# SOC 2 Type II Compliance Audit \u2013 CC7.2 Monitoring Controls\n## Cascade Systems \u2013 Q4 2025 Observation Period\n\n---\n\n## FINDINGS\n\n### Finding 1: Production Service Not Integrated with SIEM\n\n**Title:** Customer Identity Resolution Service Lacks SIEM Integration  \n**Related Policy Section:** CAS-SEC-POL-009, Section 3.1 (Coverage Requirement) & Section 3.2 (Integration Validation)  \n**Gap Description:**  \nThe customer-identity-resolution service (CAS-SVC-013) was deployed to production on October 20, 2025. Per the policy, SIEM integration is required within **7 business days** of production deployment. As of the audit date (end of Q4 2025), this service remains in \"Pending\" status with **zero alert rules configured** and **no log ingestion** to the centralized SIEM. The service processes ~1.2M events/day and handles sensitive customer behavioral data and device fingerprints, yet is currently logging only to CloudWatch with no centralized anomaly monitoring.\n\nThe integration ticket (SEC-5892) has been blocked since October 21 awaiting custom Fluent Bit parser development, which remains in the Security Engineering backlog without documented priority or resolution timeline.\n\n**Why This Is a Gap:**  \n- Violates the 7 business day integration SLA by **60+ days**\n- Critical data-handling service lacks security monitoring coverage\n- No anomaly detection capability for a high-volume, sensitive-data service\n- Breaks the monitoring coverage requirement in Section 3.1 and the integration validation checklist in Section 3.2\n- Creates unmonitored attack surface during the most sensitive period of the service's production lifecycle\n\n**Severity:** **CRITICAL**\n\n---\n\n### Finding 2: Missing Alert Rule for Critical Service Category\n\n**Title:** Insufficient Alert Coverage for Data-Handling Service  \n**Related Policy Section:** CAS-SEC-POL-009, Section 4.1 (Required Alert Categories)  \n**Gap Description:**  \nThe policy mandates that every production service handling customer data must have alerts configured for **\"Data access anomalies (for data-handling services)\"** (Section 4.1). The customer-identity-resolution service (CAS-SVC-013) explicitly handles cross-device customer matching, behavioral data, and device fingerprints\u2014clearly a data-handling service. However, it has **0 alert rules** configured and is not integrated with SIEM.\n\nEven among integrated services, the notification-engine (CAS-SVC-005) and webhook-processor (CAS-SVC-009)\u2014both potentially handling customer notification data\u2014show limited alert coverage (6 and 6 rules respectively) with no documented data access anomaly alerts in the tracker.\n\n**Why This Is a Gap:**  \n- Policy explicitly requires data access anomaly alerts for data-handling services\n- Customer-identity-resolution has zero alerts and is a primary data handler\n- No evidence of data access anomaly detection for services processing customer behavioral data\n- Reduces ability to detect unauthorized data exfiltration or abnormal access patterns\n\n**Severity:** **CRITICAL**\n\n---\n\n### Finding 3: Lack of Documented Alert Rule Mapping\n\n**Title:** No Evidence of Alert Rule Categorization Against Policy Requirements  \n**Related Policy Section:** CAS-SEC-POL-009, Section 4.1 (Required Alert Categories)  \n**Gap Description:**  \nWhile the SIEM coverage tracker shows alert rule counts (ranging from 5 to 18 rules per service), there is **no mapping documentation** indicating which rules address which required alert categories:\n- Error rate anomalies\n- Authentication failures\n- Data access anomalies\n- Availability and health check failures\n\nFor example, auth-service has 18 alert rules, but there's no breakdown showing compliance with the four mandatory categories. This makes it impossible to verify that all required monitoring controls are in place across all services.\n\n**Why This Is a Gap:**  \n- Cannot verify that the four mandatory alert categories are monitored for each service\n- Audit trail is incomplete\u2014alert rule counts alone don't demonstrate policy compliance\n- Hinders the quarterly monitoring coverage audit mentioned in Section 5\n- Insufficient evidence that monitoring \"anomalies that are indicative of malicious acts, natural disasters, and errors\" per CC7.2 control objective\n\n**Severity:** **HIGH**\n\n---\n\n### Finding 4: No Evidence of Anomaly Analysis Process\n\n**Title:** Missing Documentation of Anomaly Analysis Procedure  \n**Related Policy Section:** CAS-SEC-POL-009 (implicit in Sections 4.1\u20134.2) and CC7.2 control objective  \n**Gap Description:**  \nThe control objective requires that \"anomalies are **analyzed to determine whether they represent security events**.\" The provided security monitoring policy defines alert requirements and response SLAs but contains **no documented procedure** for:\n- How alerts are analyzed to distinguish security events from false positives\n- Roles responsible for anomaly triage and escalation\n- Criteria used to classify anomalies (malicious acts vs. natural disasters vs. errors)\n- Workflow for incident determination and response routing\n- Feedback mechanism to tune alert rules based on analysis findings\n\nNo supplementary incident response or alert triage procedure was provided.\n\n**Why This Is a Gap:**  \n- Policy defines alerts but not the analysis process required by CC7.2\n- Cannot verify that security events are being properly identified vs. dismissed\n- No documented escalation criteria or incident determination workflow\n- Incomplete control implementation\u2014monitoring without analysis does not satisfy the control objective\n\n**Severity:** **HIGH**\n\n---\n\n### Finding 5: Stale Last Ingestion Check Data\n\n**Title:** SIEM Health Verification Data Shows Invalid Timestamp  \n**Related Policy Section:** CAS-SEC-POL-009, Section 3.2 (Integration Validation) and Section 5 (Monitoring Coverage Audits)  \n**Gap Description:**  \nThe SIEM coverage tracker shows a `last_ingestion_check` timestamp of **2025-12-31T23:59:00Z** for all 13 integrated services. This timestamp is future-dated or at the year boundary and is clearly not a genuine validation timestamp. This suggests:\n- Health checks are not being performed regularly or the data was not updated correctly\n- The tracker may not be maintained with current operational data\n- Inability to verify that log ingestion is currently active and healthy\n\nFor the quarterly monitoring coverage audit required in Section 5, current and reliable health check data is essential.\n\n**Why This Is a Gap:**  \n- Cannot verify that integrated services are currently sending logs to SIEM\n- Health check data is stale or placeholder\u2014unreliable for audit purposes\n- Undermines confidence in the \"Integrated\" status designation\n- Violates the spirit of Section 3.2's \"ingestion is verified in Splunk\" requirement\n\n**Severity:** **MEDIUM**\n\n---\n\n### Finding 6: No Documented Quarterly Audit Execution\n\n**Title:** Missing Evidence of Q4 2025 Monitoring Coverage Audit  \n**Related Policy Section:** CAS-SEC-POL-009, Section 5 (Monitoring Coverage Audits)  \n**Gap Description:**  \nThe policy mandates: **\"A quarterly monitoring coverage audit must reconcile the SIEM service inventory against the deployment registry (ServiceNow CMDB) to identify gaps.\"**\n\nNo evidence was provided showing:\n- Execution of a Q4 2025 audit\n- Reconciliation of the SIEM coverage tracker against the deployment log\n- Documentation of gaps identified (if any)\n- Audit sign-off or approval\n\nThe customer-identity-resolution service deployment on October 20 should have triggered immediate audit attention per the policy requirement.\n\n**Why This Is a Gap:**  \n- Required monitoring control is not being performed\n- Gaps (like the unintegrated service) would have been identified and escalated if audit were executed\n- Lack of independent verification of coverage compliance\n- Missing evidence of compensating controls or management awareness\n\n**Severity:** **HIGH**\n\n---\n\n### Finding 7: No Log Retention Verification\n\n**Title:** Log Retention Compliance Not Evidenced  \n**Related Policy Section:** CAS-SEC-POL-009, Section 3.3 (Log Retention)  \n**Gap Description:**  \nThe policy defines specific log retention periods (90\u2013365 days depending on log type). No evidence was provided demonstrating:\n- Verification that Splunk is configured with these retention policies\n- Audit of actual log retention across services\n- Compliance with the 365-day requirement for authentication and audit logs\n- Configuration screenshots, retention policy documentation, or validation reports\n\nFor CC7.2 compliance, the entity must demonstrate it can retrieve historical logs for anomaly investigation and forensic analysis.\n\n**Why This Is a Gap:**  \n- Cannot verify that logs are retained per policy requirements\n- Affects ability to investigate historical security events\n- Missing evidence of control implementation and monitoring\n\n**Severity:** **MEDIUM**\n\n---\n\n## SUMMARY\n\n| Severity | Count | Findings |\n|----------|-------|----------|\n| **CRITICAL** | 2 | 1. Unintegrated production service; 2. Missing required alert rules |\n| **HIGH** | 3 | 3. Alert categorization not documented; 4. No anomaly analysis procedure; 6. Quarterly audit not executed |\n| **MEDIUM** | 2 | 5. Stale ingestion check data; 7. Log retention not verified |\n\n---\n\n## RECOMMENDATION\n\n**Immediate Actions Required:**\n1. Complete SIEM integration for customer-identity-resolution (CAS-SVC-013) within 5 business days; escalate parser development from backlog to emergency priority\n2. Document anomaly analysis and incident determination procedures\n3. Execute and document Q4 2025 quarterly monitoring coverage audit\n4. Create alert rule mapping documentation showing which rules satisfy Section 4.1 requirements\n5. Verify and validate log retention configuration in Splunk\n6. Refresh SIEM coverage tracker with current, accurate health check timestamps\n\n**Control retest recommended after remediation.**"
+}

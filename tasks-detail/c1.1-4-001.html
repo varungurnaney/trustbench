@@ -1,0 +1,50 @@
+---
+layout: default
+title: "c1.1-4-001"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>c1.1-4-001</h2>
+    <p class="section-subtitle">C1.1 · D4 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D4</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">1</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">62%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are conducting a SOC 2 Type II readiness assessment for Bridgeport Financial Technologies covering Q4 2025 (October 1 - December 31, 2025). Review all provided evidence artifacts and assess compliance with C1.1 and CC6.7 (Data Protection / Encryption). Not all documents may be relevant. Note that the organization maintains an exception register for approved deviations from policy — consider whether exceptions with documented compensating controls adequately address apparent gaps before flagging them as findings. Identify genuine control deficiencies only.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/encryption-policy.md</code> — Bridgeport Financial Technologies data protection and encryption policy</li>
+<li><code>evidence/tls-endpoint-audit.csv</code> — TLS configuration audit for all Bridgeport endpoints (15 endpoints)</li>
+<li><code>evidence/cloud-storage-encryption-audit.csv</code> — S3 bucket encryption audit showing encryption type, KMS keys, and compliance status</li>
+<li><code>evidence/exception-register.csv</code> — CISO-approved security exceptions with compensating controls and review status</li>
+<li><code>evidence/vendor-security-assessment-q4.csv</code> — Vendor security assessment results — not directly relevant to C1.1 encryption controls <span style="color:var(--orange)">[noise]</span></li>
+<li><code>evidence/incident-response-summary-q4.md</code> — Q4 2025 incident response summary — tangentially related but primarily operational <span style="color:var(--orange)">[noise]</span></li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="difficulty d4">red_herring</span></td><td>low</td><td><strong>Prometheus metrics endpoint using HTTP has a valid active CISO exception (EXC-2025-011)</strong><br><span style="font-size:13px;color:var(--text-dim)">The TLS audit shows metrics-collector.internal.bridgeportft.com on port 8080 using plaintext HTTP. This initially appears to violate the TLS requirement. However, the exception register shows EXC-2025...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>critical</td><td><strong>partner-data-sync.bridgeportft.com uses weak CBC cipher with PII and no exception</strong><br><span style="font-size:13px;color:var(--text-dim)">The TLS audit shows partner-data-sync.bridgeportft.com uses TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256 — a CBC mode cipher suite that is vulnerable to padding oracle attacks. This endpoint is classified as...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>bft-prod-ml-training S3 bucket uses SSE-S3 instead of SSE-KMS despite containing PII-derived data</strong><br><span style="font-size:13px;color:var(--text-dim)">The cloud storage audit shows bft-prod-ml-training uses SSE-S3 encryption instead of the required SSE-KMS. While there is an active exception (EXC-2025-013), the notes in the storage audit state this ...</span></td></tr>
+<tr><td><strong>F-004</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>partner-data-sync.bridgeportft.com has HSTS disabled on a production PII endpoint</strong><br><span style="font-size:13px;color:var(--text-dim)">The TLS endpoint audit shows partner-data-sync.bridgeportft.com has HSTS disabled. This is a production endpoint classified as Restricted that handles PII for bank integration. Without HSTS, connectio...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-high">86%</td><td>100%</td><td>75%</td><td>86%</td><td>3/3</td><td>4</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-mid">67%</td><td>100%</td><td>50%</td><td>67%</td><td>3/3</td><td>6</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-high">100%</td><td>100%</td><td>100%</td><td>100%</td><td>3/3</td><td>3</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-low">40%</td><td>33%</td><td>50%</td><td>40%</td><td>1/3</td><td>2</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-low">50%</td><td>100%</td><td>33%</td><td>50%</td><td>3/3</td><td>9</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-bad">27%</td><td>67%</td><td>17%</td><td>27%</td><td>2/3</td><td>12</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/c1.1-4-001">GitHub</a></p></footer>
+</div>

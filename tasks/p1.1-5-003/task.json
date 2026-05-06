@@ -1,0 +1,128 @@
+{
+  "id": "p1.1-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "P1.1",
+  "control_description": "The entity provides notice to data subjects about its privacy practices to meet the entity's objectives related to privacy.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/privacy-policy.md",
+      "type": "policy",
+      "description": "Solaris Insurance privacy policy for an insurtech platform processing policyholder and claims data"
+    },
+    {
+      "path": "evidence/data-processing-activity-records.csv",
+      "type": "spreadsheet",
+      "description": "Record of Processing Activities showing all data flows including third-party data enrichment and automated underwriting"
+    },
+    {
+      "path": "evidence/dsar-log.csv",
+      "type": "log",
+      "description": "DSAR log showing data subject requests, responses, and outcomes for Q3-Q4 2025"
+    },
+    {
+      "path": "evidence/privacy-impact-assessment.md",
+      "type": "report",
+      "description": "Privacy impact assessment for Solaris automated underwriting decision engine"
+    },
+    {
+      "path": "evidence/data-retention-schedule.csv",
+      "type": "spreadsheet",
+      "description": "Data retention schedule with retention periods and legal justifications"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/business-continuity-test-results.md",
+      "type": "report",
+      "description": "Business continuity test results — not relevant to P1.1"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Solaris Insurance's privacy notice practices under Trust Services Criteria P1.1. Solaris Insurance is an insurtech company that uses automated underwriting algorithms to assess risk and determine policy pricing. The platform processes sensitive personal data including health questionnaire responses, driving records, and financial credit data obtained from third-party data enrichment providers. Review all provided evidence documents to assess whether the privacy notice accurately and completely describes data processing practices. This assessment requires significant professional judgment regarding automated decision-making transparency, third-party data enrichment disclosure, proportionality of data collection, and the adequacy of human review mechanisms. Not all documents may be relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Third-party data enrichment from LexisNexis and TransUnion not disclosed in privacy policy",
+      "description": "The ROPA entries PROC-006 and PROC-007 document two third-party data enrichment flows not disclosed in the privacy policy: (1) LexisNexis Risk Solutions providing 'motor vehicle records, claims history (CLUE report), property records, and identity verification scores' (PROC-006); and (2) TransUnion providing 'credit scores, credit history summary, payment behavior indicators, and bankruptcy records' (PROC-007). The privacy policy Section 2 ('Information We Collect') lists only information 'you provide' and 'automatically collected' data — it does not mention data obtained from third-party sources. Section 5 ('Data Sharing') lists data sent TO third parties but does not disclose data received FROM third parties. Under GDPR Article 14, when personal data is obtained from sources other than the data subject, the controller must provide notice including the source of the data. The privacy notice fails to disclose that Solaris supplements applicant-provided information with data from external databases.",
+      "evidence_sources": ["evidence/data-processing-activity-records.csv", "evidence/privacy-policy.md"],
+      "expected_reasoning": "PROC-006 (LexisNexis) and PROC-007 (TransUnion) show data flowing INTO Solaris from third parties → privacy policy only covers data FROM the user and data sent TO processors → GDPR Art. 14 requires disclosure of external data sources → no mention of third-party data enrichment in the privacy notice → applicants do not know their motor vehicle records, credit history, and claims history are being accessed.",
+      "detection_criteria": {
+        "required_keywords": ["LexisNexis", "TransUnion", "PROC-006", "PROC-007", "enrichment", "third-party source", "Article 14", "not disclosed", "CLUE", "credit", "motor vehicle"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Automated underwriting decisions with significant effects not adequately disclosed under GDPR Article 22",
+      "description": "The ROPA entry PROC-008 describes 'Automated Underwriting Decision Engine' that processes applicant data through a machine learning model to produce risk scores, premium calculations, and coverage eligibility decisions. The PIA confirms this is 'solely automated processing' with the output being 'policy approval, conditional approval, or decline.' The privacy policy Section 3 mentions 'risk assessment tools' but does not disclose: (a) the existence of solely automated decision-making; (b) that decisions to decline coverage or set premium prices are made without human review (except on appeal); (c) meaningful information about the logic involved in the algorithm; or (d) the significance and envisaged consequences of the processing. GDPR Article 22(1) gives data subjects the right not to be subject to solely automated decisions that significantly affect them. Article 13(2)(f) requires the notice to disclose 'the existence of automated decision-making, including profiling, and meaningful information about the logic involved.' Insurance underwriting decisions (coverage denial, premium pricing) clearly produce significant effects.",
+      "evidence_sources": ["evidence/data-processing-activity-records.csv", "evidence/privacy-impact-assessment.md", "evidence/privacy-policy.md"],
+      "expected_reasoning": "The auditor must assess: (1) PROC-008 and PIA confirm solely automated underwriting → (2) decisions include policy decline, which significantly affects applicants → (3) GDPR Art. 22 requires disclosure and meaningful information about logic → (4) privacy policy says 'risk assessment tools' but does not use the term 'automated decision-making' or explain logic → (5) PIA recommends 'update privacy notice to include Art. 22 disclosures' but this has not been done → (6) human review available only on appeal, not automatically, which may not satisfy Art. 22(3).",
+      "detection_criteria": {
+        "required_keywords": ["automated underwriting", "PROC-008", "Article 22", "solely automated", "decline", "human review", "algorithm", "logic", "PIA", "significant effect"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Claims data retained 10 years but retention schedule shows indefinite retention for 'fraud modeling' with no documented legal basis",
+      "description": "The data retention schedule shows 'Claims Data' (row 3) has a stated retention period of '10 years after claim closure' with the legal basis 'Legal obligation (insurance regulation).' However, footnote 2 states: 'Claims data used for fraud detection model training is extracted and retained indefinitely in the fraud analytics data lake. Data is pseudonymized but re-identification is possible via claim reference number.' The privacy policy Section 6 states: 'Claims data is retained for 10 years after claim resolution to comply with insurance regulatory requirements.' There is no disclosure of the indefinite retention for fraud modeling. Additionally, the 'pseudonymization' is inadequate — if re-identification is possible via claim reference number, the data is still personal data under GDPR and should be subject to the stated retention period. The auditor must assess whether indefinite retention for fraud modeling constitutes a separate processing purpose requiring its own legal basis and notice, and whether pseudonymization that allows re-identification qualifies as adequate anonymization.",
+      "evidence_sources": ["evidence/data-retention-schedule.csv", "evidence/privacy-policy.md"],
+      "expected_reasoning": "Retention schedule row 3 says 10 years → footnote 2 reveals indefinite retention for fraud modeling → privacy policy says 10 years → discrepancy → pseudonymized data re-identifiable via claim reference → still personal data → indefinite retention of personal data with no documented legal basis → privacy notice inaccurate → separate processing purpose (fraud modeling) not disclosed.",
+      "detection_criteria": {
+        "required_keywords": ["10 years", "indefinite", "fraud modeling", "footnote 2", "pseudonymized", "re-identification", "claim reference", "data lake", "Section 6"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "DSAR requesting automated decision explanation received inadequate response — no meaningful logic disclosure",
+      "description": "DSAR-2025-SOL-008 was submitted by an applicant (James Okonkwo) whose insurance application was declined by the automated underwriting system. The request specifically asked for an explanation of the automated decision under GDPR Article 22(3) and Article 15(1)(h). The DSAR log shows the response included: 'Your application was assessed against our underwriting criteria and did not meet the threshold for approval. Factors considered include your application responses, driving history, and financial profile.' This response does not provide meaningful information about the logic involved in the decision, the specific factors that led to the decline, or the relative weighting of those factors. The PIA Section 4 notes that 'model explainability features are available in the underwriting dashboard and could be used to generate individual decision explanations' — but this capability was not used when responding to the DSAR. The auditor must assess whether the response meets the Art. 15(1)(h) standard of 'meaningful information about the logic involved.'",
+      "evidence_sources": ["evidence/dsar-log.csv", "evidence/privacy-impact-assessment.md"],
+      "expected_reasoning": "DSAR-2025-SOL-008 specifically requested Art. 22 explanation → response was generic template language → PIA confirms explainability tools exist → tools not used for DSAR response → response fails to provide meaningful information about logic → GDPR Art. 15(1)(h) requires more than a generic description → the gap is both in the response and in the DSAR handling procedure.",
+      "detection_criteria": {
+        "required_keywords": ["DSAR-2025-SOL-008", "Okonkwo", "declined", "automated decision", "Article 15(1)(h)", "meaningful", "generic", "explainability", "logic", "weighting"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Health questionnaire data processed under 'contractual necessity' but GDPR Article 9 requires explicit consent for health data",
+      "description": "The ROPA entry PROC-004 shows 'Health Risk Assessment' processing with data categories including 'self-reported medical conditions, prescription medications, smoking status, BMI, family medical history.' The legal basis listed is 'Contractual necessity (Art. 6(1)(b)) — required for insurance underwriting.' However, health data is special category data under GDPR Article 9, which requires explicit consent (Art. 9(2)(a)) or an applicable exemption. The insurance exemption under Art. 9(2)(g) ('substantial public interest') requires a basis in EU or member state law. The ROPA does not cite a specific member state law. The privacy policy Section 4 states: 'We process your health information as necessary to assess and manage your insurance policy.' This framing implies contractual necessity, not explicit consent. The privacy notice does not inform data subjects that their health data processing relies on a specific legal basis under Article 9, nor does it explain which Art. 9 exemption applies.",
+      "evidence_sources": ["evidence/data-processing-activity-records.csv", "evidence/privacy-policy.md"],
+      "expected_reasoning": "Health data = special category under GDPR Art. 9 → PROC-004 lists contractual necessity (Art. 6(1)(b)) as legal basis → Art. 6 alone is insufficient for special category data → Art. 9(2) exemption required → ROPA does not cite specific Art. 9 basis → privacy policy implies contractual necessity for health data → no explicit consent mechanism for health data processing → auditor must assess whether insurance underwriting exemption applies and whether notice is adequate.",
+      "detection_criteria": {
+        "required_keywords": ["PROC-004", "health", "Article 9", "special category", "explicit consent", "contractual necessity", "insurance", "medical conditions", "exemption"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "60 minutes",
+    "documents_count": 6,
+    "relevant_documents_count": 5,
+    "tags": ["automated_decision_making", "third_party_enrichment", "insurance_underwriting", "Article_22", "Article_14", "health_data", "special_category", "fraud_modeling", "DSAR_quality", "judgment_calls", "algorithmic_transparency"]
+  }
+}

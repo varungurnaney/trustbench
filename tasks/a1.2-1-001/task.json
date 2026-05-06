@@ -1,0 +1,71 @@
+{
+  "id": "a1.2-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "A1.2",
+  "control_description": "The entity authorizes, designs, develops or acquires, implements, operates, approves, maintains, and monitors environmental protections, software, data backup and recovery infrastructure, and recovery plan procedures to meet its objectives. Backup and recovery processes include procedures for recovery of data, systems, and infrastructure to meet the entity's availability commitments and system requirements.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/backup-policy.md",
+      "type": "policy",
+      "description": "Cirrus Labs backup and data protection policy defining backup procedures and storage requirements"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the backup and data protection policy for Cirrus Labs. Assess whether it adequately addresses SOC 2 A1.2 requirements for backup and recovery infrastructure. Identify any gaps or missing elements that an auditor would flag.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No Recovery Point Objective (RPO) or Recovery Time Objective (RTO) defined",
+      "description": "The policy defines backup procedures and schedules but does not establish any Recovery Point Objective (RPO) or Recovery Time Objective (RTO). A1.2 requires that backup and recovery processes meet the entity's availability commitments. Without defined RPO and RTO targets, there are no measurable standards for acceptable data loss or recovery time. The backup schedule (daily full backups) implies a 24-hour RPO, but this is not stated or justified against business requirements. An auditor cannot assess whether the backup strategy is adequate without knowing what recovery objectives it is designed to meet.",
+      "evidence_sources": ["evidence/backup-policy.md"],
+      "expected_reasoning": "The policy describes backup types and schedules but never states what RPO or RTO the organization is targeting. Without these, the entire backup strategy is operating without defined success criteria. An auditor would flag the absence of recovery objectives as a fundamental control design gap.",
+      "detection_criteria": {
+        "required_keywords": ["RPO", "RTO", "not defined", "recovery objective", "missing", "measurable", "availability commitments"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No restore testing requirement",
+      "description": "The policy covers backup creation, encryption, and retention but contains no requirement for periodic restore testing. Without restore testing, the organization has no verification that backups can actually be restored, that data integrity is maintained, or that the restoration process can be completed within any expected timeframe. A1.2 explicitly requires recovery plan procedures — a backup that has never been tested may fail when needed.",
+      "evidence_sources": ["evidence/backup-policy.md"],
+      "expected_reasoning": "The policy has sections on backup creation, encryption, retention, and failure handling — but no section on restore testing. Industry best practice is at minimum quarterly restore testing. Without it, backups are unverified and may be unusable.",
+      "detection_criteria": {
+        "required_keywords": ["restore test", "no requirement", "testing", "verification", "recover", "data integrity", "missing"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No backup failure handling or escalation procedures",
+      "description": "The policy does not address what happens when a backup fails. There are no procedures for alerting, investigating, or re-running failed backups. There is no escalation path or defined response time. If a backup fails silently, the organization may not discover the gap until a restore is needed. This is a control operations gap — the policy addresses the happy path but not failure scenarios.",
+      "evidence_sources": ["evidence/backup-policy.md"],
+      "expected_reasoning": "The policy covers backup scheduling and retention but has no section on failure handling. Backup failures are inevitable in any production environment. Without defined response procedures, failures may go unaddressed.",
+      "detection_criteria": {
+        "required_keywords": ["failure", "no procedure", "escalation", "alerting", "re-run", "missing", "response"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-01",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["backup", "recovery", "RPO", "RTO", "restore_testing", "policy_review", "single_document"]
+  }
+}

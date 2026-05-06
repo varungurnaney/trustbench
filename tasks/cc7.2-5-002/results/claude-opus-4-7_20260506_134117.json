@@ -1,0 +1,88 @@
+{
+  "task_id": "cc7.2-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T13:41:17.164166",
+  "score": {
+    "task_id": "cc7.2-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.375,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "RULE-SCM-021",
+          "dependency confusion",
+          "DET-307",
+          "0% false positive",
+          "CISO approval NOT obtained",
+          "expired",
+          "compensating control",
+          "incomplete",
+          "supply chain"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RULE-SCM-018",
+          "DET-303",
+          "CISO approval",
+          "T1195.001",
+          "supply chain",
+          "compensating controls"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "2 disabled",
+          "supply chain"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "DET-301",
+          "threshold",
+          "artifact",
+          "exfiltration",
+          "false positive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4354,
+    "output_tokens": 3445
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 CC7.2 Monitoring and Anomaly Detection\n\n**Auditee:** Cobalt Labs\n**Control:** CC7.2 \u2014 System Monitoring for Anomalies\n**Observation Period:** Q4 2025\n**Assessment Date:** Based on evidence through 2025-12-31\n\n---\n\n## Summary Judgment\n\n**Control Status: NOT EFFECTIVE \u2014 Multiple findings, including one Critical**\n\nWhile Cobalt Labs has invested in a mature detection program (Chronicle SIEM, ~200 rules, MITRE ATT&CK alignment, documented tuning workflow), the Q4 2025 evidence shows policy violations and judgment lapses that materially weaken supply chain detection \u2014 the company's most critical threat surface as a CI/CD platform.\n\n---\n\n## Finding 1: Unauthorized Disablement of High-Value Supply Chain Detection Rule (DET-307)\n\n**Severity: CRITICAL**\n\n**Document Reference:** Detection Engineering Log entry DET-307 (RULE-SCM-021); Policy \u00a73.3; Coverage Matrix `disabled_rules_summary`.\n\n**Gap:**\n- **Policy violation \u2014 approval authority.** Policy \u00a73.3 states \"Rule disablement: Requires CISO approval.\" DET-307 was approved only by the SecOps Lead (Jessica Torres). The log itself explicitly notes \"CISO approval NOT obtained.\" This is a direct, documented control failure.\n- **High-value rule.** RULE-SCM-021 detects dependency confusion attacks \u2014 a textbook supply chain attack vector for a CI/CD platform. The rule had a 0% false positive rate and had produced 2 true positives in Q3 2025. Disabling a rule with a perfect signal-to-noise ratio and demonstrated threat-detection efficacy is the inverse of the situation tuning is meant to address.\n- **Inadequate compensating control.** The compensating control (RULE-SCM-022) is acknowledged in the log itself as detecting only resolution of confusingly-named packages during builds, not the initial publication event. This is a partial mitigation that fails to detect the attack at the earliest opportunity.\n- **Expired and not re-enabled.** The 21-day expiration lapsed on 2025-12-31 with no remediation as of the report date. Policy \u00a73.3 imposes a 60-day maximum, but the entity's own self-imposed expiration was ignored.\n- **Improper rationale.** The rule was disabled for engineering convenience (Chronicle query optimization), not for any detection-quality reason. Compliant alternatives (rate-limiting the query, scheduled batch execution, query refactoring before disable) were not pursued.\n\n**Impact on CC7.2:** The entity's ability to detect a primary attack vector against its own platform is degraded, with no documented executive risk acceptance.\n\n---\n\n## Finding 2: Detection Rule Inventory Below Policy Minimum\n\n**Severity: HIGH**\n\n**Document Reference:** Coverage Matrix `total_active_rules: 198`; Policy \u00a73.2.\n\n**Gap:** Policy \u00a73.2 requires \"a minimum of 200 active detection rules.\" As of 2025-12-31, only 198 rules are active (200 total, 2 disabled). While the gap is numerically small, it is a verbatim violation of a quantitative policy commitment, and both rules below the floor are in the **supply chain** category \u2014 the category \u00a75.2 designates as a \"critical priority.\" The deficiency is not random; it is concentrated in the most sensitive control domain.\n\n---\n\n## Finding 3: Disablement of RULE-SCM-018 Appears to Violate \"No Disable for Volume\" Rule\n\n**Severity: HIGH**\n\n**Document Reference:** Detection Engineering Log entry DET-303; Policy \u00a74.2.\n\n**Gap:** Policy \u00a74.2 states explicitly: \"**No rule may be disabled solely to reduce alert volume.**\" The DET-303 justification reads: \"Every pipeline config change triggers an alert, overwhelming the security queue (approximately 2,400 alerts/day). **Rule disabled to prevent alert fatigue degrading response to other critical alerts.**\" This is, on its face, disablement to reduce alert volume.\n\nMitigating considerations:\n- CISO approval was obtained (compliant with \u00a73.3).\n- Two compensating controls are documented (RULE-SCM-019, RULE-SCM-020) plus customer-facing audit logs.\n- Expiration is set within the 60-day cap.\n\nHowever, the policy language is absolute. The proper response to an 88% FP rate is **tuning** (per \u00a74.2's 10-business-day tuning requirement), not disablement. There is no evidence tuning was attempted before disablement. The rule covers MITRE T1195.001 (compromise of software supply chain) \u2014 again, a critical priority per \u00a75.2.\n\n---\n\n## Finding 4: Tuning Timeliness Not Demonstrated for Rules Exceeding 30% FP Threshold\n\n**Severity: MEDIUM**\n\n**Document Reference:** Detection Engineering Log (DET-301, DET-303, DET-306); Policy \u00a74.2.\n\n**Gap:** Policy \u00a74.2 requires rules exceeding 30% FP to be tuned within 10 business days. The log shows several rules with high FP rates being addressed in Q4, but provides no evidence of:\n- When each rule first crossed the 30% threshold (the \"clock start\").\n- Whether the 10-business-day SLA was met.\n- The monthly FP review artifacts that should drive these tuning cycles.\n\nFor example, RULE-EXFIL-008 was tuned 2025-12-01 with a pre-tuning FP rate of 42%; without the monthly review records, the auditor cannot determine whether this rule sat above threshold for an excessive period before action. **Recommendation:** Provide the monthly FP review reports for Q4 2025.\n\n---\n\n## Finding 5: Incomplete MITRE ATT&CK Coverage Mapping for Required Tactics\n\n**Severity: MEDIUM**\n\n**Document Reference:** Coverage Matrix `coverage_by_category`; Policy \u00a75.1.\n\n**Gap:** Policy \u00a75.1 lists eight required MITRE tactics with specific technique IDs (T1190, T1078, T1059, T1204, T1098, T1136, T1068, T1548, T1562, T1070, T1110, T1528, T1021, T1534, T1041, T1567). The Coverage Matrix groups rules by internal categories (e.g., \"authentication_anomalies: 34\") rather than by MITRE technique. The auditor cannot independently verify coverage of each required technique. Specifically:\n- No evidence of detection coverage for T1136 (Create Account), T1098 (Account Manipulation), T1070 (Indicator Removal), T1567 (Exfiltration Over Web Service).\n- The detection log shows technique mappings (e.g., T1556, T1078, T1195) but the inventory is not pivotable by technique.\n\n**Recommendation:** Produce a technique-level coverage matrix with mapped rule IDs.\n\n---\n\n## Finding 6: Compensating Control Effectiveness Not Validated\n\n**Severity: MEDIUM**\n\n**Document Reference:** DET-303 and DET-307 compensating control descriptions; Policy \u00a73.3.\n\n**Gap:** Policy \u00a73.3 requires a \"documented compensating control\" for disablement. Both disabled rules cite compensating controls, but there is no evidence that:\n- The compensating controls were tested to confirm they actually fire on the attack scenarios the disabled rule covered.\n- A coverage gap analysis was performed (the DET-307 entry self-identifies a residual gap with no remediation plan).\n- Detection telemetry from the compensating controls was reviewed during the disablement window.\n\nA \"compensating control\" listed on paper without validation does not satisfy the spirit of CC7.2.\n\n---\n\n## Finding 7: Source-Exclusion Tuning Could Create Detection Blind Spots\n\n**Severity: LOW**\n\n**Document Reference:** DET-302 (Kubernetes pod CIDR exclusion); DET-306 (CoreDNS exclusion).\n\n**Gap:** Both exclusions whitelist large internal source ranges. The justifications and residual coverage statements appear reasonable (\"non-pod IPs still alerted\"), but:\n- An attacker who compromises a pod (a realistic scenario in a CI/CD platform) would now operate from a whitelisted source.\n- There is no evidence of compensating detection within the excluded ranges (e.g., pod-to-pod lateral movement detection, intra-cluster DNS tunneling heuristics).\n\n**Recommendation:** Layer detection inside excluded ranges rather than relying solely on perimeter-style source exclusions.\n\n---\n\n## Finding 8: Policy Approver Mismatch\n\n**Severity: LOW**\n\n**Document Reference:** Policy header (Owner: Helen Park, CISO); Policy footer (Approved by: Marcus Reid, CTO).\n\n**Gap:** Minor governance observation \u2014 the policy is owned by the CISO but approved by the CTO with no evidence of board, audit committee, or independent review. For SOC 2 maturity, security policies typically require independent review/approval beyond the engineering reporting line. Not a CC7.2 failure per se, but relevant to overall control environment (CC1.x).\n\n---\n\n## Recommended Remediation Priorities\n\n1. **Immediate (Critical):** Re-enable RULE-SCM-021 or obtain CISO approval with risk acceptance and an extended expiration; investigate whether the 21-day disablement window contained any dependency confusion activity.\n2. **30 days (High):** Restore active rule count to \u2265200; reinstate RULE-SCM-018 with a tuned threshold or formally amend Policy \u00a74.2.\n3. **60 days (Medium):** Produce MITRE technique-level coverage matrix; document compensating control validation testing; provide monthly FP review evidence.\n4. **Process:** Add automated controls to Chronicle that prevent disablement of rules tagged \"supply_chain_critical\" without dual approval (CISO + CTO) regardless of urgency."
+}

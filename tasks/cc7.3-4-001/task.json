@@ -1,0 +1,111 @@
+{
+  "id": "cc7.3-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.3",
+  "control_description": "The entity responds to identified security incidents by executing a defined incident response program to understand, contain, remediate, and communicate security incidents, as appropriate.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/incident-response-policy.md",
+      "type": "policy",
+      "description": "Vantage Cloud Systems incident response policy defining severity levels, SLAs, post-mortem requirements, and communication protocols"
+    },
+    {
+      "path": "evidence/incident-log-q4-2025.csv",
+      "type": "log",
+      "description": "Q4 2025 incident register with 9 incidents including timestamps, severity, SLA metrics, and post-mortem status"
+    },
+    {
+      "path": "evidence/post-mortem-inc-2025-404.md",
+      "type": "report",
+      "description": "Post-mortem for INC-2025-404 (SEV-1 ransomware on file processing worker node)"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Security exception register documenting approved SLA exceptions including concurrent incident justification for INC-2025-405"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/vendor-risk-assessment-q4.md",
+      "type": "report",
+      "description": "Q4 2025 vendor risk assessment summary — third-party risk management not directly relevant to incident response control effectiveness"
+    },
+    {
+      "path": "evidence/business-continuity-test-results.md",
+      "type": "report",
+      "description": "Annual BCP test results from September 2025 — business continuity testing is distinct from incident response"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Vantage Cloud Systems' incident response controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the incident response policy, incident log, post-mortem report, exception register, and any supporting documentation. Assess whether CC7.3 requirements for incident response are met. Identify genuine gaps where controls are not operating as designed. Be careful to distinguish between real control failures and situations where apparent issues have valid justifications documented in the evidence.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "INC-2025-405 triage SLA miss during concurrent SEV-1 incident",
+      "description": "INC-2025-405 (SEV-2 unauthorized IAM role assumption) was triaged in 43 minutes versus the 30-minute SLA. This appears to be a triage SLA breach. However, the exception register (SEC-EXC-2025-078) documents that this alert fired at 03:55 UTC while the security team was actively containing INC-2025-404 (SEV-1 ransomware, detected at 02:33 UTC). The exception was approved by CISO Margaret Holloway with documented justification: the team appropriately prioritized the SEV-1 ransomware containment, the SRE on-call provided bridging coverage within 10 minutes, CloudTrail confirmed no data exfiltration during the delay, and containment was achieved well within the 4-hour SLA. This is NOT a finding — it is a documented and approved exception for a concurrent incident scenario.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/exception-register.csv"],
+      "expected_reasoning": "The model should initially flag INC-2025-405's 43-minute triage time as a potential SLA breach, then cross-reference the exception register to find SEC-EXC-2025-078 documenting the approved exception. The justification is sound: concurrent SEV-1 incident, SRE bridging coverage, no impact from the delay, and CISO approval. A competent auditor would dismiss this as a non-finding and note the exception process is working as intended.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-405", "SEC-EXC-2025-078", "concurrent", "INC-2025-404", "approved exception", "Margaret Holloway"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["approved exception", "not a finding", "valid exception", "justified", "dismissed", "concurrent SEV-1", "appropriately prioritized"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-404 (SEV-1 ransomware) resolution exceeded 24-hour target at 41.5 hours",
+      "description": "INC-2025-404 (ransomware on production file processing worker) was resolved in 41.5 hours, significantly exceeding the 24-hour SEV-1 resolution target defined in policy Section 3.3. While containment was achieved quickly (0.7 hours), the full resolution — including root cause identification, CI pipeline remediation, clean image deployment, and enhanced monitoring — took nearly 42 hours. The post-mortem timeline shows the majority of the delay was in root cause analysis (identifying the compromised container image and stolen GitHub PAT). No exception was filed for this SLA miss, unlike the INC-2025-405 triage delay which has a documented exception.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md", "evidence/post-mortem-inc-2025-404.md"],
+      "expected_reasoning": "The incident log shows INC-2025-404 with resolution_hours=41.5 vs. 24-hour SEV-1 target. Unlike the INC-2025-405 triage delay, there is no approved exception in the exception register for this SLA miss. The post-mortem shows thorough investigation but the resolution target was missed by 73%. This is a genuine finding — the team should have either met the SLA or filed an exception documenting why the investigation required additional time.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-404", "41.5 hours", "24-hour resolution target", "SEV-1", "ransomware", "no exception filed", "SLA miss"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-404 post-mortem has 5 of 9 action items incomplete 6+ weeks after SEV-1 incident",
+      "description": "The post-mortem for INC-2025-404 (November 12 ransomware) lists 9 preventive action items. The incident log shows only 4 completed by end of Q4. Cross-referencing the post-mortem: PM-404-AI-04 (GitHub secret scanning) is complete, PM-404-AI-01 (container image signing), PM-404-AI-02 (malware scanning), and PM-404-AI-09 (registry access alerting) are in progress. Five items are 'Not Started' including PM-404-AI-03 (deprecate classic GitHub PATs, due Jan 15), PM-404-AI-05 (CI pipeline integrity monitoring), PM-404-AI-06 (developer security training), PM-404-AI-07 (second security on-call), and PM-404-AI-08 (runtime container monitoring). The root cause was a stolen GitHub PAT, yet PM-404-AI-03 (deprecating classic PATs) — which directly addresses the root cause — has not been started over 6 weeks after the incident.",
+      "evidence_sources": ["evidence/post-mortem-inc-2025-404.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "9 action items from a SEV-1 ransomware incident with only 4 completed 6+ weeks later. PM-404-AI-03 (deprecate classic PATs) directly prevents the root cause from recurring but is not started. PM-404-AI-07 (second security on-call) was identified because the concurrent incident (INC-2025-405) exposed the staffing gap — also not started. The volume of incomplete items on a SEV-1 incident is a concern.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-404", "PM-404-AI-03", "classic PATs", "Not Started", "5 of 9", "root cause", "ransomware", "action items incomplete"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "INC-2025-407 (SEV-2 SQL injection) resolution exceeded 72-hour target at 44.3 hours but post-mortem shows only 2 of 4 action items complete",
+      "description": "While INC-2025-407's resolution time (44.3 hours) is within the 72-hour SEV-2 target, the incident log shows only 2 of 4 post-mortem action items are completed. The post-mortem is marked as 'Complete' but without the actual post-mortem document provided for review, the auditor cannot verify the quality of the root cause analysis or whether the 2 incomplete action items address critical preventive measures. A SQL injection that bypassed the WAF and reached the application layer indicates a significant detection gap that should have urgent remediation.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "INC-2025-407 involved SQL injection bypassing the WAF — a serious security event. Only 2 of 4 action items complete, and the post-mortem report is not in the evidence package. The WAF rule gap for nested JSON payloads (noted in the incident log) represents an ongoing vulnerability if the corresponding action item is among the 2 incomplete items.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-407", "SQL injection", "WAF bypass", "2 of 4 action items", "nested JSON payloads", "post-mortem not provided"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 6,
+    "relevant_documents_count": 4,
+    "tags": ["incident_response", "red_herring", "concurrent_incident", "SLA_exception", "action_item_tracking", "ransomware"]
+  }
+}

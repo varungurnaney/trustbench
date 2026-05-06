@@ -1,0 +1,104 @@
+{
+  "id": "cc7.1-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "To meet its objectives, the entity uses detection and monitoring procedures to identify changes to configurations that result in the introduction of new vulnerabilities, and susceptibilities to newly discovered vulnerabilities.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/vulnerability-management-policy.md",
+      "type": "policy",
+      "description": "Vanguard Cloud Services vulnerability management policy defining scan programs, remediation SLAs, and risk acceptance requirements"
+    },
+    {
+      "path": "evidence/remediation-sla-tracking.csv",
+      "type": "spreadsheet",
+      "description": "Q4 2025 remediation SLA tracking spreadsheet showing 25 vulnerabilities with SLA status and remediation dates"
+    },
+    {
+      "path": "evidence/risk-acceptance-register.csv",
+      "type": "exception_register",
+      "description": "Risk acceptance register with CISO-approved acceptances and quarterly revalidation records"
+    },
+    {
+      "path": "evidence/patch-management-records-q4.csv",
+      "type": "log",
+      "description": "Patch management change records for Q4 2025 showing deployment details and post-patch validation"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/pentest-executive-summary-2025.md",
+      "type": "report",
+      "description": "Annual penetration test executive summary — assesses point-in-time security posture but not directly relevant to vulnerability management program compliance"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Vanguard Cloud Services' vulnerability management program for Q4 2025 (October 1 - December 31, 2025). Review the vulnerability management policy, remediation SLA tracking spreadsheet, risk acceptance register, patch management records, and any supporting documents. Assess CC7.1 compliance for vulnerability detection and remediation. Distinguish between genuine control gaps and properly managed exceptions. Not all documents may be relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "high",
+      "title": "CVE-2025-22225 Critical VMware ESXi vulnerability past SLA but has valid risk acceptance RA-2025-022",
+      "description": "VULN-6015 shows CVE-2025-22225 (CVSS 9.1, Critical) on gce-host-08 was first detected October 1 with a 14-day SLA deadline of October 15. The SLA tracking shows 'Risk Accepted' status. The risk acceptance register confirms RA-2025-022, approved by the CISO on October 8, with 5 compensating controls (management VLAN restriction with MFA, guest VM isolation, CrowdStrike Falcon, IDS signatures, and automated snapshots). Remediation window is confirmed for January 18. This is NOT a finding — the risk acceptance was filed before the SLA expired, approved by the CISO per policy Section 6.1, and includes validated compensating controls.",
+      "evidence_sources": [
+        "evidence/remediation-sla-tracking.csv",
+        "evidence/risk-acceptance-register.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The model should identify CVE-2025-22225 as a Critical vulnerability with 'Risk Accepted' status, then verify the risk acceptance RA-2025-022 in the register. The acceptance was filed October 5 and approved October 8 — before the October 15 SLA deadline. Compensating controls are documented and validated. This follows the policy's Section 6 process correctly.",
+      "detection_criteria": {
+        "required_keywords": ["CVE-2025-22225", "RA-2025-022", "gce-host-08", "CISO approved", "compensating controls", "risk acceptance"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["not a finding", "properly managed", "valid risk acceptance", "approved before SLA", "dismissed"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "CVE-2024-11680 Medium ProjectSend vulnerability 22 days past SLA with no risk acceptance",
+      "description": "VULN-6022 shows CVE-2024-11680 (CVSS 5.2, Medium) on internal-share-03 was first detected September 8 with a 90-day SLA deadline of December 7. As of December 29 the status is 'SLA Breached' — 113 days since detection and 22 days past the SLA deadline. The remediation notes state 'Migration to Artifactory delayed — no risk acceptance filed.' Unlike the VMware vulnerability which has RA-2025-022, this breached vulnerability has no documented risk acceptance per policy Section 6. While it is a Medium-severity finding, the policy requires formal risk acceptance for any vulnerability exceeding SLA. Per Section 4.3, SLA breaches should be escalated to the Security Manager for Medium-severity items.",
+      "evidence_sources": [
+        "evidence/remediation-sla-tracking.csv",
+        "evidence/risk-acceptance-register.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The model should scan the SLA tracking spreadsheet for 'SLA Breached' entries and find VULN-6022 (CVE-2024-11680, 22 days past SLA). Then verify no corresponding entry exists in the risk acceptance register. The notes explicitly state 'no risk acceptance filed.' The contrast with CVE-2025-22225 (which has a valid risk acceptance) highlights the gap — one vulnerability followed the process, the other did not.",
+      "detection_criteria": {
+        "required_keywords": ["CVE-2024-11680", "VULN-6022", "internal-share-03", "SLA Breached", "22 days past", "no risk acceptance", "Artifactory", "Section 4.3", "escalation"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No SLA tracking for Low-severity vulnerabilities — remediation status unknown",
+      "description": "The remediation SLA tracking spreadsheet shows Low-severity vulnerabilities (VULN-6007, VULN-6017, VULN-6024, VULN-6025) with 'Best Effort' status, no SLA deadline, no remediated date, and no days tracked. While the policy defines Low as 'Best effort,' these vulnerabilities have no visibility into remediation progress. VULN-6024 (CVE-2024-10914 on nas-dev-01) has been open since August 12 — over 4 months — with 'Replacement scheduled Q1' as the only tracking. The risk acceptance register shows RA-2025-015 for this vulnerability, but the SLA tracking spreadsheet does not reference it. The disconnect between the SLA tracker and risk acceptance register suggests incomplete process integration.",
+      "evidence_sources": [
+        "evidence/remediation-sla-tracking.csv",
+        "evidence/risk-acceptance-register.csv"
+      ],
+      "expected_reasoning": "The auditor should notice that Low-severity vulns have no tracking mechanism despite being in the system for months. The disconnect between VULN-6024 in the SLA tracker (no risk acceptance referenced) and RA-2025-015 in the register (documenting the same vulnerability) shows the two systems are not integrated. This is a process maturity observation rather than a severe gap.",
+      "detection_criteria": {
+        "required_keywords": ["Best Effort", "Low-severity", "VULN-6024", "nas-dev-01", "RA-2025-015", "no tracking", "disconnect", "process integration"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["vulnerability_management", "red_herring", "risk_acceptance", "SLA_tracking", "patch_management", "process_integration"]
+  }
+}

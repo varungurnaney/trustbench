@@ -1,0 +1,48 @@
+---
+layout: default
+title: "cc6.6-4-003"
+---
+<div class="container">
+  <nav><a href="{{ '/' | relative_url }}">Back to Leaderboard</a></nav>
+  <section>
+    <h2>cc6.6-4-003</h2>
+    <p class="section-subtitle">CC6.6 · D4 · f1</p>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-number">D4</div><div class="stat-label">Difficulty</div></div>
+      <div class="stat-card"><div class="stat-number">3</div><div class="stat-label">Gaps</div></div>
+      <div class="stat-card"><div class="stat-number">1</div><div class="stat-label">Red Herrings</div></div>
+      <div class="stat-card"><div class="stat-number">65%</div><div class="stat-label">Avg Score</div></div>
+    </div>
+  </section>
+  <section>
+    <h3>Task</h3>
+    <div class="task-card"><div class="description">You are a SOC 2 auditor evaluating Vertex Data's system boundary protection controls for the Q4 2025 observation period. Review the perimeter security policy, Cloud Armor WAF configurations, and IDS deployment status. Assess whether CC6.6 requirements for boundary protection are met. Pay attention to both what is configured and what may be missing. Not all documents are relevant to this control.</div></div>
+  </section>
+  <section>
+    <h3>Evidence</h3>
+    <ul style="font-size:14px;color:var(--text-muted);line-height:2"><li><code>evidence/perimeter-security-policy.md</code> — Vertex Data perimeter security and boundary protection policy covering WAF, IDS/IPS, egress controls, and network segmentation</li>
+<li><code>evidence/cloud-armor-config.json</code> — Cloud Armor WAF policy configurations for all production load balancers, including two load balancers without Cloud Armor</li>
+<li><code>evidence/ids-deployment-status.csv</code> — Cloud IDS deployment status across all VPC networks showing coverage gaps in the management VPC</li>
+<li><code>evidence/vendor-security-review-schedule.md</code> — Vendor security review schedule and completed reviews for Q4 2025. Not directly relevant to CC6.6 system boundary controls. <span style="color:var(--orange)">[noise]</span></li>
+</ul>
+  </section>
+  <section>
+    <h3>Findings</h3>
+    <table class="leaderboard"><thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Finding</th></tr></thead><tbody><tr><td><strong>F-001</strong></td><td><span class="difficulty d4">red_herring</span></td><td>low</td><td><strong>Internal gRPC load balancer has no Cloud Armor policy</strong><br><span style="font-size:13px;color:var(--text-dim)">The vtx-prod-internal-grpc-lb load balancer has no Cloud Armor policy. This appears to be a WAF coverage gap. However, this is an internal load balancer (type: internal) serving the gRPC service mesh,...</span></td></tr>
+<tr><td><strong>F-002</strong></td><td><span class="badge badge-blue">gap</span></td><td>high</td><td><strong>External data export load balancer has no Cloud Armor WAF protection</strong><br><span style="font-size:13px;color:var(--text-dim)">The vtx-prod-data-export-lb is an external-facing load balancer serving customer bulk data exports with no Cloud Armor policy. Policy Section 3.1 requires 'All public-facing endpoints must be served t...</span></td></tr>
+<tr><td><strong>F-003</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Webhook WAF policy missing XSS, LFI, RFI rules and has no rate limiting</strong><br><span style="font-size:13px;color:var(--text-dim)">The vtx-prod-webhook-waf Cloud Armor policy has only a SQL injection rule (priority 1000) and a default allow rule. The frontend and API WAF policies include SQL injection, XSS, LFI, and RFI rules plu...</span></td></tr>
+<tr><td><strong>F-004</strong></td><td><span class="badge badge-blue">gap</span></td><td>medium</td><td><strong>Cloud IDS not deployed on management VPC which peers to production</strong><br><span style="font-size:13px;color:var(--text-dim)">The IDS deployment status shows Cloud IDS is 'Not Deployed' on the management VPC (vtx-mgmt-vpc). Policy Section 4.1 requires 'Google Cloud IDS must be deployed on all production VPC networks.' While ...</span></td></tr>
+</tbody></table>
+  </section>
+  <section>
+    <h3>Results</h3>
+    <table class="leaderboard"><thead><tr><th>Model</th><th>Provider</th><th>Score</th><th>Recall</th><th>Prec.</th><th>F1</th><th>Gaps</th><th>Reported</th></tr></thead><tbody><tr><td class="model">Sonnet 4.6</td><td class="provider">Anthropic</td><td class="score-cell score-mid">67%</td><td>100%</td><td>50%</td><td>67%</td><td>3/3</td><td>6</td></tr>
+<tr><td class="model">Opus 4.7</td><td class="provider">Anthropic</td><td class="score-cell score-low">55%</td><td>100%</td><td>38%</td><td>55%</td><td>3/3</td><td>8</td></tr>
+<tr><td class="model">GPT-5.5</td><td class="provider">OpenAI</td><td class="score-cell score-mid">75%</td><td>100%</td><td>60%</td><td>75%</td><td>3/3</td><td>5</td></tr>
+<tr><td class="model">GPT-4.1</td><td class="provider">OpenAI</td><td class="score-cell score-low">50%</td><td>67%</td><td>40%</td><td>50%</td><td>2/3</td><td>5</td></tr>
+<tr><td class="model">Haiku 4.5</td><td class="provider">Anthropic</td><td class="score-cell score-mid">75%</td><td>100%</td><td>60%</td><td>75%</td><td>3/3</td><td>5</td></tr>
+<tr><td class="model">GPT-4o</td><td class="provider">OpenAI</td><td class="score-cell score-mid">67%</td><td>67%</td><td>67%</td><td>67%</td><td>2/3</td><td>3</td></tr>
+</tbody></table>
+  </section>
+  <footer class="site-footer"><p><a href="{{ '/' | relative_url }}">Back</a> · <a href="https://github.com/varungurnaney/trustbench/tree/main/tasks/cc6.6-4-003">GitHub</a></p></footer>
+</div>

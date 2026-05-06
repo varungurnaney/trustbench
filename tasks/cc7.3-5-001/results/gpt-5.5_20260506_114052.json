@@ -1,0 +1,89 @@
+{
+  "task_id": "cc7.3-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:40:52.829281",
+  "score": {
+    "task_id": "cc7.3-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.2,
+    "precision": 0.16666666666666666,
+    "f1": 0.1818181818181818,
+    "score": 0.1818181818181818,
+    "gaps_detected": 1,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-705",
+          "Section 4.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-703",
+          "pipeline bug",
+          "Section 4.2"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-705",
+          "84.5 hours",
+          "forensic analysis"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-704",
+          "incomplete remediation",
+          "SQL injection"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-705",
+          "S3 bucket permissions"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4024,
+    "output_tokens": 5391
+  },
+  "raw_response": "## Overall CC7.3 Readiness Assessment\n\nClearpoint demonstrates that an incident response process exists and was executed for Q4 2025 incidents: incidents were logged, triaged, assigned to incident commanders, contained, investigated, and in several cases customers were notified. For confirmed SEV-1 breaches INC-2025-701 and INC-2025-704, customer notifications were sent within the 48-hour requirement after breach confirmation.\n\nHowever, CC7.3 is **not fully met** for readiness purposes. The primary gaps relate to notification decision timing, completeness of communication records, missed response SLAs, incomplete remediation tracking, and insufficient evidence supporting forensic preservation and post-incident remediation.\n\n---\n\n## Finding 1: Customer notification deferral exceeded the 72-hour policy limit for INC-2025-705\n\n**Relates to:**  \n- Incident Response Policy Section 4.1 \u2014 Customer Notification Requirements  \n- Incident Response Policy Section 4.2 \u2014 Notification Decision Authority  \n- Incident Register: INC-2025-705  \n- Notification Log: NOTIF-2025-045 and NOTIF-2025-046\n\n**Why it\u2019s a gap:**  \nFor INC-2025-705, Clearpoint detected unauthorized S3 bucket access on December 5 at 01:30 UTC. The incident was contained within one hour, but the investigation remained inconclusive at the 48-hour mark. Evidence already showed 147 `GetObject` calls and 2.3 GB of data transfer associated with the S3 endpoint, although attribution was not yet complete.\n\nPolicy Section 4.2 allows the Incident Commander to defer notification for up to 72 hours where breach confirmation is uncertain. However, the notification decision was effectively deferred until December 8 at 14:00 UTC, approximately 84.5 hours after detection. The notification log itself acknowledges that the deferral exceeded the 72-hour limit by approximately 12.5 hours.\n\nProfessional judgment: given the nature of the data, the unauthorized access pattern, and the policy language requiring a decision after 72 hours regardless of investigation completion status, Clearpoint should have made and documented a notification decision at the 72-hour mark. A preliminary customer notification may have been required under Section 4.1 because data access was suspected and exposure remained uncertain.\n\n**Severity:** High\n\n---\n\n## Finding 2: Notification decision records do not evidence required Legal consultation or complete notification details\n\n**Relates to:**  \n- Incident Response Policy Section 4.2 \u2014 Notification Decision Authority  \n- Incident Response Policy Section 4.3 \u2014 Notification Records  \n- Customer Notification Decision Log\n\n**Why it\u2019s a gap:**  \nPolicy Section 4.2 states that customer notification decisions are to be made by the Incident Commander in consultation with the Head of Legal. The notification log identifies Alex Drummond as the decision-maker, but it does not document whether the Head of Legal was consulted for notification or deferral decisions.\n\nIn addition, Section 4.3 requires notifications to be logged with method, recipient list, timestamp, content, and acknowledgment status. The log includes method, recipient count, timestamp, and content summary, but does not include:\n\n- Actual recipient lists  \n- Customer acknowledgment status  \n- Full notification content or copy of communication  \n- Evidence of Legal consultation or approval  \n- Evidence of SEC filing content or confirmation for INC-2025-704\n\nThis limits Clearpoint\u2019s ability to demonstrate that communications were complete, authorized, and appropriately tracked.\n\n**Severity:** Medium\n\n---\n\n## Finding 3: Multiple incidents exceeded defined response SLAs without documented exception handling\n\n**Relates to:**  \n- Incident Response Policy Section 3 \u2014 Response SLAs  \n- Incident Register\n\n**Why it\u2019s a gap:**  \nSeveral incidents exceeded the response timelines defined in the incident response policy:\n\n| Incident | Severity | Policy SLA Miss |\n|---|---:|---|\n| INC-2025-701 | SEV-1 | Containment was approximately 36 minutes vs. 30-minute SLA; resolution was 14.7 hours vs. 12-hour SLA |\n| INC-2025-703 | SEV-2 | Resolution was 65.75 hours vs. 48-hour SLA |\n| INC-2025-704 | SEV-1 | Resolution was 17.8 hours vs. 12-hour SLA |\n| INC-2025-705 | SEV-2 | Resolution was 84.5 hours vs. 48-hour SLA |\n\nSome misses were relatively close, but repeated SLA exceptions across SEV-1 and SEV-2 incidents indicate the incident response program is not consistently operating within its defined timelines. There is no evidence of documented SLA exceptions, management approval, or escalation when the SLAs were missed.\n\nFor CC7.3, the issue is not only that incidents were eventually handled, but that the defined incident response program must be executed as designed.\n\n**Severity:** Medium\n\n---\n\n## Finding 4: Post-incident remediation action tracking is incomplete and does not demonstrate timely remediation\n\n**Relates to:**  \n- Incident Response Policy Section 5.1 \u2014 Post-Mortem Requirements  \n- Incident Response Policy Section 5.2 \u2014 Action Item Governance  \n- Incident Register  \n- Annual Penetration Test Executive Summary, as contextual evidence\n\n**Why it\u2019s a gap:**  \nThe incident register shows that post-mortems were marked \u201cComplete,\u201d but several remediation action items remained open:\n\n| Incident | Action Items Total | Completed | Open |\n|---|---:|---:|---:|\n| INC-2025-703 | 5 | 3 | 2 |\n| INC-2025-704 | 8 | 5 | 3 |\n| INC-2025-705 | 5 | 1 | 4 |\n\nThe policy requires post-mortem action items to be entered in Jira, reviewed weekly, escalated to the CISO after 14 days, and escalated to the CEO after 30 days. The evidence provided does not include Jira tickets, owners, due dates, aging, weekly review evidence, or escalation records.\n\nThis is particularly significant because the Q4 incidents appear connected to previously identified weaknesses:\n\n- INC-2025-704 exploited the reporting API through a different SQL injection vector after a prior penetration test SQL injection issue had been remediated only for a specific parameter.\n- INC-2025-705 exploited excessive S3 bucket permissions that had been identified as an open high-risk penetration test finding with a remediation target date of November 30, 2025.\n\nThis suggests remediation may not be sufficiently comprehensive or timely to prevent recurrence.\n\n**Severity:** High\n\n---\n\n## Finding 5: Forensic evidence preservation requirements are not supported by the evidence provided\n\n**Relates to:**  \n- Incident Response Policy Section 6 \u2014 Evidence Preservation  \n- Incident Register notes for SEV-1 and SEV-2 incidents\n\n**Why it\u2019s a gap:**  \nPolicy Section 6 requires SEV-1 and SEV-2 incidents to preserve full forensic artifacts, including disk images, memory dumps, network captures, logs with 180-day lookback, and, for financial data incidents, trade logs, order books, and position snapshots. It also requires chain of custody with SHA-256 hashes and seven-year retention.\n\nThe incident register references forensic analysis, but the provided evidence does not include:\n\n- Chain-of-custody records  \n- Hashes of preserved evidence  \n- Artifact inventories  \n- Confirmation of 180-day log lookback preservation  \n- Trade log, order book, or position snapshot preservation for financial-data incidents  \n- Evidence retention location or retention period confirmation\n\nWithout this evidence, Clearpoint cannot demonstrate that it fully preserved the artifacts necessary to understand, support, and defend its incident conclusions.\n\n**Severity:** Medium\n\n---\n\n## Finding 6: Incident and notification timing data contains inconsistencies that weaken the audit trail\n\n**Relates to:**  \n- Incident Response Policy Section 4.3 \u2014 Notification Records  \n- Incident Register: INC-2025-705  \n- Notification Log: NOTIF-2025-046\n\n**Why it\u2019s a gap:**  \nThe timing data for INC-2025-705 is internally inconsistent.\n\nThe notification log states that the customer notification was sent on December 9 at 09:00 UTC. The incident was detected on December 5 at 01:30 UTC. That is approximately 103.5 hours after detection. However:\n\n- The notification log lists `hours_after_detection` as 175.5 hours.\n- The incident register notes state that notification was sent 161 hours, or 6.7 days, after detection.\n- The same record correctly states that notification was sent approximately 19 hours after breach confirmation.\n\nThese inconsistencies do not appear to change the conclusion that the notification was sent within 48 hours of breach confirmation, but they weaken the reliability of the notification audit trail and Clearpoint\u2019s ability to evidence compliance with notification timelines.\n\n**Severity:** Low\n\n---\n\n## Non-Finding Observation: INC-2025-703 notification deferral appears reasonable\n\n**Relates to:**  \n- Incident Response Policy Section 4.2  \n- Incident Register: INC-2025-703  \n- Notification Log: NOTIF-2025-042 and NOTIF-2025-043\n\nFor INC-2025-703, the Incident Commander deferred notification while investigating whether anomalous database queries represented a compromised service account or an internal pipeline issue. The investigation concluded within approximately 20 hours that the activity was caused by an internal analytics pipeline bug, that credentials were not compromised, and that no unauthorized party accessed or exfiltrated data.\n\nBecause the matter was resolved well within the 72-hour deferral window and no unauthorized access was confirmed, the decision not to notify customers appears consistent with the policy."
+}

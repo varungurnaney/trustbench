@@ -1,0 +1,106 @@
+{
+  "task_id": "cc6.3-3-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T18:25:05.829598",
+  "score": {
+    "task_id": "cc6.3-3-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.4166666666666667,
+    "f1": 0.5882352941176471,
+    "score": 1.0,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "developer_debug",
+          "write access",
+          "CISO",
+          "approval",
+          "ALL TABLES",
+          "least privilege",
+          "charlie",
+          "diana"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "evan",
+          "dual",
+          "segregation",
+          "etl_pipeline",
+          "developer_debug",
+          "TRUNCATE",
+          "no expiration",
+          "indefinite"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "analytics_readonly",
+          "production",
+          "replica",
+          "PII",
+          "clearview_production"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "marketing",
+          "HubSpot",
+          "external",
+          "CISO",
+          "export",
+          "approval"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "postgres",
+          "superuser",
+          "2023"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2262,
+    "output_tokens": 3609
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC6.3\n## ClearView Analytics | Q4 2025\n\n---\n\n### Assessment Summary\n\nCross-referencing the Data Access Authorization Policy (POL-DAA-001 v2.3), the PostgreSQL role/grant configuration, and the Q4 2025 access request log reveals **multiple material gaps** spanning policy non-compliance, least-privilege violations, missing segregation of duties controls, and incomplete authorization workflows. Several findings would likely result in **exceptions** in a Type II audit period.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: `developer_debug` Role Granted Broad Read-Write Access Without CISO Approval\n\n**Severity: Critical**\n\n**Relates to:** Policy \u00a73.1 (Database Access) | CC6.3 (Least Privilege, Authorization Controls)\n\n**Gap:**\nPolicy \u00a73.1 explicitly states that *\"write access to any customer database requires CISO approval.\"* The access request log for both charlie.wong (DAR-403) and diana.jones (DAR-405) shows only **Manager approval** was obtained \u2014 CISO approval is absent. Despite this incomplete authorization, both users were granted membership in the `developer_debug` role, which carries `SELECT`, `INSERT`, `UPDATE`, and `DELETE` privileges across **ALL TABLES** in `clearview_production`. This represents a direct, documented policy violation for write access to Confidential data. Furthermore, the `developer_debug` role has existed since **2023-09-05** \u2014 well before Q4 2025 \u2014 suggesting this broad standing access predates any of these request tickets entirely, meaning the tickets may be retroactive or cosmetic rather than the actual control mechanism.\n\n**Additionally:** The justifications provided \u2014 \"debugging production data sync issue\" (DAR-403) and \"performance testing data generation\" (DAR-405) \u2014 are operational activities that should be performed in non-production environments. Granting full read-write access to production customer data for these purposes violates the least-privilege principle regardless of approval level.\n\n---\n\n### Finding 2: `developer_debug` Role Has No Expiration or Time-Limiting Mechanism\n\n**Severity: Critical**\n\n**Relates to:** Policy \u00a73.1 (Database Access), \u00a74 (Review and Audit) | CC6.3 (Modification/Removal of Access)\n\n**Gap:**\nThe `developer_debug` role was created on **2023-09-05** \u2014 over two years before the assessment period \u2014 and remains active with no indication of time-bounded access in the grant configuration. DAR-403 and DAR-405 both carry expiration dates of January and February 2026, respectively, but there is no evidence in the database configuration of any expiration enforcement mechanism (e.g., PostgreSQL row-level security, scheduled revocation, or automated deprovisioning). CC6.3 requires that access be *modified or removed* as circumstances change. A permanently standing, broadly privileged debug role in production contradicts this requirement and suggests the access request tickets are not connected to actual provisioning/deprovisioning workflows.\n\n---\n\n### Finding 3: evan.smith Holds Simultaneous `developer_debug` and `etl_pipeline` Roles \u2014 Segregation of Duties Violation\n\n**Severity: Critical**\n\n**Relates to:** Policy \u00a73.1 | CC6.3 (Segregation of Duties)\n\n**Gap:**\nevan.smith is the sole user assigned to **both** the `developer_debug` role (full DML on all tables) and the `etl_pipeline` role (SELECT, INSERT, UPDATE, DELETE, **TRUNCATE** on all tables). This means evan.smith can:\n- Execute ETL pipelines that load or transform data, **and**\n- Directly manipulate or inspect that same data through a separate privileged debug role, **and**\n- TRUNCATE production tables \u2014 the most destructive privilege in this configuration.\n\nThis is a textbook segregation of duties failure. A single individual should not be able to both execute automated data processes and directly modify the underlying data those processes act upon, with no countervailing control. DAR-407 references \"ETL pipeline maintenance and debugging\" and received Manager + VP Engineering approval, but **does not acknowledge or justify the SoD conflict**, nor does it reflect CISO approval for the write access component. The lack of CISO sign-off mirrors the gap in Finding 1.\n\n---\n\n### Finding 4: `etl_pipeline` Role Holds TRUNCATE Privilege \u2014 Excessive and Unexplained\n\n**Severity: High**\n\n**Relates to:** Policy \u00a73.1 | CC6.3 (Least Privilege)\n\n**Gap:**\nThe `etl_pipeline` role is granted `TRUNCATE` on ALL TABLES in `clearview_production`. TRUNCATE is a destructive, non-logged (in terms of row-level audit) operation that irreversibly removes all rows from a table. No business justification for this privilege exists in any of the evidence provided, and there is no policy provision that addresses or authorizes TRUNCATE. Standard ETL operations \u2014 loading, transforming, and updating data \u2014 do not require TRUNCATE on *all* tables in a production database. If any ETL process legitimately requires TRUNCATE on specific staging or temp tables, this should be scoped narrowly to those objects, not granted globally. This privilege also amplifies the severity of Finding 3, since evan.smith inherits it.\n\n---\n\n### Finding 5: `developer_debug` Role Access Requests (DAR-403, DAR-405) Are Insufficiently Justified for Production\n\n**Severity: High**\n\n**Relates to:** Policy \u00a73.1 | CC6.3 (Authorization Based on Roles and Responsibilities)\n\n**Gap:**\nBoth DAR-403 (\"debugging production data sync issue\") and DAR-405 (\"performance testing data generation\") describe activities that standard software development practice dictates should occur in **non-production environments**. The policy does not explicitly prohibit production access for debugging, but CC6.3 requires that access be granted based on the *least privilege necessary* to meet the entity's objectives. Granting full-table read-write access to production customer data \u2014 classified as Confidential \u2014 for testing and debugging purposes, when lower-privilege or non-production alternatives would satisfy the objective, does not meet this standard. There is no documented evidence that non-production alternatives were considered or ruled out before access was granted.\n\n---\n\n### Finding 6: DAR-407 (evan.smith) Granted Indefinite Access \u2014 No Expiration Date\n\n**Severity: High**\n\n**Relates to:** Policy \u00a74 (Review and Audit), \u00a73.1 | CC6.3 (Modification/Removal of Access)\n\n**Gap:**\nDAR-407 explicitly records `No expiration` for evan.smith's read-write access to all production tables. Every other ticket in Q4 2025 carries an expiration date of approximately 90 days. Indefinite standing privileged access to production customer data is inconsistent with the principle that access should be removed when no longer needed. The policy's quarterly review cadence (\u00a74) provides a compensating control in theory, but granting access with no expiration from the outset contradicts CC6.3's requirement that access changes give consideration to least privilege. An auditor would expect a documented rationale, a CISO-level exception approval, and a defined review cycle for any indefinite privileged grant \u2014 none of which is present.\n\n---\n\n### Finding 7: data_science_team Holds CREATE Privilege in `clearview_analytics` \u2014 Scope Not Reflected in Access Tickets\n\n**Severity: High**\n\n**Relates to:** Policy \u00a73.1, \u00a73.4 | CC6.3 (Least Privilege, Authorization)\n\n**Gap:**\nIn `clearview_analytics`, the `data_science_team` role is granted `SELECT` and **CREATE** privileges on ALL TABLES. The `CREATE` privilege allows users to create new database objects (tables, views, indexes) within the schema. Neither DAR-401 nor DAR-402 \u2014 the only access tickets for alice.chen and bob.martinez in Q4 2025 \u2014 reference or authorize `CREATE` privileges. Policy \u00a73.4 states that analysts access customer data through a *read-only* analytics replica. The ability to create objects in the analytics database exceeds a read-only posture, could be used to persist sensitive data in unsanctioned tables, and has no documented authorization basis in the ticket log. This is inconsistent with both the policy's intent and the approved access scope.\n\n---\n\n### Finding 8: `app_service` Role Write Access Lacks Documented CISO Authorization\n\n**Severity: Medium**\n\n**Relates to:** Policy \u00a73.1 | CC6.3 (Authorization Controls)\n\n**Gap:**\nThe `app_service` role holds INSERT, UPDATE, and DELETE privileges on ALL TABLES in `clearview_production`, and was granted by the `postgres` superuser on **2024-03-15**. Policy \u00a73.1 requires CISO approval for write access to any customer database. No corresponding access request ticket exists in the evidence provided \u2014 neither in Q4 2025 nor referenced as a prior approval. While a service account's write access to a production application database is operationally expected, the *absence of a documented authorization record* (whether in ticket form or a formal service account registration) means this access cannot be demonstrated to have followed the required approval chain. This is an evidence gap that would result in an exception during Type II testing.\n\n---\n\n### Finding 9: `marketing_integration` Grant Precedes Its Authorizing Ticket\n\n**Severity: Medium**\n\n**Relates to:** Policy \u00a73.1, \u00a73.2 | CC6.3 (Authorization Controls)\n\n**Gap:**\nThe `marketing_integration` role was granted database access on **2025-08-22** (per the grant configuration), and DAR-404 \u2014 its authorizing ticket \u2014 was submitted on **2025-08-20**, two days earlier. While the two-day gap is narrow, the access was granted to `svc-marketing-hubspot` and covers customer PII tables (customers, customer_events, customer_profiles). More notably, DAR-404 is attributed to `marketing-team` rather than a named individual, making it impossible to verify who the actual requestor was or confirm identity-linked accountability. Policy \u00a73.2 requires Privacy Officer review for exports to external systems; HubSpot is an external SaaS platform, and this integration effectively constitutes a continuous export of Confidential customer data. The ticket reflects Privacy Officer approval, which is a positive control, but the requestor attribution weakness and the ongoing nature of the data transfer warrant additional scrutiny (e.g., a data processing agreement, periodic reauthorization).\n\n---\n\n### Finding 10: Quarterly Access Review \u2014 No Evidence Provided for Q4 2025\n\n**Severity: Medium**\n\n**Relates to:** Policy \u00a74 (Review and Audit) | CC6.3 (Ongoing Review of Access)\n\n**Gap:**\nPolicy \u00a74 mandates quarterly data access authorization reviews and a monthly access report produced by the Data Governance team. No quarterly review results or monthly access reports were included in the evidence package for Q4 2025. For a SOC 2 Type II assessment covering this period, the absence of review evidence means the auditor cannot confirm that the entity is operating its detective access controls as described. This is particularly significant given the findings above \u2014 an effective quarterly review should have identified the standing `developer_debug` role, the SoD conflict on evan.smith, and the undefined expiration on DAR-407. The absence of review documentation suggests either the reviews are not occurring or their outputs are not being retained, both of which are exceptions.\n\n---\n\n### Finding 11: `postgres` Superuser Used for Production Role Grants\n\n**Severity: Medium**\n\n**Relates to:** Policy \u00a73.1 | CC6.3 (Least Privilege, Segregation of Duties)\n\n**Gap:**\nSeveral production role grants \u2014 including `app_service`, `analytics_readonly`, `etl_pipeline`, and `developer_debug` \u2014 were executed by the `postgres` superuser account rather than a named DBA identity. The `postgres` account is a shared, built-in superuser with unrestricted access to all database objects. Use of this account for routine grant operations creates an accountability gap: it is not possible to attribute these actions to a specific individual without additional audit log review. Best practice under CC6.3 requires that privileged administrative actions be traceable to named individuals. There is no evidence that the `postgres` account's use is restricted, monitored, or that its credentials are managed under a privileged access management (PAM) solution.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Policy Section | CC6.3 Principle |\n|---|---------|----------|---------------|-----------------|\n| 1 | `developer_debug` write access missing CISO approval | **Critical** | \u00a73.1 | Authorization controls |\n| 2 | `developer_debug` role has no expiration / deprovisioning | **Critical** | \u00a73.1, \u00a74 | Access removal |\n| 3 | evan.smith dual-role SoD violation | **Critical** | \u00a73.1 | Segregation of duties |\n| 4 | `etl_pipeline` holds unexplained TRUNCATE privilege | **High** | \u00a73.1 | Least privilege |\n| 5 | Debug/testing in production without evaluating alternatives | **High** | \u00a73.1 | Least privilege |\n| 6 | DAR-407 granted with no expiration date | **High** | \u00a73.1, \u00a74 | Access removal |\n| 7 | `data_science_team` holds CREATE privilege, unauthorized | **High** | \u00a73.1, \u00a73.4 | Least privilege / authorization |\n| 8 | `app_service` write access lacks documented authorization | **Medium** | \u00a73.1 | Authorization controls |\n| 9 | `marketing_integration` requestor unattributed; HubSpot = external export | **Medium** | \u00a73.1, \u00a73.2 | Authorization controls |\n| 10 | No Q4 2025 quarterly access review evidence | **Medium** | \u00a74 | Ongoing review |\n| 11 | `postgres` superuser used for production grants | **Medium** | \u00a73.1 | Least privilege / accountability |\n\n---\n\n## Overall Readiness Assessment\n\n**CC6.3 Readiness: NOT READY for Type II Opinion**\n\nThe evidence reflects three Critical findings \u2014 any one of which would likely produce an **exception** in a SOC 2 Type II report. The `developer_debug` role in particular represents a systemic control failure: it is broadly privileged, has been standing for over two years, was provisioned outside the required approval chain, and is not subject to demonstrated deprovisioning. The evan.smith SoD conflict compounds this. Before a Type II audit period is opened, management should at minimum:\n\n1. **Immediately revoke** the `developer_debug` role from production and establish a break-glass procedure with full CISO approval and session logging for any future emergency access.\n2. **Remediate evan.smith's** dual-role assignment and obtain a documented SoD risk acceptance signed by CISO if any overlap is genuinely required.\n3. **Establish expiration enforcement** for all database grants, connected to the ticket system.\n4. **Produce and retain** quarterly access review documentation with evidence that anomalies are acted upon.\n5. **Audit all `postgres`-executed grants** against authorization records and re-execute confirmed grants under named DBA accounts."
+}

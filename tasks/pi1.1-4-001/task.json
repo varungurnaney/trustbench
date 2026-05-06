@@ -1,0 +1,82 @@
+{
+  "id": "pi1.1-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "PI1.1",
+  "control_description": "The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/sdlc-policy.md",
+      "type": "policy",
+      "description": "Vantage Analytics SDLC policy defining SAST quality gates, 30-day High-severity SLA, and false positive management process"
+    },
+    {
+      "path": "evidence/sonarqube-findings-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "SonarQube SAST findings for Q4 2025 with 25 findings across projects including 2 High-severity items"
+    },
+    {
+      "path": "evidence/sast-exception-register.csv",
+      "type": "exception_register",
+      "description": "SAST exception register documenting false positive determinations by the Application Security team"
+    },
+    {
+      "path": "evidence/code-review-records-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "Merge request code review records for Q4 2025 showing review activity and approval status"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Vantage Analytics' processing integrity controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the SDLC policy, SonarQube findings, SAST exception register, and code review records. Assess whether PI1.1 requirements for complete and accurate processing are met. Pay attention to SAST finding remediation timelines and distinguish between findings that have valid exceptions and those that represent genuine gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "high",
+      "title": "SQ-7203 SSRF finding appears past 30-day SLA but has a valid false positive determination",
+      "description": "SQ-7203 (High, SSRF in PartnerApiClient.java, integration-service) was first detected September 2, 2025 and remains Open — 118 days since detection, well past the 30-day SLA. However, the SAST exception register contains EXC-SAST-2025-044, which documents a detailed false positive determination by Nathan Brooks (Application Security Lead) on September 20, 2025. The justification explains that the URL is constructed from an allowlisted configuration file (partner-endpoints.yaml) stored in GitLab with merge request approval required for changes, the path is built from internal enum values with no user input, HTTPS scheme and domain allowlist validation are enforced, manual code review confirmed no user-controlled data reaches URL construction, and DAST testing confirmed no SSRF is exploitable. Per policy Section 4.2, findings with approved false positive determinations are excluded from SLA tracking. This is NOT a finding — the false positive process was followed correctly.",
+      "evidence_sources": [
+        "evidence/sonarqube-findings-q4-2025.csv",
+        "evidence/sast-exception-register.csv",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The model should identify SQ-7203 as a High finding past SLA, then cross-reference the exception register to find EXC-SAST-2025-044 with a detailed false positive justification by the AppSec lead. The justification includes technical analysis, code review confirmation, and DAST verification. Per Section 4.2, this finding is excluded from SLA tracking and should be dismissed.",
+      "detection_criteria": {
+        "required_keywords": ["SQ-7203", "EXC-SAST-2025-044", "false positive", "PartnerApiClient", "Nathan Brooks", "allowlisted", "Section 4.2", "excluded from SLA"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["not a finding", "valid false positive", "properly documented", "dismissed", "excluded from SLA tracking"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "SQ-7207 High-severity XXE vulnerability in data pipeline open 110 days with no exception and no remediation",
+      "description": "SQ-7207 (High, XXE in XmlDataIngester.java, data-pipeline) was first detected September 10, 2025 and remains Open — 110 days since detection, 80 days past the 30-day SLA. Unlike SQ-7203 (which has false positive exception EXC-SAST-2025-044), SQ-7207 has no entry in the SAST exception register, is unassigned, and the resolution notes state 'No action taken — ETL pipeline processes partner data feeds.' This is a genuine SLA breach. The XXE vulnerability in the data pipeline's XML ingestion component directly threatens processing integrity: an XXE attack via a malicious partner data feed could lead to data exfiltration, denial of service, or injection of corrupted data into the pipeline. Per policy Section 4.3, High-severity findings past SLA without an approved exception must be escalated to the Engineering VP, but no escalation is documented.",
+      "evidence_sources": [
+        "evidence/sonarqube-findings-q4-2025.csv",
+        "evidence/sast-exception-register.csv",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The model should examine both High findings. After dismissing SQ-7203 due to its false positive exception, it should find SQ-7207 with no corresponding entry in the exception register. The finding is unassigned with 'No action taken' and processes partner data feeds — an external input vector. The contrast between the two High findings is the key: one followed the exception process correctly, the other has been completely neglected. Per Section 4.3, escalation to the VP should have occurred.",
+      "detection_criteria": {
+        "required_keywords": ["SQ-7207", "XXE", "XmlDataIngester", "data-pipeline", "110 days", "30-day SLA", "no exception", "unassigned", "no action taken", "Section 4.3", "escalation"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "25 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["processing_integrity", "SAST", "false_positive", "red_herring", "XXE", "SSRF", "exception_management", "SLA_breach"]
+  }
+}

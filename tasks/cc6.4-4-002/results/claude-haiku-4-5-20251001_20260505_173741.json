@@ -1,0 +1,77 @@
+{
+  "task_id": "cc6.4-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:37:41.648823",
+  "score": {
+    "task_id": "cc6.4-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Andrea Walsh",
+          "B-5088",
+          "Denied",
+          "November 1",
+          "November 12",
+          "deactivated"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Luis Ortega",
+          "CTR-0145",
+          "October 8",
+          "October 20",
+          "12 days",
+          "NexGen Consulting",
+          "contract start date",
+          "pre-activation"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Janet Yee",
+          "CTR-0139",
+          "Brightworks Electric",
+          "November 30",
+          "deactivation",
+          "Active",
+          "1 business day"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7298,
+    "output_tokens": 3163
+  },
+  "raw_response": "# CC6.4 Compliance Audit Report\n## Solaris Tech Group \u2013 Q4 2025 Physical Access Controls Assessment\n\n---\n\n## FINDINGS SUMMARY\n\n| Finding | Severity | Status |\n|---------|----------|--------|\n| 1. Contractor Badge Pre-Activation | High | Control Gap |\n| 2. Contractor Badge Post-Expiration Deactivation | High | Control Gap |\n| 3. Terminated Employee Badge Post-Access | Medium | Control Weakness |\n| 4. Restricted Zone Access Without Documented Approval | Medium | Control Gap |\n| 5. Missing After-Hours Access Logs | Low | Documentation Gap |\n\n---\n\n## DETAILED FINDINGS\n\n### **1. Contractor Badge Pre-Activation**\n\n**Policy Section:** 4.6 \u2013 Contractor Badge Activation\n\n**Finding:**\nLuis Ortega (CTR-0145, NexGen Consulting) was issued a badge and activated on **October 8, 2025**, but his contract start date was **October 20, 2025** \u2014 a 12-day gap prior to contract commencement.\n\n**Evidence:**\n- PROV-0083: Activation date 2025-10-08; Contract start date 2025-10-20\n- ACL-4019 shows first access entry on 2025-10-20 (aligned with contract start), but the badge was active since Oct 8\n\n**Why This Is a Gap:**\nPolicy 4.6 explicitly states: *\"Contractor badges shall be activated on or after the contract start date, not before.\"* This requirement ensures contractors cannot access facilities before their engagement officially begins. The 12-day pre-activation window violates this principle and creates a period of unauthorized access entitlement.\n\n**Severity:** **High**\n\n**Remediation:** Implement a control requiring activation dates to be set equal to or after contract start dates. Consider automated validation in the badge provisioning system to prevent future premature activations.\n\n---\n\n### **2. Contractor Badge Post-Expiration Deactivation**\n\n**Policy Section:** 4.7 \u2013 Contractor Badge Deactivation\n\n**Finding:**\nJanet Yee (CTR-0139, Brightworks Electric) had a contract end date of **November 30, 2025**, but her badge status in the provisioning record (PROV-0081) shows **\"Active\"** with no deactivation date recorded. However, she appeared in the access log on **November 25** and **November 10** (both within contract period) and **again on November 25** (end of contract month).\n\n**Critical Issue:** The badge status shows no deactivation date despite the contract having ended November 30, 2025. Per the audit date (Q4 2025 ends December 31), this badge should have been deactivated by **December 1, 2025** per policy.\n\n**Evidence:**\n- PROV-0081: Contract end date 2025-11-30; Deactivation date: BLANK; Status: Active\n- ACL-4026: Access granted 2025-10-29 (valid)\n- ACL-4036: Access granted 2025-11-10 (valid)\n- ACL-4045: Access granted 2025-11-25 (valid)\n- No access attempts post-November 30 recorded, but badge not formally deactivated in system\n\n**Why This Is a Gap:**\nPolicy 4.7 requires: *\"Contractor badges must be deactivated within 1 business day of the contract end date.\"* November 30 was a Sunday; deactivation should have occurred by **December 1 (Monday)** at the latest. The lack of a recorded deactivation date in the provisioning system indicates either:\n- The badge was not deactivated on time, or\n- Deactivation occurred but was not documented\n\nEither scenario represents a control failure. A post-expired badge could be used for unauthorized access.\n\n**Severity:** **High**\n\n**Remediation:** \n- Implement automated alerts 5 business days prior to contractor end dates\n- Require documented deactivation records with timestamps in the provisioning system\n- Conduct immediate audit of Janet Yee's badge status and confirm deactivation (request ACL logs for December 1+)\n\n---\n\n### **3. Terminated Employee Badge Post-Access Attempt**\n\n**Policy Section:** 4.5 \u2013 Employee Termination\n\n**Finding:**\nAndrea Walsh (B-5088, Sales) was terminated effective **November 1, 2025**. The badge was deactivated at 16:30 on November 1. However, on **November 12, 2025** at 08:45:17, an access attempt was made with her badge at AP-MAIN-01 (General Office zone), which was **correctly DENIED** (ACL-4038).\n\n**Evidence:**\n- PROV-0077 & PROV-0078: Termination effective date 2025-11-01; Deactivation at 16:30 on same date\n- ACL-4029: Last access granted 2025-11-03 08:18:55 (noted \"Last day\")\n- ACL-4038: Denied access 2025-11-12 08:45:17 with note \"Badge deactivated \u2014 access rejected\"\n\n**Why This Is a Concern (Medium Severity, Not Critical):**\nWhile the system correctly *rejected* the access attempt, the policy requires badge deactivation *prior to the employee's departure from the building*. The audit shows:\n- Badge deactivated at 16:30 on November 1 (termination date)\n- Last authorized access was November 3 at 08:18 (two days *after* termination)\n\nThis 2-day gap between termination and last actual building departure suggests the badge was deactivated 16:30 on the 1st, but the employee was still present in the building on November 3. The policy intent is to prevent post-employment access, which was achieved (denied on Nov 12), but there is a procedural misalignment: the employee accessed the building on Nov 3 after termination (even if using a still-active badge deactivated hours earlier, there is ambiguity in the timeline).\n\n**Note:** The system functioned as designed (denial on Nov 12), and the Nov 3 access may have occurred before the 16:30 deactivation time. This is less severe than outright post-termination access grants.\n\n**Severity:** **Medium**\n\n**Remediation:** \n- Clarify termination procedures: ensure badge deactivation occurs *before* employee is processed for exit, not during/after exit interview\n- Implement time-coordinated HR/Facilities handoff to confirm badge deactivation before releasing employee from building\n- Review the Nov 3 access log timestamp (08:18) against the Nov 1 deactivation time (16:30) to confirm sequencing\n\n---\n\n### **4. Restricted Zone Access Without Documented Approval Records**\n\n**Policy Section:** 4.3 \u2013 Access Level Modifications; 4.4 \u2013 Quarterly Access Reviews\n\n**Finding:**\nThree contractors accessed **Restricted zones** (AP-SRV-01, AP-NET-01) without documented Access Authorization Requests (AARs) or Infrastructure Director approvals visible in the provisioning records:\n\n| Badge ID | Name | Company | Entry | Zone | Policy Requirement |\n|----------|------|---------|-------|------|-------------------|\n| CTR-0145 | Luis Ortega | NexGen Consulting | ACL-4032 (2025-11-05) | Restricted (AP-NET-01) | Infrastructure Director approval required (4.3) |\n| CTR-0139 | Janet Yee | Brightworks Electric | ACL-4026 (2025-10-29) | Restricted (AP-SRV-01) | Infrastructure Director approval required (4.3) |\n\n**Evidence:**\n- PROV-0081: Janet Yee authorized for \"General Office, Restricted\" \u2014 *approval shown as Natalie Frost (VP Operations), NOT Infrastructure Director*\n- PROV-0083: Luis Ortega authorized for \"General Office, Network Closet\" \u2014 *approval shown as Nina Vasquez (Employee, Infrastructure), NOT Infrastructure Director*\n- Policy 4.3: *\"Restricted and Data Center zone changes require Infrastructure Director or CISO approval respectively\"*\n\n**Why This Is a Gap:**\nThe policy explicitly requires Infrastructure Director approval for Restricted zone access. However:\n- Janet Yee's authorization was approved by Natalie Frost (VP Operations), who is not the designated Infrastructure Director\n- Luis Ortega's authorization was approved by Nina Vasquez (Infrastructure employee, but not identified as Infrastructure Director)\n\nWhile the work performed (electrical systems, network migration) may have been legitimate and necessary, the *approval chain* did not follow the control structure. This bypasses the intended segregation of duties and oversight.\n\n**Severity:** **Medium**\n\n**Remediation:**\n- Verify whether Nina Vasquez or Harrison Cole (CISO) holds the Infrastructure Director title\n- If approval authority was incorrectly assigned, require re-authorization from the Infrastructure Director\n- Implement a control in the provisioning system that enforces role-based approval routing (e.g., Restricted zone requests auto-route to Infrastructure Director)\n- Conduct quarterly access reviews (policy 4.4) to validate all active Restricted zone credentials have proper approvals\n\n---\n\n### **5. Missing After-Hours Access Log Correlation**\n\n**Policy Section:** 7.2 \u2013 After-Hours Approval; 7.3 \u2013 On-Call Exceptions\n\n**Finding:**\nThe after-hours exception register (AH-2025-040 through AH-2025-048) documents approved after-hours access grants, including on-call rotations for Ryan Cooper (B-5006) in October, November, and December. However, the badge access log (ACL-4001 through ACL-4055) contains **no timestamps outside business hours** (all entries between 07:48 and 10:08 AM).\n\n**Evidence:**\n- Policy 7.1: Business hours defined as Monday\u2013Friday, 7:00 AM \u2013 7:00 PM\n- AH-2025-040, AH-2025-043, AH-2025-046: Ryan Cooper approved for on-call after-hours access in Oct, Nov, Dec\n- ACL log: All 55 entries are within 7:00 AM \u2013 10:30 AM window (business hours)\n- No entry outside business hours recorded for any employee\n\n**Why This Is a Documentation Gap (Not a Control Failure):**\nThis is not necessarily a control failure, but rather indicates:\n1. Either no after-hours access actually occurred during Q4 2025, or\n2. After-hours access logs are not being provided/recorded in the access log sample\n\nIf after-hours access occurred, the audit sample should include those entries to demonstrate compliance with the approved exceptions. The absence of any after-hours access logs (despite approvals on file) raises a documentation completeness concern.\n\n**Severity:** **Low** (documentation/audit trail gap, not a logical access control failure)\n\n**Remediation:**\n- Request complete access logs for the approved after-hours periods (e.g., Oct 1\u201331 outside 7 AM\u20137 PM for on-call staff)\n- Verify that after-hours access events are captured and retained by the Lenel OnGuard system\n- If after-hours access did occur, confirm entries were logged and matched to approved exceptions\n- If no after-hours access occurred, document this finding and note that on-call exceptions were not utilized\n\n---\n\n## CONTROL ASSESSMENT SUMMARY\n\n### **Control Strengths Observed:**\n\u2713 Badge access logging is functioning and comprehensive (55 entries captured)  \n\u2713 Zone-based access restrictions are enforced (Restricted zone entries documented)  \n\u2713 Denied access attempts are recorded and rejected (e.g., ACL-4038)  \n\u2713 Employee termination procedure resulted in proper badge deactivation and denial  \n\u2713 After-hours access framework with approval exceptions is documented  \n\n### **Control Gaps Requiring Remediation:**\n\u2717 **High:** Contractor badge activated 12 days before contract start (PROV-0083)  \n\u2717 **High:** Contractor badge not deactivated within 1 business day of contract end (PROV-0081)  \n\u2717 **Medium:** Terminated employee badge accessed 2 days post-termination (ACL-4029 vs PROV-0078 timeline)  \n\u2717 **Medium:** Restricted zone access granted without Infrastructure Director approval (PROV-0081, PROV-0083)  \n\u2717 **Low:** After-hours access logs not provided for audit verification  \n\n---\n\n## CONCLUSION\n\n**CC6.4 Status: PARTIALLY COMPLIANT WITH FINDINGS**\n\nSolaris Tech Group has implemented a physical access control framework with badge-based access, zone restrictions, and audit logging. However, three **high-severity** gaps and two **medium-severity** gaps have been identified in the execution of policy controls, particularly in contractor lifecycle management and approval workflows. \n\n**The entity restricts physical access to facilities**, but not consistently in compliance with its stated objectives for contractor badge lifecycle management and approval authority segregation.\n\nRecommend:\n1. Immediate correction of contractor badge status (CTR-0139 deactivation)\n2. System controls to prevent future pre-activation of contractor badges\n3. Clarification and enforcement of approval authority for Restricted zone access\n4. Process alignment for employee termination timing"
+}

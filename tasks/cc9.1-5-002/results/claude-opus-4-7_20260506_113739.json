@@ -1,0 +1,73 @@
+{
+  "task_id": "cc9.1-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:37:39.507002",
+  "score": {
+    "task_id": "cc9.1-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Databricks",
+          "qualified opinion",
+          "CC6.3",
+          "risk assessment",
+          "Section 4.3",
+          "30 days"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Cloudflare",
+          "Twilio",
+          "Section 4.1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Databricks",
+          "CUEC",
+          "encryption key",
+          "CMK",
+          "rotation",
+          "not confirmed",
+          "infrastructure team",
+          "pending"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4830,
+    "output_tokens": 2663
+  },
+  "raw_response": "# CC9.1 Vendor Risk Management Assessment\n\n**Auditor Conclusion:** Control CC9.1 is **partially effective** with one Critical finding and several High/Medium findings. The vendor management framework is well-designed, but execution gaps \u2014 particularly around the Databricks qualified SOC 2 opinion \u2014 represent a material control deficiency for the Q4 2025 period.\n\n---\n\n## Finding 1: Qualified SOC 2 Opinion Not Handled per Policy (Databricks)\n\n**Related to:** SOC 2 Review Tracker (VG-V-005) / Policy Section 4.3 (Qualified Opinion Handling)\n\n**Gap:** Databricks' SOC 2 report (reviewed Aug 12, 2025) contained a qualified opinion on CC6.3 related to overly permissive IAM policies on production databases. Per Policy Section 4.3, a formal risk assessment was required within 30 days of review (deadline: **Sep 11, 2025**). As of the end of the observation period (Dec 31, 2025), **no formal risk assessment has been documented** \u2014 over 110 days past the policy deadline. The tracker shows only an informal CISO acknowledgment (\"Will follow up\") rather than the required documentation of:\n- Impact analysis on Vega data\n- Compensating controls\n- Vendor remediation timeline confirmation\n- Formal risk acceptance or remediation decision\n\nCompounding this, Databricks is a **Critical-tier vendor** processing Customer PII + behavioral data, and the qualification relates directly to access controls protecting that data.\n\n**Severity:** **Critical**\n\n---\n\n## Finding 2: Unvalidated CUEC for Critical Vendor (Databricks CMK Rotation)\n\n**Related to:** SOC 2 Review Tracker (VG-V-005) / Policy Section 4.2 (CUEC Validation)\n\n**Gap:** The Databricks SOC 2 review identified a CUEC requiring customer-managed key (CMK) rotation at least annually. Policy Section 4.2 requires CUEC validation within 30 days of review completion. The CUEC remains \"Pending \u2014 infrastructure team has not confirmed CMK rotation configuration\" more than four months after the review (deadline missed: ~Sep 11, 2025). For a Critical vendor handling PII, an unvalidated encryption key control creates direct exposure that compensating controls have not been documented to mitigate.\n\n**Severity:** **High**\n\n---\n\n## Finding 3: SOC 2 Reviews Exceeded Policy Timelines for High-Tier Vendors\n\n**Related to:** SOC 2 Review Tracker / Policy Section 4.1\n\n**Gap:** Policy requires High-tier vendor SOC 2 reviews within 120 days of report issuance. Several reviews exceeded this window:\n\n| Vendor | Tier | Report Issued | Reviewed | Days Elapsed | Threshold |\n|---|---|---|---|---|---|\n| Cloudflare | High | 2025-08-01 | 2025-12-18 | 139 | 120 |\n| Twilio | High | 2025-07-15 | 2025-12-05 | 143 | 120 |\n| Zendesk | High | 2025-05-20 | 2025-08-05 | 77 | 120 \u2713 |\n| MongoDB Atlas | High | 2025-09-01 | 2025-12-29 | 119 | 120 \u2713 (barely) |\n\nCloudflare and Twilio reviews exceeded the policy deadline. The pattern suggests review backlog rather than isolated lapses.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 4: Critical Vendor Operating Without Current Contract (Okta)\n\n**Related to:** Vendor Contract Summary / Policy Section 5\n\n**Gap:** Okta's contract expired 2025-12-31 and is operating \"month-to-month\" pending renewal. Okta is a Critical-tier vendor providing identity management for Customer PII. Operating on extended/informal terms creates risk that contractual protections (incident notification, audit rights, liability caps, data return obligations) may not be enforceable or may have lapsed. No documented bridging agreement is referenced.\n\n**Severity:** **High**\n\n---\n\n## Finding 5: Missing Right-to-Audit Clause for High-Tier Vendor (PagerDuty)\n\n**Related to:** Vendor Contract Summary / Policy Section 5\n\n**Gap:** Policy Section 5 mandates that \"all vendor contracts\" include right-to-audit provisions. PagerDuty's contract lacks this clause. While PagerDuty handles only Internal data, the policy makes no exception, and this represents a non-conformance to stated control design.\n\n**Severity:** **Medium**\n\n---\n\n## Finding 6: CUEC Validation Pending for MongoDB Atlas (Critical Network Configuration)\n\n**Related to:** SOC 2 Review Tracker (VG-V-012) / Policy Section 4.2\n\n**Gap:** MongoDB Atlas review (completed 2025-12-29) identified a network access configuration CUEC. Validation is \"in progress.\" While within the 30-day window as of period-end, the auditor notes this is a recurring pattern (see Findings 2) where high-impact CUECs at Critical/High vendors are not validated promptly. Recommend tracking closure into Q1 2026.\n\n**Severity:** **Low** (observation, within policy at period-end)\n\n---\n\n## Finding 7: Q4 Business Reviews Not Evidenced for High-Tier Vendors\n\n**Related to:** Vendor Inventory / Policy Section 4.4\n\n**Gap:** Policy Section 4.4 requires semi-annual business reviews for High-tier vendors. The vendor inventory shows all High-tier vendors with `last_business_review = 2025-10-15`. While this satisfies semi-annual cadence on its face, all seven High vendors share the identical date, suggesting a possible bulk-data-entry artifact rather than discrete reviews. Auditor recommends inspection of underlying review minutes/artifacts to confirm substance over form.\n\n**Severity:** **Low** (evidence quality concern)\n\n---\n\n## Finding 8: Concentration Risk Not Addressed in Documentation\n\n**Related to:** Overall Program / CC9.1 Business Disruption Component\n\n**Gap:** CC9.1 explicitly addresses \"risks arising from potential business disruptions.\" The evidence package addresses vendor security risk well but contains no documentation of:\n- Concentration risk analysis (e.g., AWS as single cloud provider)\n- Business continuity dependencies on Critical vendors\n- Vendor exit / failover plans for Critical-tier services\n\nThe policy itself does not require BCP/exit planning for Critical vendors, which is a design gap relative to CC9.1's business disruption focus.\n\n**Severity:** **Medium**\n\n---\n\n## Summary of Findings\n\n| # | Finding | Severity |\n|---|---|---|\n| 1 | Databricks qualified opinion \u2014 no formal risk assessment | **Critical** |\n| 2 | Databricks CMK CUEC unvalidated >4 months | High |\n| 4 | Okta operating without current contract | High |\n| 3 | High-tier SOC 2 review timeliness misses | Medium |\n| 5 | PagerDuty missing right-to-audit clause | Medium |\n| 8 | No documented concentration/BCP analysis for vendors | Medium |\n| 6 | MongoDB CUEC validation pending | Low |\n| 7 | Identical business review dates \u2014 evidence quality | Low |\n\n**Overall CC9.1 Disposition:** Deficiency identified. Finding 1 alone is sufficient to warrant a control exception in the SOC 2 report unless remediated and re-tested before the report period close. Recommend immediate completion of the Databricks risk assessment and CUEC validation, and Okta contract renewal as priority remediation actions."
+}

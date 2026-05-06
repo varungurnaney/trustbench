@@ -1,0 +1,90 @@
+{
+  "task_id": "c1.1-2-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:09:48.360776",
+  "score": {
+    "task_id": "c1.1-2-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.5714285714285714,
+    "f1": 0.7272727272727273,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-reporting",
+          "TLS 1.0",
+          "deprecated",
+          "CBC",
+          "financial reports",
+          "Confidential",
+          "enterprise clients"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CERT-011",
+          "legacy-reporting",
+          "January 30",
+          "auto-renewal",
+          "No",
+          "expires",
+          "manual"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "internal-tools",
+          "auto-renewal",
+          "manual",
+          "expires"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-reporting",
+          "HSTS",
+          "disabled",
+          "downgrade",
+          "production",
+          "Confidential"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2919,
+    "output_tokens": 3480
+  },
+  "raw_response": "# SOC 2 Type II Compliance Assessment: C1.1 Confidential Information Protection\n**Crestline Data Systems | Q4 2025 (Oct 1 - Dec 31, 2025)**\n\n---\n\n## FINDINGS\n\n### Finding 1: Legacy Reporting Portal Uses Deprecated TLS 1.0\n**Document:** TLS Configuration Audit Report (Row: legacy-reporting.crestline.com)\n\n**Gap Description:**\nThe legacy-reporting.crestline.com endpoint is configured with TLS 1.0 and RSA cipher suite with AES-128-CBC\u2014both cryptographic standards deprecated by NIST and major security organizations. TLS 1.0 (released 1999) contains known vulnerabilities (POODLE attack, padding oracle attacks) and fails to meet modern confidentiality requirements. This endpoint serves \"quarterly financial reports to enterprise clients\" classified as Confidential, making the weak encryption a direct control failure.\n\n**Why It's a Gap:**\n- TLS 1.0 is deprecated and officially disabled/prohibited by PCI DSS v3.2.1+, NIST SP 800-52 Rev. 2, and industry standards\n- CBC mode ciphers are vulnerable to timing attacks and padding oracle exploits\n- Confidential financial data is being transmitted without adequate encryption strength\n- Control C1.1 explicitly requires maintaining confidential information to meet entity objectives\u2014weak encryption violates this\n\n**Severity:** **CRITICAL**\n\n**Recommendation:** Immediately upgrade legacy-reporting.crestline.com to TLS 1.2 (minimum) or TLS 1.3 with AES-256-GCM ciphers. If system compatibility prevents upgrade, isolate or retire the application.\n\n---\n\n### Finding 2: Partner SFTP Endpoint \u2013 Incomplete Protocol Configuration Documentation\n**Document:** TLS Configuration Audit Report (Row: partner-sftp.crestline.com)\n\n**Gap Description:**\nThe partner-sftp.crestline.com endpoint uses SFTP/SSH with chacha20-poly1305@openssh.com, but the audit report contains \"N/A\" entries for certificate_issuer, certificate_expiry, auto_renewal, and hsts_enabled. While SSH-based SFTP is cryptographically sound, the absence of certificate expiration tracking and renewal procedures creates an undocumented risk. This endpoint handles \"Partner file exchange\" of Confidential data, yet lacks visibility into certificate lifecycle management.\n\n**Why It's a Gap:**\n- No documented certificate expiration date or renewal schedule violates certificate lifecycle management best practices\n- Incomplete audit trail prevents detection of expired or compromised SSH keys\n- Control C1.1 requires the entity to *identify and maintain* confidential information\u2014incomplete inventory impairs this\n- No auto-renewal or monitoring mechanism is documented, increasing risk of service disruption or undetected key compromise\n\n**Severity:** **HIGH**\n\n**Recommendation:** \n1. Establish SSH key rotation policy and document in partner-sftp endpoint configuration\n2. Implement automated key expiration alerts (recommend 60-90 day rotation cycle)\n3. Update audit documentation to include SSH public key fingerprints, rotation dates, and responsible owner\n4. Consider implementing SFTP certificate-based authentication if supported\n\n---\n\n### Finding 3: Multiple Internal Endpoints Without Auto-Renewal or HSTS Enforcement\n**Document:** TLS Configuration Audit Report (Rows: internal-tools.crestline.net, grafana.crestline.net, kibana.crestline.net, vault.crestline.net, jenkins.crestline.net)\n\n**Gap Description:**\nFive internal endpoints use self-signed/private CA certificates with `auto_renewal: No` and `hsts_enabled: No`. While internal networks typically have lower exposure, two of these endpoints (vault.crestline.net, jenkins.crestline.net) are high-sensitivity systems:\n- **Vault** stores encryption keys and secrets (Restricted classification)\n- **Jenkins** controls CI/CD deployment pipelines\n\nThe combination of manual renewal + no HSTS + private CA creates operational risk and violates secure configuration baselines.\n\n**Why It's a Gap:**\n- Manual renewal introduces human error risk and certificate expiration outages (especially problematic for Vault)\n- HSTS enforcement (`hsts_enabled: No`) on all internal endpoints leaves systems vulnerable to downgrade attacks even in internal networks\n- Vault certificate expires May 15, 2026\u2014if renewal is overlooked, secrets infrastructure becomes unavailable\n- Control C1.1 requires *maintaining* confidential information; certificate outages disrupt this maintenance obligation\n- No centralized monitoring/alerting specified for manual renewals increases breach risk window\n\n**Severity:** **HIGH**\n\n**Recommendation:**\n1. Enable auto-renewal for all critical internal endpoints (especially Vault, Jenkins)\n2. Implement certificate expiration monitoring with alerts at 90, 60, and 30 days before expiry\n3. Enable HSTS headers on all internal endpoints (minimize exposure to protocol downgrade attacks)\n4. Establish fallback manual renewal procedures and documented escalation paths\n5. Consider migrating from private CA to centralized PKI management (e.g., internal CA automation)\n\n---\n\n### Finding 4: Legacy Reporting Certificate \u2013 No Auto-Renewal for Production Confidential Data\n**Document:** Certificate Inventory (CERT-011: legacy-reporting.crestline.com)\n\n**Gap Description:**\nCERT-011 (legacy-reporting.crestline.com) is flagged with `auto_renewal_enabled: No` despite being a Production environment endpoint serving Confidential data (quarterly financial reports). The certificate expires January 30, 2026\u2014only 33 days away from the Q4 2025 assessment period. The Analytics Team is listed as renewal owner, but no automation exists.\n\n**Why It's a Gap:**\n- Manual renewal for sensitive, client-facing financial reporting creates unacceptable operational risk\n- 30-day monitoring window is inadequate for manual renewal coordination with legacy systems\n- Combines with **Finding 1** (TLS 1.0 weakness) to compound the risk profile\n- If renewal fails/is missed, enterprise clients lose access to critical quarterly financial reports, triggering confidentiality breach and SLA violations\n- Control C1.1 mandate to \"maintain\" confidential information is directly violated if the transmission channel becomes unavailable\n\n**Severity:** **HIGH** (escalated from Medium due to proximity to expiration + Confidential classification + client-facing impact)\n\n**Recommendation:**\n1. Immediately enable auto-renewal for CERT-011\n2. If auto-renewal is not technically feasible for legacy system, implement:\n   - Alerts at 90, 60, 30, and 14 days before expiry\n   - Documented handoff procedure to Analytics Team with escalation contacts\n   - Proof-of-renewal sign-off requirement before expiration\n3. Prioritize migration of legacy-reporting.crestline.com off TLS 1.0 simultaneously (see Finding 1)\n\n---\n\n### Finding 5: Staging Environment \u2013 HSTS Not Enabled\n**Document:** TLS Configuration Audit Report (Rows: staging-api.crestline.com, staging-app.crestline.com)\n\n**Gap Description:**\nBoth staging endpoints use TLS 1.2 (acceptable) but have `hsts_enabled: No`. While staging is typically lower-risk, these environments process Internal-classified data and are used to test production authentication/authorization flows before deployment. The absence of HSTS allows browser-based testing tools to downgrade HTTPS to HTTP, creating a pathway for credential/session token exposure.\n\n**Why It's a Gap:**\n- Engineers and QA teams test with real or production-like credentials on staging systems\n- HSTS enforcement prevents accidental HTTP downgrade that could expose session tokens\n- Missing HSTS is non-compliant with NIST SP 800-52 Rev. 2 (TLS hardening recommendations)\n- While data classification is \"Internal,\" the systems are used to validate confidential workflows\n- Control C1.1 extends to all data classified as requiring confidentiality protection\u2014staging systems processing such data fall within scope\n\n**Severity:** **MEDIUM**\n\n**Recommendation:**\n1. Enable HSTS headers on staging-api and staging-app with `max-age=31536000` (1 year minimum)\n2. Include `includeSubDomains` directive to cover all *.staging.crestline.com subdomains\n3. Document security policy for developers regarding staging credential handling\n\n---\n\n### Finding 6: Inconsistent Certificate Key Sizes Across Production Endpoints\n**Document:** Certificate Inventory (CERT-002 vs. others)\n\n**Gap Description:**\nMost production certificates use RSA-2048 keys, which meet minimum standards. However, CERT-002 (payments.crestline.com, handling Restricted PCI payment data) correctly uses RSA-4096, while other Confidential/Restricted endpoints use RSA-2048:\n- admin-api.crestline.com (Restricted): RSA-2048\n- vault.crestline.net (Restricted): RSA-4096 \u2713 (correct)\n- webhooks.crestline.com (Confidential): RSA-2048\n- Legacy reporting (Confidential): RSA-2048\n\nThis inconsistency suggests no formalized policy linking data classification to cryptographic strength.\n\n**Why It's a Gap:**\n- No documented policy specifying key size requirements by data classification level\n- Restricted/highly sensitive endpoints should universally enforce RSA-4096 or equivalent (e.g., ECDSA P-384)\n- RSA-2048 is viable through 2030 per NIST, but higher-value targets (secrets, payment systems, admin APIs) warrant stronger keys\n- Control C1.1 requires a documented approach to *identifying and maintaining* confidential information\u2014this includes consistent cryptographic standards by data type\n\n**Severity:** **MEDIUM**\n\n**Recommendation:**\n1. Document a certificate cryptographic standards policy:\n   - **Restricted data (PCI, secrets, admin):** RSA-4096 or ECDSA P-384 minimum\n   - **Confidential data:** RSA-2048 minimum (review for upgrade to RSA-3072 or ECDSA P-256)\n   - **Internal/Public:** RSA-2048 acceptable\n2. Audit all existing certificates and schedule key size upgrades during next renewal cycle\n3. Apply policy retrospectively to admin-api.crestline.com and webhooks.crestline.com\n\n---\n\n### Finding 7: Missing Certificate Renewal Monitoring for Public CA-Issued Certificates\n**Document:** Certificate Inventory (CERT-005: docs.crestline.com)\n\n**Gap Description:**\nCERT-005 (docs.crestline.com, Let's Encrypt 90-day certificate) has `monitoring_alert_days: 14`. While 14 days is acceptable, the \"Public\" data classification may create a false sense of lower priority, and Let's Encrypt certificates have historically been targets for renewal automation testing/verification failures. No documented procedure exists for handling renewal failures or alert escalation.\n\n**Why It's a Gap:**\n- 14-day alert window is minimal; even with automation, failures could go unnoticed until expiration\n- Let's Encrypt automation failures are common across organizations; lack of fallback procedure compounds risk\n- If docs.crestline.com expires, it disrupts service availability for public documentation\u2014reputational and customer impact\n- Although data is Public-classified, the endpoint uses DigiCert for authentication/integrity; certificate expiration degrades both\n- Indirectly impacts C1.1 by reducing confidentiality assurance for visitors to public-facing documentation\n\n**Severity:** **LOW** (public data, but service continuity impact)\n\n**Recommendation:**\n1. Increase monitoring alert window to 30 days (or 21 days minimum) for Let's Encrypt certificates\n2. Document fallback renewal procedure in case Let's Encrypt ACME renewal fails\n3. Implement automated retry logic with escalation after 2 failed renewal attempts\n\n---\n\n## SUMMARY TABLE\n\n| Finding # | Title | Severity | Endpoint(s) | Immediate Action |\n|-----------|-------|----------|-------------|------------------|\n| 1 | TLS 1.0 + weak ciphers (legacy reporting) | **CRITICAL** | legacy-reporting.crestline.com | Upgrade to TLS 1.2+ within 7 days |\n| 2 | Partner SFTP key management undocumented | **HIGH** | partner-sftp.crestline.com | Document SSH key lifecycle + establish rotation policy |\n| 3 | Internal endpoints: no auto-renewal + no HSTS | **HIGH** | vault, jenkins, grafana, kibana, internal-tools | Enable auto-renewal; implement HSTS |\n| 4 | Prod certificate no auto-renewal (33 days to expiry) | **HIGH** | legacy-reporting.crestline.com | Enable auto-renewal immediately |\n| 5 | Staging environment HSTS disabled | **MEDIUM** | staging-api/app.crestline.com | Enable HSTS headers |\n| 6 | Inconsistent certificate key sizes | **MEDIUM** | admin-api, webhooks (Confidential/Restricted) | Document policy; upgrade keys at renewal |\n| 7 | Let's Encrypt monitoring window too tight | **LOW** | docs.crestline.com | Increase alert threshold to 30 days |\n\n---\n\n## CONTROL ASSESSMENT: C1.1 (Current State)\n\n**Status:** \u26a0\ufe0f **NOT YET COMPLIANT** (pending remediation)\n\n**Summary:**\nCrestline Data Systems has established encryption infrastructure for data in transit but contains **7 compliance gaps**, including **2 critical/high severity findings** that directly contradict C1.1's requirement to \"identify and maintain confidential information\":\n\n1. **TLS 1.0 on confidential financial data** violates encryption standards\n2. **Manual renewal of production confidential certificates with 33 days to expiry** creates immediate maintenance failure risk\n3. **Undocumented SSH key lifecycle** for partner file exchange impairs identification/maintenance of confidential channels\n\n**Recommended Remediation Timeline for Q4 2025 Assessment:**\n- **Within 7 days:** Upgrade legacy-reporting TLS version (Finding 1)\n- **Within 14 days:** Enable auto-renewal for legacy-reporting certificate + document SFTP key procedures (Findings 2, 4)\n- **Within 30 days:** Enable auto-renewal and HSTS on all internal endpoints (Finding 3); enable HSTS on staging (Finding 5)\n- **Within 60 days:** Establish and apply certificate cryptographic policy (Finding 6)\n- **Ongoing:** Adjust monitoring alert thresholds (Finding 7)\n\nOnce remediated, C1.1 will achieve **Compliant** status with documented encryption and lifecycle management controls."
+}

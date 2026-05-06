@@ -1,0 +1,89 @@
+{
+  "task_id": "cc6.3-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:33:16.696573",
+  "score": {
+    "task_id": "cc6.3-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "bi-reporting",
+          "EXC-2025-070",
+          "exception",
+          "compensating",
+          "PHI masking"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "t.brooks",
+          "clinical-ops-write",
+          "patient_records",
+          "RBAC matrix",
+          "PHI"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DAR-Q4-2025-017",
+          "k.shah",
+          "Privacy Officer",
+          "CISO",
+          "approval",
+          "patient_records",
+          "incomplete"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-065",
+          "svc-legacy-sync",
+          "expired",
+          "write access",
+          "reverted",
+          "FHIR"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4499,
+    "output_tokens": 3490
+  },
+  "raw_response": "# CC6.3 Compliance Assessment Report\n## Orion Health Systems Data Access Authorization\n\n---\n\n## FINDINGS\n\n### Finding 1: Unapproved Role Deviation \u2014 clinical-ops-write Role Not in Policy Matrix\n**Policy Reference:** POL-DAP-2025-003, Section 3.1  \n**Issue:** The PostgreSQL export reveals a `clinical-ops-write` role with SELECT, INSERT, UPDATE permissions on clinical tables. This role is **not defined in the approved RBAC matrix** (Section 3.1). Per policy, \"Custom roles not listed in this matrix are prohibited. Any role outside this matrix requires CISO approval through the exception process.\"\n\n**Gap:** No corresponding exception record (EXC-2025-xxx) exists in the exception register for this role. Tyler Brooks (t.brooks) is assigned to `clinical-ops-write`, but there is no documented approval or compensating controls.\n\n**Evidence Trail:** \n- Policy matrix lists only 6 approved roles; `clinical-ops-write` is not among them\n- User assignment shows t.brooks assigned 2025-10-28 with no exception reference\n- No exception register entry correlates to this role creation\n\n**Severity:** **Critical** \u2014 Unauthorized role in production contradicts explicit policy prohibition and audit trail requirement.\n\n---\n\n### Finding 2: Karen Shah \u2014 Uncontrolled Unmasked PHI Access Without Privacy Officer Approval\n**Policy Reference:** POL-DAP-2025-003, Sections 3.2 (Access Request Process) & 4.2 (De-identification)  \n**Issue:** DAR-Q4-2025-017 (Karen Shah requesting unmasked `patient_records` and `prescriptions` access) was **provisioned on 2025-11-08 despite incomplete approval chain.** The ticket explicitly states: \"Manager approved. Note: Data Owner and Privacy Officer approvals pending \u2014 provisioned by DBA before full chain completed.\"\n\n**Gap:** \n- Policy Section 3.2 mandates Manager + Data Owner + Privacy Officer + CISO approval for Restricted/PHI data\n- Policy Section 4.2 requires de-identified views with field-level masking for non-clinical roles\n- Karen Shah (Data Science) is not a clinical role \u2014 she should have access only to masked analytics views (`patient_metrics_masked`), not raw PHI\n- The grant was applied on 2025-11-08 (before full approval), creating a compliance violation\n\n**Evidence Trail:**\n- DAR-Q4-2025-017 status shows \"Completed\" but approval chain is incomplete (blanks for Data Owner and Privacy Officer)\n- Database export shows additional_grants section for k.shah with raw patient_records and prescriptions SELECT\n- Policy Section 4.1 requires Privacy Officer certification for any PHI access\n\n**Severity:** **Critical** \u2014 Unauthorized PHI access to unmasked data by non-clinical role in violation of HIPAA minimum necessary standard and policy approval requirements.\n\n---\n\n### Finding 3: Service Account \u2014 svc-legacy-sync Write Access Post-Expiration\n**Policy Reference:** POL-DAP-2025-003, Section 5.2 (Temporary Elevated Access) & Exception EXC-2025-065  \n**Issue:** Exception EXC-2025-065 (svc-legacy-sync temporary write access) **expired on 2025-10-31.** The exception register review outcome states: \"Expired \u2014 migration to FHIR API completed. Access should be reverted to read-only.\"\n\n**Gap:**\n- Database export (dated 2025-12-20) still shows `svc-legacy-sync` assigned to `app-readwrite` role with SELECT, INSERT, UPDATE permissions\n- This is 50 days past expiration with no documented revocation\n- Policy Section 5.2 requires time-bound elevated access with quarterly review; this was not revoked upon expiration\n- No compensating controls remain active (audit trail review was bi-weekly per exception, implying manual oversight required)\n\n**Evidence Trail:**\n- EXC-2025-065 expiration_date: 2025-10-31, status: Expired\n- svc-legacy-sync user_assignments in database export (2025-12-20) still has app-readwrite role\n- Exception notes: \"migration to FHIR API completed\" but access remains in production\n\n**Severity:** **Critical** \u2014 Expired temporary elevated access not revoked, creating unauthorized write access to production clinical data beyond approved window.\n\n---\n\n### Finding 4: BI Reporting Team Broad Cross-Schema Access \u2014 Insufficient Masking Verification\n**Policy Reference:** POL-DAP-2025-003, Section 4.1 (PHI Access Controls) & EXC-2025-070  \n**Issue:** Exception EXC-2025-070 grants r.patel and m.garcia (BI Reporting) SELECT access to 12 tables across 3 schemas, including sensitive clinical data (`patient_records`, `prescriptions`, `lab_results`, `referrals`). While compensating controls are documented (PHI field-level masking, RLS policies, audit logging), **the control verification is insufficient.**\n\n**Gap:**\n- Exception states \"PHI field-level masking via PostgreSQL row-level security policies\" as primary compensating control\n- Database export does **not show RLS policy definitions** or masking rules \u2014 only role grants with raw table SELECT permissions\n- No evidence that PostgreSQL RLS policies are actually applied to `orion_clinical` schema tables accessed by bi-reporting role\n- Exception review (2025-10-15) states \"PHI masking confirmed via audit\" but no audit evidence is provided\n- DAR-Q4-2025-021 (m.garcia for lab_results and referrals) references \"Covered under EXC-2025-070\" but policy requires Data Owner + Privacy Officer + CISO approval per Section 3.2; the ticket shows full approval, but the underlying exception's technical controls are unverified\n\n**Gap Detail:**\n- Policy 4.2 explicitly requires \"de-identified views with field-level masking applied at the database layer\"\n- Audit evidence should include RLS policy definitions, masking rules, or alternative de-identified view names\n- None of these are in the PostgreSQL export (roles reference raw table names, not views)\n\n**Severity:** **High** \u2014 Primary compensating control for broad PHI access (masking/RLS) is not technically verified. Exception renewal claims control validation without supporting evidence.\n\n---\n\n### Finding 5: DAR-Q4-2025-005 \u2014 Incomplete Approval Chain Documentation\n**Policy Reference:** POL-DAP-2025-003, Section 3.2 (Access Request Process)  \n**Issue:** DAR-Q4-2025-005 (r.patel requesting `revenue_dashboard` access, classified as Confidential) shows only Manager and Data Owner approval, with N/A for Privacy Officer and CISO.\n\n**Gap:**\n- Request justifies the access as \"Already has broad access per EXC-2025-070 \u2014 this was an incremental table addition\"\n- However, policy Section 3.2 states: \"Confidential data: Manager + Data Owner approval\" \u2014 Privacy Officer and CISO are not strictly required for Confidential data per the matrix\n- **But the note references EXC-2025-070, which is a formal exception requiring CISO approval.** If the user already operates under an active exception, does an incremental grant require re-approval under that exception, or is manager+owner sufficient?\n- The ambiguity creates risk: if exception-covered users still require incremental CISO/Privacy Officer sign-off, this ticket is incomplete; if not, the policy should clarify exception scope renewal\n\n**Evidence Gap:**\n- Ticket shows \"N/A\" rather than explicit approval/denial from Privacy Officer and CISO\n- No policy section clarifies how incremental access requests interact with active exceptions\n\n**Severity:** **Medium** \u2014 Potential approval chain gap depends on policy interpretation; however, the \"N/A\" notation itself is unclear and lacks explicit CISO re-authorization for exception-covered users.\n\n---\n\n### Finding 6: Service Account Ownership Verification \u2014 svc-monitoring and svc-orion-api\n**Policy Reference:** POL-DAP-2025-003, Section 5.1 (Service Account Governance)  \n**Issue:** Policy Section 5.1 requires \"All service accounts must have a designated human owner.\" Three service accounts are shown with owners, but **no evidence of quarterly access review participation is provided.**\n\n**Gap:**\n- svc-monitoring (assigned 2025-08-01) and svc-orion-api (assigned 2024-06-01) both have owners listed\n- Policy mandates \"included in quarterly access reviews\"\n- No quarterly review tickets, sign-off forms, or exception renewal records show these accounts were reviewed in Q4 2025\n- DAR-Q4-2025-012 references \"Service account access renewal\" for svc-monitoring but does not document a full quarterly review process\n\n**Evidence Absence:**\n- No Q4 2025 access review documentation provided\n- Policy states reviews occur \"Within 14 calendar days\" per Section 6; Q4 2025 would have ended December 31, so review should have occurred by mid-January 2026 (outside audit period) or late December 2025 (not evidenced)\n\n**Severity:** **Medium** \u2014 Service account governance process (quarterly review) not evidenced. This is a procedural control gap rather than immediate access violation, but required by policy.\n\n---\n\n### Finding 7: Segregation of Duties \u2014 app-readwrite Role Permits Clinical Write + Billing Write\n**Policy Reference:** POL-DAP-2025-003, Section 3.4 (Segregation of Duties)  \n**Issue:** The `app-readwrite` role includes permissions on both clinical data (appointments, treatment_plans) AND billing data (invoices). Policy Section 3.4 states: \"Finance personnel must not have write access to billing tables\" and implicitly separates clinical and financial duties.\n\n**Gap:**\n- The role itself does not violate segregation (it's a shared app role), but there is no evidence in the policy or database export showing that:\n  - Users assigned to `app-readwrite` are restricted from simultaneous clinical and finance duties, OR\n  - Different users are assigned to this role for different tables, OR\n  - Financial controls (e.g., invoice approval workflows, invoice audit logging) provide compensating segregation\n\n- svc-orion-api (service account) has `app-readwrite` and could theoretically write both clinical and billing data without human oversight\n- Policy 3.4 prohibits individuals from holding both roles, but does not explicitly address service accounts with combined privileges\n\n**Evidence Absence:**\n- No role assignment restrictions documented\n- No evidence of application-layer segregation or audit controls on the combined app-readwrite role\n\n**Severity:** **High** \u2014 Segregation of duties policy lacks enforcement mechanism for combined clinical + billing write access in a shared role. Requires either role separation or compensating control documentation.\n\n---\n\n### Finding 8: dba-admin Role \u2014 No Segregation of Duties Protection\n**Policy Reference:** POL-DAP-2025-003, Section 3.4 (Segregation of Duties)  \n**Issue:** Nicole Wright (n.wright) holds the `dba-admin` role with \"ALL PRIVILEGES\" on all schemas. While this is appropriate for a DBA, there is no evidence that segregation of duties is enforced at a higher level.\n\n**Gap:**\n- Policy 3.4 states: \"Users with write access to clinical data must not have administrative privileges\"\n- Nicole Wright has administrative privileges (dba-admin) which implicitly includes write access to all clinical data\n- This appears to contradict the policy, unless administrative privileges are carved as an exception\n\n**Policy Interpretation Issue:**\n- The policy may intend \"administrative privileges\" to mean non-DBA roles (e.g., application admins) that also have clinical write access\n- Or it may require DBAs to be strictly separated from clinical data modification (uncommon in healthcare IT)\n- No exception record (EXC-2025-xxx) documents approval for DBA admin access despite the apparent conflict\n\n**Evidence:**\n- Nicole Wright assigned 2025-01-15 with no exception reference\n- No exception register entry permits dba-admin role to non-audit personnel\n\n**Severity:** **Medium** \u2014 Ambiguity in policy regarding DBA administrative privileges and clinical data access. If dba-admin requires segregation exception, none exists. Clarification needed.\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Category | Severity | Policy Section | Status |\n|---------|----------|----------|-----------------|--------|\n| 1. clinical-ops-write unapproved role | Control Deviation | **Critical** | 3.1 | Active violation |\n| 2. Karen Shah unmasked PHI access | Authorization Violation | **Critical** | 3.2, 4.2 | Active violation |\n| 3. svc-legacy-sync post-expiration access | Exception Lapse | **Critical** | 5.2 | Active violation |\n| 4. BI reporting masking verification gap | Control Validation | **High** | 4.1, EXC-2025-070 | Control weakness |\n| 5. DAR-Q4-2025-005 approval ambiguity | Documentation | **Medium** | 3.2 | Procedural gap |\n| 6. Service account quarterly review not evidenced | Governance | **Medium** | 5.1, 6 | Process gap |\n| 7. app-readwrite segregation of duties | Control Design | **High** | 3.4 | Enforcement gap |\n| 8. dba-admin policy conflict | Policy Clarity | **Medium** | 3.4 | Ambiguity |\n\n---\n\n## REMEDIATION PRIORITY\n\n**Immediate (within 7 days):**\n- Revoke `clinical-ops-write` role from t.brooks or obtain CISO exception with documented compensating controls\n- Revoke unmasked patient_records and prescriptions access from k.shah; re-provision access to masked analytics views only pending full approval chain\n- Revoke `app-readwrite` permissions from svc-legacy-sync; revert to app-readonly role\n\n**Short-term (within 30 days):**\n- Obtain and document technical verification of RLS masking policies for bi-reporting role; provide audit evidence or transition to de-identified views\n- Clarify policy Section 3.2 / 3.4 regarding service account combined role privileges and exception requirements\n- Document Q4 2025 service account access reviews with owner sign-off\n\n**Medium-term (within 90 days):**\n- Refactor `app-readwrite` role to separate clinical and billing permissions, or implement application-layer segregation controls with audit evidence\n- Clarify dba-admin policy exception status and document compensating controls for administrative-clinical data access intersection"
+}

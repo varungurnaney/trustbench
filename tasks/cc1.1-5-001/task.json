@@ -1,0 +1,103 @@
+{
+  "id": "cc1.1-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.1",
+  "control_description": "The entity demonstrates a commitment to integrity and ethical values.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/information-security-policy.md",
+      "type": "policy",
+      "description": "Redstone Capital Partners information security policy defining governance structure, CISO authority, and policy review requirements"
+    },
+    {
+      "path": "evidence/org-chart-security-function.md",
+      "type": "report",
+      "description": "Security function organizational chart with detailed CTO role context, CISO independence indicators, and security budget metrics"
+    },
+    {
+      "path": "evidence/security-budget-analysis.csv",
+      "type": "spreadsheet",
+      "description": "Detailed security budget comparison 2024 vs 2025 with line-item breakdowns and variance explanations"
+    },
+    {
+      "path": "evidence/policy-review-tracker.csv",
+      "type": "spreadsheet",
+      "description": "Policy review register showing all 12 policies reviewed on schedule within 2025 calendar year"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Redstone Capital Partners' governance controls under CC1.1 (Commitment to Integrity and Ethical Values). Review all provided evidence to assess whether governance structures, organizational independence, budget commitment, and policy management demonstrate adequate commitment to security. Several issues in this assessment require professional judgment to determine materiality and severity. For each issue identified, provide your assessment of whether it represents a significant control deficiency, a minor observation, or an acceptable organizational design decision given the full context. Consider compensating controls and mitigating factors before reaching conclusions.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CISO reports to CTO — requires judgment on independence given documented mitigating controls",
+      "description": "The CISO (Rebecca Torres) reports directly to the CTO (David Harrington). The policy (Section 3.2) states 'The CISO reports to the Chief Technology Officer.' This reporting structure is generally considered a governance concern because the CTO oversees the technology teams that security must independently assess. However, the organizational chart document provides extensive mitigating context: (1) the CTO does not participate in day-to-day IT operations, production incident response, code reviews, or security tool decisions, (2) the CTO attends the SGC as a non-voting observer only, (3) the CEO chairs the SGC, not the CTO, (4) the CISO has independent Board Risk Committee access quarterly, (5) the CISO has deployment halt authority per policy, (6) there are no recorded instances of the CTO overriding CISO recommendations, and (7) this structure was reviewed by the Board Risk Committee in 2023. The auditor must determine whether these compensating controls adequately mitigate the independence risk. Best practice is CISO reporting to CEO or Board, but the documented mitigations are substantial. A reasonable auditor should note this as an observation with a recommendation to consider direct CEO reporting, while acknowledging the mitigating controls reduce the practical independence risk.",
+      "evidence_sources": ["evidence/information-security-policy.md", "evidence/org-chart-security-function.md"],
+      "expected_reasoning": "CISO reports to CTO — structural concern. But evaluate mitigations: CTO not involved in day-to-day ops, CTO non-voting on SGC, CEO chairs SGC, CISO has Board access and halt authority, no override instances, Board Risk Committee reviewed structure. These are strong mitigations. The auditor should note the reporting line as suboptimal but acknowledge the compensating controls. This is not a clear-cut deficiency — it requires weighing structural risk against practical mitigations.",
+      "detection_criteria": {
+        "required_keywords": ["CISO", "CTO", "reports to", "independence", "mitigating", "SGC", "non-voting", "Board Risk Committee", "halt authority", "observation"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Security budget decreased 15% year-over-year — judgment required on whether this represents reduced governance commitment",
+      "description": "The org chart document reports a security budget decrease from $5.6M (2024) to $4.8M (2025), a 14.3% reduction. The budget analysis provides granular detail: personnel budget actually increased 2.9% ($3.75M to $3.86M), while tool spending decreased 26% ($1.21M to $900K) and external services decreased 31% ($640K to $440K). The reductions are attributed to specific operational efficiencies: SIEM migration saved $140K, cloud security tool consolidation saved $120K, in-housing the 24/7 SOC eliminated $150K in managed SOC costs, and vendor contract renegotiations yielded further savings. No capabilities were reported as eliminated. The auditor must determine: is a 15% budget cut a governance concern indicating reduced commitment to security, or is it evidence of operational maturity (doing more with less)? Key judgment factors: (1) personnel investment increased, (2) each reduction has a documented business rationale, (3) no capability gaps were identified, (4) the security-to-company ratio (1:18) and budget-to-IT ratio (14.2%) are within industry norms, (5) but one Threat Intelligence Analyst position has been open since August 2025. A budget decrease alone is not a finding, but the open position combined with overall reduction deserves an observation.",
+      "evidence_sources": ["evidence/security-budget-analysis.csv", "evidence/org-chart-security-function.md"],
+      "expected_reasoning": "Headline: 15% budget cut. But analysis shows: personnel up 2.9%, tools down 26% (consolidation, not cuts), services down 31% (in-housing SOC). Each reduction has documented rationale. No capability gaps. However, one TI analyst position open 4+ months could indicate staffing pressure from budget optimization. The auditor should weigh the documented efficiencies against the headline reduction and the open position. This is not a clear governance failure but deserves scrutiny.",
+      "detection_criteria": {
+        "required_keywords": ["budget", "decrease", "15%", "personnel increased", "consolidation", "in-house", "SOC", "capability", "open position", "Threat Intelligence"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "low",
+      "title": "Cloud security tool budget cut 60% through consolidation — judgment on residual coverage gap risk",
+      "description": "The security budget analysis shows cloud security (CSPM/CNAPP) spending decreased 60% from $200K to $80K by consolidating from two tools (Wiz + Prisma Cloud) to Wiz only. The notes state 'Prisma capabilities overlapped.' The auditor must assess whether this consolidation creates a coverage gap. Both tools have overlapping CSPM capabilities, but Prisma Cloud also offers runtime protection (CWPP) features that Wiz handles differently (agentless vs agent-based). Without a detailed capability gap analysis, it is difficult to determine if all use cases are covered. The magnitude of the reduction (60%) in a cloud-first organization operating across three regions warrants verification that no coverage gaps were introduced. This is an observation requiring follow-up, not necessarily a finding.",
+      "evidence_sources": ["evidence/security-budget-analysis.csv"],
+      "expected_reasoning": "60% cut in cloud security tooling is significant for a multi-region cloud-first organization. The justification (tool overlap) is plausible — Wiz and Prisma do overlap substantially. But 60% reduction suggests more than eliminating overlap. An auditor should request the capability gap analysis that supported this decision. Without it, this is an observation rather than a finding.",
+      "detection_criteria": {
+        "required_keywords": ["cloud security", "60%", "Wiz", "Prisma Cloud", "consolidated", "CSPM", "overlap", "coverage gap", "multi-region"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Threat Intelligence Analyst position open for 4+ months may indicate understaffing pressure",
+      "description": "The org chart shows one Threat Intelligence Analyst position has been open since August 2025 — over 4 months by end of audit period. The TI team has 2 FTEs, meaning it has been operating at 67% capacity (2 of 3 planned) for over a quarter. While hiring delays are common in cybersecurity, this coincides with the overall budget reduction and could indicate either deprioritization of the role or difficulty finding candidates within the reduced budget. The budget analysis shows the threat intelligence feed budget was also reduced 8%. The auditor should assess whether the TI function's staffing and budget reductions have impacted threat detection and intelligence-sharing capabilities during the period. This is minor individually but part of the broader budget reduction pattern.",
+      "evidence_sources": ["evidence/org-chart-security-function.md", "evidence/security-budget-analysis.csv"],
+      "expected_reasoning": "TI analyst position open 4+ months. TI team at 67% capacity. TI feed budget also reduced 8%. Individually minor, but combined with overall 15% budget reduction, raises a question about whether cost optimization is subtly degrading security capability. Auditor should ask: has the TI team's output quality declined? Have any threat intelligence sharing commitments been missed?",
+      "detection_criteria": {
+        "required_keywords": ["Threat Intelligence", "open position", "August 2025", "4 months", "67%", "understaffing", "budget reduction"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["CISO_independence", "budget_analysis", "governance_commitment", "judgment", "reporting_line", "tool_consolidation", "staffing", "materiality"]
+  }
+}

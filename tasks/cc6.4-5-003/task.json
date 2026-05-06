@@ -1,0 +1,122 @@
+{
+  "id": "cc6.4-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.4",
+  "control_description": "The entity restricts physical access to facilities and protected information assets to meet the entity's objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/physical-security-policy.md",
+      "type": "policy",
+      "description": "Atlas Cloud Services physical security policy covering shared building operations, colocation oversight, environmental monitoring, and access review requirements"
+    },
+    {
+      "path": "evidence/badge-access-log-q4-2025.csv",
+      "type": "log",
+      "description": "Badge access log for Q4 2025 with 60 entries across all Atlas-controlled access points"
+    },
+    {
+      "path": "evidence/data-center-audit-report.md",
+      "type": "report",
+      "description": "Third-party colocation physical security audit report showing audit date and findings"
+    },
+    {
+      "path": "evidence/environmental-monitoring-log-q4-2025.csv",
+      "type": "log",
+      "description": "Server room environmental sensor readings for Q4 2025 including temperature and humidity data"
+    },
+    {
+      "path": "evidence/visitor-log-q4-2025.csv",
+      "type": "log",
+      "description": "Visitor sign-in log for Q4 2025 with 32 entries showing visitor management practices"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/building-management-lease-excerpt.md",
+      "type": "report",
+      "description": "Excerpt from Atlas's building lease agreement covering shared space responsibilities — background context on building management arrangements"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II audit of Atlas Cloud Services for the Q4 2025 observation period (October 1 - December 31, 2025). Review all evidence related to their physical security program and assess CC6.4 compliance. Atlas operates in a shared office building and uses a third-party colocation data center. Examine the full range of physical security controls: access management, data center oversight, environmental monitoring, visitor management, and building security architecture. Consider subtle and judgment-based issues. Not all documents may be directly relevant to the assessment.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Colocation physical audit 14 months overdue — last audit October 2024 against annual requirement",
+      "description": "Policy Section 8.2 requires annual physical audits of the colocation provider conducted by Atlas personnel. The data center audit report shows the last audit was conducted on October 18, 2024, covering October 2023 – September 2024. The next audit was due by October 18, 2025. As of December 31, 2025, the audit is approximately 74 days (2.5 months) overdue. The colocation provider (NorthStar Data Centers) maintains its own SOC 2 Type II report, but Policy Section 8.2 explicitly states the Atlas-initiated audit is 'required in addition to the provider's SOC 2 report' to verify Atlas-specific controls: authorized access list accuracy (3 employees), cabinet lock rotation compliance, and dedicated CCTV row coverage. Without the annual audit, Atlas cannot demonstrate during the Q4 observation period that it verified the colocation provider's controls are protecting Atlas's assets. The prior audit found no issues, but a 14-month gap exceeds the annual requirement by 2.5 months.",
+      "evidence_sources": [
+        "evidence/data-center-audit-report.md",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should check the audit report date (October 18, 2024) and calculate that the annual requirement means the next audit was due by October 18, 2025. At December 31, 2025, it is 74 days overdue. The provider's SOC 2 report exists but does not replace Atlas's independent verification of entity-specific controls. The auditor must understand the distinction between relying on a third-party SOC 2 report versus performing entity-level verification, and why the policy requires both.",
+      "detection_criteria": {
+        "required_keywords": ["October 18 2024", "annual audit", "overdue", "NorthStar", "Section 8.2", "SOC 2", "Atlas-specific", "access list", "cabinet lock", "independent"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Environmental sensor calibration overdue — TEMP-02 and HUM-02 calibration expired 8 weeks ago while still reading within range",
+      "description": "The environmental monitoring log includes sensor metadata showing TEMP-02 (South Wall) and HUM-02 (South Wall) had their last calibration on April 15, 2025, with next calibration due October 15, 2025. As of December 31, 2025, calibration is 77 days overdue. Both sensors continue to report readings within normal parameters (TEMP-02: 71.5-73.2°F; HUM-02: 43.8-45.5%). Policy Section 9.3 requires calibration every 6 months. The subtlety is that the sensors appear to be functioning correctly — readings are within the 64-75°F and 40-60% ranges. However, calibration verifies accuracy, not function. An uncalibrated sensor could have drifted such that a reading of 73°F actually represents 78°F (above the 77°F alert threshold), meaning the server room could be in an alarm condition without the monitoring system detecting it. TEMP-01 and HUM-01 (North Wall sensors) were calibrated October 10, 2025, and are current — only the South Wall sensors are overdue.",
+      "evidence_sources": [
+        "evidence/environmental-monitoring-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should examine the sensor calibration metadata in the environmental log header. TEMP-02 and HUM-02 show overdue calibration while TEMP-01 and HUM-01 are current. The sensor readings appear normal, which makes this a subtle gap — there is no visible operational problem. The auditor must understand that calibration verifies accuracy, and sensor drift could mean readings are incorrect despite appearing normal. The partial compliance (2 of 4 sensors current) adds nuance — it is not a systemic calibration failure but a specific gap.",
+      "detection_criteria": {
+        "required_keywords": ["TEMP-02", "HUM-02", "calibration", "October 15", "overdue", "77 days", "sensor drift", "Section 9.3", "accuracy", "within range"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Shared building stairwell provides uncontrolled bypass route to Atlas's floor — badge access only at elevator lobby",
+      "description": "The badge access log shows all entries through AP-ELEV-04 (4th floor elevator lobby) and AP-SUITE-01 (suite entrance). However, the physical security policy Section 3.4 notes that 'the building stairwell is accessible from all floors without badge requirements due to fire code egress regulations.' This means any tenant or visitor in the building can access the 4th floor via the stairwell without encountering any Atlas-controlled access point until the suite entrance door. Combined with the fact that the building lobby is open during business hours (Section 3.3), a path exists from the street to Atlas's suite entrance door through the lobby and stairwell without any access control checkpoint. Atlas's suite entrance (AP-SUITE-01) is then the sole barrier. Policy Section 3.5 acknowledges this and states 'Atlas has requested property management install stairwell readers on floors 3-5 — request pending since July 2025.' The 5-month delay in implementing this compensating control, with no interim mitigation documented, represents a gap in the physical access control architecture.",
+      "evidence_sources": [
+        "evidence/physical-security-policy.md",
+        "evidence/badge-access-log-q4-2025.csv"
+      ],
+      "expected_reasoning": "The auditor must understand the building's access control topology: lobby (uncontrolled business hours) -> stairwell (uncontrolled per fire code) -> 4th floor hallway (uncontrolled) -> suite entrance (controlled). The elevator path has a badge reader at the elevator lobby, but the stairwell bypasses it entirely. The auditor should assess whether AP-SUITE-01 alone is sufficient and note the 5-month-old unresolved request for stairwell readers. This requires understanding physical access control architecture and recognizing bypass routes.",
+      "detection_criteria": {
+        "required_keywords": ["stairwell", "fire code", "bypass", "AP-SUITE-01", "elevator lobby", "Section 3.4", "Section 3.5", "property management", "compensating control", "July 2025"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Visitor log shows vendor accessing server room without documented Infrastructure Director pre-approval for restricted zone",
+      "description": "Visitor log entry VIS-0415 shows vendor Chris Tanaka from Precision HVAC accessing the Server Room on November 12, 2025, hosted by Facilities Coordinator Beth Sanchez, for 'HVAC filter replacement.' The visitor was escorted (escort_status = 'Escorted') and ID-verified. However, Policy Section 6.4 requires 'written pre-approval from the Infrastructure Director' for any visitor access to Restricted zones. The visitor log's approval_field shows 'N/A' for VIS-0415 rather than referencing an Infrastructure Director approval. Other vendor visits to restricted zones (VIS-0403, VIS-0420) properly reference 'Approved by R. Kapoor — email Oct 7' and 'Approved by R. Kapoor — email Dec 5' respectively. The HVAC vendor visit was properly escorted but lacked the required pre-approval for restricted zone access. This is a procedural gap — the vendor was supervised, but the approval step was skipped.",
+      "evidence_sources": [
+        "evidence/visitor-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should check all visitor log entries where areas_accessed includes a Restricted zone and verify each has documented Infrastructure Director approval. Most do. VIS-0415 does not. The auditor should compare it against properly approved entries to confirm the gap. The finding is lower severity because the escort control was maintained — the risk is procedural (approval bypass) rather than actual unauthorized access.",
+      "detection_criteria": {
+        "required_keywords": ["VIS-0415", "Chris Tanaka", "Precision HVAC", "Section 6.4", "Infrastructure Director", "pre-approval", "N/A", "Beth Sanchez", "Server Room"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 6,
+    "relevant_documents_count": 5,
+    "tags": ["physical_security", "judgment", "colocation_audit", "environmental_monitoring", "sensor_calibration", "shared_building", "stairwell_bypass", "visitor_approval", "defense_in_depth"]
+  }
+}

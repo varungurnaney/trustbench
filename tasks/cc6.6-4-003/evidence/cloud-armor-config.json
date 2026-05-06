@@ -1,0 +1,64 @@
+{
+  "export_metadata": {
+    "project": "vtx-prod",
+    "exported_by": "gcloud-audit-export v1.3",
+    "export_timestamp": "2025-12-18T09:00:00Z"
+  },
+  "cloud_armor_policies": [
+    {
+      "policy_name": "vtx-prod-frontend-waf",
+      "description": "Cloud Armor policy for production frontend load balancer",
+      "target_backend_services": ["vtx-prod-frontend-backend"],
+      "adaptive_protection": true,
+      "rules": [
+        {"priority": 1000, "action": "deny(403)", "description": "OWASP CRS - SQL Injection", "match": "evaluatePreconfiguredExpr('sqli-v33-stable')"},
+        {"priority": 1100, "action": "deny(403)", "description": "OWASP CRS - XSS", "match": "evaluatePreconfiguredExpr('xss-v33-stable')"},
+        {"priority": 1200, "action": "deny(403)", "description": "OWASP CRS - LFI", "match": "evaluatePreconfiguredExpr('lfi-v33-stable')"},
+        {"priority": 1300, "action": "deny(403)", "description": "OWASP CRS - RFI", "match": "evaluatePreconfiguredExpr('rfi-v33-stable')"},
+        {"priority": 2000, "action": "rate_based_ban", "description": "Rate limiting - 200 req/min per IP", "rate_limit": {"count": 200, "interval_sec": 60}},
+        {"priority": 2147483647, "action": "allow", "description": "Default allow", "match": "*"}
+      ]
+    },
+    {
+      "policy_name": "vtx-prod-api-waf",
+      "description": "Cloud Armor policy for production API load balancer",
+      "target_backend_services": ["vtx-prod-api-backend"],
+      "adaptive_protection": true,
+      "rules": [
+        {"priority": 1000, "action": "deny(403)", "description": "OWASP CRS - SQL Injection", "match": "evaluatePreconfiguredExpr('sqli-v33-stable')"},
+        {"priority": 1100, "action": "deny(403)", "description": "OWASP CRS - XSS", "match": "evaluatePreconfiguredExpr('xss-v33-stable')"},
+        {"priority": 1200, "action": "deny(403)", "description": "OWASP CRS - LFI", "match": "evaluatePreconfiguredExpr('lfi-v33-stable')"},
+        {"priority": 1300, "action": "deny(403)", "description": "OWASP CRS - RFI", "match": "evaluatePreconfiguredExpr('rfi-v33-stable')"},
+        {"priority": 2000, "action": "throttle", "description": "API rate limiting - 500 req/min per API key", "rate_limit": {"count": 500, "interval_sec": 60}},
+        {"priority": 2147483647, "action": "allow", "description": "Default allow", "match": "*"}
+      ]
+    },
+    {
+      "policy_name": "vtx-prod-webhook-waf",
+      "description": "Cloud Armor policy for webhook ingestion endpoint",
+      "target_backend_services": ["vtx-prod-webhook-backend"],
+      "adaptive_protection": false,
+      "rules": [
+        {"priority": 1000, "action": "deny(403)", "description": "OWASP CRS - SQL Injection", "match": "evaluatePreconfiguredExpr('sqli-v33-stable')"},
+        {"priority": 2147483647, "action": "allow", "description": "Default allow", "match": "*"}
+      ]
+    }
+  ],
+  "load_balancers_without_cloud_armor": [
+    {
+      "load_balancer_name": "vtx-prod-internal-grpc-lb",
+      "type": "internal",
+      "backend_services": ["vtx-prod-grpc-backend"],
+      "description": "Internal gRPC load balancer for service mesh — internal traffic only, protected by Istio mTLS",
+      "cloud_armor_policy": null
+    },
+    {
+      "load_balancer_name": "vtx-prod-data-export-lb",
+      "type": "external",
+      "backend_services": ["vtx-prod-data-export-backend"],
+      "description": "Customer data export endpoint — bulk data download service for enterprise clients",
+      "cloud_armor_policy": null,
+      "notes": "External-facing endpoint serving customer bulk data exports. No Cloud Armor policy associated. Endpoint authenticates via signed URLs with 1-hour TTL."
+    }
+  ]
+}

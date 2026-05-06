@@ -1,0 +1,66 @@
+{
+  "task_id": "a1.2-5-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:07:59.449122",
+  "score": {
+    "task_id": "a1.2-5-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legal hold",
+          "LH-2024-003",
+          "lifecycle",
+          "preserve"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "vault",
+          "legal hold",
+          "data preservation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "no process",
+          "legal hold",
+          "notification"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2536,
+    "output_tokens": 1468
+  },
+  "raw_response": "Below are the findings from my review of the evidence against SOC 2 control **A1.2**, focusing on compliance with data backup retention and legal hold requirements.\n\n---\n\n### 1. **No Technical Enforcement of Legal Holds on Backups**\n\n**Relevant Documents/Sections:**  \n- AWS Backup retention configuration: `\"legal_hold_configuration\"` section  \n- Data Retention Policy, Section 3 (Legal Holds)  \n- Active Legal Holds Register  \n\n**Gaps Identified:**  \n- The AWS Backup configuration has **Vault Lock disabled** and does not support technical enforcement of legal holds (\"No legal hold tagging mechanism in place. All backups in vault follow standard lifecycle rules.\").  \n- The Data Retention Policy (Section 3) mandates that data subject to a legal hold must not be deleted until the hold is released.  \n- Currently, backup retention and deletion are governed solely by automated AWS lifecycle rules, meaning that backups containing data required for legal holds may be deleted at the end of their standard lifecycle if holds are not manually managed.\n\n**Severity:** **Critical**  \n**Rationale:**  \nThis is a material gap: Without technical enforcement, backups containing data under active legal hold could be automatically deleted, resulting in **irreversible loss** of evidence\u2014potentially violating court orders, regulatory requirements, or resulting in legal sanctions. SOC 2 expects controls to prevent such data loss reliably.\n\n---\n\n### 2. **Misalignment Between Legal Hold Duration and Backup Retention Periods**\n\n**Relevant Documents/Sections:**  \n- Backup and Recovery Policy, Section 5 (Backup Retention)  \n- AWS Backup retention configuration (`delete_after_days` values)  \n- Legal Holds Register (e.g., LH-2024-003: \u201cEstimated duration: 5-7 years\u201d)  \n\n**Gaps Identified:**  \n- The **longest backup retention set in AWS** is 7 years for annual snapshots (\u201cdelete_after_days\u201d: 2555 days).\n- Active legal hold LH-2024-003 requires preservation \u201c5\u20137 years\u201d (potentially longer if the case extends, or if the hold is not released promptly).\n- If legal proceedings or regulator demands run longer than exactly 7 years, backups may be deleted before the legal hold is lifted.\n\n**Severity:** **High**  \n**Rationale:**  \nA \u201chard delete\u201d at exactly 7 years creates risk that data may be lost if the legal requirement extends even a few days beyond the configured retention period. Manual tracking is error-prone, and the technical configuration offers no buffer or contingency. This represents a **close call** for non-compliance with legal discovery and regulatory obligations.\n\n---\n\n### 3. **Manual Legal Hold Process Not Documented in Backup Policy**\n\n**Relevant Documents/Sections:**  \n- Backup and Recovery Policy (no mention of legal holds or manual override process)  \n- Data Retention Policy (Section 3 refers generically to data under legal hold, but not how to operationalize this for backups)  \n- Legal Holds Register  \n\n**Gaps Identified:**  \n- There is **no documented operational process** in the backup policy for pausing, extending, or manually excluding backups from deletion when a legal hold is in place.\n- Compliance depends on ad-hoc communication between Legal and IT; responsibilities, notification processes, and escalation paths are unclear.\n- There is no audit trail or evidence that legal holds (like LH-2024-003) are actually being actioned at the technical level for backup jobs or storage.\n\n**Severity:** **Medium**  \n**Rationale:**  \nLack of process documentation increases risk of error or omission. While legal/IT might be managing legal holds informally, SOC 2 requires clear, documented procedures to ensure reliable implementation.\n\n---\n\n### 4. **No Evidence of Backup Retention Extension Due to Legal Hold in Observation Period**\n\n**Relevant Documents/Sections:**  \n- AWS Backup retention configuration (no legal hold settings applied)  \n- Legal Holds Register (multiple active holds during Q4 2025)  \n- (Absence of evidence is relevant here)\n\n**Gaps Identified:**  \n- Within the Q4 2025 observation period, there is no audit log or record showing that backups under legal hold have had their retention settings extended, copied to dedicated vaults, or otherwise segregated from standard deletion schedules.\n- No evidence of manual override, export, or off-site storage to ensure compliance with active holds.\n- The \u201clegal_hold_configuration\u201d field explicitly confirms \u201cNo legal hold tagging mechanism in place.\u201d\n\n**Severity:** **High**  \n**Rationale:**  \nThis demonstrates ineffective implementation of legal hold requirements in practice during the period under audit, undermining both backup integrity and legal compliance.\n\n---\n\n### 5. **No Immutable Backup Controls (\u201cVault Lock\u201d Disabled)**\n\n**Relevant Documents/Sections:**  \n- AWS Backup retention configuration, `vault_lock_enabled: false`\n- Backup and Recovery Policy (no reference to immutable backup)\n\n**Gaps Identified:**  \n- Without Vault Lock or similar immutability features, backups can be inadvertently or maliciously deleted, bypassing even manual legal hold processes.\n- Immutable storage (i.e., \u201cwrite once, read many\u201d/WORM) is considered a best practice for audit and regulatory data to defend against accidental/intentional deletion, ransomware, or compliance lapses.\n\n**Severity:** **Medium**  \n**Rationale:**  \nWhile not always strictly required for SOC 2, the lack of immutable controls increases risk, especially given known deficiencies in the legal hold process above.\n\n---\n\n## **Summary Table**\n\n| # | Title | Relates to Section | Gap | Severity |\n|---|----------------------------------------------|------------------------|---------------------------------------------------------------------------------------------------------------------------------------------|----------|\n| 1 | No Technical Enforcement of Legal Holds      | AWS Backup config; Retention Policy 3; Holds Register | Backups can be deleted during legal hold without technical protection                                   | Critical |\n| 2 | Misalignment Between Hold Duration & Retention | Retention Pol./Backup Config/Holds | Longest backup retention matches max hold, no buffer; proceedings may exceed scheduled retention         | High     |\n| 3 | Manual Hold Process Not Documented           | Backup Policy; Retention Policy; Holds Register | No process for pausing or overriding backup deletion; roles and procedures unclear                     | Medium   |\n| 4 | No Evidence of Retention Extension in Practice | AWS Config, Holds Register | No audit trail/backups demonstrably preserved due to legal hold during Q4 2025                         | High     |\n| 5 | No Immutable Backup Controls (\u201cVault Lock\u201d Disabled) | AWS Config; Backup Policy | Lack of WORM/immutability means data could be deleted despite policies, increasing compliance risks     | Medium   |\n\n---\n\n**Conclusion:**  \nThere are multiple severe deficiencies in the ability to ensure data preservation in response to legal and regulatory requirements. Of particular concern is the absence of any technical means to prevent deletion of backups under legal hold, which represents a **critical SOC 2 compliance gap**. Process and documentation weaknesses exacerbate this risk. Immediate remediation is recommended to implement technical controls (such as AWS Backup Vault Lock or equivalent), extend retention as needed, clarify responsibilities, and ensure appropriate evidence/auditability of compliance."
+}

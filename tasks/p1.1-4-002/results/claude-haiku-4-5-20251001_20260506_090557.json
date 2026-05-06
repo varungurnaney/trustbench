@@ -1,0 +1,89 @@
+{
+  "task_id": "p1.1-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-06T09:05:57.406379",
+  "score": {
+    "task_id": "p1.1-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 0.4615384615384615,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "respect_opt_out",
+          "false",
+          "GA4 migration",
+          "not enforced",
+          "ignored"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "migration",
+          "DPO-2025-041",
+          "v3.1",
+          "unchanged",
+          "re-consent",
+          "not required"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "3 years",
+          "5 years",
+          "Health Assessment",
+          "retention",
+          "discrepancy",
+          "Section 6",
+          "clinical validity"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "nh_health_session",
+          "health assessment",
+          "analytics category",
+          "sensitive",
+          "separate"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5709,
+    "output_tokens": 3150
+  },
+  "raw_response": "# Compliance Assessment Report \u2014 Control P1.1\n## Nextera Health Privacy Notice Readiness\n\n---\n\n## FINDINGS\n\n### 1. **Undisclosed Analytics Cookie Containing Health Data**\n**Document:** CookieBot Configuration (analytics category)  \n**Section:** Cookie: `nh_health_session`\n\n**Gap Description:**  \nThe analytics cookie `nh_health_session` captures sensitive health information (specific health assessment module completion and progression stage for the recommendation engine). However, the Privacy Policy Section 2 (\"Information Collected Automatically\") does not explicitly disclose that health-related behavioral data is collected via cookies. The policy states only that \"Platform usage: features accessed, assessment modules completed, session duration\" are collected automatically\u2014but does not clarify that this includes health assessment module *specificity* and health data classification persistence in cookies. \n\nFor a health platform subject to GDPR/UK-GDPR, collecting health data via cookies without explicit, granular disclosure violates the transparency requirement. Data subjects must understand *what health information* is being tracked via cookies before consenting.\n\n**Severity:** **Critical**\n\n---\n\n### 2. **Consent Respect Not Enforced for Analytics Cookies During Migration**\n**Document:** CookieBot Configuration (analytics category)  \n**Section:** `\"respect_opt_out\": false` with internal comment\n\n**Gap Description:**  \nThe configuration explicitly disables `respect_opt_out` for the analytics category, with a note indicating this is \"temporarily disabled during GA4 migration.\" The internal comment references ticket ENG-4521 and a target re-enablement date of 2025-11-01. \n\n**Current date per evidence: September 2025.** The gap has a documented remediation timeline, but the Privacy Policy (Section 5: \"Your Choices\") states: \"You can opt out of non-essential analytics tracking at any time through our cookie preferences panel. We respect your choice and will not track your usage for analytics purposes once you opt out.\"\n\nThis representation is **not currently honored** in the CookieBot configuration. Users who opt out of analytics between now and November 1 will have their opt-out choice ignored, creating a material discrepancy between the privacy notice and actual practice.\n\n**Severity:** **Critical**\n\n---\n\n### 3. **Data Retention Schedule Contradicts Privacy Policy for Health Assessment Data**\n**Document:** Privacy Policy Section 6 vs. Data Retention Schedule (Row 3)  \n**Section:** Retention periods\n\n**Gap Description:**  \nThe Privacy Policy states: \"We retain your personal health information for a maximum of 3 years after your last interaction with the platform, after which it is securely deleted.\"\n\nHowever, the Data Retention Schedule specifies: \"Health Assessment Data... 5 years after last assessment\" with justification: \"Clinical validity requirements \u2014 longitudinal health trend analysis requires minimum 5-year data window per clinical advisory board recommendation (CAB-2024-008).\"\n\nThis is a **material misrepresentation** to data subjects. The privacy notice promises deletion at 3 years, but actual practice retains health data for 5 years. The clinical justification may be sound, but the Privacy Policy must disclose the actual 5-year retention period, or retention must be amended to match the published policy.\n\n**Severity:** **Critical**\n\n---\n\n### 4. **Health Research Opt-Out Consent Not Clearly Distinguished from Essential Processing**\n**Document:** Privacy Policy Section 2 & 5 vs. Consent Management Export  \n**Section:** Consent management and legal basis\n\n**Gap Description:**  \nThe Privacy Policy Section 4 states health research participation requires \"Consent\" as the legal basis. The consent records show health_research consent tracking (CR-0003, CR-0008, etc.). However, the Privacy Policy does not sufficiently clarify whether health research participation is:\n\n- Optional/voluntary (implying data subjects can decline without service impact), or\n- A condition of using the platform\n\nSection 5 states: \"Participation in anonymized health research is voluntary and requires separate explicit consent,\" which is clear. However, Section 3 lists \"Conducting anonymized health research\" as a primary purpose *without* explicitly noting in that section that it requires separate, affirmative consent and is entirely optional.\n\nA data subject reading only Section 3 (How We Use Your Information) might reasonably infer health research is a service purpose, not optional. The privacy notice should more prominently clarify in Section 3 that research participation is voluntary and requires separate consent, not bundled with service delivery.\n\n**Severity:** **Medium**\n\n---\n\n### 5. **Cookie Consent Banner Compliance Model Not Disclosed**\n**Document:** CookieBot Configuration + Privacy Policy  \n**Section:** Privacy Policy (no explicit section addresses this)\n\n**Gap Description:**  \nThe CookieBot configuration specifies different consent models by jurisdiction:\n- EU/UK: **opt-in** (compliant with GDPR)\n- US California: **opt-out** (compliant with CCPA)\n- Rest of World: **implied consent** (not compliant with GDPR/UK-GDPR if applied to EU/UK users)\n\nThe Privacy Policy does not disclose this **jurisdiction-specific consent approach**. A European user accessing the platform may receive an opt-in banner, but the Privacy Policy does not explain that users in other jurisdictions face different consent models or that \"implied consent\" is applied to rest-of-world users.\n\nWhile the opt-in behavior for EU/UK users is appropriate, the notice should transparently disclose the existence of jurisdiction-specific consent variations to ensure users understand how their consent is being solicited.\n\n**Severity:** **Medium**\n\n---\n\n### 6. **Consent Migration from v3.1 to v4.0 Not Transparently Disclosed to Users**\n**Document:** Consent Management Export (migration notes) + Privacy Policy Section 11  \n**Section:** Policy change notification\n\n**Gap Description:**  \nThe consent export shows 14 records (CR-0011 through CR-0024) migrated from policy v3.1 to v4.0 with a note: \"Migrated from v3.1 policy \u2014 consent scope unchanged; re-consent not required per DPO assessment DPO-2025-041.\"\n\nSection 11 of the Privacy Policy states: \"We will notify you of material changes via email at least 30 days before they take effect.\"\n\nThe assessment does not disclose:\n1. Whether the consent migration from v3.1 to v4.0 was considered a \"material change\"\n2. Whether affected users were notified 30 days in advance\n3. The specific date the migration occurred relative to the v4.0 effective date (July 1, 2025)\n\nWhile the DPO's justification that \"consent scope unchanged\" may be valid, users should have been informed that their prior v3.1 consent was carried forward without re-solicitation. The Privacy Policy's notice commitment does not clarify this approach, leaving users unaware their consent has been administratively migrated.\n\n**Severity:** **Medium**\n\n---\n\n### 7. **Marketing Communications Legal Basis Incomplete**\n**Document:** Privacy Policy Section 4 + Consent Management Export  \n**Section:** Legal Basis section\n\n**Gap Description:**  \nSection 4 lists marketing as processed under \"Consent\" as the legal basis. However, the Privacy Policy does not clarify the distinction between:\n- **Service-related communications** (order confirmations, assessment results, account alerts) \u2014 which should be processed under \"Contractual Necessity\" or \"Legal Obligation\"\n- **Marketing communications** (newsletters, promotional content, wellness tips) \u2014 which require \"Consent\"\n\nThe consent export shows separate tracking for \"marketing\" consent, but the Privacy Policy Section 3 bundles \"Sending service-related communications (assessment results, reminders, account alerts)\" without specifying that only *marketing-specific* communications require separate consent.\n\nUsers may reasonably assume they cannot opt out of service-critical communications, but the policy does not explicitly state which communications fall under contractual necessity vs. which require affirmative marketing consent. This creates ambiguity about what \"opting out of marketing\" actually permits.\n\n**Severity:** **Medium**\n\n---\n\n### 8. **Data Sharing Notice Lacks Sufficient Specificity on Data Categories Shared**\n**Document:** Privacy Policy Section 7 + Data Retention Schedule  \n**Section:** Data Sharing\n\n**Gap Description:**  \nSection 7 lists categories of service providers (AWS, Stripe, SendGrid, Intercom) but does not specify *which data categories* are shared with each processor. For example:\n\n- **Does AWS receive all data types (health data, analytics, payment data)?** The network architecture shows \"all health data encrypted at rest,\" implying health data is processed by AWS, but the Privacy Policy does not explicitly state this.\n- **Does SendGrid receive full health profiles or only service notification data?** Unclear.\n- **Does Intercom support chat include health assessment results?** Not disclosed.\n\nGDPR Article 13/14 transparency requirements obligate entities to disclose the categories of recipients and the data categories they receive. The Privacy Policy's generic processor list is insufficient. Data subjects should understand, e.g., \"Your health assessment responses are processed by AWS (infrastructure) and the Clinical Team (analysis)\" or \"Your support chat may include references to health data and is processed by Intercom.\"\n\n**Severity:** **High**\n\n---\n\n### 9. **No Notice Regarding Automated Decision-Making or Health Assessment Algorithms**\n**Document:** Privacy Policy (no section addresses this)  \n**Section:** Entire document\n\n**Gap Description:**  \nThe Privacy Policy does not disclose that Nextera Health uses algorithmic decision-making to generate \"personalized health assessments, wellness recommendations, and lifestyle recommendations\" (stated in Section 1). GDPR Article 13/14 and GDPR Chapter 3 (Profiling/Automated Decision-Making) require transparency about:\n\n- The existence of automated decision-making or profiling\n- The logic involved (health assessment algorithms)\n- Significance and consequences of the processing\n- Rights to human intervention, explanation, or objection\n\nThe Privacy Policy describes *collection* and *use* but does not disclose how health data is fed into recommendation algorithms or what controls users have over algorithmic recommendations. This is a significant gap for a health platform where algorithmic outputs may influence user health decisions.\n\n**Severity:** **High**\n\n---\n\n### 10. **Incomplete Disclosure of Data Subject Rights Exercise Procedures**\n**Document:** Privacy Policy Section 10 + Support/Contact Information  \n**Section:** Your Rights & Contact sections\n\n**Gap Description:**  \nSection 10 lists data subject rights (access, rectification, erasure, etc.) but does not provide clear, accessible procedures for exercising them. The Privacy Policy lists:\n- **DPO email:** dpo@nexterahealth.com (Section 9)\n- **Privacy inquiries:** privacy@nexterahealth.com (Section 5, account deletion only)\n\nBut it does not specify:\n- **Expected response timeframe** (GDPR mandates 30 days)\n- **Whether requests can be submitted via other channels** (in-app form, support chat, etc.)\n- **The procedure for appealing DPO decisions** or escalation if a rights request is denied\n- **Whether identity verification is required** and the process\n\nUsers attempting to exercise rights may not know whether to contact dpo@ or privacy@, or how to verify their request was received. A clear, single point of contact with documented procedures would enhance compliance transparency.\n\n**Severity:** **Medium**\n\n---\n\n---\n\n## SUMMARY TABLE\n\n| # | Finding | Severity | Status |\n|---|---------|----------|--------|\n| 1 | Undisclosed health data in analytics cookies | Critical | Requires policy amendment |\n| 2 | Analytics opt-out not respected during GA4 migration | Critical | Urgent remediation needed |\n| 3 | Health data retention (5 yr) contradicts policy (3 yr) | Critical | Policy/practice realignment required |\n| 4 | Health research opt-out clarity | Medium | Policy clarification needed |\n| 5 | Jurisdiction-specific consent models not disclosed | Medium | Policy amendment recommended |\n| 6 | Consent migration v3.1\u2192v4.0 not transparently disclosed | Medium | Policy clarity + audit of user notifications |\n| 7 | Marketing vs. service communications legal basis unclear | Medium | Policy clarification needed |\n| 8 | Insufficient specificity on data sharing by category | High | Policy amendment required |\n| 9 | No notice on algorithmic decision-making | High | Policy section required |\n| 10 | Incomplete data subject rights procedures | Medium | Policy enhancement recommended |\n\n---\n\n## CRITICAL RECOMMENDATIONS\n\n**Immediate Actions (Next 30 days):**\n1. Amend Privacy Policy Section 2 to explicitly disclose the `nh_health_session` cookie and health data collection via analytics.\n2. Re-enable `respect_opt_out: true` for analytics cookies immediately, or delay GA4 migration and update policy to disclose that opt-out is temporarily unavailable.\n3. Correct Health Assessment Data retention in Privacy Policy from 3 years to 5 years, or reduce actual retention to 3 years and amend clinical processes.\n\n**High Priority (60 days):**\n4. Enhance Section 7 with a data-sharing matrix (processor \u00d7 data category).\n5. Add new section on algorithmic decision-making, recommendation logic, and user controls.\n\n**Medium Priority (90 days):**\n6. Clarify marketing vs. service-critical communications and consent requirements.\n7. Add data subject rights exercise procedures with timelines and contact channels.\n8. Document and disclose consent migration approach to affected users."
+}

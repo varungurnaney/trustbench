@@ -1,0 +1,85 @@
+{
+  "task_id": "cc7.2-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T01:15:09.535988",
+  "score": {
+    "task_id": "cc7.2-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "TUNE-303",
+          "GuardDuty",
+          "SEC-EXC-2025-020",
+          "CISO approval",
+          "compensating controls"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "TUNE-305",
+          "database privilege escalation",
+          "CISO approval NOT obtained",
+          "no expiration",
+          "Maria Santos"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Thanksgiving",
+          "holiday",
+          "weekly review",
+          "privileged activity",
+          "sign-off"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "monthly review",
+          "systematic",
+          "alert tuning",
+          "all rules"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4398,
+    "output_tokens": 2422
+  },
+  "raw_response": "# CC7.2 Readiness Assessment \u2014 Polaris Financial\n\n## Scope Note\nThe Q4 2025 System Uptime Report was reviewed but is not relevant to CC7.2 effectiveness (operational availability is a CC7.x/A1.x concern, not anomaly detection). Findings below derive from the alert tuning log, privileged activity reviews, exception register, and monitoring policy.\n\n---\n\n## Findings\n\n### Finding 1: Database Privilege Escalation Rule Disabled Without CISO Approval or Expiration Date\n\n**Document/Section:** Alert Tuning Log, TUNE-305 (Nov 20, 2025); Policy POL-SEC-MON-003 \u00a74.3\n\n**Why it's a gap:** Policy \u00a74.3 explicitly requires that *no* alert rule may be disabled without (a) CISO approval, (b) a compensating detection control, and (c) a maximum 90-day disable period. TUNE-305 fails three of these requirements simultaneously:\n- Approval was given only by Maria Santos (Security Operations Lead) \u2014 the justification field itself states \"CISO approval NOT obtained.\"\n- Status is \"Active \u2014 no expiration date set,\" violating the 90-day cap.\n- The compensating control (\"Basic CloudTrail monitoring for RDS API calls; manual weekly review of RDS audit logs by DBA team\") is weak \u2014 DBA team self-review of database privilege escalations creates a separation-of-duties concern, and CloudTrail does not capture in-database GRANT statements.\n- Additionally, no entry exists in the Security Exception Register for this disablement, unlike the properly managed TUNE-303/SEC-EXC-2025-020 case.\n\n**Severity:** **Critical** \u2014 Database privilege escalation is a high-impact detection use case, the policy violation is direct and unambiguous, and the exception governance process was bypassed entirely.\n\n---\n\n### Finding 2: Missed Weekly Privileged Activity Reviews (2 of 13 Weeks)\n\n**Document/Section:** Weekly Privileged Activity Review Report, weeks ending 2025-11-23 and 2025-12-21; Policy \u00a75.2\n\n**Why it's a gap:** Policy \u00a75.2 requires weekly review of privileged activity reports by the Security Operations Lead with sign-off. Two weeks (Thanksgiving and the week of Dec 21) were skipped with no make-up review, no delegation to a backup reviewer, and no documented exception. Privileged activity does not pause for holidays; the Dec 21 week notably overlaps with an SSL certificate rotation maintenance window. This represents a 15% control failure rate over the observation period.\n\n**Severity:** **High** \u2014 Recurring control failure with no compensating mechanism (e.g., backup reviewer, exception filing).\n\n---\n\n### Finding 3: Single Reviewer Dependency / No Backup Reviewer\n\n**Document/Section:** Weekly Privileged Activity Review Report (all weeks); Policy \u00a75.2\n\n**Why it's a gap:** Maria Santos is the sole reviewer for every completed week. There is no evidence of a designated backup or alternate reviewer, which directly caused Finding 2. Additionally, Maria Santos approves most of Kevin Park's alert tuning actions, including ones that affect rules she would later be the sole reviewer for \u2014 a separation-of-duties concern when combined with the single-point-of-failure issue.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 4: Source Exclusion Tunings Reduce Detection Surface Without Risk Re-Assessment\n\n**Document/Section:** Alert Tuning Log, TUNE-302 (Qualys scanner exclusion) and TUNE-307 (VPN gateway IP exclusion)\n\n**Why it's a gap:** Both tunings exclude entire IP source sets from detection rules. While the justifications are reasonable, source exclusions create blind spots:\n- TUNE-302: An attacker compromising the Qualys scanner host or spoofing scanner IPs would bypass brute-force detection. The compensating control (\"Scanner IPs logged separately via Qualys integration\") is logging, not alerting.\n- TUNE-307: Excluding VPN gateway IPs from impossible-travel detection effectively disables the rule for all VPN users, which is likely the majority of the workforce. The compensating control is again log correlation, not detection.\n\nThese were approved by Security Operations Lead only; policy \u00a74.2 permits this for tuning, but the *risk profile* of source exclusions warrants stronger compensating detection (e.g., behavioral baselines on excluded sources) than threshold tuning.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: No Evidence of Monthly Alert Rule Review\n\n**Document/Section:** Policy \u00a74.2; Alert Tuning Log\n\n**Why it's a gap:** Policy \u00a74.2 requires monthly review of all alert rules. The evidence provided shows only the *output* of tuning actions (7 actions in Q4), not evidence that a systematic monthly review of all rules occurred. Without a rule-inventory review record, it cannot be confirmed that rules with high false-positive rates were identified within the 10-business-day SLA, or that rules with *zero* alerts (potentially broken) were detected.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: Daily SIEM Dashboard Review Evidence Not Provided\n\n**Document/Section:** Policy \u00a76\n\n**Why it's a gap:** Policy \u00a76 mandates daily SIEM dashboard review with reviewer name, timestamp, findings summary, and sign-off. No daily review log was included in the evidence package. This is either an evidence-collection gap or a control gap; the auditor should request the daily review log before issuing an opinion.\n\n**Severity:** **Medium** (pending evidence; could escalate to High if logs do not exist)\n\n---\n\n## Items Reviewed and Determined NOT to Be Gaps\n\n- **TUNE-303 (GuardDuty crypto-mining disable):** Properly managed \u2014 CISO approval, robust layered compensating controls (CloudTrail + CrowdStrike + GPU dashboards), 90-day expiration, formal exception SEC-EXC-2025-020 filed and reviewed Dec 15 with documented outcome. This is the model the TUNE-305 disablement should have followed.\n- **SEC-EXC-2025-021 (delayed SIEM integration):** Properly managed exception \u2014 approved, time-bound, compensating controls in place, closed on schedule with validation evidence.\n- **Threshold-adjustment tunings (TUNE-301, 304, 306):** Reasonable justifications, documented FPR improvements, appropriate approver level per policy \u00a74.2.\n\n---\n\n## Overall Conclusion\n\nCC7.2 is **not met** for the Q4 2025 observation period. The combination of Finding 1 (critical) and Finding 2 (high) constitutes a material weakness. Polaris demonstrates capability for proper exception management (TUNE-303) but inconsistent application of that discipline (TUNE-305), indicating a process-adherence gap rather than a design gap. Recommend remediation with a follow-up testing window before issuing a clean opinion."
+}

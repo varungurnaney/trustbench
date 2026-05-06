@@ -1,0 +1,103 @@
+{
+  "id": "cc6.3-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.3",
+  "control_description": "The entity authorizes, modifies, or removes access to data, software functions, and other protected information assets based on roles and responsibilities, segregation of duties, and least privilege principles.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/data-access-policy.md",
+      "type": "policy",
+      "description": "NovaBridge Technologies data access policy with contractor access requirements and NDA framework"
+    },
+    {
+      "path": "evidence/contractor-access-register.csv",
+      "type": "spreadsheet",
+      "description": "Active contractor access register showing all current contractor data access grants with NDA status, SOW references, and access scope"
+    },
+    {
+      "path": "evidence/database-access-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 database access audit log showing query activity by contractors"
+    },
+    {
+      "path": "evidence/nda-register.csv",
+      "type": "spreadsheet",
+      "description": "NDA register showing executed NDAs for all contractors with signature dates and coverage scope"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating NovaBridge Technologies' contractor data access controls under CC6.3. NovaBridge engages contractors from several consulting firms for product development and data analytics projects. Review all evidence to assess whether contractor data access is appropriately authorized, time-limited, and revoked upon project completion. Several situations require judgment about whether access persistence is acceptable when NDAs are in place but projects have concluded.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Contractor Priya Mehta (DataForge Analytics) retains production read access 45 days after project SOW-NB-2025-034 completion",
+      "description": "The contractor access register shows Priya Mehta (DataForge Analytics, SOW-NB-2025-034) with SELECT access to customer_analytics, order_history, and user_behavior tables. The SOW end date was November 15, 2025. The NDA register confirms an executed NDA (NDA-2025-DF-003, signed August 1, 2025) with indefinite confidentiality coverage. However, the database access log shows Priya's account was still used on December 18, 2025 — 33 days after the SOW ended — running queries against customer_analytics. Policy Section 6.3 requires contractor access to be 'revoked within 48 hours of SOW completion or contract end date.' The NDA provides legal protection for data already accessed, but it does not authorize continued access after project completion. The auditor must determine whether the active NDA mitigates the risk of continued access, or whether the NDA is irrelevant to the access authorization question.",
+      "evidence_sources": ["evidence/contractor-access-register.csv", "evidence/database-access-log-q4.csv", "evidence/nda-register.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor must distinguish between two concepts: (1) NDA coverage protects against disclosure of data already accessed — it is a legal control, not an access control, (2) Access authorization requires a valid business need and approved SOW — the SOW ended Nov 15, so there is no current authorization for continued data access. The NDA does not extend the authorization to access data. Priya's continued query activity on Dec 18 demonstrates active use of unauthorized access, not just a dormant account. The 48-hour revocation SLA was exceeded by 33 days.",
+      "detection_criteria": {
+        "required_keywords": ["Priya Mehta", "SOW-NB-2025-034", "November 15", "December 18", "DataForge", "NDA", "48 hours", "active", "customer_analytics"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Contractor Marcus Webb (CloudNine Consulting) has database access with no NDA on file",
+      "description": "The contractor access register shows Marcus Webb (CloudNine Consulting, SOW-NB-2025-042) with SELECT access to product_catalog and feature_usage tables since October 1, 2025. The SOW is active through March 31, 2026. However, the NDA register has no entry for Marcus Webb or for CloudNine Consulting for 2025. Policy Section 6.1 states: 'All contractors must have an executed NDA on file before data access is provisioned.' The database access log confirms Marcus has been actively querying these tables throughout Q4 2025. The auditor must assess whether the absence of an NDA is a documentation gap (NDA exists but is not in the register) or a genuine control failure (access was provisioned without NDA).",
+      "evidence_sources": ["evidence/contractor-access-register.csv", "evidence/nda-register.csv", "evidence/database-access-log-q4.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor must consider: (1) the NDA register has no entry for Marcus Webb or CloudNine Consulting, (2) the policy requires NDA before access provisioning, (3) the access register shows access was granted Oct 1 — meaning either the NDA check was bypassed or the NDA exists but is not recorded, (4) the tables accessed (product_catalog, feature_usage) are Internal classification — lower sensitivity, (5) however, the control requires NDA regardless of data classification, (6) this could be a registration gap or a genuine control failure — the auditor should request the NDA itself.",
+      "detection_criteria": {
+        "required_keywords": ["Marcus Webb", "CloudNine", "SOW-NB-2025-042", "NDA", "no entry", "not in register", "Section 6.1", "before access"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Three contractors from AppDev Partners all share a single database account svc-appdev-team rather than individual accounts",
+      "description": "The contractor access register shows three AppDev Partners contractors (Jason Torres, Lisa Huang, Kevin Park) all listed under a single database account: svc-appdev-team. This is a shared account, not an individual account. Policy Section 6.2 requires 'individual database accounts for each contractor to maintain accountability and auditability.' The database access log shows svc-appdev-team made 247 queries in Q4 2025, but there is no way to determine which of the three contractors executed which query. The NDA register has individual NDAs for all three contractors. The auditor must determine whether shared contractor accounts create an unacceptable accountability gap.",
+      "evidence_sources": ["evidence/contractor-access-register.csv", "evidence/database-access-log-q4.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor must assess: (1) shared accounts violate the explicit policy requirement for individual accounts (Section 6.2), (2) 247 queries cannot be attributed to any individual contractor, (3) if a data breach occurred through this account, forensic investigation would be unable to identify the responsible individual, (4) this undermines the entire audit trail for contractor data access, (5) the NDA provides legal coverage per individual, but the shared account prevents individual accountability for actual data operations.",
+      "detection_criteria": {
+        "required_keywords": ["svc-appdev-team", "shared", "Jason Torres", "Lisa Huang", "Kevin Park", "AppDev Partners", "247", "individual", "accountability"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "NDA for DataForge Analytics (NDA-2025-DF-003) has indefinite confidentiality with no periodic review requirement",
+      "description": "The NDA register shows NDA-2025-DF-003 (DataForge Analytics, covering Priya Mehta) with confidentiality_duration listed as 'Indefinite' and next_review_date as null. Policy Section 6.4 states NDAs should be 'reviewed annually to ensure terms remain appropriate and the contractor's data handling obligations are current.' An indefinite NDA with no scheduled review means the legal protection may become outdated as data handling practices, regulations, or business relationships evolve. The auditor must weigh whether indefinite NDAs are a common and acceptable practice or whether the lack of periodic review creates a governance gap.",
+      "evidence_sources": ["evidence/nda-register.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "The auditor must consider: (1) indefinite NDAs are common in the industry, (2) the policy requires annual review but no review is scheduled, (3) an NDA that is never reviewed may not reflect current data protection obligations (e.g., new privacy regulations), (4) this is more of a legal governance gap than an access control gap, (5) the severity is low because the NDA still provides baseline protection even without review.",
+      "detection_criteria": {
+        "required_keywords": ["NDA-2025-DF-003", "indefinite", "no review", "annual", "Section 6.4", "DataForge", "null"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["contractor_access", "NDA", "access_persistence", "shared_accounts", "project_completion", "time_limited_access", "judgment", "accountability"]
+  }
+}

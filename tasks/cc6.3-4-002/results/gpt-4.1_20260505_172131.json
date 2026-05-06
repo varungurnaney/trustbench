@@ -1,0 +1,84 @@
+{
+  "task_id": "cc6.3-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:21:31.628516",
+  "score": {
+    "task_id": "cc6.3-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "bi-reporting",
+          "EXC-2025-070",
+          "exception",
+          "compensating"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "patient_records",
+          "RBAC matrix",
+          "PHI"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DAR-Q4-2025-017",
+          "k.shah",
+          "Privacy Officer",
+          "CISO",
+          "approval",
+          "patient_records"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "EXC-2025-065",
+          "svc-legacy-sync",
+          "expired",
+          "write access",
+          "reverted"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3991,
+    "output_tokens": 2085
+  },
+  "raw_response": "Below are detailed findings from the readiness assessment of evidence relating to CC6.3 \u2014 **Data Access Authorization**.\n\n---\n\n### 1. **Gap: Provisioning PHI Access Prior to Full Required Approvals**\n\n- **Related Section(s):**  \n  - Access Authorization Policy 3.2 (Access Request Process), 4.1 (PHI Access Controls)  \n  - Q4 2025 data access request tickets  \n- **Details:**  \n  - Ticket **DAR-Q4-2025-017** (Karen Shah, Data Science): Access to 'patient_records' and 'prescriptions' (Restricted\u2014PHI) was provisioned **after manager approval only**, before Data Owner and Privacy Officer sign-offs (which are both *required* for PHI per policy). Access was granted directly by DBA in advance of the full approval chain.\n- **Severity:** **High**\n- **Why:**  \n  - Unapproved PHI access is a direct HIPAA compliance risk and policy violation. Although the manager approved, policy and HIPAA require specific approvals before access to restricted data. There is also no indication this was handled under an exception, nor are compensating controls noted for this specific case.\n\n---\n\n### 2. **Gap: BI Reporting Role Accesses PHI Tables\u2014Exception Controls, but Possible Overbreadth**\n\n- **Related Section(s):**  \n  - Policy 3.1 (RBAC Matrix), 3.3 (Least Privilege), 4.1 (PHI Access Controls)  \n  - Exception Register (EXC-2025-070)  \n  - Database Role Export\n- **Details:**  \n  - The BI Reporting team (e.g., user r.patel) is assigned 'bi-reporting' role, granting SELECT on **all PHI tables** (patient_records, prescriptions, lab_results, etc.).\n  - Policy requires 'bi-reporting' to access reporting tables only and with CISO approval for PHI (masked). This access is provided under **EXC-2025-070** (exception).\n  - Exception specifies compensating controls (e.g., field masking, audit logging, row-level security, query volume alerts).\n  - 'bi-reporting' role grants access to full tables, but evidence doesn't specify whether **all** users\u2019 queries are forced through masked views only, or if *table-level* SELECT allows unmasked access.\n- **Severity:** **Medium**\n- **Why:**  \n  - Exception authorizes broad read access, but risk that the database role's privileges could theoretically allow bypassing masking if a user directly queries underlying tables. Policy (4.2) requires enforcement of masking for non-clinical PHI access, which is **referenced** in compensating controls but not evidenced in actual grant structure. Compensating controls were marked as \u201cconfirmed via audit,\u201d yet as an auditor, further monitoring of technical enforcement is recommended.\n\n---\n\n### 3. **Gap: Permanent Write Access for Service Account Used for Legacy Sync**\n\n- **Related Section(s):**  \n  - Policy 5 (Service Accounts), 5.2 (Temporary Elevated Access)  \n  - Exception Register (EXC-2025-065)  \n  - Database Role Export\n- **Details:**  \n  - Service account 'svc-legacy-sync' is assigned 'app-readwrite' for production, referenced as a temporary measure via **EXC-2025-065**.\n  - Exception expired on **2025-10-31** (now >1 month expired); as of December export, role is still granted.\n  - Exception register review outcome indicates sync migration complete and access \"should be reverted to read-only\"\u2014but it remains in place.\n- **Severity:** **High**\n- **Why:**  \n  - Failure to promptly revoke elevated access after exception expiration creates significant risk (continued write access to PHI in production by a non-human account, well after business need ended). This violates both least privilege and policy requirements on temporary access.\n\n---\n\n### 4. **Gap: Service Account Approval Ownership, but Not All Have Data Owner Approval**\n\n- **Related Section(s):**  \n  - Policy 5.1 (Service Account Governance), 3.2 (Access Request Process)\n  - Access Request Log\n- **Details:**  \n  - Several service accounts (e.g., svc-orion-api, svc-monitoring) are assigned roles (\u2018app-readwrite\u2019, \u2018app-readonly\u2019) with documented human owners.\n  - **svc-orion-api** is approved and assigned by James Chen (Data Owner)\u2014complies.\n  - **svc-monitoring** is assigned 'app-readonly' (presumably for security monitoring) by Victor Santos, not clearly the data owner; logs do not reflect full approval chain for service account access to Restricted data (audit_log table).\n- **Severity:** **Medium**\n- **Why:**  \n  - Policy requires Data Owner approval for sensitive service account provisioning. In the absence of clear documentation or ServiceNow ticket for each case, it's ambiguous whether all accounts have gone through the correct approvals for *Restricted* data access.\n\n---\n\n### 5. **Gap: Direct Table Grants Outside Approved RBAC Roles**\n\n- **Related Section(s):**  \n  - Policy 3.1 (RBAC Matrix), 3.3 (Least Privilege)\n  - Database Role Export, Access Request Log\n- **Details:**  \n  - **Karen Shah** (k.shah) has 'data-scientist' role (per policy, SELECT to masked views only).  \n  - Additionally, she has **direct SELECT grants on 'patient_records' and 'prescriptions'** (which by schema appear to be full, non-masked tables).\n  - While there was an access request (DAR-Q4-2025-017), this was provisioned before all approvals, and the **grant structure** here violates policy that only allows analytics (masked PHI) for 'data-scientist' role.\n  - No exception exists specifically for this; EXC-2025-058 covers de-identified access for development, but this is for separate S3 exports, not direct database grants.\n- **Severity:** **High**\n- **Why:**  \n  - Violates least privilege, role-permissions mapping, and segregation of duties for PHI. No evidence of required approvals or compensating controls for unmasked production PHI access by a data-scientist.\n\n---\n\n### 6. **Gap: Lack of Documented De-provisioning or Periodic Access Review Evidence for Certain Accounts**\n\n- **Related Section(s):**  \n  - Policy 6 (Access Reviews), 3.3 (Least Privilege)\n  - Exception Register, Database Role Export\n- **Details:**  \n  - While exceptions indicate quarterly reviews \"verified\" (per register), the database export as of December still contains expired exception assignments (e.g., 'svc-legacy-sync'), and direct grants for users who potentially no longer require access (e.g., k.shah direct table grants after project completion).\n  - No supporting evidence provided for actual quarterly access review outcomes (review sign-off, de-provisioning actions) for these users in this dataset.\n- **Severity:** **Medium**\n- **Why:**  \n  - May indicate either late or ineffective access reviews or gaps in follow-up on review outcomes. Compromises effectiveness of controls over least privilege and timely access removal.\n\n---\n\n### 7. **Observation: Segregation of Duties Controls Apparent and Effective**\n\n- **Related Section(s):**  \n  - Policy 3.4 (Segregation of Duties), Database Role Export\n- **Details:**  \n  - No evidence of users assigned both \u2018dba-admin\u2019 and application roles, or finance people with write to clinical/billing data, or developers with write to production. All admin privileges are restricted to database admin only.\n- **Severity:**  \n  - **Low** (Positive observation)\n- **Why:**  \n  - No conflict of duties observed; however, absence of issues is based on available snapshot \u2014 ongoing monitoring required.\n\n---\n\n## Findings Summary Table\n\n| # | Title                                                                                  | Policy Section(s)                      | Severity  |\n|---|----------------------------------------------------------------------------------------|----------------------------------------|-----------|\n| 1 | Provisioning PHI access before full approval chain                                     | 3.2, 4.1, Access Request Log           | High      |\n| 2 | BI reporting role PHI access with exception\u2014possible technical masking gaps             | 3.1, 3.3, 4.1, Exception Register      | Medium    |\n| 3 | Service account write access not revoked after exception expiry                        | 5.2, Exception Register, Role Export   | High      |\n| 4 | Service account Restricted data access without clear Data Owner approval               | 5.1, 3.2                               | Medium    |\n| 5 | Direct table grants (unmasked PHI) to data scientist outside approved roles            | 3.1, 3.3, Role Export, Access Requests | High      |\n| 6 | Lack of documented de-provisioning/periodic review follow-up for users/accounts        | 6, 3.3, Exception Register             | Medium    |\n| 7 | Segregation of duties enforced per user-role assignment                                | 3.4                                    | Low (Obs) |\n\n\n---\n\n### Remediation Recommendations\n\n- **Immediate revoke and review** any PHI access or write-access not following full approval workflow or with expiring exceptions (Findings 1, 3, and 5).\n- **Strengthen technical enforcement** of masking for all BI/reporting access to PHI (Finding 2).\n- **Ensure service account requests are supported** by documented Data Owner approval (Finding 4).\n- **Enhance access review documentation** \u2014 retain evidence of review activities, removal decisions, and follow-up actions (Finding 6).\n- **Continue monitoring for segregation of duties** and document positive findings for audit (Finding 7).\n\n---\n\n**If you need mapping to Trust Criteria, management response templates, or deeper technical or process review detail, please ask!**"
+}

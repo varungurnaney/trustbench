@@ -1,0 +1,112 @@
+{
+  "id": "cc7.3-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.3",
+  "control_description": "The entity responds to identified security incidents by executing a defined incident response program to understand, contain, remediate, and communicate security incidents, as appropriate.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/incident-response-policy.md",
+      "type": "policy",
+      "description": "Meridian Analytics incident response policy defining severity levels, SLAs, post-mortem requirements, and action item tracking procedures"
+    },
+    {
+      "path": "evidence/incident-log-q4-2025.csv",
+      "type": "log",
+      "description": "Q4 2025 incident register showing 8 security incidents with timestamps, severity, triage/containment/resolution times, and post-mortem status"
+    },
+    {
+      "path": "evidence/post-mortem-inc-2025-301.md",
+      "type": "report",
+      "description": "Post-mortem report for INC-2025-301 (SEV-1 unauthorized API access and cross-tenant data breach)"
+    },
+    {
+      "path": "evidence/post-mortem-inc-2025-305.md",
+      "type": "report",
+      "description": "Post-mortem report for INC-2025-305 (SEV-1 ransomware on build server)"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Meridian Analytics covering the observation period Q4 2025 (October 1 - December 31, 2025). Review the incident response policy, incident log, and post-mortem reports. Cross-reference the documents to identify SLA breaches, gaps between policy and practice, and any untracked or incomplete action items. Assess whether CC7.3 requirements for incident response are met.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "INC-2025-307 (SEV-2) triage SLA breached by 9.8 hours — after-hours alert went unresponded overnight",
+      "description": "INC-2025-307 (unauthorized IAM role assumption from unknown IP) was detected at 2025-12-09T22:14:00Z but not triaged until 2025-12-10T08:05:00Z — a delay of 591 minutes (9.85 hours). The policy Section 3.1 requires SEV-2 triage within 30 minutes with 24/7 coverage. This alert was detected at 10:14 PM and not triaged until 8:05 AM the next day, indicating the after-hours on-call process failed for this incident. An unauthorized IAM role assumption is a serious security event — 9.8 hours of unresponded unauthorized access could allow significant lateral movement or data exfiltration.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "The incident log shows INC-2025-307 with triage_minutes=591. Policy requires 30-minute triage for SEV-2 with 24/7 coverage. 591 minutes is approximately 20x the SLA. The timestamps show detection at 10:14 PM and triage at 8:05 AM — suggesting no one responded overnight. This is the most significant SLA breach in the log.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-307", "591 minutes", "30-minute SLA", "overnight", "IAM role assumption", "9.8 hours", "24/7 coverage"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-304 (SEV-2) triage SLA breached — 73 minutes vs. 30-minute requirement",
+      "description": "INC-2025-304 (database failover with 35% customer impact) was detected at 2025-11-10T19:42:00Z but not triaged until 2025-11-10T20:55:00Z — 73 minutes, exceeding the 30-minute SEV-2 triage SLA. Additionally, containment took 4.8 hours, slightly exceeding the 4-hour SEV-2 containment SLA. The incident affected 35% of customers with 47 minutes of read latency.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "Incident log shows triage_minutes=73 for INC-2025-304. Policy requires 30-minute SEV-2 triage. 73 minutes is 2.4x the SLA. Containment was 4.8 hours vs. 4-hour SLA — also breached. Two SLA violations on a single incident affecting 35% of customers.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-304", "73 minutes", "30-minute SLA", "database failover", "4.8 hours", "containment SLA"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-301 post-mortem has 2 of 6 action items still incomplete 2.5 months after incident",
+      "description": "The post-mortem for INC-2025-301 (SEV-1 cross-tenant data breach, October 14) lists 6 action items. The incident log shows only 4 of 6 are completed as of the end of Q4. The post-mortem report shows PM-301-AI-05 (per-tenant data egress logging, due January 31) and PM-301-AI-06 (customer data access audit trail, due February 28) are 'Not Started.' While PM-301-AI-05 and PM-301-AI-06 have future due dates, PM-301-AI-03 (API anomaly detection model, due December 15) and PM-301-AI-04 (retroactive security review of contractor endpoints, due December 31) are listed as 'In Progress' — these should be verified for on-time completion. The SEV-1 data breach exposed 2,341 customer accounts, making timely completion of preventive actions critical.",
+      "evidence_sources": ["evidence/post-mortem-inc-2025-301.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "The post-mortem lists 6 action items. The incident log shows 4 completed. Cross-referencing the post-mortem detail: AI-01 and AI-02 are complete, AI-03 and AI-04 are in progress with December due dates, AI-05 and AI-06 are not started with January/February due dates. For a SEV-1 data breach, 2 items still not started after 2.5 months is a concern — especially since the items relate to preventing recurrence of the exact breach type.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-301", "PM-301-AI-05", "PM-301-AI-06", "Not Started", "action items incomplete", "2,341 customer accounts", "data breach"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "INC-2025-305 post-mortem has 5 of 8 action items not started 4+ weeks after SEV-1 ransomware incident",
+      "description": "The post-mortem for INC-2025-305 (SEV-1 ransomware, November 28) lists 8 action items. Only 1 is complete (PM-305-AI-08), 1 is in progress (PM-305-AI-01), and 6 are 'Not Started' as of the post-mortem date (December 5). The incident log shows 5 of 8 action items completed, but cross-referencing with the post-mortem detail reveals a discrepancy — the post-mortem from December 5 shows only 1 complete. If 5 were completed between December 5 and December 31, that is rapid progress, but the post-mortem itself shows a slow start on critical items like build server application whitelisting (PM-305-AI-02) and network segmentation (PM-305-AI-07).",
+      "evidence_sources": ["evidence/post-mortem-inc-2025-305.md", "evidence/incident-log-q4-2025.csv"],
+      "expected_reasoning": "Post-mortem lists 8 action items, most 'Not Started' as of December 5. Incident log shows 5 completed by end of Q4. Items like PM-305-AI-02 (application whitelisting on build servers, due Dec 31) and PM-305-AI-07 (build server network segmentation, due Jan 15) directly address the root cause. Even if some were completed by quarter end, the initial post-mortem shows only 1 of 8 complete, suggesting a lag in initiating remediation for a SEV-1 incident.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-305", "PM-305-AI-02", "PM-305-AI-07", "Not Started", "ransomware", "action items", "build server", "application whitelisting"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No post-mortem reports provided for INC-2025-302, INC-2025-304, or INC-2025-307 despite SEV-2 requirement",
+      "description": "The incident log shows 3 SEV-2 incidents (INC-2025-302, INC-2025-304, INC-2025-307) with post_mortem_status marked as 'Complete.' However, only post-mortem reports for the 2 SEV-1 incidents (INC-2025-301, INC-2025-305) were provided as evidence. Policy Section 4.1 requires post-mortems for both SEV-1 and SEV-2 incidents. Without the SEV-2 post-mortem reports, the auditor cannot verify that they meet the required content standards (timeline, root cause, impact, action items per Section 4.2) or that action items are being properly tracked. This is an evidence gap — the post-mortems may exist but were not provided for audit review.",
+      "evidence_sources": ["evidence/incident-log-q4-2025.csv", "evidence/incident-response-policy.md"],
+      "expected_reasoning": "The log shows 3 SEV-2 incidents marked as post-mortem complete, but no SEV-2 post-mortem reports are in the evidence package. The auditor should note this as an evidence gap and request the missing reports. Without them, the quality and completeness of SEV-2 post-mortems cannot be verified.",
+      "detection_criteria": {
+        "required_keywords": ["INC-2025-302", "INC-2025-304", "INC-2025-307", "SEV-2 post-mortem", "not provided", "evidence gap", "missing reports"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 10
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["incident_response", "cross_reference", "SLA_breach", "post_mortem", "action_item_tracking", "multi_document"]
+  }
+}

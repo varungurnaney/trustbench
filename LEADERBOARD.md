@@ -1,57 +1,64 @@
 # TrustBench Leaderboard
 
-> Preliminary results from 20 tasks across 8 controls. 6 models evaluated on all 15 D4-D5 tasks.
+153 tasks. 17 compliance themes. 6 models. 920 total runs.
 
 ## Overall Rankings
 
-Average F1 score across D4-D5 tasks. F1 penalizes both missed gaps (recall) and false positives (precision).
+| Rank | Model | Provider | Avg Score |
+|------|-------|----------|-----------|
+| 1 | Claude Sonnet 4.6 | Anthropic | **70%** |
+| 2 | GPT-5.5 | OpenAI | **64%** |
+| 3 | Claude Opus 4.7 | Anthropic | **63%** |
+| 4 | Claude Haiku 4.5 | Anthropic | **59%** |
+| 5 | GPT-4.1 | OpenAI | **57%** |
+| 6 | GPT-4o | OpenAI | **40%** |
 
-| Rank | Model | Provider | Avg F1 | Tasks | Highest | Lowest |
-|------|-------|----------|--------|-------|---------|--------|
-| 1 | GPT-5.5 | OpenAI | **77%** | 13 | 100% (5 tasks) | 18% (cc6.6-5) |
-| 2 | Claude Sonnet 4.6 | Anthropic | **75%** | 13 | 100% (3 tasks) | 36% (cc9.1-5) |
-| 3 | Claude Opus 4.7 | Anthropic | **63%** | 13 | 91% (cc7.2-5, cc8.1-5) | 33% (cc6.6-5) |
-| 4 | GPT-4.1 | OpenAI | **60%** | 15 | 92% (cc8.1-4) | 0% (cc3.1-5) |
-| 5 | Claude Haiku 4.5 | Anthropic | **51%** | 15 | 92% (cc8.1-4) | 12% (cc3.1-5) |
-| 6 | GPT-4o | OpenAI | **40%** | 15 | 100% (cc8.1-4) | 0% (cc3.1-5) |
+## By Difficulty
 
-## Per-Task Breakdown
+| Level | Tasks | Sonnet | GPT-5.5 | Opus | Haiku | GPT-4.1 | GPT-4o |
+|-------|-------|--------|---------|------|-------|---------|--------|
+| D1 | 17 | 90% | 93% | 93% | 93% | 69% | 50% |
+| D2 | 17 | 95% | 92% | 98% | 96% | 84% | 59% |
+| D3 | 17 | 74% | 72% | 68% | 68% | 74% | 71% |
+| D4 | 51 | 58% | 56% | 50% | 45% | 46% | 29% |
+| D5 | 51 | 67% | 50% | 53% | 47% | 49% | 30% |
 
-Sorted by 6-model average (hardest first). All models evaluated on every task.
+D1-D2 are near-saturated (most models >90%). D4-D5 produce the differentiation.
 
-| Task | D | Control | GPT-5.5 | Sonnet | Opus | GPT-4.1 | Haiku | GPT-4o | Avg |
-|------|---|---------|---------|--------|------|---------|-------|--------|-----|
-| cc3.1-5-001 | D5 | Risk Assessment | 57% | 55% | 40% | 0% | 12% | 0% | **27%** |
-| cc9.1-5-001 | D5 | Vendor Mgmt | 33% | 36% | 40% | 20% | 14% | 20% | **27%** |
-| cc6.6-5-001 | D5 | System Boundaries | 18% | 55% | 33% | 20% | 27% | 20% | **29%** |
-| cc7.2-4-001 | D4 | Monitoring | 86% | 89% | 67% | 40% | 42% | 20% | **57%** |
-| cc6.3-4-001 | D4 | Data Access | 60% | 67% | 57% | 55% | 67% | 40% | **58%** |
-| cc6.1-5-001 | D5 | Logical Access | 89% | 83% | 67% | 62% | 30% | 31% | **60%** |
-| cc6.6-4-001 | D4 | System Boundaries | 100% | 100% | 57% | 55% | 25% | 44% | **64%** |
-| cc9.1-4-001 | D4 | Vendor Mgmt | 100% | 73% | 67% | 67% | 80% | 18% | **67%** |
-| cc3.1-4-001 | D4 | Risk Assessment | 86% | 73% | 62% | 80% | 67% | 44% | **69%** |
-| a1.2-4-001 | D4 | Backup/Recovery | 100% | 100% | 62% | 80% | 32% | 60% | **72%** |
-| cc8.1-5-001 | D5 | Change Mgmt | 73% | 83% | 91% | 71% | 43% | 80% | **74%** |
-| cc7.2-5-001 | D5 | Monitoring | 100% | 67% | 91% | 91% | 91% | 43% | **80%** |
-| cc8.1-4-001 | D4 | Change Mgmt | 100% | 92% | 80% | 92% | 92% | 100% | **93%** |
+## By Control Domain
+
+| Control | Domain | Tasks | Sonnet | GPT-5.5 | Opus | Haiku | GPT-4.1 | GPT-4o | Avg |
+|---------|--------|-------|--------|---------|------|-------|---------|--------|-----|
+| CC8.1 | Change Mgmt | 9 | 84% | 75% | 77% | 71% | 76% | 68% | **75%** |
+| C1.1 | Data Protection | 9 | 83% | 84% | 83% | 68% | 77% | 53% | **75%** |
+| CC6.3 | Data Access | 9 | 67% | 69% | 71% | 71% | 68% | 48% | **66%** |
+| CC3.1 | Risk Assessment | 9 | 70% | 66% | 65% | 56% | 64% | 55% | **63%** |
+| CC1.1 | Governance | 9 | 78% | 56% | 65% | 61% | 68% | 48% | **63%** |
+| CC6.1 | Logical Access | 9 | 75% | 70% | 70% | 63% | 60% | 38% | **63%** |
+| A1.2 | Backup/Recovery | 9 | 75% | 64% | 58% | 64% | 72% | 34% | **61%** |
+| P1.1 | Privacy | 9 | 70% | 67% | 63% | 56% | 64% | 42% | **61%** |
+| CC6.6 | System Boundaries | 9 | 72% | 70% | 58% | 55% | 66% | 40% | **60%** |
+| CC7.2 | Monitoring | 9 | 76% | 61% | 72% | 70% | 35% | 24% | **56%** |
+| CC7.1 | Vuln Mgmt + Maint | 18 | 68% | 61% | 58% | 54% | 54% | 35% | **55%** |
+| CC9.1 | Vendor Mgmt | 9 | 64% | 66% | 57% | 57% | 59% | 29% | **55%** |
+| CC6.4 | Physical Security | 9 | 61% | 59% | 53% | 63% | 55% | 33% | **54%** |
+| PI1.1 | System Integrity | 9 | 62% | 58% | 52% | 51% | 49% | 46% | **53%** |
+| CC1.4 | HR Security | 9 | 69% | 54% | 62% | 54% | 30% | 36% | **51%** |
+| CC7.3 | Incident Response | 9 | 51% | 44% | 51% | 39% | 16% | 11% | **36%** |
 
 ## Observations
 
-1. **Clear model tiers.** GPT-5.5 and Sonnet form the top tier (75-77%). Opus and GPT-4.1 form the middle tier (60-63%). Haiku and GPT-4o are the lower tier (40-51%).
+1. **Sonnet leads at 70%.** Consistent across domains — never the worst on any control. GPT-5.5 (64%) and Opus (63%) are close behind.
 
-2. **No model dominates across all tasks.** GPT-5.5 leads overall but scored 18% on system boundary judgment. Opus scored 91% on change management judgment (beating GPT-5.5's 73%). GPT-4o scored 100% on change management but 0% on risk assessment. Every model has blind spots.
+2. **Incident Response is the hardest domain (36% avg).** GPT-4.1 scores 16% and GPT-4o scores 11%. These tasks require cross-referencing incident logs, post-mortem reports, and SLA timelines — the most evidence-intensive tasks in the benchmark.
 
-3. **Three tasks average below 30%.** cc3.1-5-001 (risk assessment judgment), cc9.1-5-001 (vendor incident judgment), and cc6.6-5-001 (boundary materiality) are the hardest. GPT-4.1 and GPT-4o scored 0% on risk assessment judgment — they couldn't identify any of the planted gaps with the right keywords.
+3. **D1-D2 are saturated.** 4 of 6 models score >90% on D1-D2. These tasks validate the harness but don't differentiate frontier models.
 
-4. **Change management is the easiest domain.** cc8.1-4-001 averages 93% across all 6 models. Even GPT-4o scored 100%. The change management evidence structure (change log CSV + policy + CAB minutes) is well-suited to LLM cross-referencing.
+4. **D4-D5 scores are 29-67%.** This is where the benchmark has discriminative power. The gap between best (Sonnet 58-67%) and worst (GPT-4o 29-30%) is 30+ percentage points.
 
-5. **Recall is easy. Precision separates.** Haiku achieves 100% recall on 8 of 15 tasks but averages only 51% F1 because it over-reports massively (precision often below 30%). GPT-5.5 and Sonnet are more concise.
+5. **GPT-4o consistently trails.** 40% overall, with 11% on Incident Response and 24% on Monitoring. It struggles with multi-document cross-referencing and red herring filtering.
 
-6. **GPT-4.1 is inconsistent.** 92% on change management and 91% on monitoring judgment, but 0% on risk assessment judgment. It performs well on structured evidence (change logs, alert data) but fails on ambiguous judgment tasks.
-
-7. **Haiku punches above its weight on some tasks.** 92% on cc8.1-4 (matching GPT-4.1) and 91% on cc7.2-5 (matching Opus). But it collapses on tasks requiring precision — 12% on cc3.1-5 and 14% on cc9.1-5 due to extreme over-reporting.
-
-8. **GPT-4o is the weakest frontier model on compliance.** 40% average, with 0% on risk assessment and 18% on vendor management. It flags red herrings without checking exception registers and misses domain-specific findings (SOC 2 carve-out methodology).
+6. **F1 scoring favors concise models.** Sonnet reports fewer extra findings than Opus, which contributes to its higher precision. See the scoring caveat in the README.
 
 ## Regenerate
 

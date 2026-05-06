@@ -1,0 +1,90 @@
+{
+  "task_id": "cc6.3-4-003",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T19:01:50.892425",
+  "score": {
+    "task_id": "cc6.3-4-003",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 0.4615384615384615,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "COMPLIANCE_AUDITOR",
+          "EXC-2025-088",
+          "PCI",
+          "masking"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "j.crawford",
+          "ACCOUNTADMIN",
+          "Risk Analytics",
+          "DBA team",
+          "no exception",
+          "November 18",
+          "admin_setup"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "MARKETING_ANALYTICS",
+          "cardholder_data",
+          "masking",
+          "PCI",
+          "h.park",
+          "s.mehta",
+          "b.chen",
+          "no exception"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SVC_DATA_PIPELINE",
+          "SYSADMIN",
+          "minimum",
+          "ETL",
+          "least privilege"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4287,
+    "output_tokens": 3603
+  },
+  "raw_response": "# CC6.3 Compliance Readiness Assessment \u2014 Vertex Financial\n**Auditor Review Date:** December 22, 2025\n**Control:** CC6.3 \u2014 Access Authorization, Modification, and Removal\n\n---\n\n## Scope and Methodology\n\nEvidence reviewed includes the Data Access Authorization Policy (POL-DAP-2025-011 v3.5), the Snowflake role and grant export dated December 22, 2025, the CISO-approved exception register, and the data retention policy and penetration test summary (noted as not directly relevant to CC6.3 and set aside accordingly). The Snowflake grant data was cross-referenced line by line against policy requirements and active exceptions to distinguish genuine gaps from legitimately authorized deviations.\n\n---\n\n## Confirmed Findings\n\n---\n\n### FINDING 1: Marketing Personnel Granted Unmasked Access to PCI Cardholder Data Without Exception or Approval\n\n**Severity: Critical**\n\n**Policy References:** POL-DAP-2025-011 \u00a73.1 (MARKETING_ANALYTICS role scope), \u00a73.3 (Segregation of Duties), \u00a74.1 (Cardholder Data Access), \u00a74.2 (Data Masking)\n\n**Detail:**\n\nThree Marketing department employees \u2014 h.park, s.mehta, and b.chen \u2014 hold SELECT privileges on `VERTEX_PROD.PAYMENTS.cardholder_data` under the MARKETING_ANALYTICS role. All three grants were made on September 22, 2025, by `admin_setup` (notably not `dba_setup`, the standard granting account).\n\nThis is a compound violation on four distinct dimensions:\n\n1. **Role scope violation:** The policy explicitly defines the MARKETING_ANALYTICS role as scoped to \"marketing and customer behavior data\" with the specific annotation \"No PCI data access.\" Granting access to the `PAYMENTS.cardholder_data` table directly contradicts the defined role boundary.\n\n2. **Segregation of duties violation:** \u00a73.3 states plainly that \"Marketing personnel must not access raw PCI data.\" This is an unconditional prohibition, not a threshold requiring approval \u2014 it reflects a categorical control boundary.\n\n3. **PCI cardholder data access requirements not met:** \u00a74.1 requires PCI-DSS annual certification, documented business need, and tripartite approval (Data Owner + CISO + Privacy Officer) for any direct cardholder data table access. No such documentation exists in the exception register for any of these three users.\n\n4. **Masking policy not applied:** \u00a74.2 mandates dynamic data masking for all non-DBA roles on PCI-scoped tables. The grant export records `masking_policy` as blank for all three rows, and the notes explicitly state \"no masking policy applied.\" Cardholder data is therefore visible in the clear to marketing analysts.\n\nThere is no entry in the exception register corresponding to any of these grants. The exception register contains EXC-2025-088 (audit access) and EXC-2025-082 (risk team, RISK schema only with no PCI access) \u2014 neither covers marketing personnel or the PAYMENTS schema. The grants were provisioned outside normal workflow (`admin_setup`), which raises an additional question about whether standard provisioning controls were bypassed, though that process control question falls outside the strict boundary of CC6.3.\n\nThis finding is rated **Critical** because it combines an explicit policy prohibition, absence of any compensating controls, absence of any exception approval, exposure of live PCI-scoped cardholder data without masking to three individuals with no business need established, and a segregation of duties failure \u2014 all simultaneously.\n\n---\n\n### FINDING 2: ACCOUNTADMIN Granted to Risk Analytics Employee Without Authorization or Business Justification\n\n**Severity: Critical**\n\n**Policy References:** POL-DAP-2025-011 \u00a73.1 (ACCOUNTADMIN approval requirements), \u00a73.3 (Segregation of Duties)\n\n**Detail:**\n\nj.crawford, a Risk Analytics department employee, holds ACCOUNTADMIN privileges on the Snowflake system as of November 18, 2025. The grant was made by `admin_setup` and the notes field reads: \"Granted for report debugging \u2014 no formal request.\"\n\nThis finding is critical for the following reasons:\n\n1. **Approval requirements not satisfied:** \u00a73.1 specifies that ACCOUNTADMIN grants require approval from CISO + CTO + Board. The notes confirm explicitly that no formal request was made. This is not a gap in documentation of an otherwise legitimate process \u2014 the notes self-report the absence of any request.\n\n2. **Role restriction violated:** \u00a73.1 further restricts ACCOUNTADMIN to \"DBA team only.\" j.crawford is in Risk Analytics, which is categorically outside the DBA team. There is no exception in the register for this grant.\n\n3. **Segregation of duties violated:** \u00a73.3 states that \"Risk team personnel must not have administrative database privileges.\" ACCOUNTADMIN is the highest privilege level in Snowflake \u2014 full system administration including the ability to create and modify roles, grant any privilege, and access any data. This is a direct and unambiguous violation of the stated segregation of duties control.\n\n4. **No exception or compensating controls documented:** The exception register contains no entry for j.crawford. There are no compensating controls noted in the grant record.\n\n5. **Granting account anomaly:** The grant was made by `admin_setup` rather than `account_admin`, which is the granting account used for the other ACCOUNTADMIN grants (k.petrov). This warrants investigation as to whether the grant was made through a non-standard or unauthorized pathway.\n\nThe \"report debugging\" justification, even if operationally understandable, describes a temporary, task-specific need \u2014 which by policy would require a time-limited formal exception with compensating controls, not a standing ACCOUNTADMIN grant. As of December 22, 2025, the grant remains active more than a month after the stated purpose.\n\n---\n\n### FINDING 3: SVC_DATA_PIPELINE Service Account Holds SYSADMIN Privileges in Violation of Service Account Policy\n\n**Severity: High**\n\n**Policy References:** POL-DAP-2025-011 \u00a75.1 (Service Account Governance)\n\n**Detail:**\n\nThe service account `SVC_DATA_PIPELINE` holds SYSADMIN privileges across ALL databases, schemas, and tables, with scope noted as ALL/ALL/ALL. \u00a75.1 explicitly states: \"Broad roles (SYSADMIN, ACCOUNTADMIN) are prohibited for service accounts.\" This is an unambiguous prohibition, not a guideline subject to risk appetite \u2014 the word \"prohibited\" is used.\n\nAn ETL pipeline service account requires specific, targeted permissions on source and destination schemas. The existing DATA_ENGINEER role assigned to human ETL engineers (p.nakamura, r.okafor) illustrates what scoped ETL permissions look like: SELECT/INSERT/UPDATE on ETL_STAGING and ETL_TARGET. SYSADMIN is vastly broader than any legitimate ETL pipeline operation requires, providing the ability to create warehouses, modify roles, and access all data across the environment.\n\nNo exception exists in the register for this service account's privilege level.\n\n**Additional note:** The owner listed is \"Derek Huang,\" but no employee named Derek Huang appears in the Snowflake user grant data in any other capacity. This should be verified to confirm the designated owner is a current employee with awareness of the account's scope.\n\n---\n\n### FINDING 4: DBA_ADMIN User k.petrov Also Holds ACCOUNTADMIN \u2014 Excessive Privilege Accumulation\n\n**Severity: High**\n\n**Policy References:** POL-DAP-2025-011 \u00a73.1 (DBA_ADMIN scope, ACCOUNTADMIN scope), \u00a73.2 (Least Privilege)\n\n**Detail:**\n\nk.petrov holds both DBA_ADMIN (ALL PRIVILEGES on all databases) and ACCOUNTADMIN (ALL SYSTEM PRIVILEGES). While k.petrov is the Primary DBA and ACCOUNTADMIN may be a justified role for that position given the CISO + CTO + Board approval requirement, the cumulative effect is that a single individual holds both full data-plane access (DBA_ADMIN) and full control-plane access (ACCOUNTADMIN) simultaneously.\n\n\u00a73.2 requires that \"Users receive minimum permissions for their specific duties.\" The combination of DBA_ADMIN and ACCOUNTADMIN in a single account creates a single point of total compromise \u2014 if k.petrov's account is compromised or acts maliciously, there is no internal Snowflake control that constrains the blast radius. Separation of data administration and system administration duties is a recognized least-privilege and segregation of duties best practice, and the policy's own structure \u2014 defining DBA_ADMIN and ACCOUNTADMIN as distinct roles with different approval thresholds \u2014 implies they are intended to be held separately or at minimum in limited combination.\n\nThe policy does not explicitly prohibit dual-holding but also provides no guidance authorizing it. The absence of any documented review or compensating control for this accumulation (e.g., session logging, dual-person integrity for sensitive operations) is the gap. This should be documented as a compensating control or the dual-role assignment should be formally justified in the exception register.\n\n---\n\n### FINDING 5: ANALYST_READONLY User a.williams Has Access to Accounts Payable \u2014 Potential Financial Segregation of Duties Concern\n\n**Severity: Medium**\n\n**Policy References:** POL-DAP-2025-011 \u00a73.3 (Segregation of Duties \u2014 Finance write access), \u00a73.2 (Least Privilege)\n\n**Detail:**\n\na.williams (Finance department) holds SELECT privileges on `general_ledger`, `accounts_receivable`, and `accounts_payable` under ANALYST_READONLY. The other Finance analyst, m.thompson, has access to only `general_ledger` and `accounts_receivable`.\n\n\u00a73.3 addresses Finance personnel write access controls (dual approval required), and the access here is read-only, so the specific dual-approval requirement for write access is not triggered. However, simultaneous read access to both accounts_receivable and accounts_payable for a single analyst \u2014 without documented justification for why that combined view is necessary \u2014 is a least-privilege concern. In financial environments, an analyst who can read both sides of the payables/receivables ledger has sufficient visibility to identify or potentially facilitate fraud schemes, even without write access.\n\nThis finding is lower severity because: (a) access is SELECT only, (b) the ANALYST_READONLY role was provisioned through `dba_setup` following normal workflow, and (c) no policy section explicitly prohibits combined read access to these schemas. However, for a SOC 2 Type II period, the absence of documented business justification for the broader scope relative to m.thompson creates a least-privilege documentation gap that auditors will question.\n\n---\n\n### FINDING 6: DATA_ENGINEER r.okafor Lacks Grants to ETL_TARGET Schema Present for Peer p.nakamura\n\n**Severity: Low**\n\n**Policy References:** POL-DAP-2025-011 \u00a73.2 (Least Privilege \u2014 access should reflect specific duties)\n\n**Detail:**\n\np.nakamura (DATA_ENGINEER) holds grants on both `ETL_STAGING` and `ETL_TARGET`. r.okafor (DATA_ENGINEER, same role) holds a grant only on `ETL_STAGING` with no ETL_TARGET grant. This asymmetry may be entirely appropriate if r.okafor's duties are limited to staging operations \u2014 which would represent correct least-privilege application. However, the grant data provides no notes explaining the difference in scope between the two engineers in the same role.\n\nThe concern is not that r.okafor has too much access, but the inverse: if r.okafor does require ETL_TARGET access to perform their duties and it is missing, there is a provisioning completeness gap. More relevant to CC6.3, the absence of explanatory documentation means auditors cannot verify whether the differential is intentional (good least-privilege) or an oversight (incomplete provisioning). Either way, the access grant documentation does not provide sufficient basis to confirm that access reflects actual role requirements.\n\n---\n\n## Findings Investigated and Closed \u2014 No Gap\n\nThe following items were examined and determined to have valid supporting evidence:\n\n**EXC-2025-088 \u2014 Compliance Auditor Access (s.lee and n.brooks):** The COMPLIANCE_AUDITOR grants for both users align fully with the approved exception. Masking policy `pci_card_masking` is applied, the virtual warehouse `AUDIT_WH_TIMELIMITED` matches the compensating control described in the exception, the December 15 review confirmed active controls, and the expiration date of January 31, 2026 remains in the future. No gap.\n\n**EXC-2025-082 \u2014 Risk Team Transaction Data (d.santos):** d.santos holds SELECT on RISK schema tables only (risk_models, transaction_summaries, fraud_indicators). The exception was renewed through June 5, 2026 following the December 1 review. The grant data confirms no access to PAYMENTS or PCI tables. The exception specifies \"no PCI table access\" and the grant data confirms this. No gap.\n\n**DBA_ADMIN count (k.petrov and l.huang):** \u00a73.1 limits DBA_ADMIN to \"maximum 2 named individuals.\" Exactly two individuals hold this role. No gap on headcount.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Policy Reference |\n|---|---------|----------|-----------------|\n| 1 | Marketing users with unmasked PCI cardholder data access \u2014 no exception, no masking, explicit prohibition | **Critical** | \u00a73.1, \u00a73.3, \u00a74.1, \u00a74.2 |\n| 2 | ACCOUNTADMIN granted to Risk Analytics employee without approval or formal request | **Critical** | \u00a73.1, \u00a73.3 |\n| 3 | SVC_DATA_PIPELINE service account holds prohibited SYSADMIN role | **High** | \u00a75.1 |\n| 4 | k.petrov holds both DBA_ADMIN and ACCOUNTADMIN with no compensating control documentation | **High** | \u00a73.1, \u00a73.2 |\n| 5 | a.williams holds combined AR and AP read access without documented business justification | **Medium** | \u00a73.2, \u00a73.3 |\n| 6 | r.okafor ETL_TARGET access asymmetry undocumented \u2014 intent cannot be confirmed | **Low** | \u00a73.2 |\n\n---\n\n## Auditor Recommendations\n\n**Immediate (Critical findings):** Revoke Marketing user access to `PAYMENTS.cardholder_data` pending proper review. If a business need is subsequently established, process through the formal exception workflow with required approvals and enforce masking before reinstatement. Revoke j.crawford's ACCOUNTADMIN grant immediately; if debugging access is still required, scope it narrowly and process a time-limited exception.\n\n**Short-term (High findings):** Reprovision `SVC_DATA_PIPELINE` with a scoped role that limits access to source and destination schemas only. Review whether k.petrov's dual-role accumulation requires a compensating control entry or formal exception documentation.\n\n**Medium-term:** Document the business justification for a.williams's combined AP/AR access in the access request system, and resolve the r.okafor ETL_TARGET asymmetry with explicit documented intent in either direction."
+}

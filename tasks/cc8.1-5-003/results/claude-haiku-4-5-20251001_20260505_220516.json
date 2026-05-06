@@ -1,0 +1,78 @@
+{
+  "task_id": "cc8.1-5-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T22:05:16.814098",
+  "score": {
+    "task_id": "cc8.1-5-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-905",
+          "CHG-910",
+          "SC-003",
+          "major version",
+          "Express.js",
+          "PostgreSQL",
+          "misclassified",
+          "standard change"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-910",
+          "PostgreSQL",
+          "PHI",
+          "data integrity",
+          "bypassed",
+          "HIPAA",
+          "patient data",
+          "major version"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "SC-003",
+          "ambiguity",
+          "classification",
+          "major",
+          "minor",
+          "catalog"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3476,
+    "output_tokens": 2803
+  },
+  "raw_response": "# CC8.1 Change Management Control \u2014 Readiness Assessment\n\n## Summary\nEvidence review identifies **one Critical finding** and **one High finding** related to change categorization and catalog scope governance. The organization demonstrates generally strong change authorization, testing, and approval processes for Normal changes, but has a material control gap in Standard Change Catalog enforcement for major version upgrades.\n\n---\n\n## Finding 1: Misclassification of Major Version Upgrades as Standard Changes\n\n**Title:** Express.js and PostgreSQL major version upgrades improperly classified under SC-003 standard change scope\n\n**Document References:**\n- Change Log: CHG-905 (Express.js 4.x \u2192 5.0) and CHG-910 (PostgreSQL 14.9 \u2192 15.4)\n- Change Management Policy (POL-CHG-024), Section 4, Table entry SC-003\n- CAB Meeting Minutes, December 11, 2025 (Karen Liu's concern)\n\n**Why This Is a Gap:**\n\n1. **Explicit Policy Violation:** POL-CHG-024 Section 4, SC-003 states the scope limitation as *\"patch version only (x.y.Z)\"* and *\"Third-party library patch updates only.\"* Major version upgrades (4.x\u21925.0 and 14\u219215) explicitly violate this constraint by transitioning across major and minor version boundaries, not just patch levels.\n\n2. **Missing Risk Acknowledgment:** Major version upgrades carry substantively different risk profiles than patch updates:\n   - API breaking changes (Express.js 4\u21925 is known to have breaking changes)\n   - Data format migrations (PostgreSQL major versions)\n   - Potential security/behavioral implications requiring deeper validation\n   - These were appropriately flagged by Karen Liu as \"arguably exceed the catalog scope\"\n\n3. **Circumvention of Governance:** By classifying CHG-905 and CHG-910 as standard changes, both bypassed:\n   - CAB review and formal approval\n   - Risk assessment documentation (both marked \"Low\" risk despite being major upgrades)\n   - Formal security and data integrity validation (unlike CHG-902, CHG-907, CHG-911, which received explicit security/clinical review)\n   - Clinical Data Manager review (Dr. James Park was absent from November 19 CAB meeting where similar concerns could have been escalated)\n\n4. **Incomplete Remediation:** While Karen Liu raised the concern and recommended catalog review, the action item (\"Hana to circulate updated SC-003 language\") remains open/unclosed. There is no evidence that:\n   - The changes were retroactively reclassified or re-reviewed\n   - Lessons learned were documented\n   - Preventive controls were implemented to prevent recurrence\n\n5. **Audit Trail Weakness:** The change log notes for both CHG-905 and CHG-910 attempt to justify the classification retroactively (\"Major version upgrade. Developer classified as standard per SC-003...All CI tests passed\"), suggesting the misclassification may have been recognized post-deployment but not formally corrected.\n\n**Impact on CC8.1:** CC8.1 requires that changes be \"authorized...designed, developed or acquired, configured, documented, tested, [and] approved\" according to a documented control framework. Bypassing formal authorization and approval workflows for changes that exceed documented catalog scope represents a material control failure.\n\n**Severity:** **CRITICAL**\n\n**Recommendation:**\n- Immediately reclassify CHG-905 and CHG-910 as Normal changes and conduct retroactive CAB review and formal approval\n- Document the risk assessment and rationale for deployment without prior approval\n- Update SC-003 language to explicitly list prohibited change types (e.g., \"Excludes major version upgrades (x.0, X.0) and security-critical patches\")\n- Implement a pre-deployment checklist requiring catalog entry version scope verification before standard change deployment\n- Retest both changes with security and data integrity validation prior to next production deployment, if not already performed at that rigor level\n\n---\n\n## Finding 2: Incomplete Standard Change Catalog Governance Process\n\n**Title:** Identified catalog scope ambiguity not resolved through formal governance mechanism\n\n**Document References:**\n- Change Management Policy (POL-CHG-024), Section 4.1 (Standard Change Catalog Governance)\n- CAB Meeting Minutes, December 11, 2025 (action item assigned)\n- Change Log, Q4 2025 (CHG-905 and CHG-910 deployment dates: November 10 and December 8)\n\n**Why This Is a Gap:**\n\n1. **Catalog Review Lag:** Section 4.1 states the catalog is \"reviewed semi-annually by the CAB,\" but provides no mechanism for rapid clarification when ambiguity is discovered (as happened December 11). The next semi-annual review would not occur until February 2026, leaving a 2-month period where SC-003 scope remains undefined and enforceable only through developer judgment.\n\n2. **No Escalation Trigger:** The policy does not require that unresolved catalog scope questions trigger interim guidance, interim change to Normal process, or emergency CAB sessions. Karen Liu's concern was noted but no emergency governance action was initiated.\n\n3. **Lack of Accountability:** The action item (\"Hana to circulate updated SC-003 language clarifying version scope\") has no assigned deadline, no follow-up mechanism, and no documented closure. No evidence of the updated language circulated or approved is provided.\n\n4. **Risk During Remediation:** Between December 11 (when ambiguity was raised) and December 18 (last change in Q4), a developer could have made similar misclassifications. The December 18 change (CHG-912, log retention) properly used SC-005, but this appears to be coincidence rather than enforced control.\n\n**Impact on CC8.1:** CC8.1 requires documented design and testing of change processes. An undefined or ambiguous catalog scope undermines the documented control framework's enforceability and creates conditions for inconsistent application.\n\n**Severity:** **HIGH**\n\n**Recommendation:**\n- Within 5 business days: CAB to formally approve updated SC-003 language (or issue interim guidance document) and communicate to all developers\n- Define an \"interim CAB escalation\" trigger (e.g., any change where developer uncertainty exists about catalog applicability)\n- Assign explicit ownership and target completion date for all governance action items\n- Implement a confirmation step in the change submission process: \"Confirm this change falls within the documented scope of [catalog entry]. If uncertain, submit as Normal change.\"\n- Document closure of the December 11 action item with evidence of communication and training completion\n\n---\n\n## Finding 3: Inconsistent Documentation of Testing Evidence for Standard Changes\n\n**Title:** Standard changes lack consistent testing documentation standards\n\n**Document References:**\n- Change Log, Q4 2025: CHG-903, CHG-906, CHG-909, CHG-912 vs. CHG-905, CHG-910\n\n**Why This Is a Gap:**\n\nWhile not as severe as the misclassification, this represents a minor control consistency gap:\n\n- CHG-903 (OS patches): \"Auto-rollback enabled\" \u2014 operational control, not test evidence\n- CHG-906, CHG-909, CHG-912: \"N/A\" in testing_evidence column\n- CHG-905, CHG-910: \"CI tests passed\" with pass rate documented (99.1%, 98.4%)\n\nPOL-CHG-024 Section 3.2 requires \"Automated test suite must pass with minimum 96% pass rate\" but does not explicitly state whether this applies to Standard changes. The inconsistency suggests either:\n1. Different standard changes have different requirements (policy ambiguity), or\n2. Testing documentation is incomplete for some standard changes\n\n**Impact on CC8.1:** CC8.1 requires changes to be \"tested\" and \"approved.\" Inconsistent documentation makes it difficult to audit whether testing actually occurred or to assess test coverage across change types.\n\n**Severity:** **MEDIUM**\n\n**Recommendation:**\n- Clarify in POL-CHG-024 Section 3.2 whether automated testing requirements apply to all change categories or only Normal changes\n- If standard changes do not require formal testing, document the risk acceptance rationale (e.g., \"operational controls mitigate risk\")\n- Standardize testing documentation in the change log for all changes requiring testing (add comment fields to explain \"N/A\" results)\n\n---\n\n## Finding 4: Missing Post-Implementation Verification Documentation for PHI-Impacting Changes\n\n**Title:** PHI data integrity verification not systematically documented for all PHI-impacting changes\n\n**Document References:**\n- Change Log: CHG-902, CHG-907, CHG-911 show \"data-integrity-[CHG#].pdf\" attached\n- Change Log: CHG-905 (Express.js 4.x \u2192 5.0) and CHG-910 (PostgreSQL 14.9 \u2192 15.4) do not reference data integrity validation despite touching database and application layers affecting PHI data flow\n- HIPAA Compliance Summary, Section \"PHI Data Flow Changes in Q4\"\n\n**Why This Is a Gap:**\n\nExpress.js and PostgreSQL changes affect the data pathway for PHI. While the changelog shows \"post_impl_verified: Yes\" for both CHG-905 and CHG-910, there is no evidence of *data integrity* verification specifically:\n\n- No \"data-integrity-905.pdf\" or \"data-integrity-910.pdf\" referenced\n- No evidence that PHI data flows were tested post-deployment\n- No confirmation that encryption, data validation, or clinical data mappings remain intact after major version transitions\n\nPOL-CHG-024 Section 3.5 requires \"PHI data integrity check for changes affecting patient data\" but does not specify *how* this differs from general post-implementation verification or who is accountable.\n\n**Impact on CC8.1:** Changes to systems handling PHI must be validated to ensure patient data confidentiality, integrity, and availability. Without documented data integrity verification, there is no audit trail confirming that CC8.1's intent (authorizing changes that \"meet its objectives\" including HIPAA compliance) was satisfied.\n\n**Severity:** **MEDIUM**\n\n**Recommendation:**\n- Conduct a post-hoc data integrity validation audit for CHG-905 and CHG-910 with results documented and signed off by Karen Liu and Dr. James Park\n- Update POL-CHG-024 Section 3.5 to define \"PHI data integrity check\" explicitly: scope, test procedures, required evidence, and responsible parties\n- For CHG-905: Validate Express.js routing and middleware do not inadvertently expose or modify PHI during API calls\n- For CHG-910: Validate PostgreSQL 15.4 handles existing data types, indexes, and access controls correctly; verify backup/recovery procedures work with new version\n\n---\n\n## Summary Table\n\n| Finding | Severity | Category | Owner | Timeline |\n|---------|----------|----------|-------|----------|\n| 1. Major version upgrades misclassified as standard changes | **CRITICAL** | Change Categorization | VP Engineering | Immediate |\n| 2. Unresolved catalog scope ambiguity | **HIGH** | Governance Process | CAB | 5 business days |\n| 3. Inconsistent testing documentation | **MEDIUM** | Documentation | VP Engineering | 2 weeks |\n| 4. Missing PHI data integrity verification | **MEDIUM** | Testing/Validation | Security & Compliance Lead | 2 weeks |\n\n---\n\n## Conclusion\n\n**CC8.1 Readiness: NOT READY**\n\nWhile Prism Health demonstrates strong governance structures (CAB process, formal policy, role segregation) and handles most Normal changes with appropriate rigor, the misclassification of CHG-905 and CHG-910 represents a material breach of the documented change management framework. The absence of resolved governance guidance for catalog scope ambiguity compounds this risk.\n\nThe organization should address the Critical finding before asserting SOC 2 Type II compliance for the Q4 2025 period. Findings 2\u20134 should be resolved to prevent recurrence and strengthen ongoing control effectiveness."
+}

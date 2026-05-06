@@ -1,0 +1,101 @@
+{
+  "id": "cc1.1-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.1",
+  "control_description": "The entity demonstrates a commitment to integrity and ethical values.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/code-of-conduct.md",
+      "type": "policy",
+      "description": "Hargrove Digital Solutions code of conduct and ethics policy with training requirements and enforcement provisions"
+    },
+    {
+      "path": "evidence/training-completion-report.csv",
+      "type": "spreadsheet",
+      "description": "Ethics training and code of conduct acknowledgment completion report for all employees in 2025"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Exception register tracking approved deviations from policies including ethics training exemptions"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/employee-satisfaction-survey-q3.md",
+      "type": "report",
+      "description": "Q3 2025 employee pulse survey results — not directly relevant to CC1.1 code of conduct assessment"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Hargrove Digital Solutions covering the audit period January 1 - December 31, 2025. Review all provided evidence artifacts and assess the operating effectiveness of controls under CC1.1 (Commitment to Integrity and Ethical Values). Focus on whether the code of conduct program, ethics training, and acknowledgment requirements are being fulfilled. The organization maintains an exception register for approved deviations — consider whether exceptions with documented compensating controls adequately address apparent gaps before flagging them as findings. Not all documents may be relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "CTO has not completed annual ethics training or signed CoC acknowledgment for entire 2025 — exception expired without remediation",
+      "description": "The training completion report shows EMP-011 (Brian Foster, CTO) has not completed the annual ethics training (due March 31, 2025) and has not signed the Code of Conduct acknowledgment as of December 31, 2025. Multiple reminders were sent (April 5, May 1, June 1, July 15) with no compliance. The exception register shows EXC-2025-011 was granted by the Board Audit Committee in May 2025 giving the CTO until August 20 to complete training, with compensating controls (CEO personal briefing). The CEO briefing was confirmed as completed May 25. However, the exception expired August 20 with status 'Not Remediated' — the CTO still has not completed the formal training or acknowledgment. The Ethics Committee escalated to the Board in September 2025, but no resolution is documented. A C-suite executive refusing to complete ethics training for an entire year — despite multiple reminders, a Board-approved exception, and Board escalation — is a severe tone-at-the-top concern for CC1.1. The CTO's non-compliance undermines the organization's stated commitment to integrity and sends a signal that executive accountability is optional.",
+      "evidence_sources": ["evidence/training-completion-report.csv", "evidence/exception-register.csv", "evidence/code-of-conduct.md"],
+      "expected_reasoning": "Training report shows CTO non-compliant all year. Exception EXC-2025-011 granted May, expired August 20 without remediation. CEO briefing done but formal requirements not met. Escalated to Board September but no resolution. Multiple reminders ignored. C-suite non-compliance is a tone-at-the-top issue directly impacting CC1.1.",
+      "detection_criteria": {
+        "required_keywords": ["CTO", "Brian Foster", "EXC-2025-011", "not completed", "expired", "August 20", "Board", "escalated", "tone-at-the-top", "non-compliant"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "New hire Robert Chang's late training completion has a valid exception — not a finding",
+      "description": "EMP-015 (Robert Chang) completed new hire ethics training 38 days after start date, exceeding the 14-day deadline by 24 days. This initially appears to be a compliance gap. However, the exception register shows EXC-2025-010 was granted by the Ethics Committee on April 25, 2025, providing a 30-day extension due to immediate assignment to a critical project. Compensating controls were in place: the direct manager conducted a verbal walkthrough of key CoC sections, and the employee signed a written acknowledgment of core principles pending formal training. The training was eventually completed on July 10, 2025 within the extended timeline. The HR team updated the onboarding checklist to prevent recurrence. This is NOT a finding — the exception process worked as designed.",
+      "evidence_sources": ["evidence/training-completion-report.csv", "evidence/exception-register.csv", "evidence/code-of-conduct.md"],
+      "expected_reasoning": "Robert Chang training late (38 days vs 14-day requirement). Check exception register: EXC-2025-010 approved with compensating controls (manager verbal walkthrough, written core principles acknowledgment). Training completed. Process updated to prevent recurrence. Exception properly managed. Not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["Robert Chang", "EXC-2025-010", "exception", "compensating controls", "verbal walkthrough", "completed", "not a finding", "onboarding"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["gap", "violation", "deficiency", "non-compliant"]
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CTO exception approved by Board Audit Committee but CEO set as compensating control — conflict of interest in enforcement",
+      "description": "Exception EXC-2025-011 for the CTO's ethics training was requested by the CEO and approved by the Board Audit Committee. The compensating control was 'CEO to personally brief CTO on key ethics updates.' The CTO (Brian Foster) reports directly to the CEO (Angela Morrison, per training report showing EMP-016 as CEO). Having the CEO — who requested the exception — serve as the compensating control for an executive who reports to her creates a conflict: the same person who advocated for waiving the requirement is responsible for ensuring the spirit of the requirement is met. When the CTO failed to complete training by the August 20 deadline, the exception expired without renewal, suggesting the CEO's oversight was insufficient. The enforcement chain (CEO requests exception, CEO provides compensating control, CTO doesn't comply, exception expires) reveals a gap in executive accountability mechanisms.",
+      "evidence_sources": ["evidence/exception-register.csv", "evidence/training-completion-report.csv"],
+      "expected_reasoning": "CEO requested CTO exception. CEO was the compensating control. CTO didn't comply. Exception expired. The enforcement mechanism relies on the same reporting line that created the non-compliance. Board involvement suggests recognition of the issue but the execution failed.",
+      "detection_criteria": {
+        "required_keywords": ["CEO", "CTO", "exception", "compensating control", "requested", "conflict", "expired", "enforcement", "accountability"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Ethics training completion rate below 100% with no documented follow-up process for overdue completions",
+      "description": "The training completion report shows 2 of 20 sampled employees completed training late (EMP-010 Karen Zhang, 15 days late; EMP-015 Robert Chang, 24 days late beyond the exception period). While EMP-015 had a valid exception, EMP-010 (Karen Zhang, a manager) completed 15 days late with no corresponding exception in the register. The notes cite 'PTO conflict' but the Code of Conduct (Section 8.1) requires completion by March 31 with no stated exception for PTO. The HR notification came on April 1 but no formal corrective action or exception was documented. This suggests that for non-executive personnel, late completions are informally resolved without the rigor of the exception process.",
+      "evidence_sources": ["evidence/training-completion-report.csv", "evidence/exception-register.csv", "evidence/code-of-conduct.md"],
+      "expected_reasoning": "Karen Zhang (manager) completed training 15 days late with no exception in register. Only cited PTO conflict. No formal exception process followed unlike Robert Chang who had EXC-2025-010. Inconsistent application of exception process for different employees.",
+      "detection_criteria": {
+        "required_keywords": ["Karen Zhang", "15 days late", "no exception", "PTO", "manager", "inconsistent", "informal"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["code_of_conduct", "ethics_training", "tone_at_the_top", "executive_compliance", "red_herring", "exception_register", "noise_document", "CTO_non_compliance"]
+  }
+}

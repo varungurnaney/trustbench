@@ -1,0 +1,83 @@
+{
+  "task_id": "p1.1-4-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T13:09:30.144897",
+  "score": {
+    "task_id": "p1.1-4-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.42857142857142855,
+    "f1": 0.6,
+    "score": 0.6,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "respect_opt_out",
+          "false",
+          "GA4 migration"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "migration",
+          "DPO-2025-041",
+          "v3.1",
+          "re-consent",
+          "not required"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "3 years",
+          "5 years",
+          "Health Assessment",
+          "retention",
+          "discrepancy",
+          "inaccurate"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "nh_health_session",
+          "health assessment",
+          "sensitive"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5709,
+    "output_tokens": 2675
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 P1.1 Privacy Notice\n**Entity:** Nextera Health Ltd\n**Period:** Q3\u2013Q4 2025\n**Control:** P1.1 \u2014 Notice to Data Subjects\n\n---\n\n## Assessment Summary\n\nThe privacy policy (v4.0, effective July 1, 2025) provides a broadly competent foundation for P1.1 compliance. However, cross-referencing the policy against the data retention schedule, CookieBot configuration, and consent records reveals several material discrepancies where the notice provided to data subjects does not accurately reflect actual practices. These are the substantive findings.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Health Assessment Data Retention Period Misrepresented in Privacy Policy\n\n**Severity: High**\n\n**Document References:**\n- Privacy Policy \u00a7 6 (Data Retention)\n- Data Retention Schedule, Row 3 (Health Assessment Data)\n\n**Gap:**\n\nThe privacy policy states that personal health information is retained for *\"a maximum of 3 years after your last interaction with the platform.\"* However, the data retention schedule shows that Health Assessment Data \u2014 the most sensitive category, including risk scores, wellness metrics, and self-reported health conditions \u2014 is retained for **5 years after last assessment**, justified by a clinical advisory board recommendation (CAB-2024-008).\n\nThis is a direct factual inaccuracy in the notice provided to data subjects. A user reading the privacy policy would reasonably believe their health data is deleted after 3 years; in practice it is held for 5. The legal basis entry for this row also lists \"legitimate interest\" alongside consent, which does not appear in the privacy policy's legal basis disclosure for health data. The discrepancy affects the most sensitive data category the platform processes and undermines the accuracy of the notice in a material way.\n\n**Note on legitimacy:** The 5-year retention has an internal justification documented (CAB-2024-008). The question is not whether the retention period is defensible \u2014 it may well be \u2014 but that the privacy policy does not reflect it. This is a notice failure, not necessarily a retention policy failure.\n\n---\n\n### Finding 2: Analytics Opt-Out Not Being Honored Despite Policy Representation\n\n**Severity: Critical**\n\n**Document References:**\n- Privacy Policy \u00a7 5 (Your Choices \u2014 Analytics Tracking)\n- CookieBot Configuration, `analytics` category, `respect_opt_out` field\n\n**Gap:**\n\nThe privacy policy makes an explicit, unqualified commitment to data subjects:\n\n> *\"You can opt out of non-essential analytics tracking at any time through our cookie preferences panel. We respect your choice and will not track your usage for analytics purposes once you opt out.\"*\n\nThe CookieBot configuration directly contradicts this. The `analytics` category has `\"respect_opt_out\": false`, with an internal comment explaining this was *\"Temporarily disabled during GA4 migration\"* with a target remediation date of November 1, 2025.\n\nThis means that during the assessment period (Q3\u2013Q4 2025), users who opted out of analytics \u2014 including USR-10202, USR-10204, USR-10209, and hundreds of others reflected in the consent records \u2014 were told their choice would be respected, but the system was configured not to honor it. This is not a documentation gap; it is an active misrepresentation in the privacy notice and a direct violation of the notice principle. Given the health context of this platform and the EU/UK GDPR jurisdiction, this is the most serious finding in this assessment. A migration timeline does not excuse a broken promise to data subjects in a live policy.\n\n---\n\n### Finding 3: `nh_health_session` Cookie Not Adequately Disclosed in Privacy Policy\n\n**Severity: High**\n\n**Document References:**\n- Privacy Policy \u00a7\u00a7 2, 3 (Information Collected Automatically; How We Use Your Information)\n- CookieBot Configuration, `analytics` category, `nh_health_session` cookie\n\n**Gap:**\n\nThe `nh_health_session` cookie is classified under the `analytics` category in CookieBot but its internal note reveals a materially different and more sensitive function:\n\n> *\"This cookie records which specific health assessment modules (cardiovascular, mental health, nutrition, sleep, etc.) the user has completed and their progression stage.\"*\n\nThis cookie tracks **health-category-specific behavioral data** \u2014 specifically whether a user has engaged with cardiovascular risk, mental health, nutrition, or sleep assessment modules. This constitutes health-related personal data under GDPR Article 9, not generic platform analytics.\n\nThe privacy policy's section on automatically collected information describes only generic technical and usage data (\"features accessed, assessment modules completed, session duration\") with no disclosure that health-domain-specific module completion is being tracked via a persistent 30-day cookie and fed into a personalization engine. The sensitivity of the underlying inference (e.g., that a user accessed mental health assessments) is not reflected in the notice. Furthermore, this cookie is placed in the `analytics` category, meaning users who opt out of analytics presumably intend to block it \u2014 yet `respect_opt_out` is currently false (see Finding 2), compounding the exposure.\n\n---\n\n### Finding 4: Google Analytics (GA4) Not Disclosed as a Data Sharing Recipient\n\n**Severity: Medium**\n\n**Document References:**\n- Privacy Policy \u00a7 7 (Data Sharing)\n- CookieBot Configuration, `analytics` category (cookies `_ga`, `_ga_NH4X2Y9Z`, `_gid`)\n\n**Gap:**\n\nThe privacy policy's data sharing section lists four third-party service providers: AWS, Stripe, SendGrid, and Intercom. Google (via GA4) and Datadog (via the `_dd_s` RUM cookie) are absent from this list, despite both being present in the CookieBot configuration as active integrations that receive user data.\n\nGA4 in particular involves data being sent to Google's servers, including behavioral data from EU/UK users, which triggers GDPR Article 13(1)(e) disclosure obligations (recipients or categories of recipients). Mixpanel is mentioned in the data retention schedule (Row 5) but also does not appear in the privacy policy's data sharing section.\n\nThe omission of Google/GA4, Mixpanel, and Datadog from the disclosed recipient list means data subjects are not receiving complete notice of who receives their data, which is a direct gap against P1.1 and the underlying GDPR transparency requirements.\n\n---\n\n### Finding 5: Privacy Policy Does Not Disclose Automated Personalization / Recommendation Engine\n\n**Severity: Medium**\n\n**Document References:**\n- Privacy Policy \u00a7\u00a7 2, 3\n- CookieBot Configuration, `nh_health_session` internal note\n\n**Gap:**\n\nThe CookieBot configuration reveals that the `nh_health_session` cookie feeds a **recommendation engine** that uses health assessment module completion data to personalize the user experience. The privacy policy describes the purpose \"Delivering personalized health assessments and wellness recommendations\" at a high level, but provides no notice that:\n\n- An automated personalization engine operates on health-domain-specific behavioral signals\n- Specific health module engagement data (cardiovascular, mental health, etc.) is an input to this engine\n\nWhere automated processing produces personalized outputs based on health data, GDPR Article 22 and transparency obligations under Article 13(2)(f) may require disclosure of the logic involved and the significance of such processing. The current notice is insufficiently specific to meet this standard and to allow data subjects to understand the nature of the processing applied to their health-related behavioral data.\n\n---\n\n### Finding 6: Retention Period for Health Profile Data Internally Inconsistent\n\n**Severity: Low**\n\n**Document References:**\n- Privacy Policy \u00a7 6 (Data Retention)\n- Data Retention Schedule, Rows 3 and 4\n\n**Gap:**\n\nThe privacy policy states health information is retained for a maximum of 3 years after last interaction, but Row 4 of the retention schedule (Health Profile Data \u2014 self-reported conditions, medications, allergies) shows a retention period of *\"Active account + 12 months\"*, which is shorter than the policy's stated 3-year maximum and also shorter than the 5-year period for Health Assessment Data (Row 3).\n\nThis creates a situation where closely related health data categories (profile vs. assessment data) are retained on materially different schedules, without that distinction being visible to data subjects. The privacy policy's single, consolidated statement about health information retention does not give data subjects an accurate picture of this differentiation. While less severe than Finding 1, it contributes to an inaccurate notice.\n\n---\n\n### Finding 7: Legal Basis for Health Assessment Data Inconsistently Disclosed\n\n**Severity: Low**\n\n**Document References:**\n- Privacy Policy \u00a7 4 (Legal Basis for Processing)\n- Data Retention Schedule, Row 3\n\n**Gap:**\n\nThe privacy policy lists \"Consent\" as the legal basis for health assessment data. The data retention schedule for the same data category (Row 3) lists the legal basis as *\"Consent + legitimate interest.\"* Relying on legitimate interest as an additional or alternative basis for processing special category health data would be legally significant (GDPR Article 9 does not list legitimate interest as a valid basis for special category data) and is also not disclosed to data subjects. Even if the internal annotation is erroneous rather than reflective of actual processing, it represents an inconsistency that warrants clarification and correction.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Primary Documents |\n|---|---------|----------|-------------------|\n| 1 | Health Assessment Data retention period understated in policy (3 yrs disclosed vs. 5 yrs actual) | **High** | Privacy Policy \u00a76; Retention Schedule Row 3 |\n| 2 | Analytics opt-out not honored despite explicit policy commitment | **Critical** | Privacy Policy \u00a75; CookieBot config |\n| 3 | `nh_health_session` cookie collects health-domain data not adequately disclosed | **High** | Privacy Policy \u00a72\u20133; CookieBot config |\n| 4 | Google Analytics, Mixpanel, and Datadog absent from data sharing disclosures | **Medium** | Privacy Policy \u00a77; CookieBot config; Retention Schedule Row 5 |\n| 5 | Automated health-data personalization engine not disclosed in notice | **Medium** | Privacy Policy \u00a73; CookieBot config |\n| 6 | Health Profile vs. Assessment Data retention distinction not visible to data subjects | **Low** | Privacy Policy \u00a76; Retention Schedule Rows 3\u20134 |\n| 7 | Legal basis for health assessment data inconsistent between policy and retention schedule | **Low** | Privacy Policy \u00a74; Retention Schedule Row 3 |\n\n---\n\n## Items Reviewed and Not Flagged\n\n- **Network Architecture (NET-ARCH-2025-v2):** Confirmed not relevant to P1.1 as labeled.\n- **Pre-v4.0 migrated consent records (CR-0011 through CR-0024):** The DPO assessment (DPO-2025-041) documenting that re-consent was not required is referenced consistently across all migrated records. Without evidence that the consent scope materially changed between v3.1 and v4.0, this is an acceptable migration approach and not flagged as a gap.\n- **DPO contact information (\u00a79):** Complete and appropriate.\n- **Data subject rights disclosure (\u00a710):** Comprehensive and covers applicable GDPR rights.\n- **Policy change notification commitment (\u00a711):** 30-day advance notice of material changes is a positive practice and exceeds minimum requirements."
+}

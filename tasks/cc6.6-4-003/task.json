@@ -1,0 +1,101 @@
+{
+  "id": "cc6.6-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.6",
+  "control_description": "The entity implements logical access security measures to protect against threats from sources outside its system boundaries.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/perimeter-security-policy.md",
+      "type": "policy",
+      "description": "Vertex Data perimeter security and boundary protection policy covering WAF, IDS/IPS, egress controls, and network segmentation"
+    },
+    {
+      "path": "evidence/cloud-armor-config.json",
+      "type": "config",
+      "description": "Cloud Armor WAF policy configurations for all production load balancers, including two load balancers without Cloud Armor"
+    },
+    {
+      "path": "evidence/ids-deployment-status.csv",
+      "type": "config",
+      "description": "Cloud IDS deployment status across all VPC networks showing coverage gaps in the management VPC"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/vendor-security-review-schedule.md",
+      "type": "report",
+      "description": "Vendor security review schedule and completed reviews for Q4 2025. Not directly relevant to CC6.6 system boundary controls."
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Vertex Data's system boundary protection controls for the Q4 2025 observation period. Review the perimeter security policy, Cloud Armor WAF configurations, and IDS deployment status. Assess whether CC6.6 requirements for boundary protection are met. Pay attention to both what is configured and what may be missing. Not all documents are relevant to this control.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Internal gRPC load balancer has no Cloud Armor policy",
+      "description": "The vtx-prod-internal-grpc-lb load balancer has no Cloud Armor policy. This appears to be a WAF coverage gap. However, this is an internal load balancer (type: internal) serving the gRPC service mesh, and the description notes it is 'protected by Istio mTLS.' Policy Section 3.1 requires Cloud Armor on 'public-facing endpoints' — internal load balancers are not public-facing. The Istio mTLS enforcement (Section 3.3) provides the boundary control for internal traffic. This is NOT a finding.",
+      "evidence_sources": ["evidence/cloud-armor-config.json", "evidence/perimeter-security-policy.md"],
+      "expected_reasoning": "The auditor should note the internal gRPC load balancer lacks Cloud Armor, then verify it is an internal load balancer, not public-facing. Section 3.1 applies only to public-facing endpoints. The Istio mTLS (Section 3.3) provides the authentication and encryption control for internal traffic.",
+      "detection_criteria": {
+        "required_keywords": ["vtx-prod-internal-grpc-lb", "internal", "Cloud Armor", "Istio mTLS", "not public-facing"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["internal load balancer", "not public-facing", "not a finding", "internal traffic", "Istio mTLS"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "External data export load balancer has no Cloud Armor WAF protection",
+      "description": "The vtx-prod-data-export-lb is an external-facing load balancer serving customer bulk data exports with no Cloud Armor policy. Policy Section 3.1 requires 'All public-facing endpoints must be served through Google Cloud Load Balancer with Cloud Armor security policies.' The data export endpoint is external-facing (type: external) and serves customer data, making it a direct policy violation. The endpoint uses signed URLs with 1-hour TTL for authentication, but this does not replace WAF protection — signed URLs authenticate the request but do not inspect for malicious payloads, SQL injection, or DDoS attacks. This external endpoint serving customer bulk data has no DDoS protection, no OWASP rule filtering, and no rate limiting.",
+      "evidence_sources": ["evidence/cloud-armor-config.json", "evidence/perimeter-security-policy.md"],
+      "expected_reasoning": "The auditor should identify vtx-prod-data-export-lb as external-facing with no Cloud Armor, compare to policy Section 3.1, and distinguish this from the internal gRPC load balancer (which is appropriately excluded). The signed URL authentication is a partial compensating control but does not replace WAF inspection.",
+      "detection_criteria": {
+        "required_keywords": ["vtx-prod-data-export-lb", "external", "no Cloud Armor", "Section 3.1", "signed URLs", "WAF", "customer data"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Webhook WAF policy missing XSS, LFI, RFI rules and has no rate limiting",
+      "description": "The vtx-prod-webhook-waf Cloud Armor policy has only a SQL injection rule (priority 1000) and a default allow rule. The frontend and API WAF policies include SQL injection, XSS, LFI, and RFI rules plus rate limiting. The webhook policy is missing XSS (priority 1100), LFI (priority 1200), RFI (priority 1300), and rate limiting (priority 2000). Additionally, adaptive protection is disabled on the webhook policy while it is enabled on the frontend and API policies. The webhook endpoint accepts inbound data from external sources, making it a high-value target for application-layer attacks. The inconsistency in WAF coverage suggests the webhook policy was either incompletely configured or not updated when the other policies were enhanced.",
+      "evidence_sources": ["evidence/cloud-armor-config.json", "evidence/perimeter-security-policy.md"],
+      "expected_reasoning": "The auditor should compare the three Cloud Armor policies and identify the webhook policy's reduced rule set. While SQL injection is covered, the absence of XSS, LFI, RFI rules and rate limiting creates gaps that the other policies address. The disabled adaptive protection means no DDoS mitigation on the webhook endpoint.",
+      "detection_criteria": {
+        "required_keywords": ["vtx-prod-webhook-waf", "XSS", "LFI", "RFI", "rate limiting", "adaptive protection", "disabled", "inconsistent"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Cloud IDS not deployed on management VPC which peers to production",
+      "description": "The IDS deployment status shows Cloud IDS is 'Not Deployed' on the management VPC (vtx-mgmt-vpc). Policy Section 4.1 requires 'Google Cloud IDS must be deployed on all production VPC networks.' While the management VPC is not technically a production VPC, it 'has peering to production via vtx-shared-vpc,' meaning it is a network path to production systems. The management VPC contains CI/CD runners and monitoring infrastructure — these are high-value targets for supply chain attacks. An attacker compromising the CI/CD pipeline through the management VPC could reach production without any IDS detection on the management network segment.",
+      "evidence_sources": ["evidence/ids-deployment-status.csv", "evidence/perimeter-security-policy.md"],
+      "expected_reasoning": "The auditor should note the management VPC has no IDS and has peering to production. While the policy says 'production VPC networks,' the management VPC is a network path to production and contains sensitive infrastructure (CI/CD). The lack of IDS on a VPC that peers to production means threats traversing this path would not be detected.",
+      "detection_criteria": {
+        "required_keywords": ["vtx-mgmt-vpc", "Cloud IDS", "not deployed", "peering", "production", "CI/CD", "management VPC"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["WAF", "Cloud_Armor", "IDS", "red_herring", "GCP", "boundary_protection", "egress_controls", "network_segmentation"]
+  }
+}

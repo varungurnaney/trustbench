@@ -1,0 +1,90 @@
+{
+  "id": "pi1.1-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "PI1.1",
+  "control_description": "The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/sdlc-policy.md",
+      "type": "policy",
+      "description": "Atlas Integration Corp SDLC policy defining data pipeline validation requirements, schema conformance checks, and dead letter queue monitoring"
+    },
+    {
+      "path": "evidence/data-integrity-check-logs.csv",
+      "type": "log",
+      "description": "Data integrity check logs for Q4 2025 with 49 entries across partner feeds showing record counts, DLQ activity, and schema conformance events"
+    },
+    {
+      "path": "evidence/static-analysis-scan-results.json",
+      "type": "report",
+      "description": "SonarQube SAST scan results with 18 findings including bugs in schema evolution handling and reconciliation amount comparison"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II audit of Atlas Integration Corp for Q4 2025 (October 1 - December 31, 2025). This organization operates data integration pipelines that ingest partner data feeds. Review the SDLC policy, data integrity check logs, and static analysis scan results. Assess whether PI1.1 requirements for complete and accurate processing are met. Pay attention to how the system handles schema changes from partners, the relationship between SAST findings and processing integrity, and the distinction between record count accuracy and data completeness. All reconciliation checks may show 'Pass' while data is still being lost.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Partner Gamma feed data silently dropped for 44 days — schema evolution handling discards new fields without notification",
+      "description": "Since November 15 (DIC-6028), Partner Gamma's feed has included two new fields (loyalty_tier and preferred_language) that are not in the Avro schema. The pipeline silently drops these fields because the schema validation is configured to drop unknown fields rather than reject or quarantine them. All record count reconciliation checks show 'Pass' because the record counts match — the records are processed, but the new fields are stripped. This creates a processing completeness gap: the source data contains information that the destination does not. The data integrity checks measure record count accuracy but not field-level completeness. DIC-6038 notes that 'Business team asked about loyalty_tier data on Dec 1 — told not available in feed' when in fact the data has been in the feed since November 15 and is being silently discarded. As of December 29 (DIC-6049), the fields have been dropped for 44 days with no schema update planned. Policy Section 5.2 requires 'Schema conformance (all output fields match expected types and formats)' and Section 6.1 states malformed records should be quarantined — but the system treats unknown fields as acceptable rather than non-conformant. This is a judgment call: is silently dropping data fields 'complete processing' if the record count matches?",
+      "evidence_sources": [
+        "evidence/data-integrity-check-logs.csv",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The auditor should trace the Partner Gamma schema change through the logs: DIC-6028 (Nov 15) first detects new fields, DIC-6032 (Nov 18) confirms fields still being silently dropped, DIC-6038 (Dec 2) shows business team was told data is not available when it is, and DIC-6049 (Dec 29) notes 44 days without action. Record count reconciliation passes because records are not dropped — only fields within records are dropped. The policy requires schema conformance validation but the pipeline is configured to silently ignore unknown fields. The business impact is concrete: loyalty_tier data that the business team wants is being discarded.",
+      "detection_criteria": {
+        "required_keywords": ["Partner Gamma", "loyalty_tier", "preferred_language", "silently dropped", "schema evolution", "44 days", "record count", "field-level", "DIC-6028", "business team", "not available"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "SQ-9112 floating point equality comparison in reconciliation could cause false pass results",
+      "description": "SQ-9112 flags a floating point equality comparison (==) instead of BigDecimal.compareTo in AmountReconciler.java line 93. This is used in the reconciliation checks that verify processing integrity. The notes state 'Using == instead of BigDecimal.compareTo for amount reconciliation. Could cause false positives in reconciliation checks.' If the reconciliation uses floating point equality, amounts that should match may not (due to IEEE 754 representation) and amounts that are slightly different may appear equal. This undermines the reliability of the reconciliation control that the organization depends on for PI1.1 compliance. The finding was detected December 10 and is within the 90-day Medium SLA, so it is not technically an SLA breach. However, the nature of the finding — it affects the integrity of the integrity control itself — makes it a higher-priority processing integrity concern than a typical Medium bug.",
+      "evidence_sources": [
+        "evidence/static-analysis-scan-results.json",
+        "evidence/sdlc-policy.md"
+      ],
+      "expected_reasoning": "The auditor should recognize that SQ-9112 is not just a code quality issue — it affects the reconciliation control that is central to PI1.1 compliance. A floating point comparison bug in the amount reconciler means the daily reconciliation checks in the data integrity logs could be reporting false Pass results. This creates a meta-level concern: the detective control designed to catch processing integrity issues may itself have a processing integrity flaw.",
+      "detection_criteria": {
+        "required_keywords": ["SQ-9112", "floating point", "BigDecimal", "AmountReconciler", "reconciliation", "false positive", "integrity control", "== comparison"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "SQ-9101 null pointer in schema evolution handler directly related to the Partner Gamma field-dropping issue",
+      "description": "SQ-9101 (High, null pointer dereference in SchemaEvolutionHandler.java line 89) notes that the 'Schema evolution handler does not check for null when partner feed adds new fields. NPE occurs when field is present but value is null. Affects partner-feed-gamma processing.' This finding is directly connected to the silent field-dropping issue: the schema evolution handler cannot properly handle new fields from partners. DIC-6028 specifically noted that '147 records contain loyalty_tier=null which differs from the field being absent' — this is exactly the scenario SQ-9101 describes. The handler crashes (NPE) when a new field is present with a null value, so the system's response is to drop all unknown fields silently rather than attempting to process them. The SAST finding confirms the root cause of the processing completeness gap.",
+      "evidence_sources": [
+        "evidence/static-analysis-scan-results.json",
+        "evidence/data-integrity-check-logs.csv"
+      ],
+      "expected_reasoning": "The auditor should connect SQ-9101 (NPE in SchemaEvolutionHandler when new fields have null values) with DIC-6028 (147 records with loyalty_tier=null). The SAST finding explains why the pipeline drops unknown fields — the schema evolution handler cannot safely process them. This connection between a code-level bug and a data-level processing integrity gap demonstrates why SAST findings should be evaluated in the context of their business impact, not just their technical severity.",
+      "detection_criteria": {
+        "required_keywords": ["SQ-9101", "SchemaEvolutionHandler", "null pointer", "partner-feed-gamma", "loyalty_tier=null", "DIC-6028", "schema evolution", "147 records"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["processing_integrity", "schema_evolution", "data_completeness", "reconciliation", "silent_data_loss", "judgment", "field_dropping", "partner_feeds"]
+  }
+}

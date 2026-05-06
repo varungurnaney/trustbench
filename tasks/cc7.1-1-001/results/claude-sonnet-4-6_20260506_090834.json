@@ -1,0 +1,73 @@
+{
+  "task_id": "cc7.1-1-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T09:08:34.275132",
+  "score": {
+    "task_id": "cc7.1-1-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "regular basis",
+          "scan frequency",
+          "undefined",
+          "cadence",
+          "measurable",
+          "weekly",
+          "monthly"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely manner",
+          "remediation SLA",
+          "severity",
+          "Critical",
+          "days",
+          "undefined"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "authenticated",
+          "unauthenticated",
+          "coverage",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1235,
+    "output_tokens": 2624
+  },
+  "raw_response": "# SOC 2 CC7.1 Readiness Assessment\n## Cirrus Technologies \u2014 Vulnerability Management Policy (POL-VM-001)\n\n---\n\n### Assessment Summary\n\nCC7.1 requires that the entity use **detection and monitoring procedures** to identify (1) changes to configurations that introduce new vulnerabilities, and (2) susceptibilities to newly discovered vulnerabilities. While POL-VM-001 provides a reasonable foundation, several gaps exist that would prevent a clean audit opinion under this control. Seven findings are documented below.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Scan Frequency Is Not Defined\n\n| Attribute | Detail |\n|---|---|\n| **Section** | \u00a73.3 \u2014 Scan Frequency |\n| **Severity** | **Critical** |\n\n**Gap:**\nThe policy states only that scans \"shall be performed on a regular basis to ensure timely identification of new vulnerabilities.\" No specific frequency is defined for any asset tier, environment type, or severity class. This is non-committal language that cannot be tested or enforced.\n\n**Why It Matters for CC7.1:**\nCC7.1 requires that detection procedures be operational and demonstrably effective. Without defined frequencies, an auditor cannot confirm that scanning constitutes a reliable detection mechanism. There is no baseline against which to measure compliance or identify lapses in coverage.\n\n**What Should Be Present:**\nExplicit, documented scan cadences tied to asset classification, such as:\n- Critical/internet-facing systems: continuous or weekly authenticated scans\n- Internal production systems: bi-weekly or monthly\n- Staging/endpoints: monthly\n- Ad-hoc scanning triggered by significant threat intelligence events or major infrastructure changes\n\n---\n\n### Finding 2: No Configuration Change Monitoring or Detection Procedure\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Policy-wide \u2014 absent |\n| **Severity** | **Critical** |\n\n**Gap:**\nThe policy addresses vulnerability scanning but contains **no reference to configuration change detection**. CC7.1 explicitly covers \"changes to configurations that result in the introduction of new vulnerabilities.\" There is no mention of:\n- File integrity monitoring (FIM)\n- Configuration drift detection\n- Security baseline enforcement or deviation alerting\n- Integration with change management processes to trigger security review\n\n**Why It Matters for CC7.1:**\nThis is one of the two primary pillars of CC7.1. A vulnerability scan identifies known CVEs but will not necessarily detect a misconfiguration introduced by a system change \u2014 for example, a firewall rule opened during an incident response that was never closed, or a service account granted excessive privileges during a deployment. The policy as written addresses only half of the control requirement.\n\n**What Should Be Present:**\nA dedicated section addressing:\n- Baseline configuration standards (e.g., CIS Benchmarks)\n- Automated detection of configuration deviations (FIM tools such as Tripwire, CrowdStrike FIM, or AWS Config)\n- Integration with the change management process to ensure security review is triggered by configuration changes\n- Alerting thresholds and response procedures for detected drift\n\n---\n\n### Finding 3: No Defined Remediation SLAs by Severity\n\n| Attribute | Detail |\n|---|---|\n| **Section** | \u00a75.2 \u2014 Remediation Procedures |\n| **Severity** | **High** |\n\n**Gap:**\nThe policy states remediation \"should be performed in a timely manner commensurate with the severity and risk of the vulnerability.\" No specific timeframes are defined for any severity tier. The word \"should\" also implies recommendation rather than requirement.\n\n**Why It Matters for CC7.1:**\nDetection without timely response does not satisfy the spirit of CC7.1. Auditors expect defined SLAs that demonstrate the entity acts on identified vulnerabilities within a measurable, risk-appropriate window. Without SLAs, it is impossible to determine whether remediation is occurring at a pace consistent with the entity's risk tolerance.\n\n**What Should Be Present:**\nMandatory SLAs using \"shall\" language, for example:\n\n| Severity | Remediation SLA |\n|---|---|\n| Critical | 15 days |\n| High | 30 days |\n| Medium | 90 days |\n| Low | 180 days or next scheduled maintenance |\n\nSLAs should also specify what constitutes the clock start (e.g., discovery date vs. confirmed date) and what action is required when SLAs cannot be met (escalation to exception process).\n\n---\n\n### Finding 4: Scanning Coverage Verification Lacks Rigor\n\n| Attribute | Detail |\n|---|---|\n| **Section** | \u00a73.2 \u2014 Scanning Scope |\n| **Severity** | **High** |\n\n**Gap:**\nThe policy states that network segments \"must be enumerated and validated against the asset inventory quarterly.\" However, there is no mention of:\n- How authenticated vs. unauthenticated scanning is handled\n- Whether scanning credentials are rotated and validated\n- How newly provisioned assets are detected and onboarded into the scanning program (i.e., scan coverage for ephemeral or cloud-native assets)\n- How coverage gaps are identified and remediated\n\n**Why It Matters for CC7.1:**\nIf assets are missing from scan scope, the detection mechanism has blind spots and the control cannot be considered effective. This is a frequent finding in cloud environments where asset inventory changes continuously. Quarterly reconciliation may also be insufficient for dynamic infrastructure.\n\n**What Should Be Present:**\n- A procedure for automatic enrollment of new assets into the scanning program (e.g., via integration with CMDB or cloud provider APIs)\n- Authenticated scanning requirements to improve scan depth\n- A process for validating scan credential health\n- Coverage metrics included in monthly reporting (e.g., percentage of in-scope assets scanned)\n\n---\n\n### Finding 5: No Threat Intelligence Integration or Emerging Vulnerability Procedure\n\n| Attribute | Detail |\n|---|---|\n| **Section** | Policy-wide \u2014 absent |\n| **Severity** | **High** |\n\n**Gap:**\nThe policy describes scheduled scanning but does not address how Cirrus Technologies responds to **newly disclosed vulnerabilities** outside of the regular scan cycle. There is no process for:\n- Monitoring threat intelligence feeds (e.g., CISA KEV, NVD, vendor advisories)\n- Triggering out-of-cycle scans or assessments in response to zero-day or actively exploited vulnerabilities\n- Establishing communication channels for urgent vendor advisories (e.g., Log4Shell-type events)\n\n**Why It Matters for CC7.1:**\nCC7.1 explicitly covers \"susceptibilities to newly discovered vulnerabilities.\" Relying solely on a periodic scan schedule means the organization may be exposed for weeks before a critical, actively exploited vulnerability is detected and acted upon. This represents a significant gap in the detection mechanism's responsiveness.\n\n**What Should Be Present:**\nA section covering:\n- Subscriptions to relevant threat intelligence sources (CISA KEV, vendor security bulletins, ISACs)\n- A defined trigger threshold for out-of-band scanning (e.g., any CVSS Critical vulnerability with active exploitation confirmed in the wild)\n- Responsibilities for monitoring and triaging incoming intelligence\n- Target response time for initiating out-of-cycle assessment (e.g., within 24 hours of CISA KEV listing)\n\n---\n\n### Finding 6: Third-Party and Vendor System Coverage Is Deferred Without Controls\n\n| Attribute | Detail |\n|---|---|\n| **Section** | \u00a72 \u2014 Scope |\n| **Severity** | **Medium** |\n\n**Gap:**\nThe policy excludes third-party hosted systems with a single sentence: \"Third-party hosted systems are covered under vendor management agreements.\" No further requirements are specified \u2014 there is no mention of:\n- What vulnerability-related requirements are imposed on vendors contractually\n- How vendor-reported vulnerabilities are tracked and followed up\n- Whether vendor scanning attestations or reports are reviewed\n- How frequently vendor security posture is assessed\n\n**Why It Matters for CC7.1:**\nThird-party systems that process or store Cirrus Technologies data, or that are interconnected with production systems, represent real exposure. Deferring entirely to \"vendor management agreements\" without verification procedures means vulnerabilities in the vendor environment may go undetected and unresolved indefinitely.\n\n**What Should Be Present:**\n- A cross-reference to the vendor management policy with specific vulnerability-related requirements\n- Contractual requirements for vendors to conduct vulnerability scanning and provide attestation or reports\n- A defined review cadence for vendor-provided vulnerability reports\n- Process for tracking critical vendor vulnerabilities to resolution\n\n---\n\n### Finding 7: Risk Acceptance Review Frequency Is Insufficient and Lacks Escalation Controls\n\n| Attribute | Detail |\n|---|---|\n| **Section** | \u00a77.1 \u2014 Exception Process |\n| **Severity** | **Medium** |\n\n**Gap:**\nThe policy requires annual review of accepted risks. For critical or high severity vulnerabilities, an annual review cycle is not sufficient to meet the intent of CC7.1 \u2014 the threat landscape and exploitability of a vulnerability can change materially within weeks. Additionally, there is no defined maximum duration for a risk acceptance, no prohibition on accepting critical vulnerabilities without Board or executive notification, and no requirement to reassess if the threat environment changes.\n\n**Why It Matters for CC7.1:**\nRisk acceptance is a legitimate mechanism, but if it is too easily applied or reviewed too infrequently, it becomes a bypass of the detection and response control. Auditors will examine whether risk acceptances are accumulating for high-severity items and whether the review cadence is proportionate to the risk.\n\n**What Should Be Present:**\n- Tiered review frequencies tied to severity (e.g., Critical: 30-day review; High: 90-day review; Medium/Low: annual review)\n- A maximum acceptance duration after which re-approval is mandatory\n- Prohibition or escalation requirement (e.g., Board notification) for accepting critical vulnerabilities\n- Reassessment triggers for material changes in exploitability (e.g., addition to CISA KEV after initial acceptance)\n\n---\n\n## Summary Table\n\n| # | Finding | Section | Severity |\n|---|---|---|---|\n| 1 | Scan frequency not defined | \u00a73.3 | **Critical** |\n| 2 | No configuration change monitoring procedure | Policy-wide | **Critical** |\n| 3 | No remediation SLAs by severity | \u00a75.2 | **High** |\n| 4 | Scanning coverage verification lacks rigor | \u00a73.2 | **High** |\n| 5 | No threat intelligence integration or out-of-cycle process | Policy-wide | **High** |\n| 6 | Third-party coverage deferred without controls | \u00a72 | **Medium** |\n| 7 | Risk acceptance review frequency and controls insufficient | \u00a77.1 | **Medium** |\n\n---\n\n## Overall Assessment\n\n**CC7.1 Readiness: NOT READY**\n\nThe policy provides a structural foundation \u2014 it names tools, defines severity classifications, establishes ownership, and creates a reporting cadence \u2014 but it contains two critical gaps (undefined scan frequency and absent configuration change monitoring) that individually would be sufficient to result in a control deficiency finding. The additional high and medium findings compound the risk. Before a SOC 2 Type II audit period commences, Cirrus Technologies should prioritize resolving Findings 1 and 2 as immediate remediation items, and findings 3 through 5 within 60 days."
+}

@@ -1,0 +1,87 @@
+{
+  "id": "cc8.1-5-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC8.1",
+  "control_description": "The entity authorizes, designs, develops or acquires, configures, documents, tests, approves, and implements changes to infrastructure, data, software, and procedures to meet its objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/change-management-policy.md",
+      "type": "policy",
+      "description": "Prism Health Technologies change management policy with Standard Change Catalog defining patch-version-only scope for dependency updates"
+    },
+    {
+      "path": "evidence/change-log-q4-2025.csv",
+      "type": "log",
+      "description": "Change log for Q4 2025 (12 changes) showing two major version upgrades classified as standard changes"
+    },
+    {
+      "path": "evidence/cab-meeting-minutes-q4.md",
+      "type": "report",
+      "description": "CAB meeting minutes for Q4 2025 including discussion of standard change catalog scope concerns"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/hipaa-compliance-summary.md",
+      "type": "report",
+      "description": "Q4 2025 HIPAA compliance summary. Related to the healthcare context but not directly relevant to change management process assessment."
+    }
+  ],
+  "prompt": "You are auditing Prism Health Technologies' SOC 2 Type II compliance for control CC8.1 (Change Management) covering Q4 2025 (October 1 - December 31, 2025). Prism Health handles protected health information (PHI) subject to HIPAA. Review all evidence to assess whether changes were properly categorized, authorized, tested, and deployed. Pay attention to how changes are classified against the Standard Change Catalog -- some changes may have been categorized in ways that warrant further scrutiny. Not all documents are directly relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "CHG-905 and CHG-910 are major version upgrades misclassified as standard changes under SC-003",
+      "description": "CHG-905 (Express.js 4.x to 5.0) and CHG-910 (PostgreSQL 14.9 to 15.4) were both classified as Standard changes under SC-003 (dependency updates). However, SC-003 explicitly limits its scope to 'patch versions only (x.y.Z)' and 'Third-party library patch updates only.' Express.js 4.x to 5.0 is a major version upgrade (semver major bump) that can include breaking API changes, deprecated features, and behavioral differences. PostgreSQL 14 to 15 is a major database version upgrade that changes storage format, query planner behavior, and may require data migration. Both exceed the SC-003 catalog definition. By classifying these as Standard changes, they bypassed CAB review, security review, and the staging testing requirement. The CAB minutes from December 11 show Karen Liu (Security & Compliance Lead) raised this exact concern internally. Policy Section 4.1 states 'Any change that does not clearly fall within the scope and conditions of a catalog entry must be submitted as a Normal change.' These changes did not clearly fall within SC-003's 'patch versions only' scope.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/change-management-policy.md", "evidence/cab-meeting-minutes-q4.md"],
+      "expected_reasoning": "The auditor must compare CHG-905 and CHG-910 against SC-003's explicit scope limitation: 'patch versions only (x.y.Z)'. Express.js 4→5 and PostgreSQL 14→15 are major version upgrades, not patch updates. The policy Section 4.1 catch-all requires Normal classification when scope is ambiguous. The CAB itself identified this concern (December 11 minutes), validating that internal stakeholders viewed the classification as incorrect. The judgment call: the developer may argue 'all CI tests passed and no API changes' satisfies SC-003's conditions, but the catalog's explicit scope limitation ('patch versions only') is unambiguous. For a healthcare company handling PHI, a PostgreSQL major version upgrade should have received security review and formal testing validation.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-905", "CHG-910", "SC-003", "patch versions only", "major version", "Express.js", "PostgreSQL", "misclassified", "standard change"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CHG-910 PostgreSQL major version upgrade bypassed security review and PHI data integrity validation",
+      "description": "CHG-910 (PostgreSQL 14.9 to 15.4) is a major database version upgrade on a system that stores PHI. Policy Section 3.2 requires changes affecting PHI data flows to undergo data integrity validation. A PostgreSQL major version upgrade changes storage engine behavior, query execution plans, and potentially data type handling. By classifying this as a Standard change, it bypassed the data integrity validation required for PHI-impacting changes. The change log shows no security review, no data integrity check, and no clinical data manager review. For comparison, CHG-902, CHG-907, and CHG-911 (all PHI-impacting Normal changes) included data integrity validation files. The database upgrade on a PHI datastore should have received the same level of scrutiny.",
+      "evidence_sources": ["evidence/change-log-q4-2025.csv", "evidence/change-management-policy.md"],
+      "expected_reasoning": "The auditor should note that PostgreSQL is the primary database for a healthcare application storing PHI. A major version upgrade (14→15) could affect data integrity, query behavior, and storage format. Policy Section 3.2 requires data integrity validation for PHI-impacting changes. Other PHI changes (CHG-902, CHG-907, CHG-911) included data-integrity-*.pdf evidence. CHG-910 had none. The judgment call: did the PostgreSQL upgrade 'affect PHI data flows'? A reasonable auditor would say yes -- changing the database engine version for a PHI datastore inherently affects how patient data is stored and retrieved.",
+      "detection_criteria": {
+        "required_keywords": ["CHG-910", "PostgreSQL", "PHI", "data integrity", "security review", "bypassed", "HIPAA", "patient data", "major version"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "low",
+      "title": "Standard Change Catalog SC-003 language creates classification ambiguity",
+      "description": "SC-003 states 'Dependency updates (patch versions only)' with conditions 'All CI tests pass; no API changes; patch version only (x.y.Z)' and scope 'Third-party library patch updates only.' The catalog uses the term 'patch versions only' in the title and conditions, but does not explicitly define how to distinguish patch, minor, and major versions, nor does it reference semantic versioning (semver) by name. A developer could interpret 'patch versions only' narrowly (x.y.Z increments only) or broadly (any update that doesn't change APIs). The December 11 CAB discussion shows this ambiguity played out in practice -- the developer classified major upgrades as SC-003 because 'CI tests passed and no API changes.' The catalog's conditions (CI tests pass, no API changes) are necessary but not sufficient criteria; the scope limitation (patch versions only) should be the primary gate. Policy Section 4.1 provides a catch-all ('must be submitted as a Normal change' if scope is unclear), but the ambiguity itself is a design weakness.",
+      "evidence_sources": ["evidence/change-management-policy.md", "evidence/cab-meeting-minutes-q4.md"],
+      "expected_reasoning": "The auditor should evaluate the catalog entry's clarity. SC-003 says 'patch versions only (x.y.Z)' which is reasonably clear, but the conditions focus on outcomes (CI pass, no API changes) rather than version classification. A developer could argue that a major upgrade with passing tests and no API changes 'meets the conditions.' The catalog should explicitly exclude minor and major version upgrades and reference semver.",
+      "detection_criteria": {
+        "required_keywords": ["SC-003", "patch versions", "ambiguity", "semver", "classification", "major", "minor", "catalog", "definition"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "40 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["change_management", "judgment_call", "standard_change_catalog", "misclassification", "PHI", "HIPAA", "version_upgrade", "catalog_scope"]
+  }
+}

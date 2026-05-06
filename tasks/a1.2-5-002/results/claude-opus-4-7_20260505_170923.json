@@ -1,0 +1,68 @@
+{
+  "task_id": "a1.2-5-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:09:23.578129",
+  "score": {
+    "task_id": "a1.2-5-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 0.2857142857142857,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "332 minutes",
+          "4-hour RTO",
+          "container image",
+          "Kubernetes",
+          "scaling",
+          "warm standby"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "CDN cache",
+          "runbook"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "warm standby",
+          "2 nodes",
+          "container image",
+          "scaling"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5193,
+    "output_tokens": 3335
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 Control A1.2\n## Zenith Cloud Inc. \u2014 Q4 2025 Observation Period\n\n---\n\n## Executive Summary\n\nZenith Cloud has implemented a documented availability and DR program with formalized RPO/RTO targets, executed a full DR failover test in Q4 2025, and maintains evidence of consistent daily backup execution with checksum verification. These are positive indicators of design and operating effectiveness for A1.2.\n\nHowever, the Q4 DR test **failed to meet the stated 4-hour RTO** (actual: 5h 32m; overage: 38.3%). This is the central audit question: does an RTO breach constitute a control failure, or does it demonstrate the control operating as designed (i.e., testing identified gaps that would otherwise have surfaced in a real disaster)?\n\n**My professional judgment:** The RTO breach itself is *not automatically* a control failure under A1.2. A1.2 requires the entity to *test* and *monitor* recovery capability \u2014 not to pass every test. The test produced documented findings, named owners, and remediation ETAs, which is evidence of the control operating as designed. **However**, the breach becomes a control concern because (a) the entity has publicly committed to a 99.95% availability SLA that depends on the 4-hour RTO, (b) two of the bottlenecks (container image caching, CDN invalidation) are foreseeable gaps that should have been identified earlier, and (c) there is no evidence of prior DR tests in Q1\u2013Q3 2025 to establish an operating-effectiveness pattern.\n\nI have identified **7 findings** below.\n\n---\n\n## Finding 1: RTO Target Not Met in Q4 DR Test\n\n- **Document Section:** DR Test Report \u2014 `rto_assessment`; Policy \u00a73.1\n- **Why it's a gap:** The Q4 failover took 332 minutes against a 240-minute target \u2014 a 38.3% overage. While testing surfacing gaps is *a* desirable control outcome, an RTO miss directly affects the entity's stated availability commitment (99.95% monthly SLA per Policy \u00a73.1). Auditors and customers relying on the SLA will reasonably interpret a missed RTO as a capability gap, not just a test outcome. The remediation actions are sound, but until a re-test demonstrates RTO compliance, the entity cannot evidence that the recovery capability meets its commitments.\n- **Severity:** **High**\n- **Recommendation:** Execute an out-of-cycle re-test in Q1 2026 after remediation items (ECR replication, CDN runbook update, warm standby capacity increase) are complete. Document the re-test as evidence of remediated control.\n\n---\n\n## Finding 2: No Evidence of Q1\u2013Q3 2025 DR Tests\n\n- **Document Section:** Policy \u00a75.1 (Quarterly DR Failover Tests); Evidence package\n- **Why it's a gap:** Policy requires **quarterly** full DR failover tests. Only the Q4 2025 test was provided. For the observation period (Oct 1 \u2013 Dec 31, 2025), Q4 alone is sufficient, but for an annual SOC 2 Type II audit, evidence of Q1, Q2, and Q3 tests would be required to establish operating effectiveness over a 12-month period. The absence of these reports in the readiness package is a documentation gap that will need to be remediated before Type II evidence collection.\n- **Severity:** **Medium** (for Q4-only readiness); **High** if extrapolated to annual Type II\n- **Recommendation:** Provide prior-quarter test reports or document why they were not performed.\n\n---\n\n## Finding 3: Foreseeable Bottlenecks Not Identified Prior to Test\n\n- **Document Section:** DR Test Report \u2014 `issues_and_remediation` (items 1 and 2)\n- **Why it's a gap:** The two largest contributors to the RTO overage \u2014 container image pull (45 min) and CDN cache invalidation (22 min) \u2014 are *predictable* architectural issues, not novel disaster conditions. ECR cross-region replication and CDN failover behavior should have been validated during DR design review or prior tabletop exercises. Their discovery during a live failover test suggests insufficient rigor in DR design review and runbook walkthrough activities. A1.2 requires the entity to \"design\" and \"develop\" recovery infrastructure \u2014 the presence of these gaps suggests the design process did not adequately stress-test assumptions.\n- **Severity:** **Medium**\n- **Recommendation:** Implement a DR design review checklist covering image/artifact placement, DNS/CDN behavior, secret distribution, and capacity warm-up. Conduct quarterly tabletop exercises in addition to live failover tests.\n\n---\n\n## Finding 4: Warm Standby Capacity Insufficient \u2014 Remediation Pending Budget Approval\n\n- **Document Section:** DR Test Report \u2014 `issues_and_remediation` (item 3)\n- **Why it's a gap:** The Kubernetes warm standby is provisioned at 2 nodes versus 8 in production. Scaling consumed 18 minutes of the RTO budget. Remediation is \"pending budget approval,\" which means the control deficiency is currently unmitigated and has no firm completion date. Policy \u00a73.3 states the DR environment is \"capable of assuming full production load within the RTO window\" \u2014 the test demonstrates this is not currently true, and the remediation is not yet committed.\n- **Severity:** **Medium**\n- **Recommendation:** Obtain budget decision in writing. If declined, update Policy \u00a73.3 to reflect actual warm standby capacity and reassess whether the 4-hour RTO is achievable.\n\n---\n\n## Finding 5: Backup Log Evidence Incomplete for Observation Period\n\n- **Document Section:** Backup monitoring logs\n- **Why it's a gap:** The backup log shows 13 entries spanning Oct 1 \u2013 Dec 31, 2025, but the observation period contains 92 days. Policy \u00a74.1 requires daily full backups. The log appears to be a **sampled** extract rather than the complete population, with many dates missing (e.g., Oct 8\u201314, Oct 16\u201330, Nov 1\u201314, Nov 16\u201329, etc.). For SOC 2 testing, the auditor needs either the full population or a documented sampling methodology with the underlying complete log retained and queryable.\n- **Severity:** **Medium**\n- **Recommendation:** Provide the complete daily backup log for the observation period or document the sampling methodology. Confirm via the backup management system that no daily backups failed or were skipped during the period.\n\n---\n\n## Finding 6: Incremental Backups and WAL Archiving Not Evidenced\n\n- **Document Section:** Policy \u00a74.2 (WAL archiving) and \u00a74.3 (4-hour incrementals); Backup monitoring logs\n- **Why it's a gap:** Policy commits to continuous WAL archiving (max 15-minute lag) and 4-hour incremental backups. The backup log contains **only `full` backup records** for `zc-db-prod-01`. There is no evidence of:\n  - WAL archive monitoring (lag metrics, archive success/failure)\n  - Incremental backup execution\n  - Monitoring of these processes for failures\n  \n  The DR test report references \"WAL replay current to within 30 seconds\" which is positive corroborating evidence, but it is a single point-in-time observation, not ongoing monitoring evidence. Without WAL/incremental evidence, the 1-hour RPO commitment cannot be substantiated for the full observation period.\n- **Severity:** **High**\n- **Recommendation:** Provide WAL archiving monitoring dashboards/logs and incremental backup logs for the observation period. Implement alerting for WAL lag exceeding policy threshold.\n\n---\n\n## Finding 7: No Evidence of Backup Restoration Testing\n\n- **Document Section:** Policy \u00a74 and \u00a75; Evidence package\n- **Why it's a gap:** A1.2 explicitly requires \"procedures for recovery of data\" \u2014 not just backup creation. While the DR failover test exercises database promotion via the cross-region replica, this is *replication-based* recovery, not *backup restoration* recovery. There is no evidence in the package that backups (the daily fulls captured in the log) were ever test-restored to verify they are usable. Checksum verification (`checksum_verified=true`) confirms file integrity but not restorability. The policy itself does not require periodic backup restoration testing \u2014 this is also a policy gap.\n- **Severity:** **Medium**\n- **Recommendation:** Add a backup restoration testing requirement to Policy \u00a75 (e.g., monthly test-restore of a sampled backup to a non-production environment with documented validation). Begin executing and evidencing such tests.\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | RTO target not met in Q4 DR test | High |\n| 2 | No evidence of Q1\u2013Q3 2025 DR tests | Medium (High for Type II) |\n| 3 | Foreseeable bottlenecks not identified pre-test | Medium |\n| 4 | Warm standby capacity insufficient; remediation unfunded | Medium |\n| 5 | Backup log evidence appears sampled, not complete | Medium |\n| 6 | WAL archiving and incremental backups not evidenced | High |\n| 7 | No backup restoration testing | Medium |\n\n## Overall Readiness Conclusion\n\n**Conditional readiness.** The control is **designed adequately** but has **operating effectiveness concerns** that should be remediated before the Type II audit. The RTO breach is defensible *if* paired with a successful re-test and documented remediation; left as-is, it will likely result in an exception. The evidence gaps for WAL/incremental backups and the partial backup log are higher-priority remediation items than the RTO breach itself, because they affect the auditor's ability to test the control at all rather than just its outcome on a single day."
+}

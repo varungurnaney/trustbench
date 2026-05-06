@@ -1,0 +1,76 @@
+{
+  "task_id": "cc6.6-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-01T18:01:46.984977",
+  "score": {
+    "task_id": "cc6.6-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.25,
+    "f1": 0.3333333333333333,
+    "score": 0.3333333333333333,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "admin API",
+          "API Gateway",
+          "WAF",
+          "boundary policy",
+          "SEC-EXC-2025-031"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "Q4 observation period"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "certificate inventory",
+          "Vault PKI",
+          "90-day rotation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "100.64.0.0/10"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 12866,
+    "output_tokens": 3112
+  },
+  "raw_response": "# CC6.6 Readiness Assessment \u2014 Apex Fintech System Boundary Controls\n\n## Overall Assessment\n\nApex Fintech's boundary architecture is **largely well-designed and effectively operating**. The defense-in-depth pattern (CloudFront \u2192 WAF \u2192 API Gateway \u2192 Internal ALB) is documented, implemented, and validated by independent third-party testing. The pen test produced no critical or high findings; remediated items were closed within SLA. VPN-based administrative access with hardware MFA, mTLS service-to-service authentication, and VPC segmentation are all properly implemented.\n\nHowever, several gaps warrant attention before a clean SOC 2 opinion can be issued. The most material is the structural deviation between the documented boundary policy and the actual admin API traffic path.\n\n---\n\n## Findings\n\n### Finding 1: Policy-Architecture Misalignment for Admin API Path\n**Severity: Medium**\n**Reference:** APXF-SEC-POL-009 \u00a73.2 (\"No production service shall be directly accessible from the public internet without traversing the WAF and API Gateway\"); \u00a73.5 (Emergency Administrative Access)\n\n**Gap:** The policy contains an internal contradiction. Section 3.2 establishes a categorical requirement that all production services traverse WAF + API Gateway, while \u00a73.5 carves out an exception for the admin API. More importantly, \u00a73.5 frames the admin API as for \"emergency\" use, but the access logs and architecture document show this is **routine, continuous use** \u2014 averaging ~12,500 requests/day across multiple SRE source IPs (100.64.8.17, 100.64.9.55, 100.64.12.33, 100.64.14.22), every day for the entire observation period, with no gaps. Pen test finding CS-APXF-2025-002 also flagged this as a boundary deviation.\n\nThe policy language (\"emergency debugging\") does not match operational reality (steady-state administrative API). This creates SOC 2 risk because the auditor cannot confirm the entity is operating in accordance with its own documented boundary control.\n\n**Recommendation:** Either (a) update \u00a73.5 to accurately describe the admin API as a routine, sanctioned alternate path with its own boundary controls (mTLS + Okta + IP allowlist + Splunk logging), and amend \u00a73.2 to acknowledge the exception, or (b) re-architect to route admin traffic through a dedicated WAF-protected path as suggested by CyberShield's Option A.\n\n---\n\n### Finding 2: Risk Acceptance Expires Before End of Observation Period \u2014 Renewal Tracking Required\n**Severity: Low**\n**Reference:** SEC-EXC-2025-031; APXF-SEC-POL-009 \u00a75\n\n**Gap:** Risk acceptance for the admin API boundary deviation expires **August 15, 2026**, which is acceptable for this Q4 2025 observation window. However, the \u00a75 exception process requires quarterly review, and there is no evidence in the provided artifacts of a Q3 or Q4 2025 quarterly review of SEC-EXC-2025-031 since CISO approval on August 15, 2025. A quarterly review should have occurred by mid-November 2025.\n\n**Recommendation:** Provide evidence of the Q4 2025 quarterly exception review, or document the next scheduled review date and reviewer.\n\n---\n\n### Finding 3: No Centralized Certificate Inventory\n**Severity: Medium**\n**Reference:** APXF-INFRA-DOC-023, \"Certificate Management\" section\n\n**Gap:** The architecture document explicitly states: *\"No centralized certificate inventory is currently maintained. Certificate status is tracked per-service in individual Vault PKI mounts.\"* Because mTLS is a foundational boundary control for service-to-service communication (\u00a73.3), the inability to enumerate the complete certificate population creates risk that:\n- Expired or near-expiry certificates may not be detected proactively\n- Orphaned or unauthorized certificates may exist undetected\n- The auditor cannot confirm the population of in-scope certificates for sampling (testing of the 90-day rotation control)\n\nThe promised Q1 2026 dashboard does not cover the Q4 2025 observation period.\n\n**Recommendation:** Implement at minimum a scripted aggregation across Vault PKI mounts to produce a complete certificate inventory for auditor sampling, and demonstrate evidence of certificate expiration alerting in place during the observation period.\n\n---\n\n### Finding 4: Pen Test Cadence vs. Annual Refresh\n**Severity: Low**\n**Reference:** APXF-SEC-POL-009 \u00a74.3\n\n**Gap:** The policy commits to **quarterly** external penetration testing. Only the Q3 2025 report has been provided. Coverage of the Q4 observation period (Oct 1 \u2013 Dec 31, 2025) requires evidence that the Q4 test (scheduled for October 2025 per the report) was actually executed and that any findings were processed within remediation SLAs.\n\n**Recommendation:** Provide the Q4 2025 CyberShield report, or evidence that it is in delivery, before audit fieldwork concludes.\n\n---\n\n### Finding 5: Firewall Rule Monthly Review Evidence Not Provided\n**Severity: Low**\n**Reference:** APXF-SEC-POL-009 \u00a74.1\n\n**Gap:** Policy requires monthly review of Security Group/NACL allowlists. No review evidence (tickets, attestations, change logs) was provided for the Oct/Nov 2025 reviews. This is a control operating-effectiveness gap if not produced.\n\n**Recommendation:** Furnish the SEC-FIREWALL Jira ticket evidence demonstrating the October and November 2025 monthly reviews were completed.\n\n---\n\n### Finding 6: Subnet CIDR Documentation Error\n**Severity: Low (Documentation)**\n**Reference:** APXF-INFRA-DOC-023, Production VPC subnet table\n\n**Gap:** Both `prod-data-1a` and `prod-data-1b` are listed with CIDR `10.100.20.0/24`. Two subnets cannot share the same CIDR block in the same VPC; this is either a documentation error or a more serious routing/segmentation issue. While likely a typo, the auditor must verify the actual AWS configuration matches the intended segregated AZ design relied upon by \u00a73.1.\n\n**Recommendation:** Correct the architecture document and provide AWS console/Terraform evidence of actual subnet CIDRs.\n\n---\n\n### Finding 7: Admin API Pen Test Scope Boundary\n**Severity: Low**\n**Reference:** CS-2025-Q3-APXF-0847 scope statement; CS-APXF-2025-001/002\n\n**Gap:** The pen test scope is defined as \"internet-facing services, VPN endpoints, and DMZ infrastructure.\" The admin API is internal but was tested via VPN-authenticated access. The scope statement should be updated to explicitly include VPN-accessible administrative endpoints, otherwise future tests may not consistently exercise this alternate ingress path. Given this is the very path the policy treats as exceptional, recurring testing should be contractually guaranteed.\n\n**Recommendation:** Update the CyberShield SOW to explicitly include admin-api.internal.apexfintech.net within the recurring quarterly scope.\n\n---\n\n### Finding 8: Boundary Anomaly Detection \u2014 Threshold Not Validated\n**Severity: Low**\n**Reference:** APXF-SEC-POL-009 \u00a74.4\n\n**Gap:** Policy commits to anomalous-traffic alerting at >2 standard deviations from a 30-day baseline. No evidence was provided that this detection is configured, tuned, or that any alerts fired/were triaged during the observation period. The log dataset shows fairly steady traffic but minor upward drift in admin API request volumes (16 \u2192 63 at peak hours) \u2014 the auditor cannot confirm whether this drift would have triggered alerts or whether thresholds are appropriate.\n\n**Recommendation:** Provide Splunk detection rule definitions, sample alerts, and evidence of operational triage during October\u2013November 2025.\n\n---\n\n## Positive Observations Reinforcing the Control\n\n- Pen test results show **zero critical/high findings** and effective WAF/API Gateway operation\n- 99.7% of all production traffic correctly traverses the documented boundary (logs)\n- All admin API source IPs in observation period fall within Tailscale CIDR 100.64.0.0/10 \u2014 IP allowlist control is operating\n- 0.00% error rate on admin API across 30 days suggests stable, well-monitored operation\n- Remediation SLAs were met or exceeded for all medium and low findings (5\u201322 days vs. 90-day medium SLA)\n- mTLS, network segmentation, and VPN+MFA controls are validated by independent testing\n\n## Conclusion\n\nCC6.6 is **substantially met** with one **Medium** finding (policy-architecture misalignment around the admin API) and one **Medium** finding (certificate inventory gap) that should be addressed before final SOC 2 opinion. The remaining Low findings are administrative/evidentiary and can typically be cleared during fieldwork. The control environment demonstrates strong design and operating effectiveness overall."
+}

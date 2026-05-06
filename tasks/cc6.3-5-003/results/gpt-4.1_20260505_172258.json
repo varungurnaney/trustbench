@@ -1,0 +1,84 @@
+{
+  "task_id": "cc6.3-5-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:22:58.617879",
+  "score": {
+    "task_id": "cc6.3-5-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5714285714285714,
+    "f1": 0.7272727272727273,
+    "score": 0.7272727272727273,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "h.nguyen",
+          "76,000",
+          "threshold",
+          "November 12",
+          "customer_profiles"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "auto-resolved",
+          "svc-bi-dashboard",
+          "human review",
+          "Section 5.3"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "EXP-Q4-2025-008",
+          "December 8",
+          "before approval",
+          "retroactive",
+          "25,000"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "threshold",
+          "10,000",
+          "cumulative",
+          "Section 5.2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6151,
+    "output_tokens": 1482
+  },
+  "raw_response": "Certainly. Below are my key findings from the evidence review, referencing policy sections and mapped to control expectations under CC6.3.\n\n---\n\n### 1. **Bulk Export Executed Prior to Approval**\n\n**Section:**  \n- Section 5.1 (Bulk Export Authorization) and 5.3 (Alert Response) of the Data Access and DLP Policy\n\n**Why it\u2019s a gap:**  \nIn the DLP/ServiceNow export ticket records (EXP-Q4-2025-008 for c.mendez), the export of 25,000 rows of Confidential data was executed **before** the export was approved (approval finalized three days post-query execution). The DLP policy unambiguously requires prior approval for exports over 10,000 rows, with Data Owner and CISO signoff, before execution. Execution before approval constitutes a significant breakdown in preventive access control, and bypasses review/escalation intended by the policy. Although the ticket was eventually approved, the process is intended to be preemptive, not retroactive.\n\n**Severity:**  \n**Critical**\n\n---\n\n### 2. **Paginated Batch Extraction Circumventing DLP Thresholds**\n\n**Section:**  \n- Section 5.1 (Bulk Export Authorization) and 5.2 (DLP Thresholds/Alerting)\n\n**Why it\u2019s a gap:**  \nQuery audit logs for h.nguyen on November 12, 2025 show sequential SELECTs extracting just under 10,000 rows each (\"paginated extraction\") from the `customer_profiles` table, totaling 76,000 rows in a single session\u2014**all without exceeding the DLP alert threshold for any single query**. This pattern indicates that users can extract large datasets in increments beneath the DLP monitoring threshold and outside bulk export controls/approval. The current DLP implementation only triggers on single queries exceeding 10,000 rows, leaving cumulative extraction undetected if split into smaller requests. This is a well known method to evade DLP and can result in large data exposure without required oversight or approval.\n\n**Severity:**  \n**High**\n\n---\n\n### 3. **Incomplete Coverage for Analytical Service Account Bulk Queries**\n\n**Section:**  \n- Section 5.2 (Automated DLP Alerting), Section 5.1 (Bulk Export Authorization)\n\n**Why it\u2019s a gap:**  \nRecurring, auto-resolved DLP alerts for known service accounts (`svc-bi-dashboard`, `svc-etl-pipeline`) are present in both the DLP logs and query audit logs, triggered for scheduled jobs with large row counts (14,800-47,000 rows per pull, weekly/monthly). These are automatically resolved without human review per the \"Known Service Account\" note, often with just a generic justification (\"Monthly dashboard\", \"Weekly ETL sync\"). While this may be intended for business continuity, **there is risk that if service account credentials are compromised, or if job logic is modified, large exports could occur without scrutiny**. The policy does not specify how \"known\" exports for service accounts are validated, approved, or periodically re-authorized, nor is there evidence of documented review of these \"auto-resolved\" alerts.\n\n**Severity:**  \n**Medium**\n\n---\n\n### 4. **Ambiguity in DLP Threshold Justification and Data Classification Alignment**\n\n**Section:**  \n- Section 5.2 (DLP Thresholds), Section 3 (Data Classification)\n\n**Why it\u2019s a gap:**  \nThe static DLP threshold (10,000 rows) does not appear adjusted based on underlying table sensitivity or data type; for example, the same threshold is used for both Confidential and Restricted data. Considering 'Restricted' (PII, payment data) versus 'Confidential' (client analytics), this could allow substantial exposure of highly sensitive data before triggering DLP or approval workflows. The policy would benefit from differentiating thresholds or controls by classification level, or by the sensitivity/uniqueness of individual data fields.\n\n**Severity:**  \n**Medium**\n\n---\n\n### 5. **Export Justification Review \u2014 Consistency and Depth**\n\n**Section:**  \n- Section 5.3 (Alert Response) and ServiceNow Approval Chain\n\n**Why it\u2019s a gap:**  \nWhile nearly all user-initiated exports have a ServiceNow ticket and justifications (sometimes referencing business workflow or routine reporting), several justifications are vague (\"Year-end analysis\", \"Segmentation analysis\"). In some high-risk exports (e.g., customer PII or Restricted data), the justification lacks detailed business context on downstream use, retention, or protections post-export (especially when moved to S3). Evidence does not show that reviewers challenge or require specific use-case detail, increasing the risk of rubber-stamping.\n\n**Severity:**  \n**Low**\n\n---\n\n### 6. **Alert Review Timeliness and Documentation**\n\n**Section:**  \n- Section 5.3 (Alert Response) and Section 7 (Monitoring)\n\n**Why it\u2019s a gap:**  \nMost DLP alerts are marked as \"Auto-Resolved\" for service accounts or \"Verified\u2014Approved\" within stated review timeframes, but the documentation for more complex cases (i.e., c.mendez December 8 event) notes only \"Export approval ticket pending\". Policy mandates a review/escalation workflow for unapproved or anomalous exports, but there is no clear evidence of escalation or issue documentation when events violate approval-before-execution rules. This could result in insufficient root cause analysis or failure to address process loopholes.\n\n**Severity:**  \n**Low**\n\n---\n\n### 7. **No Evidence of Regular Segregation of Duties Review**\n\n**Section:**  \n- Section 4 (Access Authorization) and Section 6 (Access Reviews)\n\n**Why it\u2019s a gap:**  \nAlthough policy mandates quarterly access reviews and segregation of duties, evidence provided does not include any record or outcome of such reviews (e.g., no record of RBAC review, privileged access review, or checks ensuring users cannot self-approve exports). This is a requirement for demonstrating effective control over privilege escalation and role-based authorization.\n\n**Severity:**  \n**Medium**\n\n---\n\n## Summary Table\n\n| # | Title                                        | Policy Section                 | Severity   |\n|---|----------------------------------------------|-------------------------------|------------|\n| 1 | Bulk Export Executed Prior to Approval       | 5.1, 5.3                      | Critical   |\n| 2 | Paginated Batch Extraction Circumventing DLP | 5.1, 5.2                      | High       |\n| 3 | Auto-Resolved Alerts for Service Accounts    | 5.2, 5.1                      | Medium     |\n| 4 | DLP Threshold vs Data Sensitivity            | 5.2, 3                        | Medium     |\n| 5 | Export Justification Depth                   | 5.3, Approval Chain           | Low        |\n| 6 | Alert Review Timeliness and Documentation    | 5.3, 7                        | Low        |\n| 7 | No Evidence of Segregation of Duties Review  | 4, 6                          | Medium     |\n\n---\n\n**Recommendations** for Meridian Insights should focus first on remediation of the critical and high findings\u2014namely, preventing export execution before approval and eliminating the ability to circumvent DLP through batch queries."
+}

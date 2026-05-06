@@ -1,0 +1,59 @@
+{
+  "task_id": "cc7.1m-2-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T18:39:07.269899",
+  "score": {
+    "task_id": "cc7.1m-2-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PATCH-4023",
+          "KB5045890",
+          "10:45",
+          "outside maintenance window",
+          "business hours",
+          "Section 6"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "PATCH-4013",
+          "Grafana",
+          "14:22",
+          "business hours",
+          "no maintenance window",
+          "High",
+          "30-day SLA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3937,
+    "output_tokens": 1875
+  },
+  "raw_response": "# CC7.1 Compliance Assessment Report\n## Ridgeline Systems \u2013 System Maintenance Readiness\n\n---\n\n## FINDINGS\n\n### **Finding 1: Unapproved Out-of-Window Critical Patch Deployment**\n\n**Related Policy Section:** Section 6 (Emergency Maintenance) & Section 4.1 (Patch Schedule)\n\n**Issue:**\nPATCH-4023 (KB5045890 \u2013 RDP Security Patch, Critical severity) was deployed on 2025-11-12 at 10:45 UTC during business hours, outside any designated maintenance window. The deployer notes indicate the patch was applied immediately without documented emergency approval from the IT Director or designee, contrary to policy requirements.\n\n**Why It's a Gap:**\n- Policy Section 6 explicitly requires IT Director approval for emergency maintenance outside maintenance windows\n- No evidence of emergency change authorization exists in the record\n- The deployer's justification (\"Patch is critical \u2014 applied immediately\") does not constitute formal approval\n- CC7.1 requires the entity to *maintain* system components to meet objectives through controlled processes; circumventing change controls undermines this requirement\n\n**Severity:** **CRITICAL**\n\n---\n\n### **Finding 2: Unapproved Out-of-Window High Severity Patch Deployment**\n\n**Related Policy Section:** Section 6 (Emergency Maintenance) & Section 4.1 (Patch Schedule)\n\n**Issue:**\nPATCH-4013 (USN-7133-1 \u2013 Grafana 10.4.1 Security Update, High severity) was deployed on 2025-10-15 at 14:22 UTC during business hours, outside any designated maintenance window. The maintenance_window field is marked \"N/A\" with a note stating \"Applied during business hours \u2014 no maintenance window.\"\n\n**Why It's a Gap:**\n- High severity patches have a 30-day SLA but must be deployed within the next available MW-PROD window\n- No documented emergency approval from IT Director is present\n- The patch was deployed during active business hours without change control justification\n- Demonstrates inconsistent application of the maintenance policy across patch severity levels\n\n**Severity:** **HIGH**\n\n---\n\n### **Finding 3: Insufficient Emergency Change Documentation Standards**\n\n**Related Policy Section:** Section 6 (Emergency Maintenance)\n\n**Issue:**\nWhile the policy requires emergency maintenance to be \"documented with justification,\" the patching records do not capture sufficient detail to demonstrate compliance with this requirement. The two out-of-window patches lack evidence of:\n- Approval authorization (approver name/role)\n- Business justification or risk rationale\n- Risk assessment or impact analysis\n- Formal change ticket linkage confirming emergency status\n\n**Why It's a Gap:**\n- Policy lacks definition of what constitutes adequate \"documentation\" and \"justification\"\n- Records lack structured fields to capture emergency approval details\n- Cannot verify that the emergency change approval process (Section 6) was actually followed\n- SOC 2 CC7.1 requires that maintenance activities be performed in accordance with the entity's objectives\u2014inadequate documentation prevents verification of proper authorization\n\n**Severity:** **HIGH**\n\n---\n\n### **Finding 4: Maintenance Window Definition Ambiguity for Database Systems**\n\n**Related Policy Section:** Section 3.1 (Standard Maintenance Windows)\n\n**Issue:**\nTwo maintenance windows overlap for database systems: MW-PROD-1 (Saturday 02:00-06:00) and MW-DB (Saturday 04:00-08:00). The patching records show database patches deployed within both windows (e.g., PATCH-4005 at 04:15 uses MW-DB; PATCH-4018 at 04:30 also uses MW-DB). However, the policy does not clearly specify which window takes precedence or whether MW-DB is the exclusive window for all database maintenance.\n\n**Why It's a Gap:**\n- Overlapping windows create ambiguity about which window governs database patch deployment\n- Policy does not clarify whether database patches can be deployed during MW-PROD-1 (04:00-06:00 overlap period)\n- Lack of clarity increases risk of out-of-compliance deployments without clear detection\n- SOC 2 CC7.1 requires clear, well-defined procedures; ambiguity in maintenance windows fails this standard\n\n**Severity:** **MEDIUM**\n\n---\n\n### **Finding 5: Testing Documentation Gap for Patches**\n\n**Related Policy Section:** Section 4.2 (Patch Testing)\n\n**Issue:**\nThe policy requires: \"All patches must be tested in staging before production deployment.\" However, the patching records contain no field or reference to staging test results, test dates, test environments, or approval-to-deploy documentation from testing activities.\n\n**Why It's a Gap:**\n- No evidence in the records demonstrates that the 35 patches underwent testing before production deployment\n- Cannot verify compliance with the mandatory testing requirement\n- Testing is a critical control to prevent defective or incompatible patches from impacting production systems\n- SOC 2 CC7.1 requires the entity to \"maintain\" systems to meet objectives; unverified patches undermine system stability and security\n\n**Severity:** **MEDIUM**\n\n---\n\n### **Finding 6: Notification and Stakeholder Communication Records Missing**\n\n**Related Policy Section:** Section 3.2 (Maintenance Window Requirements)\n\n**Issue:**\nPolicy Section 3.2 states: \"Stakeholders must be notified at least 48 hours before planned maintenance.\" The patching records contain no evidence of stakeholder notifications, no notification log, no advance communication records, and no confirmation of delivery to stakeholders.\n\n**Why It's a Gap:**\n- Cannot verify that the mandatory 48-hour notification requirement was fulfilled for any of the 35 patch deployments\n- No supporting documentation (email logs, notification tickets, stakeholder acknowledgments) is provided\n- Communication is a key control to manage business continuity and incident response\n- SOC 2 CC7.1 implicitly requires that maintenance activities be managed with awareness of their impact on system availability and objectives\n\n**Severity:** **MEDIUM**\n\n---\n\n## SUMMARY\n\n| Finding | Title | Severity | Status |\n|---------|-------|----------|--------|\n| 1 | Unapproved Out-of-Window Critical Patch Deployment | **CRITICAL** | Non-Compliant |\n| 2 | Unapproved Out-of-Window High Severity Patch Deployment | **HIGH** | Non-Compliant |\n| 3 | Insufficient Emergency Change Documentation Standards | **HIGH** | Non-Compliant |\n| 4 | Maintenance Window Definition Ambiguity for Database Systems | **MEDIUM** | Non-Compliant |\n| 5 | Testing Documentation Gap for Patches | **MEDIUM** | Non-Compliant |\n| 6 | Notification and Stakeholder Communication Records Missing | **MEDIUM** | Non-Compliant |\n\n---\n\n## OVERALL ASSESSMENT\n\n**Status:** \u26d4 **NOT READY FOR SOC 2 CC7.1 AUDIT**\n\n### Key Deficiencies\n\n1. **Control Circumvention:** Two patches (one Critical, one High severity) were deployed outside approved maintenance windows without documented emergency authorization, indicating the maintenance control framework is not being followed consistently.\n\n2. **Process Gaps:** The policy defines requirements but supporting evidence for testing and stakeholder notifications is absent, preventing verification of control execution.\n\n3. **Documentation Deficiencies:** Emergency change procedures lack sufficient detail in both the policy and operational records, creating ambiguity about what constitutes proper authorization.\n\n### Recommended Remediation\n\n1. **Immediate:** Investigate PATCH-4023 and PATCH-4013 to determine if emergency approval was granted verbally; obtain and document retroactive approval or document as a control failure.\n2. **Short-term:** Update the maintenance policy to define emergency change documentation requirements and clarify database maintenance window precedence.\n3. **Short-term:** Implement tracking fields in the patching records to capture: staging test results, testing approval, stakeholder notification date/recipients, and emergency approval details.\n4. **Ongoing:** Enforce maintenance window compliance; require IT Director approval with documented justification before any out-of-window deployment."
+}

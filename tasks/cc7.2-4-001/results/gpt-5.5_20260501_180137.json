@@ -1,0 +1,93 @@
+{
+  "task_id": "cc7.2-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:01:37.766627",
+  "score": {
+    "task_id": "cc7.2-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.6,
+    "f1": 0.6666666666666665,
+    "score": 0.6666666666666665,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "decommissioned",
+          "October 30",
+          "approved exception"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "real-time-collab-service",
+          "November 15",
+          "customer document content"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "ALT-Q4-044",
+          "ALT-Q4-045",
+          "19 minutes",
+          "25 minutes",
+          "on-call capacity"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "monthly alert tuning",
+          "Alert Rule Change Log",
+          "false positive"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "daily log review",
+          "reviewer name",
+          "sign-off"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 11656,
+    "output_tokens": 2642
+  },
+  "raw_response": "## Overall Assessment\n\nAtlas Cloud has a defined monitoring and anomaly detection policy, a centralized SIEM, alerting rules across relevant anomaly categories, and evidence that alerts were investigated and dispositioned during Q4 2025. However, CC7.2 is **not fully operating as designed** for the Q4 2025 period due to gaps in SIEM coverage, missed critical alert response SLAs, and incomplete evidence for required recurring monitoring activities.\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Production service not integrated with SIEM within required timeframe** | Security Monitoring and Anomaly Detection Policy \u00a73.1; Q4 SIEM Coverage Report \u2014 `real-time-collab-service` | Policy requires all production services to be integrated with Splunk within **5 business days** of production deployment. `real-time-collab-service` was deployed on **November 15, 2025**, but remained unintegrated as of **December 31, 2025**. The service processes customer document content and collaboration metadata and handles ~850K events/day. Compensating controls are limited to CloudWatch operational alarms, with **no security-specific monitoring or alerting**, and no risk assessment was performed. This creates a monitoring blind spot for an active production service handling sensitive data. | **High** |\n| 2 | **No approved exception or risk acceptance for missed SIEM integration requirement** | Security Monitoring and Anomaly Detection Policy \u00a78; Security Exception Register; Q4 SIEM Coverage Report | The policy requires exceptions to SIEM integration requirements to be documented in the Security Exception Register with business justification, compensating controls, CISO risk acceptance, and expiration date. The `real-time-collab-service` has no documented exception, no risk assessment, and no approved risk acceptance despite exceeding the integration SLA by several weeks. | **High** |\n| 3 | **Critical alert acknowledgement SLAs were missed** | Security Monitoring and Anomaly Detection Policy \u00a74.1; Q4 Alert Response Log | The policy requires Critical alerts to be acknowledged within **15 minutes**. Two Critical alerts missed the SLA: `ALT-Q4-044` was acknowledged in **19 minutes**, and `ALT-Q4-045` was acknowledged in **25 minutes**. Both notes indicate the team was occupied with other incident or post-incident activity, suggesting on-call capacity or escalation coverage may be insufficient during concurrent events. Although both alerts were ultimately investigated, the control did not operate as designed for critical alert response. | **Medium** |\n| 4 | **Daily log review execution is not evidenced** | Security Monitoring and Anomaly Detection Policy \u00a75.1\u2013\u00a75.2 | The policy requires documented daily log reviews including reviewer name, timestamp, findings, escalation actions, and sign-off. The evidence provided includes alert response records but does not include daily log review records or dashboard review sign-offs for the Q4 period. Without this evidence, operation of the required daily monitoring review control cannot be validated. | **Medium** |\n| 5 | **Monthly alert tuning process not fully evidenced** | Security Monitoring and Anomaly Detection Policy \u00a74.3; Q4 SIEM Coverage Report; Alert Response Log | The policy requires monthly alert tuning reviews, including false positive review, threshold adjustments based on a 30-day baseline, documentation in the Alert Rule Change Log, and approval by the Security Operations Lead. The evidence shows that some alert rules were modified and tuned reactively, but no monthly tuning records, false positive analysis, approval evidence, or Alert Rule Change Log were provided. This limits the ability to confirm the alert tuning control operated as designed. | **Low** |\n\n## Items Reviewed That Do Not Appear to Be Gaps\n\n- **Legacy batch reconciler not integrated with SIEM**: Not a finding. The service had an approved SIEM integration exemption, was decommissioned on October 30, 2025, and the exception was properly documented and closed.\n- **Intermittent eu-west-1 VPC Flow Log delay**: Not a finding based on the evidence. The issue was resolved, and the report states logs were delayed but not lost.\n- **CAB meeting schedule and change statistics**: Not directly relevant to CC7.2 monitoring effectiveness.\n- **System uptime report**: Useful context for operational incidents, but uptime alone does not demonstrate monitoring/anomaly detection control effectiveness."
+}

@@ -1,0 +1,74 @@
+{
+  "task_id": "cc7.3-4-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:34:13.164476",
+  "score": {
+    "task_id": "cc7.3-4-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.3333333333333333,
+    "precision": 0.16666666666666666,
+    "f1": 0.2222222222222222,
+    "score": 0.2222222222222222,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-405",
+          "INC-2025-404",
+          "approved exception"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-404",
+          "SEV-1",
+          "ransomware"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-404",
+          "root cause",
+          "ransomware"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5609,
+    "output_tokens": 1372
+  },
+  "raw_response": "Below is a structured SOC 2 readiness assessment of the evidence for **CC7.3: Incident Response**, focused on whether incident response controls at Vantage Cloud Systems operated as required for Q4 2025. Each finding is supported by references to the documentation.\n\n---\n\n## 1. **Incident Response Timeliness Lapse on SEV-2 Incident (INC-2025-405) \u2014 Justified Exception, Not a Control Failure**\n\n- **Section:** Incident Register, Exception Register\n- **Why It\u2019s Not a Gap:** INC-2025-405 triage exceeded the 30-minute SLA (43 minutes). However, the Exception Register documents executive approval of an SLA exception, including full justification: the delay coincided with a higher-priority SEV-1 ransomware response (INC-2025-404), SRE provided interim coverage, and there was no data exposure. Compensating controls and improvement actions were documented, including adding a second overnight on-call engineer.\n- **Severity:** **N/A \u2014 No Gap**  \n- **Rationale:** This does not constitute a control failure. The program included a defined, documented, and approved exception process, with root cause analysis and corrective action tracked.\n\n---\n\n## 2. **Delayed Triage of SEV-4 and SEV-3 Incidents \u2014 Acceptable per Policy**\n\n- **Section:** Incident Register, IR Policy (Triage SLAs)\n- **Why It\u2019s Not a Gap:** Some SEV-3 and SEV-4 events (e.g., INC-2025-403, INC-2025-406, INC-2025-409) had longer triage windows (over business hours or next business day). All met or were within the documented SLAs specified in the Incident Response Policy.\n- **Severity:** **N/A \u2014 No Gap**\n- **Rationale:** Controls are operating as designed for lower-severity incident categories.\n\n---\n\n## 3. **Post-Mortems and Action Item Tracking for SEV-1/2 Incidents \u2014 Incomplete Action Item Closure**\n\n- **Section:** Incident Register, Post-mortem Report (INC-2025-404), IR Policy (Section 4.3, Action Item Tracking)\n- **Why It\u2019s a Gap:** According to the policy, all SEV-1 and SEV-2 post-mortems must have action items tracked and reviewed weekly, with escalation after 14 days overdue.  \n  - For INC-2025-404 (SEV-1), the post-mortem shows **4 of 9 action items remain uncompleted** (`action_items_total: 9, action_items_completed: 4` as of report).  \n  - In several Q4 incidents, some action items from prior post-mortems remain open past initial target dates (per the action table).  \n  - There is no direct evidence provided of weekly review/escalation or updated completion status.\n- **Severity:** **Low**\n- **Rationale:** While most action items are in progress and tracked, incomplete or overdue items without evidence of escalation/review represent a minor gap in demonstrating the \"communicate and remediate\" elements are fully and promptly executed in line with policy. This does not rise to a critical or high-severity finding because evidence suggests tracking is occurring, and slippage is being managed, but it is not fully closed-loop.\n\n---\n\n## 4. **Business Continuity Testing Is Separate and Does Not Substitute for Incident Response Program Testing**\n\n- **Section:** BCP Test Report, Incident Response Policy (Section 7)\n- **Why It\u2019s Not a Gap:** The annual BCP test, while robust, is not directly incident-response focused. The IRP calls for both annual IR team tabletop and semi-annual purple team exercises.  \n  - Evidence of **Annual BCP Test** is present and detailed.\n  - No direct evidence (in provided Q4 material) of a dedicated incident response tabletop exercise or a purple team exercise **during Q4**.  \n  - However, the IR Policy requires only annual IR tests and semi-annual purple team exercises \u2014 not quarterly.\n- **Severity:** **N/A \u2014 No Gap for Q4** (Assuming full year evidence will be reviewed overall)\n- **Rationale:** This does not represent a Q4-specific failure. If annual IR tabletop/purple team evidence is not produced during the SOC 2 overall window, it could be escalated outside this period.\n\n---\n\n## 5. **No Evidence of Missed Regulatory or External Communications**\n\n- **Section:** Incident Register, Post-mortem Reports, IR Policy (Section 5.2, 5.3)\n- **Why It\u2019s Not a Gap:** The register, post-mortems, and policy require timely external notifications for data breaches. No SEV-1 incidents were found to involve confirmed data exposure or regulatory notification triggers in Q4.\n- **Severity:** **N/A \u2014 No Gap**\n\n---\n\n## 6. **SLA Exception and Post-Mortem Policy for Extensions \u2014 Properly Applied**\n\n- **Section:** Exception Register (e.g., SEC-EXC-2025-065), IR Policy Section 4.1\n- **Why It\u2019s Not a Gap:** For complex incidents, post-mortem deadlines were formally extended with reason, approval, and closing notes.\n- **Severity:** **N/A \u2014 No Gap**\n\n\n---\n\n# **Summary Table of Gaps**\n\n| # | Title                                      | Section                        | Why It's a Gap                                        | Severity |\n|---|--------------------------------------------|-------------------------------|-------------------------------------------------------|----------|\n| 1 | Incomplete SEV-1/SEV-2 Post-Mortem Action Item Closure | Incident Register, Post-mortems, IR Policy | Several action items remain incomplete/overdue from post-mortems; no evidence provided of weekly review/escalation or updated status per policy. | Low      |\n\n\n# **Conclusion**\n\n**CC7.3 is met**: The entity has a defined, operational incident response program with clear evidence of detection, triage, containment, resolution, post-mortem, and communication. All notable deviations from policy (e.g., SLA overages, post-mortem extensions) were *properly documented, justified, and approved*, not representing genuine control failures.\n\n**Minor Improvement Opportunity:** The organization should (in readiness stage) strengthen documentation of post-mortem action item closure and regular review/escalation status, ensuring full evidence of policy operation for all action items until closure. This will eliminate any gap, however minor.\n\n---\n\n**No critical, high, or medium-severity control gaps were identified in Q4 2025 based on evidence provided.**"
+}

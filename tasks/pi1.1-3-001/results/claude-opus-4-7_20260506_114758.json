@@ -1,0 +1,59 @@
+{
+  "task_id": "pi1.1-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:47:58.305582",
+  "score": {
+    "task_id": "pi1.1-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.2222222222222222,
+    "f1": 0.3636363636363636,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "staging",
+          "missing",
+          "Section 4.3",
+          "Section 5.1",
+          "24 hours",
+          "integration tests",
+          "QA sign-off",
+          "directly to production"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Trivy",
+          "container scan",
+          "exit_code",
+          "Critical",
+          "container image"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3176,
+    "output_tokens": 2520
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: Control PI1.1\n## Pinnacle Cloud Services \u2014 Deployment Pipeline Review\n\n### Executive Summary\n\nThe SDLC policy (POL-SDLC-005 v3.0) defines a six-stage deployment pipeline with mandatory staging deployment, integration testing, 24-hour validation, and QA sign-off. However, the actual GitHub Actions pipeline configuration for `pinnacle-saas-platform` (v2.4.1, modified June 15, 2025) implements only **5 stages, none of which include staging deployment or staging validation**. This represents a material gap between stated policy and operating effectiveness for control PI1.1.\n\n---\n\n## Findings\n\n### Finding 1: Missing Staging Deployment Stage in Pipeline\n\n- **Policy Reference:** Section 5.1, Stage 2 (\"Staging Deploy\") and Section 4.3 (\"Staging Validation\")\n- **Gap:** The policy mandates that \"All code changes must be deployed to staging and validated before production deployment.\" The pipeline configuration jumps directly from `docker-build` (order 2) to `production-approval` (order 3) to `production-deploy` (order 4). There is no staging deployment stage defined in the pipeline. Code merged to `main` proceeds directly to production deployment upon Release Manager approval.\n- **Severity:** **Critical**\n- **Rationale:** This defeats the primary processing integrity control for deployments. Untested code changes can reach production environments processing customer data, undermining the \"complete, accurate, and timely processing\" objective of PI1.1.\n\n---\n\n### Finding 2: Missing Integration Testing Stage\n\n- **Policy Reference:** Section 4.2 (\"Integration Testing\") and Section 5.1, Stage 3\n- **Gap:** Policy requires that \"Integration tests run against the staging environment after each staging deployment. All integration tests must pass before production promotion.\" The pipeline contains only unit tests (in `build` stage) and post-deployment smoke tests (in `post-deploy-verification`). No integration test execution is defined anywhere in the pipeline.\n- **Severity:** **Critical**\n- **Rationale:** Without integration testing, multi-component processing logic is not validated before reaching production, creating risk of incorrect or incomplete processing.\n\n---\n\n### Finding 3: Missing 24-Hour Staging Validation Period\n\n- **Policy Reference:** Section 4.3 and Section 5.1, Stage 3\n- **Gap:** Policy requires a \"Minimum staging validation period is 24 hours before production promotion.\" The pipeline has no enforcement mechanism (timer, gate, or approval condition) to enforce a minimum dwell time. The `production-approval` stage has a 48-hour timeout but no minimum waiting period.\n- **Severity:** **High**\n- **Rationale:** Even if staging were added, the absence of an enforced waiting period would allow rapid promotion that bypasses observation of staging behavior.\n\n---\n\n### Finding 4: Missing QA Sign-Off Gate\n\n- **Policy Reference:** Section 4.3 (\"The QA team must sign off on staging deployment before production promotion is authorized\")\n- **Gap:** The `production-approval` stage requires only one approval from the `release-managers` group. There is no separate QA approver group, no QA sign-off step, and no evidence in the pipeline that QA must concur before Release Manager approval. The single-approver model conflates two distinct policy controls.\n- **Severity:** **High**\n- **Rationale:** QA sign-off is a separate processing integrity control from release management approval. Combining or omitting it removes an independent quality gate.\n\n---\n\n### Finding 5: No Rollback Trigger for Failed Integration Tests\n\n- **Policy Reference:** Section 5.1 (pipeline architecture)\n- **Gap:** Because integration testing is absent from the pipeline, there is no logical place where integration test failures would block promotion. The `on_failure: trigger_rollback` exists only for post-deployment verification, meaning defects are caught *after* customer impact rather than before.\n- **Severity:** **Medium**\n- **Rationale:** Detective control is in place but preventive controls are missing; processing errors may already affect production data before rollback occurs.\n\n---\n\n### Finding 6: Container Scan Configured to Not Fail Pipeline\n\n- **Policy Reference:** Section 3.3 (Static Analysis intent \u2014 \"Critical findings block merge\")\n- **Gap:** The `container-scan` step uses Trivy with `\"exit_code\": 0`, meaning critical and high severity vulnerabilities in container images do not abort the pipeline. While this is a security finding more than processing integrity, it indicates a pattern of policy controls being weakened in the pipeline implementation.\n- **Severity:** **Medium**\n- **Rationale:** Inconsistent enforcement of \"fail-on-critical\" between SAST (enforced) and container scanning (not enforced) suggests pipeline configuration is not systematically aligned to policy.\n\n---\n\n### Finding 7: Pipeline Last Audited Before Material Configuration Change\n\n- **Policy Reference:** Section 5 (general) and metadata in pipeline config\n- **Gap:** Pipeline metadata shows `last_audit: 2025-03-15` but `last_modified: 2025-06-15` by `carlos.rivera@pinnacle.io`. A material modification to a deployment pipeline implementing PI controls occurred without subsequent audit/review. Given the absence of staging stages, it is plausible these were removed during this June modification.\n- **Severity:** **High**\n- **Rationale:** Change management over the pipeline definition itself appears insufficient. For Q4 2025 observation, auditors should obtain the change history (git blame on the workflow file) to determine when staging stages were removed and whether change approval was obtained.\n\n---\n\n### Finding 8: Hotfix Process Not Represented in Pipeline\n\n- **Policy Reference:** Section 5.3 (\"Hotfix Process\")\n- **Gap:** Policy describes a hotfix path requiring staging deployment, integration test pass, and VP Engineering approval. The pipeline configuration shows no separate hotfix workflow or branching logic. It is unclear whether hotfixes use this same (already-deficient) pipeline or an undocumented alternate path.\n- **Severity:** **Medium**\n- **Rationale:** Undocumented deployment paths create unmanaged risk to processing integrity.\n\n---\n\n## Recommended Auditor Actions\n\n1. **Request the actual GitHub Actions YAML file** (not just the JSON summary) and git history to determine when staging stages were removed.\n2. **Sample Q4 2025 production deployments** and request evidence of staging deployment, integration test results, 24-hour dwell time, and QA sign-off for each.\n3. **If samples cannot produce this evidence**, escalate to a deficiency in operating effectiveness for PI1.1, likely rising to a **material weakness** given the criticality and pervasiveness.\n4. **Interview Carlos Rivera and Marcus Webb** regarding the June 15, 2025 pipeline modification.\n\n## Overall Conclusion\n\n**Control PI1.1 is NOT operating as designed.** The design (policy) is adequate, but the implementation (pipeline) omits 3 of 6 mandatory stages. Recommend a **qualified opinion** pending remediation and re-testing, or management's acceptance of a deficiency in the SOC 2 report."
+}

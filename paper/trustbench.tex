@@ -20,7 +20,7 @@
 \maketitle
 
 \begin{abstract}
-This paper presents TrustBench, a benchmark for evaluating large language models on security compliance auditing tasks. The benchmark comprises 20 tasks across 8 SOC~2 Trust Service Criteria controls at five difficulty levels, ranging from single-document gap detection to materiality judgment under ambiguity. Each task presents models with synthetic audit evidence---policies, configurations, access logs, and exception registers---containing planted compliance gaps. Scoring is deterministic: keyword-based detection for simple tasks, F1 for tasks involving red herrings and noise documents. We evaluate six models from Anthropic and OpenAI across all 20 tasks (120 runs). Claude Sonnet~4.6 achieves the highest average score at 82\%, followed by Opus~4.7 (72\%) and GPT-5.5 (71\%). Three judgment tasks average below 28\% across all models, suggesting that professional compliance judgment remains beyond current capabilities. We identify a systematic scoring limitation: F1 penalizes models that report legitimate findings beyond the planted ground truth, favoring concise models over thorough ones. The benchmark schema is framework-agnostic and extensible to ISO~27001, HIPAA, and PCI-DSS without changes to the evaluation harness. Code and data are available at \url{https://github.com/varungurnaney/trustbench}.
+This paper presents TrustBench, a benchmark for evaluating large language models on security compliance auditing tasks. The benchmark comprises 153 tasks across 17 compliance themes at five difficulty levels, ranging from single-document gap detection to materiality judgment under ambiguity. Each task presents models with synthetic audit evidence---policies, configurations, access logs, and exception registers---containing planted compliance gaps. Scoring is deterministic: keyword-based detection for simple tasks, F1 for tasks involving red herrings and noise documents. We evaluate six models from Anthropic and OpenAI across all 153 tasks (920 runs). Claude Sonnet~4.6 achieves the highest average score at 70\%, followed by GPT-5.5 (64\%) and Opus~4.7 (63\%). Incident Response is the hardest domain at 36\% average. D4-D5 tasks (67\% of the benchmark) produce scores between 29-67\%, demonstrating meaningful model differentiation. We identify a systematic scoring limitation: F1 penalizes models that report legitimate findings beyond the planted ground truth, favoring concise models over thorough ones. The benchmark schema is framework-agnostic and extensible to ISO~27001, HIPAA, and PCI-DSS. All 920 result files, including raw model outputs, are publicly available for verification at \url{https://github.com/varungurnaney/trustbench}.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -38,10 +38,10 @@ The closest prior work is AIReg-Bench~\cite{aireg}, which evaluates models again
 This paper introduces TrustBench, a benchmark designed to evaluate these capabilities. Our contributions are:
 
 \begin{enumerate}
-\item A benchmark with 20 tasks across 8 SOC~2 controls at 5 difficulty levels, with D4--D5 tasks (75\% of the benchmark) testing red herring filtering, noise document handling, and professional judgment.
+\item A benchmark with 153 tasks across 17 compliance themes at 5 difficulty levels, with D4--D5 tasks (67\% of the benchmark) testing red herring filtering, noise document handling, and professional judgment.
 \item A framework-agnostic task schema supporting any control-based compliance standard.
 \item A scoring methodology using F1 with red herring handling, with documented limitations around the over-reporting penalty.
-\item An evaluation of 6 frontier models with analysis of domain-specific performance patterns.
+\item An evaluation of 6 models with 920 runs and full result reproducibility---all raw model outputs are published.
 \end{enumerate}
 
 \section{Benchmark Design}
@@ -73,11 +73,11 @@ Tasks span five difficulty levels, each testing a distinct audit skill (Table~\r
 \toprule
 Level & Skill Tested & Tasks & Avg Score \\
 \midrule
-D1 & Single-document detection & 2 & 94\% \\
-D2 & Careful reading & 1 & 58\% \\
-D3 & Cross-referencing & 2 & 88\% \\
-D4 & Red herring filtering & 8 & 67\% \\
-D5 & Materiality judgment & 7 & 50\% \\
+D1 & Single-document detection & 17 & 81\% \\
+D2 & Careful reading & 17 & 87\% \\
+D3 & Cross-referencing & 17 & 71\% \\
+D4 & Red herring filtering & 51 & 47\% \\
+D5 & Materiality judgment & 51 & 49\% \\
 \bottomrule
 \end{tabular}
 \label{tab:difficulty}
@@ -98,7 +98,7 @@ D5 & Materiality judgment & 7 & 50\% \\
 
 The task set uses nine evidence types: policies, configurations, logs, spreadsheets, screenshots, tickets, exception registers, reports, and architecture diagrams. The distribution across tasks reflects real audit evidence composition, with policies and CSV logs being most common.
 
-The initial task set covers 8 SOC~2 controls: CC6.1 (Logical Access), CC6.3 (Access Authorization), CC6.6 (System Boundaries), CC7.2 (Monitoring), CC8.1 (Change Management), CC3.1 (Risk Assessment), CC9.1 (Vendor Management), and A1.2 (Backup \& Recovery).
+The task set covers 17 compliance themes across SOC~2 controls: CC6.1 (Logical Access), CC6.3 (Data Access), CC6.4 (Physical Security), CC6.6 (System Boundaries), CC7.1 (Vulnerability Management and Maintenance), CC7.2 (Monitoring), CC7.3 (Incident Response), CC8.1 (Change Management), CC1.1 (Governance), CC1.4 (HR Security), CC3.1 (Risk Assessment), CC9.1 (Vendor Management), A1.2 (Backup \& Recovery), C1.1 (Data Protection), P1.1 (Privacy), and PI1.1 (System Integrity).
 
 The schema is framework-agnostic. The \texttt{framework} and \texttt{control} fields accept arbitrary strings. Adding ISO~27001, HIPAA, or PCI-DSS tasks requires only authoring new task files---the evaluation harness, scoring, and CLI require no changes.
 
@@ -124,27 +124,27 @@ Keyword-based scoring is deterministic and reproducible but cannot capture all v
 
 \section{Experimental Setup}
 
-We evaluate 6 models on all 20 tasks (120 total runs): Claude Sonnet~4.6, Opus~4.7, and Haiku~4.5 (Anthropic); GPT-5.5, GPT-4.1, and GPT-4o (OpenAI). Each model receives identical evidence and prompts. Output is free-text. Temperature is default. Each task is run once per model.
+We evaluate 6 models on all 153 tasks (920 total runs): Claude Sonnet~4.6, Opus~4.7, and Haiku~4.5 (Anthropic); GPT-5.5, GPT-4.1, and GPT-4o (OpenAI). Each model receives identical evidence and prompts. Output is free-text. Temperature is default. Each task is run once per model.
 
 \section{Results}
 
 \subsection{Overall Performance}
 
-Table~\ref{tab:results} presents overall results. Sonnet~4.6 leads at 82\%, followed by Opus~4.7 (72\%) and GPT-5.5 (71\%).
+Table~\ref{tab:results} presents overall results. Sonnet~4.6 leads at 70\%, followed by GPT-5.5 (64\%) and Opus~4.7 (63\%).
 
 \begin{table}[htbp]
-\caption{Overall performance across 20 tasks}
+\caption{Overall performance across 153 tasks (920 runs)}
 \begin{center}
-\begin{tabular}{@{}rlcccc@{}}
+\begin{tabular}{@{}rlc@{}}
 \toprule
-\# & Model & Score & Recall & Prec. & Finds/Task \\
+\# & Model & Score \\
 \midrule
-1 & Sonnet 4.6 & \textbf{82\%} & 92\% & 63\% & 7.3 \\
-2 & Opus 4.7 & 72\% & 94\% & 47\% & 9.6 \\
-3 & GPT-5.5 & 71\% & 82\% & 50\% & 8.7 \\
-4 & GPT-4.1 & 61\% & 71\% & 48\% & 6.8 \\
-5 & Haiku 4.5 & 61\% & 90\% & 39\% & 14.6 \\
-6 & GPT-4o & 44\% & 55\% & 38\% & 7.2 \\
+1 & Sonnet 4.6 & \textbf{70\%} \\
+2 & GPT-5.5 & 64\% \\
+3 & Opus 4.7 & 63\% \\
+4 & Haiku 4.5 & 59\% \\
+5 & GPT-4.1 & 57\% \\
+6 & GPT-4o & 40\% \\
 \bottomrule
 \end{tabular}
 \label{tab:results}
@@ -173,7 +173,7 @@ Fig.~\ref{fig:heatmap} shows the model-control performance matrix. Change Manage
 
 \subsection{D5 Judgment Tasks}
 
-Three D5 tasks average below 28\% across all models:
+Incident Response (CC7.3) is the hardest domain at 36\% average across all models. Several D5 tasks average below 30\%:
 
 \begin{itemize}
 \item \textbf{cc3.1-5-001} (Risk Assessment, 23\%): Risk downgrades without documented justification, 11-month-old annual assessment, partial governance review scope.
@@ -215,16 +215,15 @@ Performance varies by control domain (Fig.~\ref{fig:heatmap}). GPT-4o scores 93\
 \section{Limitations}
 
 \begin{itemize}
-\item \textbf{Scale.} 20 tasks provides directional findings but lacks statistical power for fine-grained model comparisons.
+\item \textbf{Synthetic evidence.} All 153 tasks use authored evidence. While modeled on real audit artifacts, they may not capture full production complexity.
 \item \textbf{Keyword scoring.} Cannot capture all valid phrasings and penalizes legitimate extra findings.
-\item \textbf{Synthetic evidence.} Documents are authored, not sourced from real audits.
-\item \textbf{Single framework.} All tasks cover SOC~2.
+\item \textbf{Single framework.} All 153 tasks cover SOC~2. The schema supports other frameworks but no ISO~27001, HIPAA, or PCI-DSS tasks exist yet.
 \item \textbf{Single run.} Non-deterministic model outputs introduce variance.
 \end{itemize}
 
 \section{Future Work}
 
-\textbf{Task expansion.} Target: 64+ tasks (8 per control). The authoring guide and schema are designed for community contributions.
+\textbf{Task quality validation.} The current 153 tasks need review by compliance professionals to validate gap realism and keyword calibration.
 
 \textbf{Multi-framework support.} ISO~27001 Annex~A, HIPAA Security Rule, and PCI-DSS v4.0 task sets. The schema supports these without evaluation harness changes.
 
@@ -246,7 +245,7 @@ TrustBench is distinguished by testing compliance-specific skills: multi-documen
 
 \section{Conclusion}
 
-TrustBench demonstrates that LLMs can detect compliance gaps requiring cross-referencing multiple documents---practical capability for GRC teams. However, no model exceeds 28\% on materiality judgment tasks, models systematically over-report, and performance varies by control domain. We release TrustBench as open-source infrastructure for the compliance AI evaluation ecosystem.
+TrustBench demonstrates that LLMs can detect compliance gaps requiring cross-referencing multiple documents---practical capability for GRC teams. Across 153 tasks and 920 evaluation runs, the best model (Sonnet~4.6) averages 70\%, with Incident Response as the hardest domain at 36\%. D4-D5 tasks produce meaningful differentiation (29-67\% range), while D1-D2 tasks are near-saturated. All 920 raw model outputs are published for verification. We release TrustBench as open-source infrastructure for the compliance AI evaluation ecosystem.
 
 \begin{thebibliography}{00}
 \bibitem{swebench} C. E. Jimenez et al., ``SWE-bench: Can Language Models Resolve Real-World GitHub Issues?'' in \textit{Proc. ICLR}, 2024.

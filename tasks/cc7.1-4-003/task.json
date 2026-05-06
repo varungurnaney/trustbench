@@ -1,0 +1,101 @@
+{
+  "id": "cc7.1-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "To meet its objectives, the entity uses detection and monitoring procedures to identify changes to configurations that result in the introduction of new vulnerabilities, and susceptibilities to newly discovered vulnerabilities.",
+  "difficulty": 4,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/vulnerability-management-policy.md",
+      "type": "policy",
+      "description": "Helios Platform vulnerability management policy with 7-day Critical SLA, scan coverage requirements, and risk acceptance process"
+    },
+    {
+      "path": "evidence/qualys-scan-report-q4-2025.csv",
+      "type": "report",
+      "description": "Qualys VMDR scan report for Q4 2025 with 33 findings across production and corporate assets"
+    },
+    {
+      "path": "evidence/risk-acceptance-register.csv",
+      "type": "exception_register",
+      "description": "Risk acceptance register with CISO-approved acceptances including compensating controls and quarterly revalidation records"
+    },
+    {
+      "path": "evidence/scan-coverage-report-q4-2025.md",
+      "type": "report",
+      "description": "Q4 2025 scan coverage report showing 100% subnet coverage with 98% asset discovery rate"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/pentest-executive-summary-q4.md",
+      "type": "report",
+      "description": "Annual penetration test executive summary — point-in-time offensive security assessment not directly scoped to vulnerability management program controls"
+    }
+  ],
+  "prompt": "You are a SOC 2 auditor evaluating Helios Platform's vulnerability management program for Q4 2025 (October 1 - December 31, 2025). Review all provided evidence including the vulnerability management policy, Qualys scan report, risk acceptance register, scan coverage report, and any additional documentation. Assess CC7.1 compliance focusing on vulnerability detection, remediation timeliness, risk acceptance practices, and scan coverage. Exercise professional judgment — not every apparent issue is a true finding, and some properly documented exceptions may have subtle deficiencies.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Compensating control validation for RA-2025-033 performed by asset-owning team — lacks independence",
+      "description": "Risk acceptance RA-2025-033 for CVE-2025-24472 (CVSS 9.8, Critical FortiOS authentication bypass on fw-internal-05) was approved by the CISO with 5 compensating controls. However, the quarterly revalidation notes reveal that validation was performed by Network Engineering — the same team that owns the firewall and requested the risk acceptance. Policy Section 6.2 requires validation evidence with 'validator identity' but does not explicitly mandate independent validation. This is a judgment call: for a CVSS 9.8 Critical vulnerability on an internal firewall, should compensating control validation be performed by an independent team (e.g., Security Engineering or Internal Audit) rather than the team responsible for the asset? The register notes this has been the pattern since initial approval.",
+      "evidence_sources": [
+        "evidence/risk-acceptance-register.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should examine all risk acceptances and their revalidation records. RA-2025-033 is the most critical (CVSS 9.8 auth bypass on internal firewall). The review notes explicitly state 'Compensating control validation was performed by the same team that owns the asset (Network Engineering) rather than by an independent team.' For a Critical-severity firewall vulnerability, self-validation of compensating controls creates a conflict of interest. Compare with RA-2025-031 where Security Engineering (independent from Infrastructure) performed the validation.",
+      "detection_criteria": {
+        "required_keywords": ["RA-2025-033", "CVE-2025-24472", "fw-internal-05", "Network Engineering", "independence", "self-validation", "conflict of interest", "same team", "compensating control validation"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Scan credential expiration caused authentication failures on 4 network devices for unknown duration",
+      "description": "The scan coverage report Section 4 documents that 4 network devices in the infrastructure subnet (10.50.0.0/24) had scan authentication failures due to expired SNMP community strings. The credentials were refreshed on December 3, but the report does not specify when the credentials expired or how many scan cycles were affected. These are infrastructure devices (likely switches, routers, or firewalls) in the same subnet as critical infrastructure. Unauthenticated scans of network devices miss the majority of vulnerabilities. Policy Section 3.3 requires credentialed scanning. The coverage report shows 100% subnet coverage, but assets scanned without valid credentials provide incomplete vulnerability data.",
+      "evidence_sources": [
+        "evidence/scan-coverage-report-q4-2025.md",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should look beyond the headline 100% coverage metric and examine the authentication failures section. Four network devices had credential failures — meaning they were scanned but unauthenticated. The resolution date of December 3 is documented but not the start date of the failure, so the duration of reduced detection capability is unknown. This is a nuanced finding: the devices were discovered but not effectively scanned.",
+      "detection_criteria": {
+        "required_keywords": ["4 network devices", "authentication failures", "SNMP community string", "credential expired", "December 3", "unauthenticated", "10.50.0.0", "incomplete vulnerability data"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "98% asset discovery rate means 23 assets are not being scanned for vulnerabilities",
+      "description": "The scan coverage report shows a 98% asset discovery rate (1,127 of 1,150 CMDB assets). While 98% sounds high, this means 23 assets across production, staging, and corporate subnets are not being scanned. Of the 23 missing assets, 4 are in the infrastructure subnet (10.50.0.0/24, due to credential issues), 2 are production application servers, and 8 are engineering workstations. The policy requires all assets to be scanned, and the report attributes misses to timing issues (offline laptops, ephemeral containers) but does not describe compensating controls for chronically unreachable assets.",
+      "evidence_sources": [
+        "evidence/scan-coverage-report-q4-2025.md",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should evaluate whether 23 unscanned assets represent an acceptable operational reality or a control gap. The 2 missing production application servers and 4 infrastructure devices with credential failures are more concerning than offline laptops. The report recommends staggered scan windows and cloud agents but these have not been implemented.",
+      "detection_criteria": {
+        "required_keywords": ["23 assets", "98%", "asset discovery", "production application servers", "offline laptops", "staggered scan", "cloud agent", "not implemented"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["vulnerability_management", "judgment", "compensating_control_validation", "independence", "scan_coverage", "credential_management", "asset_discovery"]
+  }
+}

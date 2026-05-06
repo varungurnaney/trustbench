@@ -1,0 +1,86 @@
+{
+  "task_id": "cc6.1-4-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:30:01.089300",
+  "score": {
+    "task_id": "cc6.1-4-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6,
+    "f1": 0.7499999999999999,
+    "score": 0.7499999999999999,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "root",
+          "authorized",
+          "break-glass",
+          "dual approval",
+          "post-review"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "14",
+          "ticket",
+          "ServiceNow",
+          "bypass",
+          "11"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "BG-2025-044",
+          "Pending",
+          "5 business days",
+          "post-review",
+          "INC-2025-2103"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "sarah.okonkwo",
+          "2-hour",
+          "session duration",
+          "exceeded",
+          "automatic termination"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5488,
+    "output_tokens": 2764
+  },
+  "raw_response": "# CC6.1 Logical Access Security \u2014 Readiness Assessment\n\n## Executive Summary\n\nReview of Q4 2025 privileged access logs, break-glass procedures, and access control policies reveals **4 findings**, including **1 Critical** issue affecting the integrity of the approval control. The organization has implemented a robust PAM infrastructure with appropriate technical controls, but compensating controls for exceptions and post-incident reviews require immediate remediation.\n\n---\n\n## FINDING 1: Expired Exception \u2014 Auto-Approval Control Still Active\n\n**Title:** CISO Auto-Approval Exception Expired \u2014 Compensating Controls Not Evidenced\n\n**Policy Reference:** EXC-2025-050; POL-AC-2024-007 Section 9\n\n**Gap Description:**\n\nException EXC-2025-050 authorized \"Auto-approval for CISO privileged checkouts\" with an expiration date of **2025-07-15**. The exception register indicates it was \"Renewed\" with last review on 2025-10-01 and new expiration of 2026-01-15.\n\nHowever, this creates a **control gap between 2025-07-15 and 2025-10-01** (87 days) during which:\n- All CISO (Anil Kapoor) approvals show \"auto-approved\" in the second approver field\n- The compensating controls (Board Audit Committee quarterly review, weekly privilege reports, session recording) have **no evidence of execution** during the gap period\n- 17 of 31 PAM sessions (55%) list \"auto-approved\" as approver_2, with all approvals by Anil Kapoor as approver_1\n\n**Impact on CC6.1:**\nThe policy requires \"**dual approval (Manager + CISO) required for privileged checkouts**\" (Section 5.1). If the exception was expired and the Board Audit Committee review has not been documented as performed during the gap, the second approval requirement was effectively circumvented without compensating controls evidence.\n\n**Severity:** **CRITICAL**\n\n**Remediation Required:**\n- Provide evidence of Board Audit Committee quarterly reviews for Q2 and Q3 2025 covering the gap period\n- Document weekly privilege reports issued by Security Operations during 2025-07-15 to 2025-10-01\n- Confirm session recording spot-checks (minimum 10% sample per Section 5.2) were performed during the gap\n- If compensating controls were not executed, retroactively classify all CISO checkouts during the gap as exceptions and formally document risk acceptance\n\n---\n\n## FINDING 2: Incomplete Break-Glass Post-Review \u2014 Control Weakness\n\n**Title:** Break-Glass Session BG-2025-044 Post-Review Not Completed\n\n**Policy Reference:** POL-AC-2024-007 Section 7.2\n\n**Gap Description:**\n\nBreak-glass event **BG-2025-044** (2025-12-12, sarah.okonkwo, INC-2025-2103) shows:\n- **post_review_status: \"Pending\"**\n- **post_review_date: (blank)**\n- **post_review_reviewer: (blank)**\n\nPolicy Section 7.2 mandates: *\"Post-incident review of all break-glass actions must be completed within 5 business days.\"*\n\nAs of the assessment date (inferred as early January 2026), this review is **overdue by approximately 14 calendar days** (or ~10 business days past the deadline). The corresponding PAM log entry (PAM-Q4-028) shows the session occurred 2025-12-12T03:15:00 with dual approval by Anil Kapoor and Marcus Webb.\n\n**Exception Reference Check:**\nEXC-2025-051 permits \"Extended break-glass review period for holiday incidents\" (10 business days instead of 5) for December 20 - January 5 period. However, BG-2025-044 occurred on 2025-12-12, **before** the holiday exception period began, so the standard 5-business-day deadline applies.\n\n**Impact on CC6.1:**\nPost-incident review is a compensating control to verify that break-glass access was used appropriately and to detect unauthorized actions. An incomplete review means:\n- Actions taken during the session (API gateway restart, connection pool clearing) are not validated\n- The control detective function for emergency access is not satisfied\n- Audit trail completeness requirement (Section 7.2) is unmet\n\n**Severity:** **HIGH**\n\n**Remediation Required:**\n- Complete post-incident review of BG-2025-044 immediately, documenting systems accessed, actions taken, data exposure assessment, and justification\n- Provide evidence that credential rotation occurred (shows \"Yes\" in log, timestamp 2025-12-12T04:22:00 \u2014 this is compliant)\n- Implement a tracking mechanism to prevent future deadline overruns (e.g., automated alert at day 3 of 5-business-day window)\n\n---\n\n## FINDING 3: Anomalous Session Duration \u2014 Extended Access Duration Not Explained\n\n**Title:** Session PAM-Q4-021 Exceeds Policy Maximum Duration Threshold\n\n**Policy Reference:** POL-AC-2024-007 Section 5.1\n\n**Gap Description:**\n\nSession **PAM-Q4-021** (2025-11-22, sarah.okonkwo, prod-k8s-admin) shows:\n- **session_duration_minutes: 210**\n- **checkout_time: 2025-11-22T10:15:00**\n- **checkin_time: 2025-11-22T13:45:00**\n\nPolicy Section 5.1 states: *\"Just-in-time (JIT) access with a maximum session duration of 2 hours [120 minutes].\"*\n\nThis session is **90 minutes over the maximum allowed duration** (210 vs. 120 minutes). The policy also states: *\"CyberArk enforces automatic session termination at the maximum duration,\"* suggesting the system should have forcibly terminated the session.\n\n**Ticket Reference:** CHG-2025-Q4-015 (same change ticket as PAM-Q4-020, which ran for 60 minutes without issue)\n\n**Impact on CC6.1:**\n- Extended privileged access beyond the time-bound requirement increases the window for unauthorized actions\n- If CyberArk enforced automatic termination, this session should not have exceeded 120 minutes, suggesting either:\n  - The enforcement mechanism was bypassed or failed\n  - The session duration cap was not properly configured\n  - Extended access was manually approved without documented justification or policy amendment\n\n**Severity:** **MEDIUM**\n\n**Remediation Required:**\n- Retrieve CyberArk session recording for PAM-Q4-021 and verify actual actions taken during minutes 121\u2013210\n- Determine whether automatic session termination was attempted and if the user re-authenticated\n- If extended access was intentional, document the business justification and confirm whether it required a policy exception\n- Verify CyberArk PAM software configuration enforces the 2-hour maximum and audit logs show termination attempts\n\n---\n\n## FINDING 4: Break-Glass Dual Approval \u2014 Pre-Policy-Update Session Lacks Required Reviewer\n\n**Title:** Break-Glass Event BG-2025-038 Lacks Dual Verbal Approval per Current Policy\n\n**Policy Reference:** POL-AC-2024-007 Section 7.2; Policy Effective Date January 1, 2025\n\n**Gap Description:**\n\nBreak-glass event **BG-2025-038** (2025-08-14, marcus.webb, INC-2025-1456) shows:\n- **verbal_approver_1: Anil Kapoor**\n- **verbal_approver_2: N/A (pre-policy-update)**\n- **credential_used: aws-root-account**\n- **post_review_status: Completed** (2025-08-18)\n\nWhile the log notation indicates this occurred before the current policy version took effect (POL-AC-2024-007 Version 5.0, Effective January 1, 2025), the incident date is 2025-08-14, which is **within the scope of the current policy period**.\n\nHowever, this is **not a violation** because:\n1. The log explicitly notes \"pre-policy-update,\" indicating the organization was operating under a prior version of the policy\n2. Post-incident review was completed and documented\n3. Credential rotation was executed immediately (2025-08-14T04:52:00)\n\n**Clarification:**\nThis entry does **not** represent a finding, but rather a **compliant historical record** showing the organization's transition to the dual-approval requirement. Included for completeness in the assessment.\n\n**Severity:** **NONE \u2014 No Finding**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity | Status | Owner |\n|---|---------|----------|--------|-------|\n| 1 | Expired Exception \u2014 Auto-Approval Control | **CRITICAL** | Requires Immediate Action | CISO (Anil Kapoor) |\n| 2 | Break-Glass Post-Review Incomplete (BG-2025-044) | **HIGH** | Overdue | CISO / Security Operations |\n| 3 | Session Duration Exceeds 2-Hour Maximum (PAM-Q4-021) | **MEDIUM** | Requires Investigation | CyberArk Admin / CISO |\n| 4 | Pre-Policy Break-Glass Session | **NONE** | Compliant Historical Record | \u2014 |\n\n---\n\n## Strengths Observed\n\n- **Robust PAM Infrastructure:** CyberArk is properly configured with checkout/checkin, credential rotation, and audit trails\n- **Break-Glass Process:** Majority of emergency access events (6 of 7) show proper dual verbal approval and timely post-incident review\n- **Credential Rotation:** All break-glass sessions show immediate credential rotation (within ~40 minutes of session end)\n- **Ticket Integration:** All privileged access sessions reference valid ServiceNow tickets (RITM, CHG, INC)\n- **Session Recording Retention:** 24-month retention policy is appropriate and documented\n- **Termination Controls:** Policy clearly defines immediate Okta suspension and credential rotation upon employee departure\n\n---\n\n## Recommendations\n\n**Immediate (Before Audit Closure):**\n1. Resolve Finding 1 by producing Board Audit Committee review evidence or reclassifying exception as formally expired\n2. Complete post-incident review for BG-2025-044 per Finding 2\n3. Investigate PAM-Q4-021 session duration anomaly per Finding 3\n\n**Near-Term (30 days):**\n4. Implement automated break-glass post-review deadline alerting (3-day lead time)\n5. Validate CyberArk PAM session maximum enforcement and confirm 2-hour termination is functioning\n6. Conduct monthly (not quarterly) review of privileged access to catch policy violations faster\n7. Implement exception renewal calendar to prevent gaps in compensating control evidence\n\n**Ongoing:**\n8. Document the Board Audit Committee's quarterly review process with sign-off evidence\n9. Publish weekly privilege usage reports to a shared audit folder with retention control\n\n---\n\n## Assessment Conclusion for CC6.1\n\n**Status:** **NOT YET READY** for SOC 2 Type II certification\n\nThe organization has implemented the core technical and procedural controls required by CC6.1 (logical access software, infrastructure, and architecture). However, the **Critical finding regarding expired exception controls** and the **High finding regarding incomplete post-incident review** represent control design or operating effectiveness gaps that must be remediated before the control can be attested as operating effectively throughout the audit period.\n\nOnce Findings 1\u20133 are resolved with supporting evidence, CC6.1 can be reassessed as **Ready**."
+}

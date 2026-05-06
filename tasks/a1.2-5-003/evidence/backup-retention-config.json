@@ -1,0 +1,76 @@
+{
+  "configuration_id": "ks-backup-config-prod",
+  "last_modified": "2025-01-20",
+  "modified_by": "terraform-automation",
+  "aws_region": "us-east-1",
+  "backup_vaults": [
+    {
+      "vault_name": "ks-backup-vault-prod",
+      "vault_arn": "arn:aws:backup:us-east-1:123456789012:backup-vault:ks-backup-vault-prod",
+      "encryption_key": "arn:aws:kms:us-east-1:123456789012:key/a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "access_policy": "vault-policy-prod-v2",
+      "vault_lock_enabled": false,
+      "vault_lock_min_retention_days": null,
+      "vault_lock_max_retention_days": null,
+      "tags": {
+        "Environment": "production",
+        "ManagedBy": "terraform",
+        "CostCenter": "infrastructure"
+      }
+    }
+  ],
+  "backup_plans": [
+    {
+      "plan_name": "ks-daily-full-backup",
+      "plan_id": "bp-0a1b2c3d4e5f6",
+      "schedule": "cron(0 2 * * ? *)",
+      "target_resources": [
+        "arn:aws:rds:us-east-1:123456789012:cluster:ks-db-prod-*",
+        "arn:aws:s3:::ks-prod-*"
+      ],
+      "lifecycle": {
+        "move_to_cold_storage_after_days": 30,
+        "delete_after_days": 365,
+        "notes": "Daily backups kept warm for 30 days, then cold storage, deleted after 1 year."
+      },
+      "copy_action": {
+        "destination_vault": "arn:aws:backup:us-west-2:123456789012:backup-vault:ks-backup-vault-dr",
+        "lifecycle": {
+          "delete_after_days": 30
+        }
+      }
+    },
+    {
+      "plan_name": "ks-monthly-consolidated",
+      "plan_id": "bp-1a2b3c4d5e6f7",
+      "schedule": "cron(0 3 1 * ? *)",
+      "target_resources": [
+        "arn:aws:rds:us-east-1:123456789012:cluster:ks-db-prod-*",
+        "arn:aws:s3:::ks-prod-*"
+      ],
+      "lifecycle": {
+        "move_to_cold_storage_after_days": 1,
+        "delete_after_days": 365,
+        "notes": "Monthly consolidated immediately to cold storage. Retained 12 months."
+      }
+    },
+    {
+      "plan_name": "ks-annual-archive",
+      "plan_id": "bp-2a3b4c5d6e7f8",
+      "schedule": "cron(0 4 1 1 ? *)",
+      "target_resources": [
+        "arn:aws:rds:us-east-1:123456789012:cluster:ks-db-prod-*",
+        "arn:aws:s3:::ks-prod-*"
+      ],
+      "lifecycle": {
+        "move_to_cold_storage_after_days": 1,
+        "delete_after_days": 2555,
+        "notes": "Annual snapshots to Glacier Deep Archive. Retained 7 years (2555 days)."
+      }
+    }
+  ],
+  "legal_hold_configuration": {
+    "enabled": false,
+    "notes": "AWS Backup Vault Lock not configured. No legal hold tagging mechanism in place. All backups in vault follow standard lifecycle rules."
+  }
+}

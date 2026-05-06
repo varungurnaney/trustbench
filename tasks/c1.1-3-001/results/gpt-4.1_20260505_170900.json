@@ -1,0 +1,89 @@
+{
+  "task_id": "c1.1-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:09:00.972629",
+  "score": {
+    "task_id": "c1.1-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.4444444444444444,
+    "f1": 0.6153846153846153,
+    "score": 0.8888888888888888,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "crestline_analytics",
+          "customer_profiles",
+          "plaintext",
+          "email",
+          "phone",
+          "field-level encryption",
+          "ETL",
+          "nightly"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "GraphQL",
+          "DLP",
+          "bulk",
+          "pagination",
+          "October 2025",
+          "DLP-API-001",
+          "REST"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "crestline_analytics",
+          "customer_profiles",
+          "engagement_events",
+          "plaintext"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "GraphQL",
+          "October 2025",
+          "DPIA",
+          "DLP rules"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4718,
+    "output_tokens": 1687
+  },
+  "raw_response": "Below are the key findings from the readiness assessment of Crestline Data Systems, focused on evidence provided for Control C1.1 and spanning database encryption, DLP controls, and data flow mapping against the Data Classification and Protection Policy.\n\n---\n\n### 1. **Unencrypted PII in Analytics Database**\n\n- **Related Section(s):**\n  - Database Encryption Status Report\n  - Data Classification and Protection Policy (Section 3.1, 3.2, 4.1)\n\n- **Gap Explanation:**\n  - The database encryption report shows that in the `crestline_analytics.customer_profiles` table, both `email` and `phone` columns are flagged as containing PII, yet `field_level_encryption` is set to `No` (\"PLAINTEXT - copied from users table via nightly ETL\"). This is in direct violation of policy requirements that Restricted-classified PII \u201crequire field-level encryption for PII columns\u201d (\u00a73.1, \u00a73.2, \u00a74.1).\n\n- **Severity:** **Critical**\n\n---\n\n### 2. **Unencrypted PII in Engagement Events Table**\n\n- **Related Section(s):**\n  - Database Encryption Status Report\n  - Data Classification and Protection Policy (Section 3.1, 3.2, 4.1)\n\n- **Gap Explanation:**\n  - The `crestline_analytics.engagement_events` table has a `user_email` column, marked as PII, that is also not using field-level encryption and is stored in plaintext. This directly contravenes the field-level encryption requirement for Restricted data (\u00a73.1, \u00a73.2, \u00a74.1).\n\n- **Severity:** **Critical**\n\n---\n\n### 3. **GraphQL API Bulk PII Export Not Covered by DLP**\n\n- **Related Section(s):**\n  - DLP Rule Configuration (API Gateway section)\n  - Data Classification and Protection Policy (Section 5.1, 5.2)\n  - Data Flow Diagram (Section 4.2)\n\n- **Gap Explanation:**\n  - The DLP configuration specifies that the new GraphQL API (`api.crestline.com/graphql`) launched in October 2025 is **not** yet covered by DLP API export rules. However, the data flow diagram notes that bulk PII extraction is possible via GraphQL pagination and batch queries. This exposes a channel for unauthorized or excessive export of Restricted (PII) data and fails policy requirements for DLP coverage across all APIs transmitting Restricted data (\u00a75.1).\n\n- **Severity:** **High**\n\n---\n\n### 4. **Analytics Database Contains Unprotected Bulk PII Accessible to Analytics Team**\n\n- **Related Section(s):**\n  - Data Flow Diagram (3.1 Analytics Pipeline)\n  - Database Encryption Status Report\n  - Data Classification and Protection Policy (Section 3.3, 4.1)\n\n- **Gap Explanation:**\n  - According to the data flow diagram, the `crestline_analytics` database (which stores PII in plaintext) is accessible with read-only rights to the Analytics Team. There is no evidence of additional controls (such as row-level masking, auditing, or pseudonymization) to protect this data, other than basic database encryption. The existence of bulk, readable PII for analytics violates the policy regarding protection of Restricted data and its access controls (\u00a73.3, \u00a74.1).\n\n- **Severity:** **High**\n\n---\n\n### 5. **REST API Bulk Export Protection Not Applied to GraphQL API**\n\n- **Related Section(s):**\n  - DLP Rule Configuration (API Gateway)\n  - Data Flow Diagram (4.2)\n\n- **Gap Explanation:**\n  - The DLP-API-001 rule actively alerts on bulk exports (>1,000 records) from the REST API, but this does not apply to the GraphQL API, which allows comparable exports. The policy (\u00a75.1, 5.2) requires DLP on all APIs exporting Restricted data; the GraphQL path is not just an oversight but a functional gap in parity of protection.\n\n- **Severity:** **High**\n\n---\n\n### 6. **Partial Data Flow Documentation for DLP Control Gaps**\n\n- **Related Section(s):**\n  - Data Flow Diagram\n  - Data Classification and Protection Policy (Section 6)\n\n- **Gap Explanation:**\n  - The data flow diagram and DLP policy both note that DLP gaps exist on new flows (specifically GraphQL, launched October 2025). While the DPIA has been updated and reviewed, there is no evidence of risk exception, remediation timeline, or interim mitigation for these known gaps.\n\n- **Severity:** **Medium**\n\n---\n\n### 7. **Field-level Encryption Missing in Analytics \u2014 Policy Non-compliance Noted but Not Tracked as Incident**\n\n- **Related Section(s):**\n  - Data Classification and Protection Policy (Section 7 Compliance)\n  - Database Encryption Status Report\n\n- **Gap Explanation:**\n  - The policy specifies that non-compliance with encryption requirements constitutes a security incident and must be escalated. However, there is no evidence that plaintext PII storage in analytics (`crestline_analytics`) has been documented as a security incident or remediated.\n\n- **Severity:** **Medium**\n\n---\n\n### 8. **Encryption Implemented \"at Rest\" and \"in Transit,\" but Not Always at Field Level**\n\n- **Related Section(s):**\n  - Database Encryption Status Report\n  - Data Classification and Protection Policy (Section 4.1)\n  \n- **Gap Explanation:**\n  - While all databases report encryption \u201cat rest\u201d via RDS/KMS and \u201cin transit\u201d via TLS per technical requirements for Confidential and Restricted (\u00a74.1), the mandatory field-level encryption for specific PII columns is inconsistently implemented (absent in analytics). This issue is found throughout several findings above, but should be highlighted for completeness.\n\n- **Severity:** **Medium**\n\n---\n\n### 9. **Partial DLP Coverage Summary \u2014 Not All Required Channels Protected**\n\n- **Related Section(s):**\n  - DLP Rule Configuration\n  - Data Classification and Protection Policy (Section 5.1)\n\n- **Gap Explanation:**\n  - While DLP rules are in place for email, cloud storage, endpoints, REST APIs, and database activity, there's clear documentation of a lack of full API DLP coverage (GraphQL excluded), producing an overall DLP posture gap for the protection of Restricted data in all \u201cchannels\u201d required by policy.\n\n- **Severity:** **Medium**\n\n---\n\n## Summary Table\n\n| Finding Title                                                | Section(s)                       | Severity   |\n|--------------------------------------------------------------|----------------------------------|------------|\n| Unencrypted PII in Analytics Database                        | DB Status, Policy \u00a73.1/4.1       | Critical   |\n| Unencrypted PII in Engagement Events Table                   | DB Status, Policy \u00a73.1/4.1       | Critical   |\n| GraphQL API Bulk PII Export Not Covered by DLP               | DLP Config, Policy \u00a75, DFD 4.2   | High       |\n| Analytics DB Contains Unprotected Bulk PII                   | DFD 3.1, DB Status, Policy \u00a73.3  | High       |\n| REST API Bulk Export Protections Not Applied to GraphQL API  | DLP Config, DFD 4.2              | High       |\n| Partial Data Flow Doc for DLP Control Gaps                   | DFD, Policy \u00a76                   | Medium     |\n| Policy Non-Compliance Not Tracked as Incident                | Policy \u00a77, DB Status             | Medium     |\n| Encryption: At-rest/in-transit Coverage/Field-level Gaps     | DB Status, Policy \u00a74.1           | Medium     |\n| Partial DLP Coverage Across All Channels                     | DLP Config, Policy \u00a75.1          | Medium     |\n\n---\n\n## **Recommendations**\nCrestline must urgently remediate field-level encryption gaps for PII in analytics, close DLP coverage gaps (especially on GraphQL), ensure all Restricted data flows are risk-assessed and tracked, and escalate known policy violations as security incidents per internal policy.\n\n---\n\n**If you need details on any specific finding, let me know!**"
+}

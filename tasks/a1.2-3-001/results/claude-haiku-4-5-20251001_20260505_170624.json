@@ -1,0 +1,58 @@
+{
+  "task_id": "a1.2-3-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:06:24.585601",
+  "score": {
+    "task_id": "a1.2-3-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.2857142857142857,
+    "f1": 0.4444444444444445,
+    "score": 0.7142857142857143,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "backup log",
+          "4-hour",
+          "RPO",
+          "missing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAL",
+          "archiving",
+          "no evidence",
+          "continuous",
+          "point-in-time",
+          "verify",
+          "log"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5678,
+    "output_tokens": 2022
+  },
+  "raw_response": "# SOC 2 A1.2 Compliance Assessment Report\n## Nexus Platforms Inc. \u2013 Q4 2025 Backup Controls\n\n---\n\n## FINDINGS\n\n### Finding 1: Missing Incremental Backup Evidence\n**Related Policy Section:** 3.2 Incremental Backups  \n**Gap Description:**  \nThe backup execution log contains only daily full backup entries for the production database (nx-db-prod-01). The policy explicitly requires incremental file system backups every 4 hours at 06:00, 10:00, 14:00, 18:00, and 22:00 UTC. No incremental backup records are present in the provided evidence for the entire 92-day Q4 period.\n\n**Why This is a Gap:**  \nControl A1.2 requires the entity to \"authorize, designs, develops or acquires, implements, operates, approves, maintains, and **monitors** environmental protections, software, data backup and recovery infrastructure.\" The absence of incremental backup logs means:\n- No audit trail exists to verify incremental backups are executing as designed\n- The 4-hour RPO objective depends on incremental backups; without evidence, RPO compliance cannot be validated\n- Monitoring/operational oversight of scheduled incremental backups cannot be demonstrated\n\n**Severity:** **High**\n\n---\n\n### Finding 2: Missing WAL Archiving Execution Logs\n**Related Policy Section:** 3.3 WAL Archiving  \n**Gap Description:**  \nThe policy defines continuous PostgreSQL WAL archiving to cross-region storage (us-west-2) with a maximum 15-minute archive lag. No WAL archiving execution logs, monitoring records, or validation of archive lag are included in the evidence package.\n\n**Why This is a Gap:**  \n- WAL archiving is a critical component of the stated recovery infrastructure and enables point-in-time recovery capability\n- Without logs or monitoring records, there is no evidence that WAL segments are being archived continuously or within the 15-minute SLA\n- A1.2 requires demonstration that the recovery infrastructure is \"implemented, operates, [and is] maintain[ed]\" \u2014 WAL archiving status is undocumented\n- The lack of monitoring data violates the control's \"monitors\" requirement\n\n**Severity:** **High**\n\n---\n\n### Finding 3: No Recovery Test Evidence\n**Related Policy Section:** 7. Restore Testing  \n**Gap Description:**  \nThe policy mandates \"Full restore test performed quarterly in the DR environment\" to validate restoration success, data integrity, and RTO compliance. No restore test results, procedures, or validation documentation for Q4 2025 has been provided.\n\n**Why This is a Gap:**  \n- A1.2 explicitly requires the entity to \"designs, develops or acquires, implements, operates, approves, maintains, and **monitors**\" recovery infrastructure\n- Restore testing is the primary mechanism to verify that recovery procedures actually work and meet RTO/RPO targets\n- Without test evidence, there is no assurance that the documented backup infrastructure can successfully restore data or meet the 4-hour RTO objective\n- This represents a control design/implementation gap: backups may be executing, but their recoverability is unvalidated\n\n**Severity:** **Critical**\n\n---\n\n### Finding 4: Insufficient Backup Infrastructure Scope Coverage\n**Related Policy Section:** 2. Scope  \n**Gap Description:**  \nThe policy defines backup requirements for:\n- PostgreSQL database clusters (nx-db-prod-01 through nx-db-prod-04)\n- Application file storage (S3 buckets)\n- HashiCorp Vault cluster\n\nHowever, the execution log provides evidence only for **nx-db-prod-01**. There is no backup execution evidence for nx-db-prod-02, nx-db-prod-03, nx-db-prod-04, or any of the S3 or Vault infrastructure.\n\n**Why This is a Gap:**  \n- A1.2 requires authorization and operation of backup infrastructure across all systems within scope\n- The log demonstrates backup execution for only 25% of the defined database infrastructure\n- No evidence that all in-scope systems (file storage, Vault) are being backed up as designed\n- Cannot attest that the complete backup infrastructure is \"implemented, operates, [and is] maintain[ed]\"\n\n**Severity:** **High**\n\n---\n\n### Finding 5: Backup Failure Detection and Response Monitoring Not Demonstrated\n**Related Policy Section:** 8. Failure Handling  \n**Gap Description:**  \nThe policy requires: \"Backup failures trigger PagerDuty alert within 5 minutes. On-call engineer investigates and initiates re-run within 2 hours.\"\n\nThe backup log shows 92/92 backups with \"success\" status over Q4 2025 \u2014 a 100% success rate. While this appears positive, no supporting evidence is provided demonstrating:\n- Alert configuration in PagerDuty\n- Alert escalation records\n- Investigation procedures\n- Re-run procedures initiated\n\nAdditionally, the impossibility of zero failures across 92 consecutive days for growing backup sizes (139\u2013180 GB) without any monitoring/alerting evidence is suspicious.\n\n**Why This is a Gap:**  \n- A1.2 requires \"monitors\" backup and recovery infrastructure, including failure detection\n- The policy explicitly requires alerting and investigation workflows\n- Without evidence of alert systems, escalation procedures, and response logs, monitoring compliance cannot be validated\n- The lack of any documented failure events or alert records contradicts a mature operational monitoring practice\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: Missing Backup Encryption and Key Rotation Verification\n**Related Policy Section:** 5. Backup Encryption  \n**Gap Description:**  \nThe policy mandates: \"AES-256 encryption at rest via AWS KMS. TLS 1.3 for all backup data in transit. Encryption keys rotated quarterly.\"\n\nNo evidence is provided documenting:\n- Encryption configuration for the backups shown in the log\n- TLS implementation validation\n- Q4 2025 key rotation records (encryption keys should have been rotated at least once during the 92-day period)\n\n**Why This is a Gap:**  \n- A1.2 requires \"designs, develops or acquires, implements, operates, approves, maintains\" the backup infrastructure\n- Encryption is a critical component of backup infrastructure security and is explicitly part of the design\n- Without configuration evidence or key rotation records, the \"maintains\" requirement cannot be satisfied\n- Compliance with encryption requirements cannot be validated\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: No Backup Retention Policy Compliance Verification\n**Related Policy Section:** 6. Backup Retention  \n**Gap Description:**  \nThe policy defines specific retention windows:\n- Daily full: 30 days\n- Incremental: 7 days\n- WAL archives: 7 days\n- Monthly consolidated: 12 months\n\nThe log shows backup creation dates but provides no evidence of:\n- Retention policy enforcement/implementation\n- Deletion/purge procedures for aged backups\n- Archive lifecycle management\n- Compliance verification that backups older than retention periods are being deleted\n\n**Why This is a Gap:**  \n- A1.2 requires the entity to \"maintains\" recovery infrastructure, which includes proper lifecycle management\n- Without evidence of retention enforcement, there is no assurance that the backup infrastructure is operating within defined parameters\n- Retention policy compliance is unvalidated\n\n**Severity:** **Medium**\n\n---\n\n## SUMMARY\n\n| Severity | Count | Findings |\n|----------|-------|----------|\n| **Critical** | 1 | Missing recovery test evidence (Finding 3) |\n| **High** | 3 | Missing incremental backups (1), Missing WAL archiving logs (2), Incomplete infrastructure scope (4) |\n| **Medium** | 3 | Failure monitoring evidence (5), Encryption verification (6), Retention compliance (7) |\n\n---\n\n## CONCLUSION\n\n**Compliance Status:** \u274c **NOT MET**\n\nWhile the entity demonstrates daily full backup execution for one production database, **critical and material gaps exist** in the backup and recovery control infrastructure:\n\n1. **Recovery validation is absent** \u2014 No evidence that backups can actually be restored\n2. **Incremental backups are undocumented** \u2014 Primary RPO mechanism lacks audit trail\n3. **WAL archiving is unmonitored** \u2014 Point-in-time recovery capability unvalidated\n4. **Scope incomplete** \u2014 Only 1 of 4 databases backed up; file storage and Vault unaddressed\n5. **Operational monitoring gaps** \u2014 Failure alerting, encryption, and retention enforcement undemonstrated\n\n**Recommendation:** Remediate Critical and High findings before SOC 2 attestation. Provide restore test results, incremental/WAL logs, and evidence for all in-scope systems."
+}

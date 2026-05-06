@@ -1,0 +1,50 @@
+{
+  "id": "cc7.1-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "To meet its objectives, the entity uses detection and monitoring procedures to identify changes to configurations that result in the introduction of new vulnerabilities, and susceptibilities to newly discovered vulnerabilities.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/vulnerability-management-policy.md",
+      "type": "policy",
+      "description": "Stratos Systems vulnerability management policy defining scan frequencies, severity classifications, and remediation SLAs"
+    },
+    {
+      "path": "evidence/nessus-scan-report-q4-2025.csv",
+      "type": "report",
+      "description": "Nessus vulnerability scan report for Q4 2025 with 33 findings across production and corporate assets"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the vulnerability management policy and Nessus scan report for Stratos Systems. Assess whether the organization is meeting its SOC 2 CC7.1 obligations for vulnerability detection and remediation. Cross-reference scan findings against the policy's remediation SLAs to identify any compliance gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Critical VMware ESXi heap overflow vulnerability open 120 days past 15-day SLA",
+      "description": "CVE-2025-22224 (CVSS 9.3, Critical) on esxi-host-04 was first detected on September 1, 2025. As of December 28, 2025, it remains open — 118 days since first detection. The policy Section 4 defines a 15-day remediation SLA for Critical vulnerabilities. This vulnerability is over 100 days past the SLA deadline (September 16). The remediation notes reference VULN-4471 citing the need for host evacuation and VMware support coordination, but no risk acceptance has been documented. A Critical-severity remote code execution vulnerability on a hypervisor host is a significant exposure — successful exploitation could compromise all virtual machines on the host.",
+      "evidence_sources": ["evidence/nessus-scan-report-q4-2025.csv", "evidence/vulnerability-management-policy.md"],
+      "expected_reasoning": "The auditor should scan the CSV for Critical severity entries and find CVE-2025-22224 with CVSS 9.3 on esxi-host-04. First detected September 1 and still Open on December 28 — that is 118 days. The policy requires Critical remediation within 15 days. The SLA expired on September 16, making this over 100 days past due. The remediation notes mention operational constraints but no formal risk acceptance per policy Section 6.",
+      "detection_criteria": {
+        "required_keywords": ["CVE-2025-22224", "esxi-host-04", "Critical", "9.3", "September 1", "15-day SLA", "118 days", "VULN-4471", "host evacuation", "no risk acceptance"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "12 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["vulnerability_management", "remediation_SLA", "scan_report", "CVE", "Nessus", "SLA_breach"]
+  }
+}

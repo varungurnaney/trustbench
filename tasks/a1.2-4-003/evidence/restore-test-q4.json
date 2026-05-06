@@ -1,0 +1,87 @@
+{
+  "report_id": "RT-2025-Q4",
+  "report_title": "Quarterly Restore Test Report -- Q4 2025",
+  "organization": "Apex Digital Inc.",
+  "test_date": "2025-12-20",
+  "test_environment": "us-west-2 (Disaster Recovery)",
+  "test_lead": "Maria Santos, Infrastructure Lead",
+  "approved_by": "David Chen, CISO",
+  "backup_set": {
+    "backup_id": "BKP-2025-1219",
+    "backup_date": "2025-12-19",
+    "backup_type": "full",
+    "source_system": "apex-db-prod-01",
+    "backup_size_gb": 186.0
+  },
+  "restore_timeline": {
+    "test_start": "2025-12-20T10:00:00Z",
+    "phase_1_database_restore": {
+      "start": "2025-12-20T10:00:00Z",
+      "end": "2025-12-20T12:32:00Z",
+      "duration_minutes": 152,
+      "notes": "PostgreSQL cluster restore. 186.0 GB. Throughput ~1.22 GB/min, slightly lower than Q3 due to increased index count."
+    },
+    "phase_2_data_integrity": {
+      "start": "2025-12-20T12:32:00Z",
+      "end": "2025-12-20T13:02:00Z",
+      "duration_minutes": 30,
+      "notes": "SHA-256 checksum verification. All 512 tables passed. DR environment upgraded to PostgreSQL 15.4 in October -- partition pruning issue from Q3 resolved."
+    },
+    "phase_3_rto_validation": {
+      "start": "2025-12-20T10:00:00Z",
+      "end": "2025-12-20T13:55:00Z",
+      "duration_minutes": 235,
+      "notes": "Total restore time 235 minutes against 240-minute RTO. 5-minute margin. Concerning trend from Q3 (192 min, 48 min margin)."
+    },
+    "phase_4_application_validation": {
+      "status": "DEFERRED",
+      "notes": "Application functionality validation deferred to January due to engineering team unavailability during holiday period. Infrastructure team completed database and data integrity phases. Application validation requires engineering team to execute API integration tests, background job verification, and authentication flow testing. Scheduled for January 8, 2026."
+    },
+    "test_end": "2025-12-20T13:55:00Z",
+    "total_duration_minutes": 235
+  },
+  "data_integrity_results": {
+    "checksum_match": true,
+    "tables_verified": 512,
+    "tables_passed": 512,
+    "tables_failed": 0,
+    "notes": "PostgreSQL version mismatch from Q3 resolved. All partition-based tables now produce consistent row counts."
+  },
+  "rto_assessment": {
+    "target_minutes": 240,
+    "actual_minutes": 235,
+    "result": "PASS",
+    "margin_minutes": 5
+  },
+  "quarter_over_quarter": {
+    "q3_restore_time_minutes": 192,
+    "q4_restore_time_minutes": 235,
+    "increase_percent": 22.4,
+    "q3_data_volume_gb": 156.2,
+    "q4_data_volume_gb": 186.0,
+    "data_growth_percent": 19.1
+  },
+  "issues_encountered": [
+    {
+      "issue": "Engineering team unavailable for application validation during holiday period",
+      "resolution": "Phase 4 deferred to January 8, 2026",
+      "impact": "Restore test incomplete per policy Section 5.1 requirement 4"
+    },
+    {
+      "issue": "Database restore phase 28.8% slower than Q3",
+      "resolution": "No intervention -- completed within RTO window",
+      "impact": "RTO margin reduced from 48 minutes to 5 minutes"
+    }
+  ],
+  "recommendations": [
+    "Evaluate parallel restore (pg_restore --jobs) to reduce database restore time",
+    "Implement data archival strategy to manage production data growth",
+    "Schedule application validation with engineering team availability in mind",
+    "Consider increasing RTO target if growth trajectory continues"
+  ],
+  "sign_off": {
+    "test_lead": "Maria Santos",
+    "date": "2025-12-20",
+    "comments": "Database restore and data integrity phases completed successfully. Application validation deferred. RTO margin concerning -- recommend capacity planning review."
+  }
+}

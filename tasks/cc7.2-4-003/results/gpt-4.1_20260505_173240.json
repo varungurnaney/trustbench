@@ -1,0 +1,63 @@
+{
+  "task_id": "cc7.2-4-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:32:40.390636",
+  "score": {
+    "task_id": "cc7.2-4-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.0,
+    "precision": 0.0,
+    "f1": 0.0,
+    "score": 0.0,
+    "gaps_detected": 0,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "recommendation-engine-v2"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": false,
+        "matched_keywords": [
+          "fraud-detection-sidecar",
+          "payment data",
+          "vendor dashboard"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "ALT-Q4-015",
+          "ALT-Q4-019",
+          "SLA breach"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3659,
+    "output_tokens": 1349
+  },
+  "raw_response": "Below is an evaluation of Zenith Commerce\u2019s adherence to **CC7.2** (system monitoring, anomaly detection, and event analysis), based on your provided evidence:\n\n---\n\n### **Finding 1: Fraud-Detection-Sidecar Not Monitored in SIEM**\n\n**Section Referenced:**  \n- Datadog Security Monitoring Coverage Report (Unmonitored Services)  \n- Security Monitoring Standards \u2014 Section 3.1, 3.3, 4.1, 5.1\n\n**Gap/Issue:**  \nThe **fraud-detection-sidecar** service, handling highly sensitive payment data and real-time transaction analysis, is **not integrated with Datadog Security Monitoring**. No security or operational logs from this component are sent to the SIEM. Instead, only the vendor's proprietary dashboard and alerting are in use. The Zenith security team lacks direct visibility into raw logs or independent alerting from this service, creating a blind spot for both malicious activity and operational errors. This is a direct violation of the monitoring standards that require all production services to be monitored through Datadog and for log sources to be integrated.\n\n**Severity:**  \n**High** (due to data sensitivity and real-time fraud function, but partially mitigated by vendor dashboard; would be Critical if there were no compensating controls at all)\n\n---\n\n### **Finding 2: Partial Monitoring of New Recommendation Engine**\n\n**Section Referenced:**  \n- Datadog Security Monitoring Coverage Report (Partially Monitored Services)  \n- Security Monitoring Standards \u2014 Section 3.3, 4.1, 5.1\n\n**Gap/Issue:**  \n**recommendation-engine-v2** is only partially monitored. As of December 31, 2025, it only has error rate and availability alerts; required monitoring for authentication failures, latency anomalies, and data access is missing. Although the agent was installed within SLA, full alert coverage is still being established, leaving potential gaps for anomalies and unauthorized access undetected in a component processing significant customer data.\n\n**Severity:**  \n**Medium** (monitoring coverage for major anomaly categories is incomplete for a production service handling PII; however, the gap is time-bound and integration work is underway, with mitigating actions observable)\n\n---\n\n### **Finding 3: Alert SLA Misses on Critical and High Alerts**\n\n**Section Referenced:**  \n- Q4 2025 Alert Response Log  \n- Security Monitoring Standards \u2014 Section 4.2\n\n**Gap/Issue:**  \nThere are **two documented SLA breaches for alert response**:\n  - **ALT-Q4-015:** Order-management service (P2, 18 min; SLA is 15 min)\n  - **ALT-Q4-019:** Marketplace-api (P1, 6 min; SLA is 5 min)\nBoth were resolved promptly, but the response times exceeded documented requirements. For the P1 event, this is especially significant, as rapid reaction is crucial for potential security incidents.\n\n**Severity:**  \n**Low** (Only two SLA breaches over 20 major alerts, both addressed quickly with reasons documented\u2014congestion due to simultaneous incidents. Not systemic, but should be noted for continuous improvement.)\n\n---\n\n### **Finding 4: Gaps in Monitoring Coverage for All Production Services**\n\n**Section Referenced:**  \n- Datadog Security Monitoring Coverage Report (Coverage Summary)  \n- Security Monitoring Standards \u2014 Section 5.1, 5.2\n\n**Gap/Issue:**  \nThe quarterly coverage report shows **14 of 16 services fully monitored** (87.5% coverage), with one partially and one entirely unmonitored. The standard specifies monitoring must cover \u201call production systems.\u201d Automated and manual reconciliation processes are occurring, but the result at period end falls short of 100% compliance.\n\n**Severity:**  \n**Medium** (Coverage is high, and gaps are being remediated as new services are onboarded, but policy requires all production systems to be monitored.)\n\n---\n\n### **Finding 5: Timely Detection and Analysis of Anomalies Demonstrated**\n\n**Section Referenced:**  \n- Q4 2025 Alert Response Log  \n- Security Monitoring Standards \u2014 Section 4.1, 4.4\n\n**Gap/Issue:**  \nNo significant gap. The alert log shows **diverse anomaly detection (latency, error rate, brute force, data exfiltration, availability, etc.)** with timely analysis of true/false positives and actionable remediation, aligning with CC7.2\u2019s expectation for detection and analysis. False positives are below the required 20% threshold, and tuning is in place.\n\n**Severity:**  \nNone (no finding).\n\n---\n\n### **Summary Table**\n\n| Title                                             | Section Referenced                                              | Why It's a Gap/Issue                                                                                                   | Severity |\n|---------------------------------------------------|----------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------|----------|\n| Fraud-Detection-Sidecar Not Monitored in SIEM     | Coverage Report (Unmonitored) + Standards (3.1, 3.3, 4.1, 5.1) | No SIEM coverage/logging for highly sensitive fraud detection component; compensating control only via vendor dashboard | High     |\n| Partial Monitoring of New Recommendation Engine   | Coverage Report (Partial) + Standards (3.3, 4.1, 5.1)          | Only error and availability monitoring; lacks auth/data/latency alerts for new service                                  | Medium   |\n| Alert SLA Misses on Critical and High Alerts      | Alert Log + Standards (4.2)                                    | Two SLA misses (P1/P2). Not systemic, but out-of-policy for most sensitive events                                       | Low      |\n| Gaps in Monitoring Coverage for All Prod Services | Coverage Report (Summary) + Standards (5.1, 5.2)               | Only 87.5% coverage by year-end; standard is 100%. Remediation in process                                              | Medium   |\n| Timely Detection and Analysis Shown               | Alert Log + Standards (4.1, 4.4)                               | No gap \u2014 detection and resolution mechanism working as designed                                                         | \u2014        |\n\n---\n\n**Conclusion:**\nZenith Commerce\u2019s monitoring and anomaly detection controls have strong coverage and tuning for most production services and present evidence of active monitoring, timely anomaly analysis, and alert handling. However, SOC 2 control CC7.2 is **not fully met** due to a critical fraud-related component still lacking SIEM integration (with compensating vendor dashboard), partial onboarding of a new recommendation engine, and minor SLA breaches. Remediation efforts are visible and should be tracked through the next period for closure."
+}

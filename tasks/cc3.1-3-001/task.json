@@ -1,0 +1,68 @@
+{
+  "id": "cc3.1-3-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC3.1",
+  "control_description": "The entity specifies objectives with sufficient clarity to enable the identification of risks to the achievement of its objectives. The entity identifies risks to the achievement of its objectives across the entity and analyzes risks as a basis for determining how the risks should be managed.",
+  "difficulty": 3,
+  "category": "cross_reference",
+  "evidence_files": [
+    {
+      "path": "evidence/risk-management-policy.md",
+      "type": "policy",
+      "description": "Datastream Analytics risk management policy requiring control mapping for all risks with Mitigate treatment strategy"
+    },
+    {
+      "path": "evidence/risk-register.csv",
+      "type": "spreadsheet",
+      "description": "Active risk register with 18 risks including risk classifications, treatment strategies, and owners"
+    },
+    {
+      "path": "evidence/control-mapping.csv",
+      "type": "spreadsheet",
+      "description": "Risk-to-control mapping document showing 18 controls mapped to 14 of the 18 risks"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Datastream Analytics' risk management controls under CC3.1. Review the risk management policy, risk register, and control mapping. Cross-reference the risk register against the control mapping to assess whether all identified risks have appropriate controls in place. Verify that the control mapping is complete and consistent with the risk register.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Four risks with Mitigate treatment have no controls mapped in the control catalog",
+      "description": "The risk register contains 18 risks, of which 17 use treatment strategy 'Mitigate' (DS-RISK-005 uses 'Transfer'). Policy Section 3.1 requires each risk with a Mitigate strategy to have at least one control mapped from the control catalog. The control mapping document maps controls to only 14 risks. Four risks with Mitigate treatment have zero controls mapped: DS-RISK-007 (loss of key security personnel, Medium), DS-RISK-009 (state privacy law compliance gaps, Medium), DS-RISK-016 (inadequate disaster recovery capability, High), DS-RISK-017 (shadow IT and unapproved SaaS usage, Medium), and DS-RISK-018 (ML model bias, High). These four risks are documented in the register with treatment plans but have no corresponding controls in the control mapping to demonstrate the mitigations are implemented.",
+      "evidence_sources": ["evidence/risk-register.csv", "evidence/control-mapping.csv", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "Cross-reference risk_id values in risk-register.csv against control-mapping.csv. Risk register has 18 risks (DS-RISK-001 through DS-RISK-018). Control mapping covers: 001, 002, 003, 004, 006, 008, 010, 011, 012, 013, 014, 015 (14 risks). Missing from control mapping: DS-RISK-005 (Transfer strategy, excluded), DS-RISK-007, DS-RISK-009, DS-RISK-016, DS-RISK-017, DS-RISK-018. Excluding DS-RISK-005 (Transfer), four Mitigate risks have no controls mapped.",
+      "detection_criteria": {
+        "required_keywords": ["DS-RISK-007", "DS-RISK-009", "DS-RISK-016", "DS-RISK-017", "DS-RISK-018", "no controls mapped", "4 risks", "control mapping", "Mitigate", "missing"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "DS-RISK-016 and DS-RISK-018 are High-rated risks with no mapped controls",
+      "description": "Among the four risks with no control mapping, two are classified as High: DS-RISK-016 (inadequate disaster recovery capability, rating 10) and DS-RISK-018 (machine learning model bias in customer scoring, rating 12). High-rated risks are required to have treatment plans reviewed by the SGC per policy. Having no controls mapped for High-rated risks means there is no documented evidence that mitigating controls exist for these risks. DS-RISK-016 is particularly concerning because the risk register shows it exists alongside DS-RISK-003 (production outage from infrastructure failure, which does have controls mapped) -- suggesting DR capability is recognized as a risk but not addressed with documented controls. DS-RISK-018 (ML model bias) is significant for a company named 'Datastream Analytics' whose core business likely involves data analytics and ML models.",
+      "evidence_sources": ["evidence/risk-register.csv", "evidence/control-mapping.csv", "evidence/risk-management-policy.md"],
+      "expected_reasoning": "Among the unmapped risks, DS-RISK-016 (High, rating 10) and DS-RISK-018 (High, rating 12) warrant specific attention due to their classification level. High-rated risks require SGC review of treatment plans. No control mapping means no evidence of implemented mitigations. DS-RISK-018 is especially relevant for an analytics company.",
+      "detection_criteria": {
+        "required_keywords": ["DS-RISK-016", "DS-RISK-018", "High", "no controls", "disaster recovery", "ML model bias", "control mapping"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_and_precision",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "20 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["risk_assessment", "control_mapping", "cross_reference", "unmapped_risks", "risk_register", "treatment_gaps"]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "task_id": "cc7.1m-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T19:41:47.891656",
+  "score": {
+    "task_id": "cc7.1m-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 0.8,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "VML-307",
+          "VML-311",
+          "Oracle",
+          "Pradeep Mehta",
+          "CyberArk",
+          "Vendor PAM",
+          "no session recording",
+          "standard VPN",
+          "Section 5.1"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3603,
+    "output_tokens": 2355
+  },
+  "raw_response": "# Compliance Readiness Assessment: CC7.1 Vendor Maintenance Controls\n## Silverline Industries \u2014 Q4 2025 Observation Period\n\n---\n\n## Executive Summary\n\nThe vendor maintenance policy (POL-MAINT-005 v4.0) defines clear requirements for vendor access, including mandatory use of CyberArk Vendor PAM for remote sessions, session recording, and vendor access log documentation. Review of the Q4 2025 vendor maintenance log (13 entries) revealed **2 instances of non-compliance** with Section 5.1 requirements, both involving the same vendor (Oracle) and same technician (Pradeep Mehta). The control is **partially effective** with a recurring, vendor-specific gap that indicates an exception management failure.\n\n**Compliance Rate:** 11/13 sessions compliant (84.6%)\n\n---\n\n## Findings\n\n### Finding 1: Remote Vendor Sessions Bypassed CyberArk Vendor PAM\n\n**Related Policy Section:** Section 5.1, Requirement 4 (Remote access logging)\n\n**Evidence:**\n- **VML-307** (2025-11-19, Oracle, Pradeep Mehta) \u2014 Remote Oracle 19c patch applied via standard VPN; no session recording created.\n- **VML-311** (2025-12-14, Oracle, Pradeep Mehta) \u2014 Remote Oracle RAC maintenance via standard VPN; no session recording created.\n\n**Why It's a Gap:**\nPolicy explicitly mandates that \"All remote vendor maintenance sessions must be conducted through the designated vendor access portal (CyberArk Vendor PAM) with full session recording enabled.\" Both Oracle remote sessions used standard VPN access, defeating the privileged access management control and eliminating the forensic session recording artifact required for retrospective review. This represents a direct policy violation affecting a Tier-1 production database (db-oracle-prod-01 / db-oracle-prod-02) \u2014 among the most sensitive assets in scope. The recurrence (same vendor, same technician, one month apart) indicates the first occurrence was not detected or remediated, suggesting a **monitoring/detection control failure** in addition to the access control failure.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Missing Vendor Access Log Entries for Oracle Maintenance\n\n**Related Policy Section:** Section 5.1, Requirement 5 (Access logging)\n\n**Evidence:**\n- **VML-307** \u2014 No VAL entry created (field shows \"N/A\").\n- **VML-311** \u2014 No VAL entry created (field shows \"N/A\").\n\n**Why It's a Gap:**\nPolicy requires that \"All vendor maintenance activities \u2014 both on-site and remote \u2014 must have corresponding entries in the Vendor Access Log.\" While change tickets (CHG-2025-3565, CHG-2025-3598) document the technical work, they do not satisfy the vendor access logging requirement, which captures distinct attributes (technician identity, session recording ID, supervising employee). The absence of VAL entries breaks the documentation chain needed to demonstrate vendor access governance to auditors.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Absence of Detective/Preventive Controls Enforcing PAM Usage\n\n**Related Policy Section:** Section 5.1 (overall \u2014 control design)\n\n**Why It's a Gap:**\nThe fact that Oracle's technician was able to connect via standard VPN on two separate occasions \u2014 and that the second occurrence happened nearly four weeks after the first \u2014 indicates there is no preventive control (network segmentation, firewall rule, or identity-based access restriction) forcing vendor traffic through CyberArk Vendor PAM, and no detective control (monitoring/alerting on out-of-band vendor connections) flagging deviations in near-real time. The policy is enforced administratively only. For a SOC 2 CC7.1 environment, reliance on vendor self-compliance for privileged remote access to production databases is a control design weakness.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: No Documented Exception or Remediation for Oracle Non-Compliance\n\n**Related Policy Section:** Section 5 (Vendor Maintenance) / Section 6 (Documentation)\n\n**Why It's a Gap:**\nThe maintenance log notes column candidly documents the policy violations (\"did NOT use CyberArk Vendor PAM... not documented per policy\") but there is no evidence of:\n- A formally approved policy exception\n- An incident ticket or non-conformance report\n- Corrective action against the Oracle vendor relationship\n- Escalation to the IT Director (Victor Marsh) or vendor management\n\nAuditors expect that identified policy deviations are either prevented, formally exception-tracked, or remediated. Documenting a violation in a notes field without follow-up is insufficient and may be viewed as management acceptance of non-compliance.\n\n**Severity:** **Medium**\n\n---\n\n## Areas of Observed Strength\n\nThe following compliant practices were verified and should be retained:\n- All 13 sessions occurred within designated maintenance windows (MW-PROD or MW-NET).\n- All 5 on-site sessions had supervising Silverline employees identified by name and role (Section 5.1, Requirement 3).\n- 6 of 8 remote sessions correctly used CyberArk Vendor PAM with session recording IDs (REC-2025-VPN-####) cross-referenced.\n- All sessions had corresponding change tickets, supporting change management linkage.\n- Vendor diversity (7 vendors) was handled consistently except for Oracle.\n\n---\n\n## Recommended Remediation Priorities\n\n| Priority | Action |\n|---|---|\n| 1 | Implement network-layer enforcement requiring all vendor remote access to traverse CyberArk Vendor PAM; block direct VPN access to production database tier for vendor accounts. |\n| 2 | Backfill Vendor Access Log entries for VML-307 and VML-311 with available evidence and document as exceptions. |\n| 3 | Issue formal non-conformance to Oracle vendor relationship; require attestation of PAM usage going forward. |\n| 4 | Implement monthly reconciliation control: Vendor Access Log \u2194 CyberArk session recordings \u2194 change tickets. |\n| 5 | Add detective alerting for vendor account authentications occurring outside CyberArk Vendor PAM. |\n\n---\n\n## Overall Control Conclusion\n\n**CC7.1 Vendor Maintenance Controls: Partially Effective with Deficiencies**\n\nThe control is well-designed at the policy level, but operating effectiveness is compromised by two production database maintenance sessions that bypassed the mandated PAM solution and access logging. Given the criticality of the affected systems (Oracle production RAC) and the recurrence pattern, this would likely be reported as a **control deficiency** in a SOC 2 Type II examination, potentially rising to a significant deficiency depending on auditor judgment regarding the data sensitivity of the Oracle databases."
+}

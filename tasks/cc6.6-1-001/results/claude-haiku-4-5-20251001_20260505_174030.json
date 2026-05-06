@@ -1,0 +1,82 @@
+{
+  "task_id": "cc6.6-1-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:40:30.107474",
+  "score": {
+    "task_id": "cc6.6-1-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "subnet",
+          "public",
+          "private",
+          "segmentation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "environment",
+          "production",
+          "staging"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAF",
+          "IPS",
+          "application-layer"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "should",
+          "internal",
+          "encryption",
+          "must",
+          "PHI",
+          "permissive"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 737,
+    "output_tokens": 1663
+  },
+  "raw_response": "# CC6.6 Compliance Assessment \u2013 Orion Health Network Security Policy\n\n## Executive Summary\nThe policy provides a foundational framework for network perimeter security but contains **6 significant gaps** that would prevent a SOC 2 Type II auditor from concluding that logical access controls adequately protect against external threats.\n\n---\n\n## Findings\n\n### 1. **Lack of DDoS/Advanced Threat Protection Requirements**\n\n**Related Section:** 3.3 (Firewall and Access Control)\n\n**Gap:**\nThe policy mandates perimeter controls (ALB, security groups) but does not address protection against volumetric or application-layer attacks (DDoS, bot traffic, WAF rules). SOC 2 CC6.6 requires controls against \"threats from sources outside system boundaries,\" which explicitly includes sophisticated external attacks.\n\n**Why It's a Gap:**\n- No mention of AWS WAF, rate limiting, or DDoS mitigation services\n- No guidance on detecting/responding to attack patterns\n- ALB alone is insufficient against modern external threats\n\n**Severity:** **High**\n\n---\n\n### 2. **Insufficient Specification of Internal Traffic Encryption**\n\n**Related Section:** 4.2 (Internal Traffic)\n\n**Gap:**\nThe policy states encryption \"should\" (not \"must\") be used for internal service-to-service communication and provides no specific standards, protocols, or enforcement mechanisms.\n\n**Why It's a Gap:**\n- \"Should\" language is non-binding and creates ambiguity\n- No specification of mTLS, IPSec, or other standards\n- No exceptions process or approval workflow\n- Compromised internal systems could freely communicate unencrypted across boundaries\n\n**Severity:** **High**\n\n---\n\n### 3. **Missing Network Segmentation and Microsegmentation Controls**\n\n**Related Section:** 3.2 (Subnet Design)\n\n**Gap:**\nThe policy describes basic public/private subnet separation but does not address:\n- Segmentation between environments (can staging reach production?)\n- Database-level network controls\n- Controls limiting lateral movement within the private subnet\n- North-South vs. East-West traffic policies\n\n**Why It's a Gap:**\n- An external compromise of a staging application could pivot to production\n- No explicit prohibition of inter-environment traffic\n- Microservices may have unnecessary bidirectional dependencies\n- CC6.6 requires controls to limit damage from external breaches\n\n**Severity:** **High**\n\n---\n\n### 4. **Inadequate Configuration Management and Baseline Standards**\n\n**Related Section:** 3.3 (Firewall and Access Control)\n\n**Gap:**\nWhile the policy references \"least privilege,\" it provides:\n- No baseline security group rules\n- No required/prohibited port ranges\n- No enforcement mechanism for rule reviews\n- No procedure for validating compliance with least privilege\n\n**Why It's a Gap:**\n- Teams may interpret \"least privilege\" differently\n- No audit trail of rule justification or approval\n- No detection of configuration drift\n- Overly permissive rules could exist undetected\n\n**Severity:** **Medium**\n\n---\n\n### 5. **Missing Threat Detection and Response Procedures**\n\n**Related Section:** 6 (Monitoring)\n\n**Gap:**\nVPC Flow Logs are forwarded to SIEM, but the policy does not define:\n- Specific threats to detect (port scans, unusual geo-locations, anomalous traffic patterns)\n- Alert thresholds or escalation procedures\n- Incident response workflow for external threats\n- SIEM retention or analysis capabilities\n- Alert tuning or false positive management\n\n**Why It's a Gap:**\n- Logs alone do not constitute a control\u2014monitoring and response are required\n- No evidence of active threat detection\n- No defined SLA for response to external attacks\n- CC6.6 requires both prevention and detection capabilities\n\n**Severity:** **High**\n\n---\n\n### 6. **Incomplete VPN and Administrative Access Controls**\n\n**Related Section:** 5 (VPN Access)\n\n**Gap:**\nThe policy requires MFA for VPN but lacks:\n- VPN tunnel encryption specification (IKEv2, IPSec versions)\n- IP whitelisting or geographic restrictions on VPN clients\n- Idle session timeout or maximum session duration\n- Split tunneling restrictions\n- Device posture checks (e.g., antivirus, firewall status)\n- Revocation procedures for compromised credentials\n\n**Why It's a Gap:**\n- A compromised VPN credential with MFA could still provide unlimited access\n- No endpoint security or device context controls\n- 90-day log retention may be insufficient for forensics\n- VPN is a direct gateway to internal systems\n\n**Severity:** **Medium**\n\n---\n\n### 7. **No Third-Party/Internet-Facing Service Inventory or Control**\n\n**Related Section:** Scope\n\n**Gap:**\nThe policy is silent on:\n- Third-party integrations or APIs accessing Orion Health systems\n- API authentication and rate-limiting standards\n- Third-party vendor access controls\n- Exposed cloud storage (S3 buckets, databases)\n- DNS security or subdomain takeover prevention\n\n**Why It's a Gap:**\n- External threats often exploit third-party integrations\n- No visibility into all external-facing services\n- CC6.6 requires controls over all system boundaries, including API boundaries\n\n**Severity:** **Medium**\n\n---\n\n### 8. **Lack of Policy Enforcement and Audit Mechanisms**\n\n**Related Section:** 7 (Policy Review)\n\n**Gap:**\nThe policy provides no details on:\n- Who enforces compliance (compliance team, security ops, engineering)?\n- How violations are detected and remediated\n- Frequency of configuration audits\n- Metrics or KPIs for control effectiveness\n- Compensating controls if gaps are found\n\n**Why It's a Gap:**\n- Annual policy review is insufficient; compliance must be continuous\n- No evidence of testing or validation\n- No accountability structure for non-compliance\n\n**Severity:** **Medium**\n\n---\n\n## Summary Table\n\n| Finding | Severity | Category |\n|---------|----------|----------|\n| DDoS/Advanced Threat Protection | High | Prevention |\n| Internal Traffic Encryption | High | Prevention |\n| Network Segmentation | High | Prevention |\n| Configuration Management | Medium | Prevention |\n| Threat Detection & Response | High | Detection |\n| VPN Controls | Medium | Prevention |\n| Third-Party Access | Medium | Prevention |\n| Enforcement & Auditing | Medium | Governance |\n\n---\n\n## Auditor Conclusion\n\n**Status: NOT READY for SOC 2 CC6.6 attestation**\n\nThe policy establishes basic perimeter defense but lacks the depth, specificity, and monitoring rigor required by SOC 2 CC6.6. Critical gaps in threat detection, internal segmentation, and enforcement mechanisms would likely result in a control deficiency or exception during a Type II audit.\n\n**Recommended Actions:**\n1. **Immediate (Critical):** Add DDoS/WAF requirements, enforce internal encryption, and define network segmentation rules\n2. **Short-term (High):** Establish threat detection procedures and formalize enforcement mechanisms\n3. **Medium-term (Medium):** Develop VPN hardening, third-party access controls, and audit cadence\n4. **Governance:** Establish continuous compliance monitoring with quarterly reviews"
+}

@@ -1,0 +1,252 @@
+{
+  "task_id": "cc6.1-hard-001",
+  "model": "gpt-4o",
+  "timestamp": "2026-04-30T18:21:57.921969",
+  "scoring": {
+    "score": 0.7777777777777778,
+    "detected": 7,
+    "total": 9,
+    "gaps": [
+      {
+        "gap_id": "gap-001",
+        "category": "stale_service_account",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "jenkins",
+          "legacy",
+          "unassigned",
+          "owner",
+          "rotation",
+          "2023"
+        ],
+        "total_keywords": 10
+      },
+      {
+        "gap_id": "gap-002",
+        "category": "key_rotation_violation",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-monitoring",
+          "rotation",
+          "90 days",
+          "unassigned",
+          "owner"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-003",
+        "category": "direct_iam_user_console",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "direct",
+          "IAM user",
+          "password"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-004",
+        "category": "termination_sla_breach",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Bradley",
+          "4 hours",
+          "delay",
+          "holiday"
+        ],
+        "total_keywords": 10
+      },
+      {
+        "gap_id": "gap-005",
+        "category": "priya_sharma_termination_delay",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "delay",
+          "4 hours"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-006",
+        "category": "okta_default_policy_no_mfa",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "gap"
+        ],
+        "total_keywords": 9
+      },
+      {
+        "gap_id": "gap-007",
+        "category": "access_review_late_completion",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "15 business days",
+          "late"
+        ],
+        "total_keywords": 9
+      },
+      {
+        "gap_id": "gap-008",
+        "category": "backup_dual_active_keys",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "rotation"
+        ],
+        "total_keywords": 8
+      },
+      {
+        "gap_id": "gap-009",
+        "category": "aws_iam_not_in_access_review",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "IAM users",
+          "direct"
+        ],
+        "total_keywords": 9
+      }
+    ]
+  },
+  "raw_response": "Based on the review of the provided evidence artifacts for the SOC 2 Type II readiness assessment of Meridian Cloud Systems, here are the identified audit findings in relation to the logical access security (CC6.1):\n\n### Finding 1: Inactive IAM Users\n- **Section:** Access Provisioning (3.3 Privileged Access)\n- **Gap:** The policy prohibits direct IAM user accounts for human users; however, there are several IAM user accounts (e.g., `jenkins-legacy`, `legacy-monitoring`) that remain active despite being replaced or planned for deprecation. This inconsistency reflects a lack of policy enforcement.\n- **Severity:** Medium\n\n### Finding 2: Legacy Accounts Without Assigned Owners\n- **Section:** Access Reviews (5.2 Review Process)\n- **Gap:** The account `legacy-monitoring` and `jenkins-legacy` are marked as unassigned, which fails to comply with the requirement that service accounts must have designated owners, as stated in section 8 of the Access Control Policy.\n- **Severity:** Medium\n\n### Finding 3: Root Account Usage and Security\n- **Section:** Access Provisioning (3.3 Privileged Access)\n- **Gap:** The root account password was last used on 2025-11-02, disclosing a security risk as root account usage should be minimized and tightly controlled. Two-person authorization is mentioned, but usage should be critically reviewed if immediate access by a single person is observed.\n- **Severity:** High\n\n### Finding 4: Delay in Deactivating Okta Access\n- **Section:** Access Revocation (6.1 Termination)\n- **Gap:** Tom Bradley's Okta account was not disabled until several days after his termination, potentially due to the stated \"holiday freeze\", conflicting with the policy that mandates disabling within 4 hours post-termination notification.\n- **Severity:** High\n\n### Finding 5: Quarterly Access Reviews\n- **Section:** Access Reviews (5.1 Quarterly Access Reviews)\n- **Gap:** The timing of the \"Okta (IdP)\" access review completed on 2026-01-08 exceeds the policy's requirement to complete reviews within 15 business days. This may indicate scheduling or processing inefficiencies.\n- **Severity:** Medium\n\n### Finding 6: Usage of Inactive MFA Factors\n- **Section:** Authentication (4.2 Multi-Factor Authentication)\n- **Gap:** The Okta policy shows inactive status for `okta_sms` and `google_otp` factors. While the policy states all critical systems require MFA, enforced factors should align with those actively supported and required by the entity's IdP.\n- **Severity:** Low\n\n### Finding 7: Inconsistent API Key Rotation\n- **Section:** Access Revocation (6.1 Termination)\n- **Gap:** API key for `jenkins-legacy` has not been rotated since 2023-07-20, which violates the policy requiring API key rotation every 90 days, potentially posing a security risk.\n- **Severity:** Medium\n\n### Finding 8: Lack of Defined Role for Review Responsible\n- **Section:** Access Reviews (5.1 Quarterly Access Reviews)\n- **Gap:** There is no specific mention of defined roles responsible for the final sign-off of access reviews in the policy documents, leaving room for ambiguity in responsibilities and accountability in review processes.\n- **Severity:** Low\n\nThe above findings demonstrate areas where there is a divergence between documented policy procedures and their practical implementation. Addressing these gaps will help Meridian Cloud Systems improve its compliance posture under the SOC 2 framework.",
+  "score": {
+    "task_id": "cc6.1-3-001",
+    "model": "gpt-4o",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.7777777777777778,
+    "precision": 0.875,
+    "f1": 0.823529411764706,
+    "score": 0.7777777777777778,
+    "gaps_detected": 7,
+    "gaps_total": 9,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "jenkins",
+          "legacy",
+          "unassigned",
+          "owner",
+          "rotation",
+          "2023"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legacy-monitoring",
+          "rotation",
+          "90 days",
+          "unassigned",
+          "owner"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "direct",
+          "IAM user",
+          "password"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Bradley",
+          "4 hours",
+          "delay",
+          "holiday"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "delay",
+          "4 hours"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-006",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "gap"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-007",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "15 business days",
+          "late"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-008",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "rotation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-009",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "IAM users",
+          "direct"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  }
+}

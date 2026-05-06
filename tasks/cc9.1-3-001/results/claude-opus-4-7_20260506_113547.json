@@ -1,0 +1,55 @@
+{
+  "task_id": "cc9.1-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:35:47.067814",
+  "score": {
+    "task_id": "cc9.1-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.5,
+    "precision": 0.1,
+    "f1": 0.16666666666666669,
+    "score": 0.3,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Amplitude",
+          "Intercom",
+          "FullStory",
+          "DPA",
+          "missing",
+          "13",
+          "personal data"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "DPA tracker",
+          "scope"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2653,
+    "output_tokens": 2793
+  },
+  "raw_response": "# CC9.1 Vendor Risk Management Readiness Assessment\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Auditor Note:** This assessment focuses on vendor-related risk mitigation. Business continuity / disruption-related controls under CC9.1 were not in scope of evidence provided and are noted separately.\n\n---\n\n## Cross-Reference Analysis: Vendor Inventory vs. DPA Tracker\n\n| Vendor | Tier | Data Classification | DPA in Tracker? |\n|---|---|---|---|\n| AWS | Critical | Customer PII | \u2705 |\n| Snowflake | Critical | Customer PII | \u2705 |\n| Stripe | Critical | Customer PII + financial | \u2705 |\n| Okta | Critical | Customer PII | \u2705 |\n| Datadog | High | Internal + metadata | \u2705 |\n| Twilio | High | Customer phone numbers | \u2705 |\n| CrowdStrike | High | Endpoint telemetry | \u2705 |\n| PagerDuty | High | Internal | \u2705 |\n| **Amplitude** | **High** | **Customer behavioral data (pseudonymized + IP)** | \u274c **MISSING** |\n| Zendesk | High | Customer PII | \u2705 |\n| Figma | Medium | Internal only | \u2705 |\n| **Intercom** | **High** | **Customer PII (names + emails)** | \u274c **MISSING** |\n| Notion | Medium | Internal only | \u2705 |\n| **FullStory** | **High** | **Customer session data (may include PII)** | \u274c **MISSING** |\n| Lattice | Medium | Employee PII | \u2705 |\n| ContractWorks | Low | Internal contracts | \u2705 |\n\n---\n\n## Findings\n\n### Finding 1: Missing DPA for Intercom (Customer PII Processor)\n- **Relates to:** Vendor inventory (ARC-V-012) vs. DPA tracker; Policy \u00a73.1\n- **Gap:** Intercom is classified as High tier and processes customer PII (names, email addresses) with onboarding date of March 1, 2024. No DPA appears in the tracker. Policy \u00a73.1 explicitly requires a DPA \"before granting any vendor access to personal data.\" This is a direct policy violation and a likely GDPR/CCPA exposure.\n- **Severity:** **Critical**\n\n### Finding 2: Missing DPA for FullStory (Session Data Including PII)\n- **Relates to:** Vendor inventory (ARC-V-014) vs. DPA tracker; Policy \u00a73.1\n- **Gap:** FullStory captures session recordings that \"may include PII in form fields\" and was onboarded June 1, 2024. No DPA is recorded. Session replay tools represent elevated risk because they can inadvertently capture sensitive form inputs. Absence of DPA means no contractual specification of retention, sub-processors, or breach notification.\n- **Severity:** **Critical**\n\n### Finding 3: Missing DPA for Amplitude Analytics (Pseudonymized Personal Data)\n- **Relates to:** Vendor inventory (ARC-V-009) vs. DPA tracker; Policy \u00a73.1\n- **Gap:** Amplitude is High tier and processes pseudonymized user IDs and IP addresses (IP addresses are personal data under GDPR). Onboarded September 2023 with no DPA recorded. Policy requires DPAs for High tier vendors and any vendor processing personal data.\n- **Severity:** **High**\n\n### Finding 4: No Evidence of SOC 2 Report Reviews Performed\n- **Relates to:** Policy \u00a74.1\n- **Gap:** Policy requires annual SOC 2 Type II reviews within 90 days (Critical) or 120 days (High) of issuance. Vendor inventory shows \"soc2_status: Current\" but no evidence of completed review documentation, review dates, reviewer identity, or findings/remediation tracking was provided. \"Current\" appears to be a self-attested field rather than evidence of an executed control.\n- **Severity:** **High**\n\n### Finding 5: No Evidence of Quarterly/Semi-Annual Business Reviews\n- **Relates to:** Policy \u00a74.2\n- **Gap:** Policy mandates quarterly business reviews for Critical vendors (4 vendors \u00d7 Q4 = 4 reviews expected) and semi-annual reviews for High vendors. No meeting minutes, review templates, or completion logs were provided for the Q4 2025 observation window. Without evidence, ongoing monitoring cannot be substantiated for the period.\n- **Severity:** **High**\n\n### Finding 6: No Evidence of Vendor Risk Assessments / Security Questionnaires\n- **Relates to:** Policy \u00a72 (Assessment Requirements)\n- **Gap:** Policy requires annual security questionnaires for Critical vendors and biennial questionnaires for High/Medium vendors. No completed questionnaires, scorecards, or risk ratings were furnished. The \"tier\" designation alone does not demonstrate that an assessment was performed to support that classification.\n- **Severity:** **Medium**\n\n### Finding 7: Business Disruption Risk Mitigation Not Evidenced\n- **Relates to:** CC9.1 (full control text)\n- **Gap:** CC9.1 covers risks from **business disruptions** in addition to vendor risks. The provided evidence is exclusively vendor-focused. No business continuity plan, disaster recovery plan, BIA, or DR test results were provided. The vendor program alone does not satisfy CC9.1 in its entirety.\n- **Severity:** **High**\n\n### Finding 8: Lattice DPA Scope May Be Insufficient (Employee PII)\n- **Relates to:** Tracker note \"Employee data processing\"; Policy \u00a73.2\n- **Gap:** Lattice is Medium tier processing Employee PII. While a DPA is executed, no evidence demonstrates the DPA contains all required elements per \u00a73.2 (sub-processor notifications, 72-hour breach notification, retention/deletion). DPA content review is recommended to confirm compliance with policy minima.\n- **Severity:** **Low**\n\n### Finding 9: Vendor Inventory Count Discrepancy\n- **Relates to:** Evidence header\n- **Gap:** Evidence description states \"16 active vendors\" and the inventory contains 16 entries, but the DPA tracker contains only 13 entries \u2014 a delta of 3 that aligns with the missing-DPA findings above. Independently, the inventory should be reviewed for completeness against procurement/AP records, as no reconciliation evidence was provided to confirm the inventory itself is complete.\n- **Severity:** **Medium**\n\n### Finding 10: No Vendor Offboarding Evidence\n- **Relates to:** Policy \u00a76\n- **Gap:** No evidence was provided to demonstrate the offboarding control operates effectively (e.g., no log of access revocation within 5 business days, no destruction certificates). While no terminations may have occurred in Q4 2025, this should be affirmatively confirmed via management representation.\n- **Severity:** **Low**\n\n---\n\n## Overall Assessment\n\n**Conclusion:** CC9.1 is **NOT MET** for the Q4 2025 observation period.\n\n**Key Drivers:**\n- Three High-tier vendors processing personal data lack executed DPAs, in direct violation of the entity's own policy (Critical findings 1\u20132).\n- Ongoing monitoring activities (SOC 2 reviews, business reviews, questionnaires) lack supporting evidence of operation during the period.\n- Business disruption risk \u2014 half of CC9.1's scope \u2014 is not addressed by any evidence provided.\n\n**Recommended Remediation Priority:**\n1. Execute DPAs with Intercom, FullStory, and Amplitude immediately; consider whether processing should be paused pending execution.\n2. Produce a SOC 2 review log and business review minutes for Q4 2025 or back-fill before audit fieldwork.\n3. Provide BCP/DR documentation and most recent test results to address the disruption portion of CC9.1.\n4. Implement a quarterly DPA-to-inventory reconciliation control to prevent recurrence."
+}

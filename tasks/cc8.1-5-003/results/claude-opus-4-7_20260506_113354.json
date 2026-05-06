@@ -1,0 +1,79 @@
+{
+  "task_id": "cc8.1-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:33:54.292541",
+  "score": {
+    "task_id": "cc8.1-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 0.5454545454545454,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-905",
+          "CHG-910",
+          "SC-003",
+          "patch versions only",
+          "major version",
+          "Express.js",
+          "PostgreSQL",
+          "misclassified",
+          "standard change"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-910",
+          "PostgreSQL",
+          "PHI",
+          "data integrity",
+          "bypassed",
+          "HIPAA",
+          "patient data",
+          "major version"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "SC-003",
+          "patch versions",
+          "semver",
+          "classification",
+          "major",
+          "catalog"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4888,
+    "output_tokens": 3472
+  },
+  "raw_response": "# SOC 2 CC8.1 Readiness Assessment \u2014 Prism Health Technologies\n## Q4 2025 Change Management Audit\n\n## Executive Summary\n\nOverall, Prism Health Technologies demonstrates a generally mature change management process with documented policy (POL-CHG-024 v3.0), a functioning CAB with quorum requirements, segregation of duties between developers and deployers (SRE team), and adequate testing and post-implementation verification for Normal changes. However, the audit identified material weaknesses in the application of the Standard Change Catalog that undermine the control's design and operating effectiveness for CC8.1.\n\nThe most significant concern is the misclassification of two major version upgrades (Express.js 4.x\u21925.0 and PostgreSQL 14.9\u219215.4) as Standard changes under SC-003, which explicitly limits scope to \"patch versions only (x.y.Z).\" These changes bypassed CAB authorization, formal risk assessment, rollback planning, and PHI impact assessment despite being substantive infrastructure changes in a HIPAA-regulated environment. Findings are detailed below.\n\n---\n\n## Findings\n\n### Finding 1: Major Version Upgrades Misclassified as Standard Changes (CHG-905, CHG-910)\n\n**Document Section:** Change log Q4 2025 (rows CHG-905, CHG-910); Policy POL-CHG-024 \u00a74 (Standard Change Catalog, SC-003)\n\n**Gap Description:** SC-003 explicitly restricts standard changes to \"Dependency updates (patch versions only)\" with the conditions \"no API changes; patch version only (x.y.Z)\" and scope limitation of \"Third-party library patch updates only.\"\n\n- **CHG-905** migrated Express.js from 4.x to 5.0 \u2014 a major version bump. Express 5.0 contains documented breaking changes (e.g., removal of deprecated middleware signatures, changes to `res.redirect`, async error handling).\n- **CHG-910** upgraded PostgreSQL from 14.9 to 15.4 \u2014 a major version upgrade of the **database engine** (not even a \"third-party library\"), which involves on-disk format changes, catalog migrations, and potential query plan regressions.\n\nBoth should have been submitted as Normal changes requiring:\n- CAB review and approval\n- Full risk classification (almost certainly High, not Low)\n- Rollback plan\n- Staging test in addition to CI\n- Data integrity validation (PostgreSQL hosts PHI)\n- Deployment in the approved Saturday 01:00\u201305:00 UTC window (instead, both deployed during business hours on weekdays)\n\nThis represents a control bypass: CAB authorization, PHI impact assessment, and the deployment-window control were all circumvented.\n\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Inadequate Risk Classification on Misclassified Changes\n\n**Document Section:** Change log \u2014 `risk_classification` field for CHG-905, CHG-910\n\n**Gap Description:** Both changes were classified as \"Low\" risk by the developer despite being major version upgrades to foundational components (web framework and database engine) of a system processing PHI. There is no evidence of independent risk validation. A PostgreSQL major-version upgrade in particular carries significant data integrity and availability risk and should have triggered the policy's required PHI data flow integrity validation. Risk classification is self-asserted by the developer with no second-party check for standard changes \u2014 a design weakness.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Self-Approval / Weakened Segregation of Duties for Standard Changes\n\n**Document Section:** Policy \u00a73.4 (Segregation of Duties); Change log CHG-905, CHG-910\n\n**Gap Description:** Policy \u00a73.4 states \"Developer must not approve or deploy their own change.\" For standard changes, no approver exists (\"N/A (standard)\"), so the developer's classification decision is effectively self-authorizing. For misclassified changes, this means alex.rivera unilaterally authorized two major version upgrades into production. Although the SRE team performed deployment (preserving deploy-side SoD), the authorization decision had no independent check. The catalog should require a peer or SRE attestation that the change actually fits the catalog entry before standard treatment is granted.\n\n**Severity:** **High**\n\n---\n\n### Finding 4: Missing Rollback Plans and Data Integrity Validation for PHI-Adjacent Changes\n\n**Document Section:** Policy \u00a73.1 (rollback plan required), \u00a73.5 (PHI data integrity check); Change log CHG-905, CHG-910\n\n**Gap Description:** Because these changes were processed as Standard, no rollback plan was documented and no PHI data integrity validation was performed. PostgreSQL 14\u219215 directly affects the database storing PHI. The post-implementation verification field shows only \"CI tests passed\" \u2014 there is no evidence of a PHI integrity check post-deployment, which is required by \u00a73.5 for changes affecting patient data and is also material to HIPAA 45 CFR 164.312(c) (Integrity).\n\n**Severity:** **High**\n\n---\n\n### Finding 5: Known Concern Raised but Not Remediated Within the Audit Period\n\n**Document Section:** CAB Minutes, December 11, 2025\n\n**Gap Description:** Karen Liu (Security & Compliance Lead) explicitly raised concern at the December 11 CAB meeting that CHG-905 and CHG-910 exceeded SC-003 scope. The action item assigned was for Hana Otsuki to \"circulate updated SC-003 language clarifying version scope\" \u2014 but:\n\n1. No retroactive review, risk reassessment, or remediation of the already-deployed changes was logged.\n2. No formal incident or control deficiency was raised.\n3. The action item only addresses *future* policy clarity, not the existing catalog control deficiency or the changes that bypassed CAB.\n4. There is no evidence the action item was completed before period-end (December 31, 2025).\n\nThis indicates a weakness in management's response to identified control failures and could itself be a finding under COSO/CC4.2 (evaluating and communicating deficiencies).\n\n**Severity:** **High**\n\n---\n\n### Finding 6: Standard Change Catalog Lacks Objective Scope-Validation Criteria\n\n**Document Section:** Policy \u00a74 (Standard Change Catalog), \u00a74.1 (Governance)\n\n**Gap Description:** SC-003's scope limitation is text-based (\"patch version only (x.y.Z)\") but there is no procedural enforcement \u2014 no automated tooling check, no checklist, no approval gate that validates the change actually meets the conditions before standard treatment is applied. Catalog governance is reviewed only semi-annually, which is insufficient given how easily entries can be misapplied. The CHG-910 misclassification (treating a database engine as a \"third-party library\") demonstrates the catalog's text is open to interpretation in practice.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 7: CAB Quorum Met but Clinical Data Manager Absent for High-Risk PHI Change\n\n**Document Section:** CAB Minutes, November 19, 2025 (CHG-907)\n\n**Gap Description:** CHG-907 (PHI access audit trail, High risk) was approved with 3/4 attendees, missing Dr. James Park (Clinical Data Manager). While quorum per \u00a73.3 (\"VP Engineering + 2 other members\") was technically met, approving a High-risk PHI-related change without the Clinical Data Manager present is a design weakness for PHI-impacting decisions. Consider strengthening policy to require Clinical Data Manager presence for High-risk PHI changes specifically.\n\n**Severity:** **Low**\n\n---\n\n### Finding 8: Deployment Window Non-Compliance for Misclassified Changes\n\n**Document Section:** Policy \u00a72 (Deployment Window \u2014 Normal changes restricted to \"Saturday 01:00-05:00 UTC\"); Change log CHG-905, CHG-910\n\n**Gap Description:** If correctly classified as Normal changes, both CHG-905 (deployed Monday 14:00 ET) and CHG-910 (deployed Monday 14:00 ET) violated the approved deployment window. This is a downstream consequence of the misclassification but should be noted as a separate control failure for completeness.\n\n**Severity:** **Medium**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Major version upgrades misclassified as Standard | Critical |\n| 2 | Inadequate risk classification on misclassified changes | High |\n| 3 | Self-approval / weakened SoD for Standard changes | High |\n| 4 | Missing rollback plans and PHI data integrity validation | High |\n| 5 | Identified concern not remediated within audit period | High |\n| 6 | Standard Change Catalog lacks scope-validation enforcement | Medium |\n| 7 | Clinical Data Manager absent for High-risk PHI change | Low |\n| 8 | Deployment window non-compliance (consequence of #1) | Medium |\n\n---\n\n## Recommendations\n\n1. **Immediate:** Conduct retrospective risk and integrity review of CHG-905 and CHG-910; document findings and any compensating controls. File as a control deficiency per CC4.2.\n2. **Short-term (30 days):** Update SC-003 to explicitly exclude major version upgrades, framework migrations, and database engine upgrades. Add explicit statement that database engines are not \"third-party libraries\" under this catalog.\n3. **Short-term (30 days):** Require a second reviewer (peer or SRE lead) to attest in Jira that a change fits a specific catalog entry before Standard processing applies.\n4. **Medium-term (90 days):** Implement automated tooling (pre-deploy check) that flags non-patch semver bumps and prevents Standard classification.\n5. **Medium-term:** Update CAB policy to require Clinical Data Manager presence for High-risk PHI-related changes.\n6. **Ongoing:** Increase Standard Change Catalog review cadence to quarterly given identified misuse.\n\n**Auditor's Conclusion:** Control CC8.1 is **not operating effectively** for the Q4 2025 period due to the Critical misclassification finding. Remediation and a follow-up testing period are recommended before SOC 2 Type II assertion."
+}

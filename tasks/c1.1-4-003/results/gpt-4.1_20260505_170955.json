@@ -1,0 +1,81 @@
+{
+  "task_id": "c1.1-4-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:09:55.748756",
+  "score": {
+    "task_id": "c1.1-4-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.6666666666666666,
+    "precision": 1.0,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 2,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 2,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "pag_staging",
+          "synthetic",
+          "approved",
+          "not a finding"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "pag_prod_support",
+          "requester_email",
+          "requester_name",
+          "plaintext",
+          "Restricted",
+          "no exception",
+          "field-level encryption"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Confidential",
+          "ticket",
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "support"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3681,
+    "output_tokens": 711
+  },
+  "raw_response": "**SOC 2 Type II Readiness Assessment \u2014 C1.1 Confidential Information Protection Findings**  \n**Review Period:** Q4 2025  \n**Entity:** Pinnacle Analytics Group  \n\n---\n\n### 1. Support Tickets Table: PII Fields Unencrypted in Production\n\n**Relevant Section:**  \n- **Data Classification and Handling Policy Sections:** 3 (Classification Levels), 5.2 (Data at Rest), 4.1 (Data Inventory), 6 (Data Handling Procedures)\n- **Evidence Document:** Database encryption status report\n\n**Evidence Details:**  \n- In the `pag_prod_support.tickets` table (production), the fields `requester_email` and `requester_name` are marked as PII (`pii_flag=Yes`), classified as \"Restricted,\" but are stored in PLAINTEXT with `field_encryption=No` and `encryption_method=None`.\n- Policy Section 5.2 explicitly requires \"Field-level encryption is required for all Restricted PII columns.\"\n\n**Why It\u2019s a Gap:**  \n- **Policy Violation:** Per the data classification policy, \"Restricted\" (PII) data requires field-level encryption both at rest and in transit. Storing `requester_email` and `requester_name` in plaintext means these policy requirements are not met.\n- **No Exception:** There is **no approved exception** on record for this deviation, unlike the provided, CISO-approved exceptions for other scenarios (report cache, staging database).\n- **Risk:** Exposure of support requesters' emails and names increases risk of unauthorized access and data breach.\n\n**Severity:** **High**  \n*Reasoning:*  \n- Unencrypted PII in production is a direct control failure per policy and industry standards. While this may be justifiable for ticketing/search functionality, this **should** have a documented exception or compensating control. Absence of both makes this a high-severity finding.\n\n---\n\n### 2. Other Review Areas \u2014 No Additional Findings\n\n**Explanation:**  \n- **Staging Database (pag_staging):** Lacks field-level encryption, but a CISO-approved exception documents robust compensating controls (synthetic data, regular verification, restricted access). **Not a finding**.\n- **Report Cache (pag_prod_reporting):** Does not have field-level encryption, but aggregation techniques, absence of PII, and ongoing audits are documented via CISO exception. **Not a finding**.\n- **All Other Production Databases:** Per the inventory/report, all Restricted and Confidential fields (customer/user PII, some financial data) are field-encrypted per policy, except for Support as noted above.\n- **Training Records:** Not applicable to encryption implementation; supports but does not substitute technical controls.\n\n---\n\n## Summary Table\n\n| # | Title                                | Section(s)      | Why It's a Gap                                                          | Severity |\n|---|--------------------------------------|-----------------|-------------------------------------------------------------------------|----------|\n| 1 | Support Tickets Table: PII Unencrypted | Policy 3, 4.1, 5.2, 6; DB report | \"Restricted\" PII in plaintext w/ no encryption or exception in production | High     |\n\n\n---\n\n**Note:**  \nField-level encryption waivers for non-PII/test/aggregate data are well documented and compensated, and **should not** be flagged. Absence of field encryption for clear PII in production, with no formal exception, is **the only significant gap** under C1.1 in the evidence provided."
+}

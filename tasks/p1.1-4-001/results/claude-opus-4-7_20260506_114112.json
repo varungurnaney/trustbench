@@ -1,0 +1,72 @@
+{
+  "task_id": "p1.1-4-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:41:12.174695",
+  "score": {
+    "task_id": "p1.1-4-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4,
+    "f1": 0.5714285714285715,
+    "score": 0.5714285714285715,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "DSAR-2025-014",
+          "Henriksson",
+          "extension",
+          "Article 12(3)",
+          "EXT-2025-006",
+          "properly"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "DSAR-2025-017",
+          "Bergstrom",
+          "no extension",
+          "overdue",
+          "In Progress"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "30 calendar days",
+          "extension",
+          "not disclosed",
+          "Article 12(3)",
+          "notice"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6473,
+    "output_tokens": 2468
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 Control P1.1 (Privacy Notice)\n\n## Scope of Review\n\nI reviewed all four provided documents. The **vendor security questionnaire summary** and **incident response plan overview** are not directly relevant to P1.1 (which concerns notice to data subjects about privacy practices) and were excluded from analysis. The relevant evidence consists of the **Privacy Policy v5.0**, the **DSAR log**, and the **DSAR Extension Register**.\n\nBelow are findings, including items that initially appear to be gaps but are properly justified, and genuine compliance failures.\n\n---\n\n## Findings\n\n### Finding 1: DSAR-2025-017 \u2014 Overdue Response Without Extension or Data Subject Notification\n\n**Document Section:** DSAR Log, record DSAR-2025-017 (Lena Bergstrom)\n\n**Why It's a Gap:**\n- Request received October 15, 2025; identity verified October 16, 2025.\n- Per the Privacy Policy \u00a77, Orion commits to responding to DSARs within **30 calendar days**, and per GDPR Article 12(3), any extension must be communicated to the data subject **within one month of receipt** (i.e., by November 15, 2025).\n- As of the audit date (December 15, 2025 or later, given the Q4 evidence period), the request is still \"In Progress\" \u2014 well past the 30-day deadline.\n- The notes explicitly state: **\"No extension filed. No communication sent to data subject regarding delay.\"**\n- This is a direct contradiction of the privacy notice's stated commitment to data subjects, which is the heart of P1.1: the entity is not honoring the privacy practices it has notified data subjects about. It is also a GDPR Article 12(3) violation.\n\n**Severity: Critical**\n\n---\n\n### Finding 2: Privacy Policy Lacks Disclosure of Several Active Data Processors\n\n**Document Section:** Privacy Policy \u00a75 (\"Data Sharing\")\n\n**Why It's a Gap:**\n- The privacy policy lists only AWS, Cloudflare, Stripe, \"internal analytics,\" and generic \"communication tools\" as recipients/sub-processors.\n- However, the DSAR log and extension register reveal Orion actively processes personal data through additional named third parties not disclosed in the privacy notice, including:\n  - **Amplitude** (analytics \u2014 but the policy claims analytics is \"internal pipeline; anonymized data only\")\n  - **Salesforce** (CRM)\n  - **SendGrid** (email/communications)\n  - **HubSpot** (marketing consent records)\n  - **OneTrust** (consent management)\n  - **Datadog** (referenced as containing personal data in DSAR-2025-014's 7-system reconstruction)\n- The statement that analytics uses \"anonymized data only\" via an \"internal analytics pipeline\" appears inconsistent with Amplitude being used as an analytics processor handling identifiable personal data (per DSAR-2025-020).\n- P1.1 specifically requires that notice accurately describe privacy practices. Material omissions and inaccuracies in the recipient categories undermine the control.\n\n**Severity: High**\n\n---\n\n### Finding 3: Privacy Policy Does Not Disclose 30-Day Extension Right\n\n**Document Section:** Privacy Policy \u00a77 (\"Exercising Your Rights\")\n\n**Why It's a Gap:**\n- The policy unconditionally states: \"We will respond to all data subject access requests within 30 calendar days of receipt.\"\n- In practice, Orion regularly invokes the GDPR Article 12(3) two-month extension for complex requests (6 extensions documented in 2025 alone, including EXT-2025-001 through EXT-2025-006).\n- The privacy notice fails to disclose to data subjects that the response time may be extended by an additional two months for complex or numerous requests, despite this being a standard practice.\n- This creates a misalignment between the documented privacy practice and the notice provided to data subjects \u2014 a direct P1.1 deficiency.\n\n**Severity: Medium**\n\n---\n\n### Finding 4: Backup Erasure Timeline Not Disclosed in Privacy Notice\n\n**Document Section:** Privacy Policy \u00a78 (\"Data Retention\") and \u00a77\n\n**Why It's a Gap:**\n- The DSAR log shows multiple erasure requests (DSAR-2025-009, 013, 018) where data is removed from primary systems but backups are purged on a 90-day schedule.\n- This 90-day backup retention period after an erasure request is a material aspect of how Orion fulfills Article 17 rights, but it is not disclosed in the privacy policy.\n- Data subjects exercising erasure rights are told individually after submitting requests, but the privacy notice itself does not set this expectation upfront. Under P1.1, the notice should describe these material practices.\n\n**Severity: Medium**\n\n---\n\n### Finding 5: Data Retention Schedule Referenced But Not Made Readily Available\n\n**Document Section:** Privacy Policy \u00a78\n\n**Why It's a Gap:**\n- The policy states specific retention periods are \"documented in our internal Data Retention Schedule, available upon request.\"\n- P1.1 contemplates that notice should be provided proactively. Requiring data subjects to make a separate request to learn category-specific retention periods is a weaker form of notice and may not satisfy the transparency expectations the control framework anticipates.\n- This is not necessarily a violation, but it is a notice quality weakness that should be addressed by publishing the retention schedule directly.\n\n**Severity: Low**\n\n---\n\n## Items Reviewed That Are NOT Compliance Gaps (False Positives)\n\nThe following could superficially appear to be issues but, on review, are properly handled:\n\n- **DSAR-2025-014 (Marcus Henriksson) \u2014 35 days to respond:** Although it exceeds the 30-day standard, an extension (EXT-2025-006) was properly filed on September 22, 2025 (within the original deadline window), the data subject was notified on September 23, 2025, and the response was delivered well within the extended deadline. This is fully compliant with Article 12(3) and the privacy policy.\n\n- **EXT-2025-005 (Petra Lindqvist):** Extension was filed but withdrawn when the analyst completed compilation faster than expected. Response was delivered within the original 30-day deadline. Properly handled.\n\n- **DSAR-2025-013 (Mohammed Al-Rashidi) \u2014 27 days:** Within the 30-day commitment. Backup purge handled per 90-day schedule with the data subject notified \u2014 consistent with documented (if not publicly disclosed \u2014 see Finding 4) practice.\n\n- **Vendor questionnaire summary and IRP overview:** Not relevant to P1.1; excluded from findings.\n\n---\n\n## Summary\n\n| Severity | Count |\n|----------|-------|\n| Critical | 1 |\n| High | 1 |\n| Medium | 2 |\n| Low | 1 |\n\n**Overall P1.1 Readiness:** **Not Ready.** The Critical finding (DSAR-2025-017) demonstrates an active failure to comply with the privacy commitments made to data subjects, and the High finding shows the privacy notice itself materially understates the third parties that receive personal data. Both must be remediated before a SOC 2 Type II audit period concludes; the Critical item additionally has GDPR regulatory exposure and should be escalated to the DPO immediately."
+}

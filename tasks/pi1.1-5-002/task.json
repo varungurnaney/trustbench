@@ -1,0 +1,75 @@
+{
+  "id": "pi1.1-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "PI1.1",
+  "control_description": "The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/sdlc-policy.md",
+      "type": "policy",
+      "description": "Quantum Data Solutions SDLC policy with enhanced Tier 1 requirements, emergency change process with 24-hour post-deploy review mandate, and financial data reconciliation requirements"
+    },
+    {
+      "path": "evidence/code-review-records-q4-2025.csv",
+      "type": "spreadsheet",
+      "description": "Pull request code review records for Q4 2025 with 17 entries including 2 emergency deployments to the Tier 1 payment processor"
+    },
+    {
+      "path": "evidence/data-integrity-check-logs.csv",
+      "type": "log",
+      "description": "Settlement batch reconciliation logs for Q4 2025 with 40 daily entries showing record count and amount reconciliation"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II audit of Quantum Data Solutions for Q4 2025 (October 1 - December 31, 2025). This organization processes financial transactions and has enhanced controls for Tier 1 systems. Review the SDLC policy, code review records, and data integrity check logs. Assess whether PI1.1 requirements for complete and accurate processing are met. Pay particular attention to emergency change procedures and whether compensating controls were fully executed. Not all emergency changes are created equal — examine each one carefully.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "PR-7813 emergency fix to Tier 1 payment settlement rounding logic deployed without post-deploy review for 31 days",
+      "description": "PR-7813 (November 28) changed the rounding mode in SettlementAggregator.java from HALF_UP to HALF_EVEN for settlement total aggregation. This is a Tier 1 system change to financial calculation logic — the highest-risk category of change. The emergency was authorized by VP Engineering Michael Chang at 02:45 UTC. However, as of December 29 (31 days after deployment), no post-deploy review has been performed. Policy Section 3.2 requires post-deploy reviews within 24 hours for emergency changes, with sign-off by a Senior Engineer not involved in the fix. The review must include correctness verification, regression risk assessment, test coverage analysis, and identification of follow-up actions. None of these have occurred. This is particularly concerning because: (1) the fix changes financial rounding behavior across all settlement batches, (2) rounding mode changes can have subtle effects that only manifest at scale or with specific data patterns, (3) the reconciliation logs show all post-fix batches reconcile to $0.00 discrepancy which is positive but does not substitute for a code correctness review, and (4) compare with PR-7808 (the other emergency) where post-deploy review was completed by Bob Chen within 24 hours with documented findings and follow-up actions. Per Section 3.3, this is the first incomplete post-deploy review this quarter, but for a financial rounding change in the payment processor, the risk is significant.",
+      "evidence_sources": [
+        "evidence/code-review-records-q4-2025.csv",
+        "evidence/sdlc-policy.md",
+        "evidence/data-integrity-check-logs.csv"
+      ],
+      "expected_reasoning": "The model should compare the two emergency changes: PR-7808 followed the full emergency process (authorization, post-deploy review within 24 hours by a Senior Engineer, documented findings, follow-up action PR-7812). PR-7813 has VP authorization but no post-deploy review after 31 days. The change is to financial rounding logic in a Tier 1 system. While reconciliation shows $0.00 discrepancy post-fix, this is a detective control confirming amounts match — it does not verify the rounding mode change was correct for all scenarios. A HALF_UP to HALF_EVEN change affects how 0.5 values are rounded and could have unintended effects in edge cases.",
+      "detection_criteria": {
+        "required_keywords": ["PR-7813", "rounding", "HALF_UP", "HALF_EVEN", "SettlementAggregator", "no post-deploy review", "31 days", "24 hours", "Section 3.2", "Tier 1", "VP Engineering", "financial"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Settlement rounding discrepancy of $3.17 on November 28 indicates processing accuracy gap existed before emergency fix",
+      "description": "REC-9034 (November 28) shows a $3.17 discrepancy across 46,230 transactions ($2,934,567.89 source vs $2,934,564.72 destination). The action notes state the 'discrepancy existed in Nov 27 overnight batch but was not caught because the $3.17 discrepancy appeared only in the bank reconciliation file received Nov 28 morning.' This raises a processing integrity question: the internal reconciliation (REC-9033, November 27) showed Pass with matching totals, but the bank reconciliation revealed the error. This means the internal reconciliation was comparing system totals against themselves (both using the same HALF_UP rounding), while the bank used a different rounding method (HALF_EVEN). The detective control (internal reconciliation) had a blind spot — it could not detect systematic rounding errors because both sides used the same calculation. While the discrepancy was detected through the bank reconciliation (an external control), the internal reconciliation control's inability to catch this type of error is a design weakness.",
+      "evidence_sources": [
+        "evidence/data-integrity-check-logs.csv",
+        "evidence/code-review-records-q4-2025.csv"
+      ],
+      "expected_reasoning": "The auditor should note that REC-9033 (Nov 27) showed Pass but the rounding error existed. The internal reconciliation passed because both source and destination used the same HALF_UP rounding — the discrepancy only appeared when compared against the bank's HALF_EVEN calculation. This is a fundamental limitation: the reconciliation control detects data loss or duplication but cannot detect systematic calculation errors when both sides use the same logic. The error was caught by the external bank reconciliation, not the internal control.",
+      "detection_criteria": {
+        "required_keywords": ["$3.17", "REC-9034", "bank reconciliation", "rounding error", "HALF_UP", "HALF_EVEN", "blind spot", "internal reconciliation", "Nov 27", "systematic"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["processing_integrity", "emergency_change", "financial_rounding", "post_deploy_review", "reconciliation", "judgment", "Tier_1", "payment_processing"]
+  }
+}

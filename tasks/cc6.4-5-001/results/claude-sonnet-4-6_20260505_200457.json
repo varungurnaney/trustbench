@@ -1,0 +1,84 @@
+{
+  "task_id": "cc6.4-5-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T20:04:57.063670",
+  "score": {
+    "task_id": "cc6.4-5-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.4,
+    "f1": 0.4444444444444445,
+    "score": 0.4444444444444445,
+    "gaps_detected": 2,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "property management"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "14 months",
+          "annual audit",
+          "colocation",
+          "SecureVault",
+          "overdue",
+          "Section 8.2",
+          "SOC 2",
+          "independent"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "calibration",
+          "October 10",
+          "overdue",
+          "TEMP-01",
+          "HUM-01",
+          "Section 9.3",
+          "6 months",
+          "accuracy"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "suite entrance"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7647,
+    "output_tokens": 3461
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC6.4\n## Meridian Software | Q4 2025 Observation Period (October 1 \u2013 December 31, 2025)\n\n---\n\n## Executive Summary\n\nThe evidence provided demonstrates a generally mature physical security program with documented policies, active badge access controls, and functional CCTV retention. However, the review identified **five findings** ranging in severity from High to Low. The most significant issue is a systemic overdue calibration condition affecting four of the five primary environmental monitoring sensors in the server room, which has persisted throughout the entire Q4 2025 observation period. Additionally, a structural gap exists in third-party oversight: the colocation audit was conducted by personnel who are themselves listed as authorized colocation users, raising independence concerns. A policy gap related to after-hours access logging and a minor documentation exposure related to the parking garage CCTV feed round out the findings.\n\n---\n\n## Finding 1: Server Room Environmental Sensors Overdue for Calibration Throughout Entire Audit Period\n\n**Severity: High**\n\n**Document Reference:** Environmental Sensor Calibration History (TEMP-01, TEMP-02, HUM-01, HUM-02, TEMP-03); Physical Security Policy POL-PS-022, Section 9.3\n\n**Observation:**\n\nFive environmental monitoring sensors \u2014 two temperature sensors (TEMP-01, TEMP-02), two humidity sensors (HUM-01, HUM-02), and one network closet temperature sensor (TEMP-03) \u2014 show a `next_calibration_due` date of **October 10, 2025**, with `calibration_status` of **Overdue**. The Q4 2025 observation period runs from October 1 through December 31, 2025. This means that for all but the first nine days of the audit period, these five sensors were operating in an uncalibrated state. As of the evidence review date, no evidence of remediation (a follow-up calibration event) has been provided.\n\nPolicy Section 9.3 is unambiguous: *\"All environmental monitoring sensors shall be calibrated every 6 months by a qualified technician. Calibration records must be maintained for 3 years.\"* The last calibration for these sensors was August 10, 2025, making the October 10, 2025 due date correct. The failure is not in the scheduling \u2014 it is in the execution.\n\n**Why This Is a Gap:**\n\nCC6.4 requires that physical access and protection of information assets meet the entity's objectives. Environmental controls \u2014 temperature and humidity management \u2014 are a direct physical protection mechanism for the hardware assets that store and process protected information. An overdue calibration does not mean the sensors are currently reading incorrectly (the evidence shows all current readings are within range), but it does mean Meridian **cannot reliably assert** that those readings are accurate. An uncalibrated sensor could be reporting a value that appears normal while the actual environment is degrading. During the 82+ days these sensors were overdue across Q4 2025, any temperature or humidity exceedance event may have gone undetected or been misreported, and Meridian would have no basis to distinguish a valid reading from a drifted one.\n\nFurthermore, this is a control that Meridian itself defined in policy. A SOC 2 Type II audit examines whether controls operated effectively throughout the period. A sensor that is overdue for the entirety of the observation period represents a control **not operating** as designed, not merely a point-in-time lapse.\n\n**Note on TEMP-04, LEAK-01, SMOKE-01, SMOKE-02:** These four sensors have current calibration status and are not implicated in this finding.\n\n---\n\n## Finding 2: Colocation Annual Audit Lacks Independence \u2014 Auditors Are Authorized Cabinet Users\n\n**Severity: Medium**\n\n**Document Reference:** Colocation Audit Report (DC-AUD-2024-002), Section 4.3 and Sections 1/7; Physical Security Policy POL-PS-022, Section 8.2\n\n**Observation:**\n\nThe August 15, 2024 colocation audit was conducted by **Ian Foster, Infrastructure Director**, and accompanied by **Kathryn Delgado, CISO**. Both individuals signed off on the report. Section 4.3 of that same audit report confirms that both Ian Foster and Kathryn Delgado are on the **authorized access list for Meridian's cabinets** (CAB-H3-205, CAB-H3-206), along with Justin Park.\n\nPolicy Section 8.2 states the audit must be conducted by *\"Meridian personnel or a qualified third party\"* to verify that controls meet Meridian's requirements, and that it is independent of the provider's SOC 2. While the policy does not explicitly prohibit the auditors from being authorized users, the practical result is that the individuals verifying the accuracy of the authorized access list are themselves **names on that list** \u2014 they are, in effect, confirming the legitimacy of their own access. This is a structural self-review problem.\n\n**Why This Is a Gap:**\n\nThe purpose of independently auditing an access list is to provide assurance that only appropriate personnel retain access. When the auditors are themselves on the list, there is no independent check on whether their own access remains appropriate, whether the access was originally authorized through proper channels, or whether any of the three listed individuals should have been removed. A segregated reviewer \u2014 someone not holding colocation access \u2014 would be positioned to question whether all three names belong on the list. The current structure eliminates that check for at least two of the three entries.\n\nAdditionally, while this audit covers the period August 2023 \u2013 July 2024 (prior to Q4 2025), it is the **most recent** annual audit in evidence and would be relied upon as the current third-party oversight control for the Q4 2025 period. If the next audit (due August 15, 2025 per the report) has not been completed or documented, the oversight gap is compounded. No evidence of a 2025 colocation audit was provided for review.\n\n**Recommendation:** The colocation audit should be conducted by, or reviewed by, a Meridian employee or third party who does not hold cabinet access authorization, or the access list review should be supplemented by an independent review from someone outside the authorized user group (e.g., the Security Manager or an internal auditor).\n\n---\n\n## Finding 3: No Evidence the 2025 Colocation Annual Audit Was Completed\n\n**Severity: Medium**\n\n**Document Reference:** Colocation Audit Report (DC-AUD-2024-002), Section 7; Physical Security Policy POL-PS-022, Section 8.2\n\n**Observation:**\n\nThe colocation audit report on file covers the period **August 2023 \u2013 July 2024**, with an audit date of **August 15, 2024**. The report's own recommendation section notes: *\"Next audit due by August 15, 2025.\"* Policy Section 8.2 mandates annual physical security audits of the colocation provider.\n\nNo evidence of a 2025 colocation audit has been provided in the evidence package. The Q4 2025 observation period (October 1 \u2013 December 31, 2025) is therefore covered by a colocation audit that is now **more than 14 months old** at the start of the observation period, and potentially more than 16 months old by period end.\n\n**Why This Is a Gap:**\n\nSOC 2 Type II requires that controls operate effectively throughout the observation period. An annual audit requirement is a detective and oversight control. If the 2025 audit was not performed on or around August 15, 2025, then Meridian's oversight of its colocation provider's physical security controls lapsed. For any changes that may have occurred at the SecureVault facility between August 2024 and Q4 2025 \u2014 personnel changes, facility modifications, lock code rotations, access list updates \u2014 there is no evidence of independent verification. CC6.4 requires that physical access to protected information assets be restricted to meet the entity's objectives; outsourced hosting does not relieve Meridian of the obligation to verify that restriction is enforced.\n\n**Note:** If the 2025 audit was completed but simply not included in the evidence package, this finding would be closed upon production of the report. As presented, the absence of evidence constitutes a gap.\n\n---\n\n## Finding 4: No Evidence of Quarterly Badge Access Reviews During Q4 2025\n\n**Severity: Medium**\n\n**Document Reference:** Badge Access Log (Q4 2025); Physical Security Policy POL-PS-022, Section 4.4\n\n**Observation:**\n\nPolicy Section 4.4 requires that *\"all badge access [be] reviewed quarterly by Security Manager.\"* The Q4 2025 observation period spans October through December 2025, encompassing at minimum one quarterly review that should fall within or immediately adjacent to this period (e.g., a Q3 review completed in October, and/or a Q4 review in January 2026 covering the period under audit).\n\nThe evidence package includes a badge access log with 60 entries across Q4 2025 but contains **no evidence of a quarterly access review** having been performed \u2014 no review sign-off document, no output report, no attestation from the Security Manager that access rights were reviewed and confirmed appropriate.\n\n**Why This Is a Gap:**\n\nThe badge access log itself shows a small, consistent population of six employees (badge IDs B-7001 through B-7006) with no denied entries and no anomalous activity. However, the absence of anomalies in the log does not substitute for the required periodic review. The quarterly review control exists to catch access that should have been revoked but was not \u2014 terminated employees, role changes, contractor access that has expired. A log showing no denied entries is not evidence that the review occurred; it is only evidence that no one attempted unauthorized access. The review control must be evidenced independently. Under SOC 2 Type II, the operating effectiveness of the quarterly review requires evidence that the review happened, not just that the access population appears stable.\n\n---\n\n## Finding 5: Parking Garage Camera (CAM-06) \u2014 Scope Ambiguity and Control Ownership Gap\n\n**Severity: Low**\n\n**Document Reference:** CCTV Retention Verification Log (RET-006, RET-012, RET-018); Physical Security Policy POL-PS-022, Sections 5.1\u20135.3\n\n**Observation:**\n\nThe CCTV retention log includes **CAM-06**, described as *\"Parking Garage (Meridian reserved) \u2014 Building camera \u2014 Meridian receives feed.\"* This camera appears across all three monthly verification cycles (October, November, December 2025) and is verified as retaining 90 days of footage, marked Compliant.\n\nHowever, the Physical Security Policy (Section 5.1) lists cameras at the *\"suite entrance, server room door, hallways, and emergency exit.\"* The parking garage is not listed in the policy's CCTV scope. Furthermore, the notes indicate this is a **building-managed camera** for which Meridian only receives a feed \u2014 meaning Meridian does not control the recording system, retention settings, or footage availability for that camera.\n\n**Why This Is a Gap:**\n\nThis creates a two-part issue. First, if Meridian intends to rely on this camera as part of its physical security program (which inclusion in the retention verification log implies), the policy should explicitly scope it and acknowledge that it is a Greystone-managed asset. Second, Meridian's ability to guarantee 90-day retention on a camera it does not own or operate is contingent on Greystone's continued cooperation and configuration. There is no evidence of a formal agreement, SLA, or written understanding with Greystone Property Management obligating them to maintain this retention standard. If Greystone changes the retention settings or discontinues the feed, Meridian would lose a surveillance control it is currently counting toward compliance with no contractual recourse.\n\nThis is rated Low because the camera is currently functioning, the retention is verified as compliant in all three months, and the gap is primarily one of documentation and policy alignment rather than an active control failure. It would be elevated to Medium if Meridian cannot produce a written agreement with Greystone covering camera feed access and retention obligations.\n\n---\n\n## Summary Table\n\n| # | Finding Title | Severity | Policy/Evidence Reference |\n|---|--------------|----------|--------------------------|\n| 1 | Server room environmental sensors overdue for calibration throughout Q4 2025 | **High** | POL-PS-022 \u00a79.3; Calibration Log (TEMP-01, TEMP-02, HUM-01, HUM-02, TEMP-03) |\n| 2 | Colocation audit lacks independence \u2014 auditors are authorized cabinet users | **Medium** | POL-PS-022 \u00a78.2; DC-AUD-2024-002 \u00a7\u00a71, 4.3, 7 |\n| 3 | No evidence 2025 annual colocation audit was completed | **Medium** | POL-PS-022 \u00a78.2; DC-AUD-2024-002 \u00a77 |\n| 4 | No evidence of quarterly badge access reviews during Q4 2025 | **Medium** | POL-PS-022 \u00a74.4; Badge Access Log |\n| 5 | Parking garage camera scope ambiguity and control ownership gap | **Low** | POL-PS-022 \u00a7\u00a75.1\u20135.3; CCTV Retention Log (CAM-06) |\n\n---\n\n## Controls Operating Effectively (No Findings)\n\nFor completeness, the following areas were reviewed and no exceptions were identified:\n\n- **Suite and server room badge access (Q4 2025):** All 60 badge entries resulted in Granted access; no denied entries, no unrecognized badge IDs, no after-hours anomalies without context. Server room access (AP-SRV-01) is appropriately limited to Infrastructure and SRE personnel (Ian Foster, Justin Park).\n- **CCTV retention (Q4 2025):** All six cameras verified monthly across October, November, and December 2025. All entries are Compliant. The minor 89-day readings (vs. 90-day minimum) are appropriately noted as within tolerance and do not constitute exceptions.\n- **Colocation physical controls (as of August 2024 audit):** All assessed controls \u2014 perimeter security, mantrap, biometrics, cabinet locks, CCTV, environmental \u2014 were Satisfactory with no exceptions. SecureVault's SOC 2 Type II (KPMG) also noted no exceptions in physical security criteria.\n- **Environmental sensor readings (current):** All sensors with overdue calibration are nonetheless reporting values within the policy-defined acceptable ranges. The finding is procedural, not indicative of an active environmental threat.\n- **Badge termination and issuance procedures:** No evidence of anomalies in the access log that would suggest provisioning failures. Policy provisions (\u00a7\u00a74.1\u20134.3) are documented and specific."
+}

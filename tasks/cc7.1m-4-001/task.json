@@ -1,0 +1,81 @@
+{
+  "id": "cc7.1m-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "The entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/maintenance-policy.md",
+      "type": "policy",
+      "description": "Ironclad Services maintenance policy defining maintenance windows, change management, approved vendor list, and vendor access requirements"
+    },
+    {
+      "path": "evidence/maintenance-window-schedule-q4-2025.csv",
+      "type": "log",
+      "description": "Maintenance window schedule and execution log for Q4 2025 with 19 entries including 1 emergency maintenance event"
+    },
+    {
+      "path": "evidence/vendor-maintenance-log-q4-2025.csv",
+      "type": "log",
+      "description": "Vendor maintenance log for Q4 2025 with 10 entries across Dell, Cisco, Palo Alto, VMware, Schneider, and NetOps Solutions"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Exception register documenting CISO and IT Director approved exceptions for emergency maintenance and vendor access extensions"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Ironclad Services' maintenance controls for the Q4 2025 observation period (October 1 - December 31, 2025). Review the maintenance policy, maintenance window schedule, vendor maintenance log, and exception register. Assess whether CC7.1 maintenance requirements are met. Examine emergency maintenance procedures, vendor authorization, and change management practices. Be careful to distinguish between situations where emergency processes were properly followed and situations where vendor access controls were not followed.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "high",
+      "title": "Emergency core switch replacement without pre-approved change ticket — but CISO authorized and full exception process followed",
+      "description": "MW-2025-Q4-011 (November 13) shows emergency maintenance for core-switch-01 failure at 08:42 UTC without a pre-approved change ticket. The change_tickets field shows 'N/A' initially. This appears to be a change management violation. However, the exception register contains EXC-2025-M-040, documenting CISO Robert Lane's verbal authorization at 08:45 UTC. The change ticket CHG-2025-4035 was created retroactively at 11:15 UTC — within the 4-hour window required by Section 5.2. The post-incident review (PIR-2025-0078) was completed on November 15 — within the 72-hour requirement. The vendor (Cisco) is on the Approved Vendor List and their technician (Jennifer Wu) performed the work with an on-site Ironclad employee supervising. This is NOT a finding — the emergency change process was followed correctly with proper authorization, retroactive documentation, and post-incident review.",
+      "evidence_sources": [
+        "evidence/maintenance-window-schedule-q4-2025.csv",
+        "evidence/exception-register.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The model should identify the emergency maintenance event without a pre-approved change ticket, then cross-reference the exception register to find CISO authorization, retroactive change ticket within 4 hours, and post-incident review within 72 hours. All three elements of Section 5.2 were satisfied. The vendor is approved and the technician was supervised.",
+      "detection_criteria": {
+        "required_keywords": ["MW-2025-Q4-011", "core-switch-01", "EXC-2025-M-040", "CISO authorized", "CHG-2025-4035", "retroactive", "4-hour", "PIR-2025-0078", "Section 5.2"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["not a finding", "properly authorized", "exception process followed", "emergency process compliant"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Unauthorized vendor NetOps Solutions performed maintenance on production load balancers twice — not on Approved Vendor List",
+      "description": "VML-407 (December 3) and VML-410 (December 17) show maintenance performed by NetOps Solutions technician Darren Kowalski on production load balancers (lb-prod-01 and lb-prod-02). NetOps Solutions does not appear on the Approved Vendor List defined in Section 6.1 of the maintenance policy. The Approved Vendor List includes Dell Technologies, Cisco Systems, Fortinet, VMware (Broadcom), Oracle, and Schneider Electric — but not NetOps Solutions. The vendor maintenance log explicitly states 'Vendor NOT on Approved Vendor List' and 'No vendor agreement on file.' Per Section 6.3, maintenance by vendors not on the Approved Vendor List is a policy violation that must be reported to the IT Director within 24 hours. While the technician used CyberArk Vendor PAM with session recording (technically following the access control requirements), the vendor itself is unauthorized. This is particularly concerning because: (1) load balancers handle SSL termination and traffic routing for all production applications, (2) the vendor was hired after an internal F5 engineer left — indicating a staffing gap that led to using an unapproved contractor, (3) the pattern repeated (two sessions), suggesting it was normalized rather than treated as an exception, and (4) no vendor agreement means there are no contractual obligations regarding data handling, confidentiality, or service levels.",
+      "evidence_sources": [
+        "evidence/vendor-maintenance-log-q4-2025.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The model should compare each vendor in the maintenance log against the Approved Vendor List in Section 6.1. Dell, Cisco, Palo Alto, VMware, and Schneider are all on the list. NetOps Solutions is not. VML-407 and VML-410 both show NetOps Solutions performing F5 load balancer maintenance without being on the approved list and without a vendor agreement. The contrast with the emergency switch replacement (where the approved vendor Cisco was properly used) highlights that vendor authorization is a separate control from session recording.",
+      "detection_criteria": {
+        "required_keywords": ["NetOps Solutions", "Darren Kowalski", "Approved Vendor List", "not on", "VML-407", "VML-410", "lb-prod-01", "lb-prod-02", "no vendor agreement", "Section 6.1", "Section 6.3", "F5", "unauthorized"],
+        "minimum_keyword_matches": 5
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["system_maintenance", "vendor_authorization", "emergency_change", "red_herring", "approved_vendor_list", "unauthorized_vendor", "load_balancer"]
+  }
+}

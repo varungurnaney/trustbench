@@ -1,0 +1,56 @@
+{
+  "task_id": "cc9.1-3-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:37:57.612730",
+  "score": {
+    "task_id": "cc9.1-3-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Amplitude",
+          "Intercom",
+          "FullStory",
+          "DPA",
+          "missing",
+          "personal data",
+          "Section 3.1"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "DPA tracker",
+          "scope",
+          "data types"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1665,
+    "output_tokens": 1203
+  },
+  "raw_response": "Below are the key findings from the review of Arctura Systems\u2019 vendor management program and associated artifacts in the context of SOC 2 CC9.1 for Q4 2025:\n\n---\n\n### **Finding 1: Incomplete DPA Coverage for Active Vendors Processing Personal Data**\n\n**Related Section:**  \n- Vendor Inventory; DPA Tracker; Policy Section 3 (Data Processing Agreements)\n\n**Gap Description:**  \nPolicy section 3.1 requires a DPA be executed for all Critical and High tier vendors (and any others processing personal data). The vendor inventory lists the following High tier vendors as active and processing customer or employee PII, but they do **not appear in the DPA tracker**:\n\n- Amplitude Analytics (Product analytics, Customer behavioral data)\n- Intercom Inc. (Customer PII - names and email addresses)\n- FullStory Inc. (Customer session data, may include PII)\n- (Lattice is listed in the DPA tracker, though as Medium.)\n\nIn addition, Zendesk and Amplitude Analytics both handle customer PII or pseudonymized data and require DPA coverage, but only Zendesk appears in the DPA tracker.\n\n**Severity:**  \n**Critical**  \n_Why:_ Missing DPAs for vendors actively processing customer data constitutes a severe compliance and contractual risk, particularly as data protection and breach notification obligations may not be enforceable.\n\n---\n\n### **Finding 2: DPA Tracker Does Not Account for Recent Vendor Additions**\n\n**Related Section:**  \n- Vendor Inventory; DPA Tracker\n\n**Gap Description:**  \nVendor inventory includes vendors with onboarding dates in 2024 (e.g., Intercom, FullStory) and late 2023 (e.g., Amplitude Analytics), but the DPA tracker appears not to have been updated for these. This may indicate a lag or failure in onboarding compliance procedures.\n\n**Severity:**  \n**High**  \n_Why:_ If new vendors with access to personal data are delayed in DPA execution/tracking, personal data may be processed without appropriate contractual controls for defined periods.\n\n---\n\n### **Finding 3: DPAs Not Required or Missing for Medium Vendors Processing Employee PII**\n\n**Related Section:**  \n- Vendor Risk Management Policy Section 3; Vendor Inventory; DPA Tracker\n\n**Gap Description:**  \nLattice (Medium tier) processes \"Employee PII,\" per the inventory. Policy 3.1 requires a DPA for any Medium/Low vendor processing personal data, not only customer data.\n\nLattice is listed in the DPA tracker, so DPA exists; however, Notion and Figma (both Medium tier) process only \"internal data.\" If this includes employee names/emails, clarification is needed\u2014but based on data field, issue is not established. This is a note for additional clarification and not a gap at present since no evidence of employee PII being processed by Figma/Notion.\n\n**Severity:**  \n**Low**  \n_Why:_ No actual evidence of missing DPA for Medium vendors with employee PII, but recommend confirming Notion and Figma scope for completeness.\n\n---\n\n### **Finding 4: No Evidence of DPA Offboarding Controls for Departed Vendors**\n\n**Related Section:**  \n- Vendor Risk Management Policy Section 6 (Vendor Offboarding)\n\n**Gap Description:**  \nVendor offboarding controls require DPAs to be updated when vendors depart. There is no evidence provided (e.g., in the DPA tracker or policy implementation evidence) that offboarding involves confirmation of DPA termination, data deletion confirmation, and tracker updates.\n\n**Severity:**  \n**Medium**  \n_Why:_ While this does not impact vendors currently under review (all are active), absence of offboarding evidence risks residual data or unchecked DPA validity if a vendor is terminated.\n\n---\n\n### **Finding 5: Lack of Notation/Comments in DPA Tracker Regarding Pseudonymized Data Processing**\n\n**Related Section:**  \n- DPA Tracker; Vendor Inventory\n\n**Gap Description:**  \nPolicy and tracker do not indicate specific categories or types of personal data processed (e.g., pseudonymized vs. direct identifiers). For example, Amplitude and FullStory are listed as handling behavioral or session data that \"may include PII,\" but the DPA tracker does not clarify the scope. This may lead to ambiguity about DPA requirement/application for such vendors.\n\n**Severity:**  \n**Medium**  \n_Why:_ Lack of data type comments may cause risk of inadvertently omitting necessary DPAs or misunderstandings about which vendors require data processing controls.\n\n---\n\n### **Summary Table of Gaps**\n\n| # | Title | Section | Gap | Severity |\n|---|-------|---------|-----|----------|\n| 1 | Incomplete DPA Coverage for Active Vendors Processing Personal Data | Inventory, DPA Tracker, Policy 3 | DPAs missing for Amplitude, Intercom, FullStory | **Critical** |\n| 2 | DPA Tracker Not Updated for New Vendors | Inventory, DPA Tracker | Late 2023\u20132024 vendors missing from tracker | High |\n| 3 | DPAs for Medium Vendors Processing PII | Policy 3, Inventory, DPA Tracker | Lattice covered; clarify for Notion/Figma | Low |\n| 4 | No Evidence of Offboarding DPA Controls | Policy 6 | No proof of DPA termination/data deletion | Medium |\n| 5 | Lack of Data Type Notation in Tracker | DPA Tracker, Inventory | No clarity for pseudonymized data vendors | Medium |\n\n---\n\n**Recommendations:**  \n- Execute and document DPAs for Amplitude, Intercom, and FullStory immediately.\n- Update the DPA tracker with all new (2023\u20132024) personal data vendors.\n- Review tracker column details and policy implementation for clarity on data types processed.\n- Provide evidence of offboarding controls for DPAs.\n- Review Medium tier vendors\u2019 data types to ensure complete DPA coverage."
+}

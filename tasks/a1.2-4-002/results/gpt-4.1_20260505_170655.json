@@ -1,0 +1,64 @@
+{
+  "task_id": "a1.2-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:06:55.202253",
+  "score": {
+    "task_id": "a1.2-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.2,
+    "f1": 0.28571428571428575,
+    "score": 0.28571428571428575,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CISO",
+          "EXC-2025-051",
+          "compensating"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "TLS certificate"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "checksum",
+          "skipped",
+          "verification",
+          "data integrity"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5898,
+    "output_tokens": 1370
+  },
+  "raw_response": "Below is a structured findings list based on SOC 2 A1.2 for Q4 2025, considering the evidence provided, policy requirements, execution logs, and the exception register. The goal is to identify actual **gaps in control** rather than document isolated failures that were handled as intended or had effective compensating controls.\n\n---\n\n## 1. **Incomplete Backup Verification During Failure Re-run**\n\n**Relevant Section:**  \n- Backup and Recovery Policy \u00a73.5 (\"Backup Verification\")  \n- Q4 2025 Backup Execution Log (see BKP-2025-1128R, 2025-11-28)\n\n**Why it\u2019s a gap:**  \nThe policy requires \"SHA-256 checksum verification completed before being marked as successful\" for *all* backups. On 2025-11-28, after an initial backup failed due to a network timeout, a backup re-run (\"BKP-2025-1128R\") was initiated to meet the maintenance window deadline. The log explicitly states \"Checksum verification skipped to meet maintenance window deadline.\" The absence of a CISO-approved exception for this deviation means this is not a documented/approved compensating measure. Thus, a required control (integrity check) was bypassed and not formally risk-accepted, leaving the organization unprotected should that backup be needed for restoration.\n\n**Severity:**  \n**Medium**\n\n---\n\n## 2. **Delayed Response and Absence of Exception for Out-of-Policy Restore Window**\n\n**Relevant Section:**  \n- Backup and Recovery Policy \u00a76.1 (\"Failure Handling: On-call engineer investigates and initiates re-run within 2 hours\")\n- Q4 2025 Backup Execution Log (see BKP-2025-1214, 2025-12-14 & BKP-2025-1214R)\n\n**Why it\u2019s a gap:**  \nPolicy mandates that, upon backup failure, the on-call engineer must investigate and initiate a re-run within 2 hours. On 2025-12-14, a backup failed at 02:47 UTC due to an expired TLS certificate. The successful re-run backup (\"BKP-2025-1214R\") did not commence until 10:18 UTC\u2014**>7 hours** later. Although the log explains the delay (engineer escalation required to renew certificate, completed at 09:45), there is **no corresponding entry in the exception register** documenting approval of this deviation, compensating controls, or a risk assessment for this out-of-policy response. This process, intended to enforce rapid response for backup recoverability, was not followed, representing a procedural gap.\n\n**Severity:**  \n**Medium**\n\n---\n\n## 3. **Lack of Documented Restore Test Results for Q4 2025**\n\n**Relevant Section:**  \n- Backup and Recovery Policy \u00a77 (\"Restore Testing\"; \"Quarterly full restore test in DR environment validating restoration success, data integrity, and RTO compliance\")\n\n**Why it\u2019s a gap:**  \nThe policy requires a quarterly restore test; however, within the evidence provided, there are **no logs or records of a DR restore test for Q4 2025** (October\u2013December). Without evidence this was performed, the organization cannot demonstrate it validates its recovery capabilities or that RTO/RPO objectives can reliably be met. This is a common SOC 2 gap if the test is not performed or not evidenced.\n\n**Severity:**  \n**Medium**\n\n---\n\n## 4. **Post-Failure Compensating Controls Not Evidenced for Checksum Failures**\n\n**Relevant Section:**  \n- Backup and Recovery Policy \u00a73.5 and \u00a76 (\"All backups must have SHA-256 checksum verification... backups failing checksum verification must be re-run\"; \"PagerDuty alert within 5 minutes... re-run within 2 hours... all failures logged\")\n\n**Why it\u2019s a gap:**  \nPolicy requires that backup failures, including checksum failures, trigger incident handling and re-run procedures. For 2025-10-22, 2025-11-28, and 2025-12-14, failures are logged, and two have corresponding re-runs or exceptions. However, for the 2025-11-28 re-run, where checksum was skipped, there is **no documentation of a subsequent verification or risk acceptance**\u2014even after the window closed\u2014to ensure integrity. If such alternate verification was performed subsequently, or a risk was accepted, it is not evidenced.\n\n**Severity:**  \n**Low** (Lower, because the original failure was handled with a re-run, but a full audit trail of eventual verification or risk acceptance is missing.)\n\n---\n\n## 5. **Absence of Documented Periodic Review of Exceptions**\n\n**Relevant Section:**  \n- Exception register (\"review_frequency\" and \"next_review_date\" fields)\n\n**Why it\u2019s a gap:**  \nPolicy (\u00a76.2) and the exception register both specify that exceptions are subject to periodic (quarterly) review. The exception register entry for EXC-2025-051 has \"next_review_date\" set (2026-01-24), but there is **no evidence of the actual review process, prior reviews, or closure of older exceptions** provided. Absence of \u201creviewed\u201d status updates or evidence of risk reassessment can signal a gap in the ongoing monitoring of risks and exceptions.\n\n**Severity:**  \n**Low**\n\n---\n\n# **Summary Table**\n\n| Title                                                              | Section                                | Reason for Gap                                                                                                                 | Severity |\n|--------------------------------------------------------------------|----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------|----------|\n| Incomplete Backup Verification During Failure Re-run                | Policy \u00a73.5, Execution Log (11/28)     | Required integrity check was skipped without documented exception or risk acceptance                                            | Medium   |\n| Delayed Response and Absence of Exception for Out-of-Policy Restore| Policy \u00a76.1, Execution Log (12/14)     | Re-run not initiated within 2 hours; no formal exception or risk acceptance                                                    | Medium   |\n| Lack of Documented Restore Test Results for Q4 2025                 | Policy \u00a77, All Evidence                | No records provided to show quarterly restore test took place                                                                  | Medium   |\n| Compensating Controls Not Evidenced for Checksum Failures           | Policy \u00a73.5, 6, Execution Log (11/28)  | No evidence that skipped checksum (on 11/28 re-run) was later completed or accepted as risk                                    | Low      |\n| Absence of Documented Periodic Review of Exceptions                | Exception Register                     | No evidence of actual/closed reviews on exceptions                                                                             | Low      |\n\n---\n\nIf you require more detailed evidence linkage or additional context for each finding, let me know!"
+}

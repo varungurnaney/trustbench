@@ -1,0 +1,76 @@
+{
+  "task_id": "cc8.1-1-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:24:28.795528",
+  "score": {
+    "task_id": "cc8.1-1-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 15,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "segregation",
+          "separation",
+          "requesting engineer",
+          "developer",
+          "independent",
+          "review"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "testing",
+          "test",
+          "QA",
+          "validation",
+          "staging",
+          "verified",
+          "no requirement",
+          "before production",
+          "missing"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "emergency",
+          "verbal",
+          "retroactive",
+          "post-implementation",
+          "documentation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 603,
+    "output_tokens": 1658
+  },
+  "raw_response": "Overall, the policy partially addresses SOC 2 CC8.1 because it establishes change categories, Jira tracking, approval paths, rollback expectations, and post-implementation verification. However, several required elements are either missing or insufficiently defined.\n\n| # | Finding | Related Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | No explicit testing requirements before production release | Sections 4.1, 4.3, 4.4 | CC8.1 expects changes to be tested before implementation. The policy references deployment through staging but does not require documented testing, QA sign-off, security testing, user acceptance testing, or evidence of test results before production deployment. | High |\n| 2 | Lack of segregation of duties for change implementation and verification | Sections 4.3, 4.4 | The policy states that changes are deployed by the requesting engineer and verified by the change owner. This creates a self-approval/self-verification risk. There is no requirement for independent review, peer approval, or separation between developer, approver, deployer, and verifier. | High |\n| 3 | Approval requirements are not sufficiently defined | Section 4.2 | The policy states that normal changes require CAB approval, but it does not define CAB membership, quorum, approval criteria, required approvers, evidence of approval, or whether approval must occur before deployment. For standard changes, the \u201cStandard Change Catalog\u201d is referenced but not included or described. | Medium |\n| 4 | Change design and development controls are not addressed | Sections 1, 2, 4 | CC8.1 includes the authorization, design, development, acquisition, configuration, documentation, testing, approval, and implementation of changes. The policy focuses primarily on production deployment and does not describe requirements for design review, development standards, code review, secure development practices, or technical design documentation. | High |\n| 5 | Acquired or third-party software changes are not covered | Sections 1, 2 | The policy covers production systems, infrastructure, and applications, but does not address changes involving acquired software, vendor-managed systems, SaaS applications, third-party components, or dependency upgrades. CC8.1 applies to changes that are developed or acquired. | Medium |\n| 6 | Changes to procedures are not included in scope | Section 2 | CC8.1 applies to changes to infrastructure, data, software, and procedures. The policy scope includes production environments, applications, infrastructure, database schema changes, and configuration updates, but does not address changes to operational procedures, runbooks, security procedures, or administrative processes. | Medium |\n| 7 | Security and risk impact assessment is not sufficiently detailed | Section 4.1 | The policy requires an \u201cimpact assessment,\u201d but does not specify that the assessment must evaluate security, availability, confidentiality, privacy, compliance, customer impact, data integrity, or operational risk. Without defined criteria, assessments may be inconsistent or incomplete. | Medium |\n| 8 | Emergency change process lacks sufficient control evidence | Section 4.2 | Emergency changes may be verbally approved by the VP Engineering, with Jira tickets created retroactively. The policy does not define how verbal approval is documented, how quickly the Jira ticket must be created, what evidence is required, or what happens if retrospective CAB review identifies issues. | Medium |\n| 9 | Documentation requirements are incomplete | Sections 4.1, 6 | Jira is identified as the system of record, but the required contents are limited. The policy does not require documentation of test results, approval evidence, approver identity, implementation date/time, deployment evidence, validation results, actual rollback outcome if applicable, or links to code commits/pull requests. | Medium |\n| 10 | No requirement to update system or user documentation after changes | Section 6 | CC8.1 includes documenting changes. The policy states that Jira is the record of the change, but it does not require updates to architecture diagrams, configuration baselines, runbooks, knowledge base articles, user documentation, or operational procedures when changes are implemented. | Low |\n| 11 | Rollback requirements may be unrealistic or incomplete | Section 5 | The policy requires rollback execution within 30 minutes if a production incident occurs, but does not address cases where rollback is not technically feasible, where data migrations are involved, or where forward-fix procedures are required. It also does not require rollback plans to be tested or reviewed before approval. | Medium |\n| 12 | Data change controls are insufficiently defined | Sections 2, 4.1, 5 | The policy mentions database schema changes but does not address data migrations, production data fixes, data integrity validation, backups before data changes, reconciliation procedures, or approvals for sensitive data changes. | Medium |\n| 13 | CI/CD and version control controls are not defined | Section 4.3 | The policy states that deployments use GitHub Actions through staging to production, but does not define required controls such as pull request review, branch protection, artifact approval, environment approvals, access restrictions, or logging of deployment activity. | Medium |\n| 14 | Post-implementation review is limited | Section 4.4 | The policy requires the change owner to verify success and report issues to the CAB, but does not require independent validation, monitoring for a defined period, documentation of validation results, or review of failed changes and lessons learned. | Low |\n| 15 | Standard change process is not sufficiently governed | Sections 3, 4.2 | Standard changes are pre-approved and require no approval, but the policy does not define how standard changes are added to or removed from the catalog, how often the catalog is reviewed, who approves catalog entries, or what criteria qualifies a change as standard. | Medium |"
+}

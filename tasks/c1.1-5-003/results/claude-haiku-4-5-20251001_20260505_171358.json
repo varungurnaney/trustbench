@@ -1,0 +1,105 @@
+{
+  "task_id": "c1.1-5-003",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:13:58.225816",
+  "score": {
+    "task_id": "c1.1-5-003",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 0.8,
+    "precision": 0.5714285714285714,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 4,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "DB-ADP-004",
+          "16 days",
+          "2 days beyond",
+          "tolerance",
+          "CISO notified",
+          "EXC-2025-041",
+          "corrective actions",
+          "disk space"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "pattern",
+          "14 days",
+          "tolerance boundary",
+          "buffer",
+          "re-encryption",
+          "process",
+          "fragile",
+          "design issue",
+          "Observation 1"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "APP-ADP-003",
+          "7 days",
+          "tolerance",
+          "application key",
+          "trend",
+          "pattern",
+          "manual",
+          "Observation 2"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "quarterly review",
+          "recommendations",
+          "enforcement",
+          "governance",
+          "follow-up"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4523,
+    "output_tokens": 4226
+  },
+  "raw_response": "# SOC 2 Compliance Assessment: Control C1.1 / CC6.7\n## Encryption Key Lifecycle Management \u2014 Readiness Review\n\n---\n\n## FINDING 1: Pattern of Database Key Rotations at Tolerance Boundary Indicates Process Stress, Not Control Margin\n\n**Related Evidence:**\n- Key rotation tracker: DB-ADP-001, DB-ADP-002, DB-ADP-003 all exactly 14 days late\n- Quarterly review, Section 2.3, Observation 1\n- Policy POL-KEY-007, Section 4.2 (tolerance definition)\n\n**Why This Is a Gap:**\n\nThe policy defines a 14-day tolerance window as a **maximum allowable delay**, with the implicit assumption that most rotations will complete *before* the tolerance expires, providing operational buffer. However, the evidence shows:\n\n- **Three consecutive database key rotations** (DB-ADP-001, DB-ADP-002, DB-ADP-003) all completed at exactly day 14\u2014the maximum boundary\n- **Zero rotations** completed early or with margin\n- The CISO's own quarterly review (Section 2.3) explicitly flags this: *\"all three database field-encryption keys...completed exactly at 14 days \u2014 the maximum tolerance. This pattern suggests the re-encryption process requires the full tolerance window every time, leaving no buffer for unexpected issues.\"*\n\nThis indicates the control is **technically compliant but operationally fragile**. The tolerance is not functioning as a true safety margin; it is the routine completion window. This was immediately validated when DB-ADP-004 encountered disk and deadlock issues and exceeded tolerance by 2 days.\n\n**What's Missing:**\n- No evidence of investigation into why re-encryption consistently requires the full 14-day window\n- No baseline performance data for re-encryption jobs (time to completion, resource utilization)\n- No predictive buffer built into scheduling (e.g., scheduling rotations 5 days early to use only 9 days of tolerance)\n- No documented performance targets or SLAs for re-encryption batch jobs\n\n**The Control's Actual State:**\n- **Nominally compliant** (3 of 3 rotations within tolerance)\n- **Operationally weak** (zero margin; pattern indicates systemic process constraint rather than occasional delay)\n- **Risk indicator** (the one rotation with complications immediately exceeded tolerance, proving the lack of buffer was predictive)\n\n**Severity: High**\n\nThe organization has inadvertently allowed operational procedures to drift to the edge of compliance. While not yet a deficiency, this creates unacceptable risk that any operational friction (network latency, table locks, disk contention) will cause policy violations. This is exactly what happened with DB-ADP-004 and will recur unless the underlying process is optimized.\n\n---\n\n## FINDING 2: DB-ADP-004 Tolerance Overage (16 vs. 14 Days) Was Properly Remediated but Represents a Control Breach That Occurred\n\n**Related Evidence:**\n- Key rotation tracker: DB-ADP-004 marked \"Late - Remediated,\" 16 days (2 days beyond tolerance)\n- Exception register: EXC-2025-041 filed November 16, approved same day, expired after remediation\n- Quarterly review, Section 2.2\n- Policy POL-KEY-007, Section 4.2 (escalation requirements)\n\n**Why This Is Important to Frame Correctly:**\n\nThis finding requires distinguishing between **(a) incident handling quality** and **(b) control deficiency**:\n\n**(a) Incident Handling: Excellent**\n- CISO notified within 24 hours of tolerance breach (November 16, day 15-16)\n- Exception formally filed same day\n- Root cause documented (disk exhaustion, deadlock, off-hours maintenance required)\n- Corrective actions implemented (disk monitoring alerts, pre-allocation, maintenance window documentation)\n- Re-encryption completed successfully (4.2M records)\n- Post-incident review held November 25\n- Exception properly expired after remediation\n\n**(b) Control Deficiency: Yes, a Breach Occurred**\n- The key was rotated **2 days past the defined tolerance**\n- This is a policy violation, regardless of the quality of remediation that followed\n- Policy POL-KEY-007, Section 4.2 explicitly states rotations beyond tolerance require escalation\u2014this was handled well, but the breach itself is material\n- The breach proves Finding 1: the 14-day window has zero margin for the operational complexity that occurred\n\n**What's Present (Mitigating):**\n- Immediate notification and exception filing\n- Root cause analysis\n- Corrective actions with follow-up verification\n- Compensating controls (enhanced monitoring during remediation)\n- CISO oversight throughout\n\n**What's Missing (Residual Concern):**\n- No evidence of a broader review of why re-encryption batch jobs have such tight margins that disk space exhaustion causes a 2-day delay\n- No analysis of whether the corrective actions (disk monitoring + pre-allocation) will prevent this from recurring in future rotations\n- No testing of the corrective actions (e.g., simulated rotation to validate disk pre-allocation timing)\n\n**Severity: Medium**\n\nThis is a **detected and remediated policy violation**, not an active deficiency. The incident handling was sound. However, it is a leading indicator that the control architecture itself (14-day tolerance for re-encryption processes) is undersized for the operational complexity. If Finding 1 is not addressed, this will recur.\n\n---\n\n## FINDING 3: Quarterly CISO Review Identifies Control Trend but Does Not Mandate Corrective Action\n\n**Related Evidence:**\n- Quarterly review, Section 2.3, Observations 1-3\n- Quarterly review, Section 3, \"Recommendations\" (advisory, not mandatory)\n- Policy POL-KEY-007, Section 6.2 (quarterly review requirement)\n\n**Why This Is a Gap:**\n\nThe CISO's quarterly review explicitly identifies a systemic issue:\n- *\"This pattern suggests the re-encryption process requires the full tolerance window every time, leaving no buffer for unexpected issues.\"*\n- *\"Observation 3: Automated rotations...consistently on-time, reinforcing the value of automation\"*\n- Recommendation 1: *\"Investigate re-encryption performance... Consider parallelization or incremental re-encryption\"*\n- Recommendation 3: *\"Implement pre-flight validation before starting re-encryption\"*\n\nHowever:\n- These are **recommendations**, not **mandated corrective actions** with owners, due dates, or accountability\n- No timeline is specified for investigation or remediation\n- No distinction between findings that affect compliance vs. operational efficiency\n- The review concludes with *\"trending toward [deficiency] if not addressed,\"* but provides no escalation or enforcement mechanism to ensure recommendations are implemented\n\n**What's Missing:**\n- A documented remediation plan with clear owners and deadlines\n- Risk acceptance if corrective actions are deferred\n- A mechanism to verify that recommendations are actually implemented before the next quarterly review\n- Integration with the change management or incident management system to ensure actions are tracked\n\n**Severity: Medium**\n\nThe governance process is generating valid insights but is not closing the loop on remediation. The CISO has identified that the control is trending toward weakness but has not escalated this to a formal corrective action plan with accountability. This creates a gap between audit observation and operational improvement.\n\n---\n\n## FINDING 4: Tolerance Window Definition Conflates Operational Limit with True Safety Margin\n\n**Related Evidence:**\n- Policy POL-KEY-007, Section 4.2: *\"Tolerance: 14 calendar days\" (for database keys)*\n- Quarterly review, Section 3, Recommendation 4: *\"If every rotation requires the full tolerance window, the tolerance may be masking a process issue rather than providing true buffer.\"*\n\n**Why This Is a Gap:**\n\nThe tolerance mechanism in the policy is designed to accommodate:\n1. **Legitimate operational delays** (weekend delays, minor scheduling conflicts)\n2. **A buffer for unexpected issues** (to avoid policy violations when minor complications arise)\n\nHowever, the evidence shows that database field-encryption key re-encryption is a **highly complex, resource-intensive operation** that consistently requires 14 days and leaves zero buffer when complications occur. The tolerance is functioning as a **deadline, not a buffer**.\n\n**What's Missing:**\n- No baseline data on typical re-encryption duration (time to complete for various data volumes)\n- No separation between \"normal operational variance\" (1-2 days) and \"complex process duration\" (14 days)\n- No explicit acknowledgment in the policy that 14 days is the *required time* for the re-encryption job itself, not a tolerance for delays\n- No consideration of whether a 14-day rotation frequency is appropriate for a 365-day maximum key lifetime if the rotation process itself requires most of the tolerance window\n\n**The Real Issue:**\n- The policy states: *\"Database field-encryption keys: 365-day rotation; 14-day tolerance\"*\n- In practice: *\"Database field-encryption keys require ~14 days to rotate due to re-encryption batch job complexity\"*\n- Result: If a rotation is 1 day late for any reason, it exceeds tolerance (as DB-ADP-004 shows)\n\n**Severity: Medium**\n\nThis is a policy design issue, not an immediate operational deficiency. The 365-day maximum lifetime and 14-day tolerance may be appropriately set for the security requirements, but the tolerance definition should explicitly acknowledge that it covers the full normal duration of the re-encryption process. If the tolerance is meant to provide buffer beyond that, it needs to be larger.\n\n---\n\n## FINDING 5: Application Key Rotations Trending Toward Tolerance Boundary (APP-ADP-003 at Exactly 7 Days)\n\n**Related Evidence:**\n- Key rotation tracker: APP-ADP-003 = 7 days late (at 7-day tolerance boundary)\n- Quarterly review, Section 2.3, Observation 2: *\"APP-ADP-003 completed at exactly 7 days (the tolerance boundary). While still compliant, this follows the same pattern as database keys...\"*\n\n**Why This Is a Gap:**\n\nApplication key rotations are managed **manually via Secrets Manager** (less complex than database re-encryption) but are also trending toward the tolerance boundary:\n\n- APP-ADP-001: 2 days late (well within 7-day tolerance) \u2713\n- APP-ADP-003: 7 days late (exactly at 7-day tolerance boundary) \u26a0\ufe0f\n\nThis suggests application key rotation processes are also consuming most or all of their available tolerance window. While the tolerance is larger (7 days vs. 14), the trend is consistent with database keys.\n\n**What's Missing:**\n- Root cause analysis for why APP-ADP-003 required the full 7 days (was it a process delay, a missed schedule, or the inherent duration of the rotation?)\n- Evidence that manual application key rotation has adequate procedures/automation to prevent recurrence of tolerance-boundary completions\n- The CISO's recommendation (Section 3.2) to *\"Consider automating application key rotation via Secrets Manager rotation lambdas\"* is noted as a recommendation but not mandated or tracked\n\n**Severity: Low to Medium**\n\nThis is an early warning indicator, not yet a deficiency. However, it follows the same pattern as database keys and suggests process maturity issues are broader than re-encryption performance. If application key rotations also begin exceeding tolerance, it would indicate a systemic process issue rather than isolated re-encryption complexity.\n\n---\n\n## FINDING 6: No Evidence of Control Testing or Validation of Corrective Actions from DB-ADP-004\n\n**Related Evidence:**\n- Key rotation tracker, DB-ADP-004: Corrective actions listed but not explicitly verified\n- Exception register, EXC-2025-041: \"Corrective actions verified\" in review outcome (December 1 review)\n- Quarterly review contains no test results or evidence that corrective actions prevent recurrence\n\n**Why This Is a Gap:**\n\nThe corrective actions for DB-ADP-004 are documented:\n1. Added disk space monitoring alerts for re-encryption workers\n2. Pre-allocated additional disk before future rotations\n3. Documented off-hours maintenance window requirement\n\nHowever:\n- There is no evidence these controls were **tested** or **validated** to work\n- The \"verified\" note in the exception register (December 1) is a one-time review, not ongoing validation\n- No future database key rotation has occurred since November 17 to confirm the corrective actions prevent recurrence\n- No test plan or dry-run is documented\n\n**What's Missing:**\n- Documented test of disk space monitoring to confirm alerts trigger correctly\n- Evidence that pre-allocated disk is sufficient for next rotation (or validation that sizing formula works)\n- Post-implementation review after the next database key rotation (which would validate corrective actions in practice)\n- Acceptance criteria for what constitutes \"verified\" corrective actions\n\n**Severity: Low to Medium**\n\nThe corrective actions appear reasonable but have not been validated beyond administrative review. They will be tested in practice when the next database key rotation occurs, but relying on production as the test environment for a critical control is not ideal. Formal pre-implementation testing would reduce risk.\n\n---\n\n## FINDING 7: Encryption Key Lifecycle Policy Lacks Performance SLAs and Operational Baselines\n\n**Related Evidence:**\n- Policy POL-KEY-007 defines rotation schedules and tolerance but not performance targets\n- Quarterly review identifies that re-encryption \"requires\" the full 14-day tolerance but policy doesn't address this\n- Section 6 (Monitoring) references a dashboard but no metrics, thresholds, or KPIs are defined\n\n**Why This Is a Gap:**\n\nThe policy requires:\n- \u2713 Rotation schedules (365 days for database keys)\n- \u2713 Tolerance windows (14 days)\n- \u2713 Monitoring (dashboard reviewed weekly)\n- \u2717 **Performance baselines** (how long does re-encryption typically take?)\n- \u2717 **Service level objectives** (target re-encryption duration: e.g., <7 days?)\n- \u2717 **Operational thresholds** (if a rotation is running >10 days, escalate?)\n- \u2717 **Capacity planning metrics** (disk space required, parallelization constraints)\n\n**What's Missing:**\n- Documented baseline for re-encryption duration by data volume (e.g., \"user-pii-key re-encryption: ~12 days for 4M records\")\n- Target for re-encryption completion (to enable margin before tolerance expires)\n- Alerting thresholds for rotations running longer than expected\n- Capacity sizing methodology for re-encryption infrastructure\n\n**Severity: Medium**\n\nWithout baselines and SLAs, the organization is managing key rotation reactively (rotating when the schedule says to) rather than proactively (ensuring re-encryption will complete in time). This contributes to Finding 1 (tolerance boundary pattern) because there's no visibility into whether 14 days is truly adequate or whether the process is consuming that time due to undersized infrastructure.\n\n---\n\n## SUMMARY TABLE\n\n| Finding | Title | Severity | Category | Status |\n|---------|-------|----------|----------|--------|\n| 1 | Database key rotations consistently at 14-day tolerance boundary | High | Process Design | Active trend requiring investigation |\n| 2 | DB-ADP-004 exceeded tolerance by 2 days (16 vs. 14) | Medium | Policy Violation | Remediated; validates Finding 1 |\n| 3 | CISO quarterly review identifies trends but no mandated corrective actions | Medium | Governance Gap | No enforcement mechanism |\n| 4 | Tolerance window definition conflates deadline with safety margin | Medium | Policy Clarity | Design issue, not operational deficiency |\n| 5 | Application key rotations trending toward 7-day tolerance boundary | Low-Medium | Early Warning | Potential systemic process issue |\n| 6 | Corrective actions from DB-ADP-004 not formally tested before next rotation | Low-Medium | Testing Gap | Risk: relying on production validation |\n| 7 | Policy lacks performance SLAs and operational baselines for re-encryption | Medium | Documentation Gap | Contributing cause of Findings 1-2 |\n\n---\n\n## OVERALL ASSESSMENT\n\n### Control Status: **OPERATING WITH SIGNIFICANT OBSERVATIONS**\n\n**Technically Compliant:** The organization achieved 87.5% on-time rotation compliance (7 of 8 rotations within tolerance). The one exception (DB-ADP-004) was detected, escalated, and remediated appropriately.\n\n**Operationally Fragile:** The pattern of database key rotations consistently completing at exactly the 14-day tolerance boundary indicates the control is \"operating at the edge.\" There is no operational margin. The DB-ADP-004 incident (triggered by minor disk and contention issues) immediately exceeded tolerance, proving the lack of buffer is a real risk.\n\n**Governance Present but Incomplete:** The CISO's quarterly review demonstrates strong awareness of the issue and has made reasonable recommendations. However, there is no mechanism to enforce that recommendations are implemented, creating a gap between insight and improvement.\n\n### Key Risk: **Finding 1 Is Predictive**\n\nThe pattern of database key rotations at the tolerance boundary is not a one-time anomaly; it is a leading indicator that the next rotation with any operational complications will again exceed tolerance. The corrective actions from DB-ADP-004 (disk monitoring, pre-allocation) are necessary but may not be sufficient if the underlying re-encryption process is resource-constrained.\n\n### Recommendation for Auditor Position\n\n**Do Not issue an unqualified opinion on C1.1 without evidence that:**\n1. Re-encryption performance has been analyzed and optimized (or explicitly documented as adequate)\n2. The CISO's recommendations from the quarterly review are being tracked as mandatory corrective actions\n3. The next database key rotation completes with margin (not at the 14-day boundary)\n4. Performance baselines and SLAs are documented in policy or operational procedures\n\nThe control is **operating** but not yet **operating effectively** in the sense required by SOC 2. There is adequate detection and remediation, but insufficient preventive control to avoid tolerance overages in the future."
+}

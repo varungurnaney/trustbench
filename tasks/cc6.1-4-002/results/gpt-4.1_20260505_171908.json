@@ -1,0 +1,80 @@
+{
+  "task_id": "cc6.1-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:19:08.943546",
+  "score": {
+    "task_id": "cc6.1-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.3333333333333333,
+    "precision": 0.2,
+    "f1": 0.25,
+    "score": 0.25,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "svc-datadog-apm",
+          "EXC-2025-031",
+          "exception",
+          "compensating",
+          "Datadog",
+          "not a finding",
+          "mitigated",
+          "approved"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": false,
+        "matched_keywords": [
+          "departure"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-jenkins-legacy",
+          "rotation",
+          "compensating control",
+          "EXC-2025-019"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "direct"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4466,
+    "output_tokens": 1168
+  },
+  "raw_response": "Based on a thorough review of the provided evidence and cross-referencing related artifacts for the period Q4 2025, here are the **genuine, supportable findings** against CC6.1 (Logical Access Security):\n\n---\n\n### 1. Legacy CI/CD Service Account Without MFA or Workload Federation\n\n**Relevant Section:**  \n- AWS IAM Credential Report (svc-jenkins-legacy)\n- Access Control Policy, Section 3.4 (Service Account Management)\n- Security Exception Register (EXC-2025-019)\n\n**Why it's a gap:**  \nPer policy, service accounts should use workload identity federation \"where supported\" and must have credentials rotated every 90 days (confirmed via the exception). The svc-jenkins-legacy account uses static credentials (not MFA, not federated). While an exception (EXC-2025-019) is documented, compensating controls (key rotation, IP restriction, permission scoping, weekly audit) are in place and have been reviewed/renewed, so the risk is mitigated \u2014 but this remains **inherently weaker than recommended practices.**\n\n**Severity:**  \n**Low**  \n- The exception is approved, documented, regularly reviewed, with compensating controls in place. No evidence of exploitation or failure to perform controls. Residual risk is low, but does not fully align with best practice.\n\n---\n\n### 2. Service Account (Datadog APM) Static Key Use Without MFA/Federation\n\n**Relevant Section:**  \n- AWS IAM Credential Report (svc-datadog-apm)\n- Access Control Policy, Section 3.4\n- Security Exception Register (EXC-2025-031)\n\n**Why it's a gap:**  \nsvc-datadog-apm also uses a static API key (no MFA, no federation). Exception EXC-2025-031 is documented, and specifically notes that \"Datadog agent does not support OIDC federation.\" Compensating controls are present: IP restriction, permission scoping, weekly audit, and limited read-only access. Exception has been reviewed/renewed.\n\n**Severity:**  \n**Low**  \n- Exception is fully documented, risk is reasonably minimized, and compensating controls are in force.\n\n---\n\n### 3. No MFA on Service Accounts\n\n**Relevant Section:**  \n- AWS IAM Credential Report (svc-* accounts)\n- Access Control Policy, Section 3.4\n\n**Why it's a gap:**  \nPolicy does not explicitly require service accounts to use MFA (since automation often cannot use MFA), but also does not discuss alternative authentication hardening (e.g., use of session tags, continuous monitoring, machine identity protection) beyond named compensating controls for excepted accounts. Given static keys remain in some use, it is desirable (but not always feasible) to adopt more advanced machine identity solutions. However, where federation is not supported, exceptions are used. This is not a direct control violation but could be flagged as an \"area for improvement.\"\n\n**Severity:**  \n**Low**  \n- Controls and exceptions address this, but it is a departure from the security ideal. Not a policy or regulatory breach.\n\n---\n\n### 4. Root Account Usage\u2014MFA Enforced, No Unauthorized Activity\n\n**Relevant Section:**  \n- AWS IAM Credential Report (root)\n- Security Exception Register (EXC-2025-012)\n- Access Control Policy, Section 4.1\n\n**Why it's a gap:**  \n**Not a finding.** Exception has been granted for root password rotation, MFA is enforced, and all root usage triggers immediate alert. Last password use was December 20, 2025, which should be checked against incident/approval logs, but the exception register indicates quarterly reviews, no unauthorized use, and Board approval.\n\n**Severity:**  \nNo gap.\n\n---\n\n### 5. Timeliness of Access Reviews\n\n**Relevant Section:**  \n- Access Control Policy, Section 5.1, 5.2\n- Change Management Record CHG-2025-Q4-020\n\n**Why it's a gap:**  \nNo evidence is provided showing that Q4 access reviews were actually completed within 15 business days (just that preparation change was made). However, this is outside the scope of \"logical access mechanisms\" themselves (more CC6.3/6.4 than 6.1), and absence of access review results in this packet is not a CC6.1 violation.\n\n**Severity:**  \n*Not a direct CC6.1 gap.*\n\n---\n\n**Summary Table**\n\n| # | Title                                                   | Doc Section(s)                           | Explanation                                                                                                                                             | Severity |\n|---|---------------------------------------------------------|------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------|----------|\n| 1 | Legacy CI/CD Service Account \u2013 Exception, Compensated   | IAM Report, Policy 3.4, EXC-2025-019     | Static credentials in use, but approved exception with compensating controls; not fully \"strong\" logical control.                                       | Low      |\n| 2 | Datadog APM Static Key \u2013 Exception, Compensated         | IAM Report, Policy 3.4, EXC-2025-031     | Static credentials in use where federation unsupported; approved/renewed exception with compensating controls; not fully \"strong\" logical control.      | Low      |\n| 3 | No MFA Possible on Service Accounts                     | IAM Report, Policy 3.4                   | No evidence of MFA on service accounts (typical for automation); covered via exceptions and controls, but area for further improvement.                 | Low      |\n\n---\n\n**No High or Medium severity findings identified. Exceptions and compensating controls are documented, reviewed, and renewed per policy. No evidence of unmitigated gaps.**"
+}

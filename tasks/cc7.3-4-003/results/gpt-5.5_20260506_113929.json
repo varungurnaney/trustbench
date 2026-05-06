@@ -1,0 +1,83 @@
+{
+  "task_id": "cc7.3-4-003",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:39:29.469981",
+  "score": {
+    "task_id": "cc7.3-4-003",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.75,
+    "f1": 0.8571428571428571,
+    "score": 0.8571428571428571,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-605"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-607",
+          "Not Started",
+          "Okta session token",
+          "former employee",
+          "model registry"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-604",
+          "prompt injection",
+          "system prompts",
+          "data breach",
+          "customer notification"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-601",
+          "INC-2025-605",
+          "action items",
+          "6 of 8",
+          "3 of 10",
+          "P1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4205,
+    "output_tokens": 4140
+  },
+  "raw_response": "## Overall CC7.3 Readiness Assessment\n\nStratosphere AI has a defined incident response program with AI-specific incident types, severity levels, response SLAs, roles, evidence preservation requirements, customer communication requirements, and post-mortem/action item governance. Several Q4 incidents show timely triage and containment, and the resolution extension for **INC-2025-605** appears to be appropriately documented and approved.\n\nHowever, the evidence shows several operating effectiveness gaps. Based on the provided evidence, **CC7.3 is partially met but not fully ready** for a clean SOC 2 Type II audit conclusion without remediation or additional supporting evidence.\n\n---\n\n## Findings\n\n| # | Finding | Related Section / Evidence | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | **Unapproved incident response SLA deviations** | Incident Response Policy \u00a73.2\u20133.3; Q4 Incident Register; Exception Register | The policy requires P1 containment within 1 hour and P1 resolution within 24 hours. **INC-2025-601** was a P1 training data exfiltration incident resolved in **29.5 hours**, exceeding the 24-hour resolution target, with no documented SLA exception. **INC-2025-605** was contained in **1.25 hours**, exceeding the 1-hour P1 containment SLA; the exception register only approved a **resolution** SLA extension, not a containment extension. The documented resolution extension for INC-2025-605 is valid and should not be treated as a gap, but the containment miss remains unapproved. | Medium |\n| 2 | **Required post-mortem missing for P2 incident INC-2025-607** | Incident Response Policy \u00a75.1\u20135.2; Q4 Incident Register; SOC 2 Readiness Checklist \u00a73.2 | The policy requires P2 post-mortems within 5 business days of resolution. **INC-2025-607**, a P2 unauthorized access incident involving the model registry and a former employee\u2019s Okta session token, was resolved on December 13, 2025, with a post-mortem due December 18, 2025. The incident register shows the post-mortem status as **\u201cNot Started.\u201d** This indicates the incident response process was not fully executed to understand root cause, impact, and preventive actions. | Medium |\n| 3 | **Customer notification evidence incomplete for customer-impacting security incidents** | Incident Response Policy \u00a76.1\u20136.2; Q4 Incident Register; SOC 2 Readiness Checklist \u00a73.2 | The policy requires timely customer communication for data breaches, service impacts, and model integrity incidents. **INC-2025-604** is described as a prompt injection attack where system prompts for three customer deployments were extracted and was \u201cclassified as data breach per customer agreements.\u201d The readiness checklist specifically notes that customer notification timing for INC-2025-604 \u201cneeds documentation.\u201d The evidence provided does not demonstrate when affected customers were notified, what was communicated, or whether the notification met policy requirements. For **INC-2025-605**, customer notification is documented in the exception register, so that incident is not a gap. | Medium |\n| 4 | **Preventive action item governance is not sufficiently evidenced** | Incident Response Policy \u00a75.3; Q4 Incident Register; SOC 2 Readiness Checklist \u00a73.2 | The policy requires post-mortem action items to be entered in Linear within 2 business days, reviewed weekly, and escalated if overdue. Several significant incidents have low completion rates: **INC-2025-601: 6 of 8 completed**, **INC-2025-604: 2 of 6 completed**, and **INC-2025-605: 3 of 10 completed**. The evidence does not show owners, due dates, weekly review records, or escalation for overdue items. This weakens the remediation component of CC7.3 because incident learnings may not be converted into completed preventive actions. | Medium |\n\n---\n\n## Items Reviewed That Do Not Appear to Be Findings\n\n- **INC-2025-605 resolution SLA extension:** The P1 resolution target was extended from 24 hours to 72 hours through documented approval by the CEO, with compensating controls and customer coordination. The incident was resolved within the extended SLA, so the resolution timing is not a gap.\n\n- **INC-2025-608 P3 triage timing:** Although the raw triage time was 345 minutes, P3 coverage is business-hours based. The incident was detected outside business hours and triaged before the next business day window, so this does not appear to violate the policy.\n\n- **Q4 infrastructure patching report:** This relates more directly to vulnerability management and system maintenance, not CC7.3 incident response execution. It should not be relied on as primary evidence for this control.\n\n- **SOC 2 readiness checklist:** This is useful as an internal preparation artifact and corroborates some known gaps, but it is not direct evidence of control operating effectiveness."
+}

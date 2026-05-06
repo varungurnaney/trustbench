@@ -1,0 +1,78 @@
+{
+  "task_id": "cc6.6-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:01:39.715563",
+  "score": {
+    "task_id": "cc6.6-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.25,
+    "precision": 0.1111111111111111,
+    "f1": 0.15384615384615383,
+    "score": 0.15384615384615383,
+    "gaps_detected": 1,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "admin API",
+          "bypass",
+          "API Gateway",
+          "WAF",
+          "SEC-EXC-2025-031",
+          "compensating controls"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "Q4 observation period",
+          "quarterly penetration testing"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "certificate inventory",
+          "Vault PKI"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "VPN CIDR",
+          "100.64.0.0/10"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 9173,
+    "output_tokens": 2895
+  },
+  "raw_response": "## Overall CC6.6 Readiness Assessment\n\nApex Fintech has a generally well-defined and mature boundary architecture: segmented VPCs, CloudFront/WAF/API Gateway for customer traffic, VPN-based administrative access, mTLS for internal communications, logging to Splunk, GuardDuty/IDS coverage, and quarterly penetration testing requirements. The Q3 penetration test also supports that the primary internet-facing boundary controls are operating effectively, with no critical or high findings.\n\nHowever, for the Q4 2025 observation period, CC6.6 is **not fully ready without remediation or additional evidence**. The most significant issue is the admin API path that bypasses the standard WAF/API Gateway boundary and appears to be used routinely, not only for emergency access. This risk has been formally accepted per the penetration test report, which reduces severity, but the auditor would still expect evidence of compensating controls during Q4. In addition, December 2025 log coverage and Q4 penetration test evidence were not provided.\n\nNo Critical or High findings were identified based on the evidence provided. The gaps below are primarily Medium and Low severity.\n\n---\n\n## Findings\n\n| # | Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|-------|----------------------------|----------------|----------|\n| 1 | Admin API Bypasses Standard WAF/API Gateway Boundary | Network Architecture \u2014 \u201cTraffic Flow \u2014 Admin API\u201d; Security Policy \u00a73.2 DMZ Architecture and \u00a73.5 Emergency Administrative Access; Pen Test Finding CS-APXF-2025-002 | The admin API is reachable directly through VPN to an internal ALB and does not traverse CloudFront, WAF, or Kong API Gateway. This means it lacks the standard external boundary protections such as WAF inspection, bot detection, centralized gateway enforcement, rate limiting, and schema validation. The Q3 pen test identified this as a Medium finding and the risk was accepted under SEC-EXC-2025-031. While compensating controls are described \u2014 VPN, Okta MFA, mTLS, logging, and IP allowlisting \u2014 the evidence provided does not include the actual exception record, VPN ACLs, mTLS policy evidence, admin API authorization configuration, rate limits, or IDS rules specific to this path. | Medium |\n| 2 | Admin API Appears to Be Routine Operational Path, Not Emergency-Only | Security Policy \u00a73.5 Emergency Administrative Access; Network Architecture \u2014 Admin API traffic volume; API/admin access logs | The policy describes the admin API as an \u201cEmergency Administrative Access\u201d mechanism for production emergencies. However, the architecture document states approximately 12,500 admin API requests per day, and the logs show admin API traffic in every sampled period, consistently around 0.26%\u20130.31% of total traffic. This suggests the endpoint is used as a standing administrative interface rather than only for emergency access. Routine use increases the exposure of a path that bypasses the primary boundary stack. The policy should either be updated to reflect approved normal operational use or usage should be restricted and monitored against emergency-use criteria. | Medium |\n| 3 | Q4 Penetration Test Evidence Not Provided | Security Policy \u00a74.3 Penetration Testing; Q3 2025 CyberShield Penetration Test Report | The policy requires external penetration testing on a quarterly basis. The evidence provided includes the Q3 test covering July 14\u201325, 2025, with the next assessment scheduled for Q4 2025. However, no Q4 penetration test report, retest results, or management review evidence was provided for the October 1\u2013December 31, 2025 observation period. For CC6.6, quarterly testing is an important detective control validating boundary protection. Without Q4 evidence, the auditor cannot conclude the required quarterly boundary testing operated during the period. | Medium |\n| 4 | Incomplete Log Coverage for the Q4 Observation Period | API Gateway and Admin API Access Logs; Security Policy \u00a74.4 Boundary Monitoring | The provided access logs cover dates from October 1 through November 30, 2025, but the Q4 observation period runs through December 31, 2025. No December logs were provided. Additionally, the dataset appears to be sampled at selected dates and hours rather than continuous daily/hourly coverage, despite being described as \u201c30 days\u201d of logs. This limits the ability to validate that boundary controls operated consistently throughout Q4, including during December. | Medium |\n| 5 | Admin API Source Validation Is Limited to Broad VPN CIDR Evidence | Security Policy \u00a73.4 Administrative Access and \u00a73.5 Emergency Administrative Access; API/admin access logs | The logs show admin API source traffic from the Tailscale VPN CIDR `100.64.0.0/10`, and top source IPs are listed. However, the evidence does not demonstrate that access was limited to authorized users, approved Okta groups, or specific devices. The `100.64.0.0/10` CIDR is broad, and the logs only show top source IPs, not full source attribution, user identity, device posture, certificate identity, or successful/failed authorization outcomes. For CC6.6, stronger evidence is needed to prove the boundary is restricted to authorized administrative users, not merely to the VPN address space. | Medium |\n| 6 | Compensating Controls for Accepted Admin API Risk Not Fully Evidenced | Pen Test Finding CS-APXF-2025-002; Security Policy \u00a75 Exceptions | The Q3 penetration test states the admin API bypass risk was accepted by the CISO and documented in exception SEC-EXC-2025-031, expiring August 15, 2026. However, the actual exception record was not provided. The evidence also does not show quarterly review of the exception, business justification details, risk acceptance sign-off, or validation that compensating controls remain effective. The policy requires exceptions to include business justification, compensating controls, risk acceptance sign-off, and expiration date, and to be reviewed quarterly. | Low |\n| 7 | No Centralized Certificate Inventory for mTLS Boundary Controls | Network Architecture \u2014 \u201cCertificate Management\u201d; Security Policy \u00a73.3 Service-to-Service Communication | The architecture document states that no centralized certificate inventory is currently maintained and that certificate status is tracked per service in individual Vault PKI mounts. Since mTLS is a key control for internal boundary protection and administrative access, lack of centralized inventory reduces management\u2019s ability to demonstrate complete coverage, rotation status, expiration monitoring, and certificate revocation across production services. This is partially mitigated by Vault-managed 90-day certificates and Istio STRICT mTLS enforcement, so the severity is Low. | Low |\n| 8 | Network Architecture Documentation Contains Potential Subnet Definition Error | Network Architecture \u2014 \u201cVPC Layout\u201d | The production VPC table lists both `prod-data-1a` and `prod-data-1b` as `10.100.20.0/24`. In AWS, subnets in the same VPC cannot have overlapping CIDR ranges, so this appears to be a documentation error. Accurate network boundary documentation is important for CC6.6 because it supports understanding of segmentation, allowed flows, and boundary enforcement. This does not indicate a control failure by itself, but the architecture document should be corrected. | Low |\n| 9 | Firewall Rule Review Evidence Not Provided | Security Policy \u00a74.1 Firewall Rules | The policy states that default-deny security groups and NACLs are used, allowlists are reviewed monthly, and firewall changes require Security Engineering approval through the SEC-FIREWALL Jira workflow. No evidence was provided showing Q4 firewall rule reviews, security group/NACL configurations, route tables, or firewall change approvals. This is an evidence gap affecting the ability to confirm that boundary rules were maintained during the observation period. | Low |\n\n---\n\n## Conclusion\n\nApex Fintech\u2019s system boundary controls appear **generally well designed**, and the main customer-facing traffic path aligns with CC6.6 expectations: CloudFront, WAF, API Gateway, internal load balancing, segmented VPCs, VPN-based administrative access, mTLS, and monitoring.\n\nHowever, for SOC 2 readiness, Apex should address or provide additional evidence for the following before the Q4 audit:\n\n1. Provide Q4 penetration test results and remediation tracking.  \n2. Provide complete Q4 logs, including December, with full source/user attribution for admin API access.  \n3. Provide the formal exception record for the admin API bypass, including quarterly review evidence.  \n4. Clarify whether the admin API is emergency-only or an approved routine administrative interface.  \n5. Evidence compensating controls for the admin API, including VPN ACLs, Okta group restrictions, mTLS enforcement, request validation, rate limiting, and monitoring/alerting.  \n6. Provide Q4 firewall rule review and change approval evidence.  \n7. Correct network architecture documentation inaccuracies.  \n\nBased on the evidence provided, CC6.6 would be assessed as **partially met / needs remediation or supplemental evidence** for Q4 2025 readiness."
+}

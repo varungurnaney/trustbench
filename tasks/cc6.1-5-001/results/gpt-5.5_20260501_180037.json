@@ -1,0 +1,96 @@
+{
+  "task_id": "cc6.1-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-01T18:00:37.806570",
+  "score": {
+    "task_id": "cc6.1-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.8,
+    "precision": 0.4444444444444444,
+    "f1": 0.5714285714285714,
+    "score": 0.5714285714285714,
+    "gaps_detected": 4,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "USR-0179",
+          "USR-0180",
+          "HR",
+          "180",
+          "178"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "AWS",
+          "reviewer"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Derek Chung",
+          "weekend",
+          "Friday",
+          "Monday",
+          "termination",
+          "SLA",
+          "business hours"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "AR-Q4-001",
+          "AWS review",
+          "late",
+          "SLA"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "contractor",
+          "expiration"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 12705,
+    "output_tokens": 3979
+  },
+  "raw_response": "## Readiness Assessment Findings \u2014 CC6.1 Logical Access Controls\n\nOverall, Nimbus Health has a reasonably mature access control framework: a documented access control policy, centralized Okta identity management, MFA broadly enabled, quarterly access reviews performed, and termination records with disablement timestamps. However, the evidence shows several operating effectiveness issues, especially around downstream deprovisioning, shared/service accounts, and completeness of access review coverage. Given Nimbus Health handles PHI, certain gaps carry elevated risk.\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Terminated and former-user accounts remained active in downstream applications | Q4 Access Review Results \u2014 AR-Q4-001, AR-Q4-007, AR-Q4-009, AR-Q4-010; Access Control Policy \u00a7\u00a7 5.1, 6.1 | The Q4 access reviews identified multiple accounts that should already have been removed: a former contractor in AWS Production, two former BDRs in Salesforce, and two September-terminated employees still active in Jira/Confluence and Google Workspace. This indicates Okta disablement and/or HR termination workflows are not consistently propagating to all applications. Access reviews are detecting and remediating issues, but the preventive/offboarding control is not fully effective. | **High** |\n| 2 | One employee termination exceeded the 24-hour disablement SLA | Termination Log \u2014 TERM-Q4-004; Access Control Policy \u00a7 6.1 | Derek Chung\u2019s Okta account was disabled approximately 64 calendar hours after the termination effective time. The policy requires disabling within 24 hours and does not define the SLA as \u201cbusiness hours.\u201d The weekend staffing rationale may explain the delay, but it does not align with the written control. No weekend login activity was noted, which reduces impact, but the control did not operate as designed. | **Medium** |\n| 3 | Shared and service accounts in Okta are not adequately governed | Okta User Report \u2014 USR-0179 `platform-monitoring`, USR-0180 `demo-environment`; Access Control Policy \u00a7\u00a7 3.2, 3.4, 7.1 | Two active non-HR-matched accounts exist in Okta. `platform-monitoring` appears to be a service/integration account, and `demo-environment` is a shared functional account used for sales demos. The policy requires service accounts to be managed through CyberArk, assigned an owner, documented, and rotated every 90 days. The evidence does not show CyberArk management, credential rotation, or compensating controls. The shared demo account also weakens individual accountability. | **High** |\n| 4 | Production AWS access review was completed late and identified excessive access | Q4 Access Review Results \u2014 AR-Q4-001; Access Control Policy \u00a7 5.1 | The AWS Production access review was completed two business days past the 15-business-day SLA. More importantly, the review identified a former contractor account requiring revocation and a developer with excessive admin access. Because AWS Production is a highly sensitive environment, late review completion combined with actual inappropriate access increases risk. | **Medium** |\n| 5 | Access review reviewer assignments do not consistently match policy or evidence of delegation | Q4 Access Review Results; Access Control Policy \u00a7\u00a7 5.1, 5.2 | Several reviewers differ from the policy\u2019s named reviewer role. For example, Okta Admin Console was reviewed by an IAM Analyst rather than the IAM Team Lead, PagerDuty by a DevOps Engineer rather than the SRE Lead, and PostgreSQL by the Data Platform Lead rather than the Database Administration Lead. The policy allows authorized delegates, but the evidence does not show that these individuals were formally authorized delegates. | **Low** |\n| 6 | Quarterly access review scope appears incomplete for systems in policy scope | Access Control Policy \u00a7\u00a7 2, 5.1, 5.2; Q4 Access Review Results | The policy scope includes systems such as Slack and GitLab CI, but the Q4 access review evidence covers only 12 systems and does not include Slack, GitLab CI/CD, or a full Okta application-assignment review. Since CI/CD access can affect production and Slack may contain sensitive operational or customer information, the review population may be incomplete. | **Medium** |\n| 7 | Contractor lifecycle controls are not fully evidenced | Okta User Report \u2014 USR-0173 through USR-0178; Access Control Policy \u00a7 3.3 | Contractor accounts follow the required username suffix convention and have MFA enabled, but the evidence does not show designated account expiration dates aligned to contract end dates or monthly sponsor reviews. This is notable because the access review also found a former contractor account still active in AWS Production, suggesting contractor offboarding may not be consistently controlled. | **Medium** |\n| 8 | Access provisioning operating evidence was not provided | Access Control Policy \u00a7\u00a7 4.1, 4.2; Evidence package overall | The policy defines a ServiceNow-based access request workflow with manager approval, application owner approval for privileged/non-standard access, and provisioning confirmation. However, no access request samples, approval tickets, privileged access approvals, or provisioning audit trail were provided. As a result, operating effectiveness of access provisioning and least privilege cannot be concluded from the current evidence. | **Medium** |\n| 9 | Device collection or remote wipe evidence is incomplete for delayed collections | Termination Log \u2014 TERM-Q4-003, TERM-Q4-004; Access Control Policy \u00a7 6.1 | Monica Restrepo\u2019s device was returned three days after termination due to remote shipping, and Derek Chung\u2019s laptop was collected the following Monday after a Friday termination. The policy requires company-managed devices to be collected or remotely wiped. The evidence shows collection dates but does not show whether remote wipe, lock, or session invalidation was performed while devices remained outside company custody. | **Low** |\n\n## Materiality Assessment\n\nThe most significant issue is the presence of active accounts for terminated employees, former contractors, or users with inappropriate access in downstream applications. This suggests the logical access removal process is not consistently effective beyond Okta and may represent a **significant control deficiency**, particularly because the impacted systems include AWS Production, Google Workspace, Salesforce, and collaboration tools.\n\nThe shared/service account issue is also significant because it weakens accountability and may bypass normal identity lifecycle controls. For a healthcare entity handling PHI, non-human and shared accounts should be tightly controlled, vaulted, rotated, and monitored.\n\nThe late termination and late AWS review are less severe individually because compensating factors exist \u2014 no weekend login activity, remediation occurred, and reviews were completed \u2014 but they still indicate control design or operational gaps that should be remediated before audit reliance."
+}

@@ -1,0 +1,106 @@
+{
+  "id": "cc6.1-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.1",
+  "control_description": "The entity implements logical access security software, infrastructure, and architectures over protected information assets to protect them from security events to meet the entity's objectives.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/access-control-policy.md",
+      "type": "policy",
+      "description": "Stratos Cloud Solutions access control policy defining SSO, MFA, privileged access, and termination requirements"
+    },
+    {
+      "path": "evidence/aws-iam-report.csv",
+      "type": "config",
+      "description": "AWS IAM credential report showing all users, access keys, MFA status, and last activity dates as of December 30, 2025"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO-approved security exception register with compensating controls and review status"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/incident-response-plan.md",
+      "type": "policy",
+      "description": "Stratos Cloud Solutions incident response plan — not directly relevant to CC6.1 logical access controls"
+    },
+    {
+      "path": "evidence/change-management-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 change management records — not directly relevant to CC6.1"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Stratos Cloud Solutions covering Q4 2025 (October 1 - December 31, 2025). You have been provided with multiple evidence artifacts. Review all documents, cross-reference them, and assess compliance with CC6.1 (Logical Access Security). Not all documents may be relevant to this control. Identify genuine findings only — consider whether exceptions or compensating controls adequately address apparent gaps before flagging them.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "svc-datadog-apm has a static API key but has valid CISO exception with compensating controls",
+      "description": "The IAM report shows svc-datadog-apm with an access key created on 2025-04-20 that has not been rotated within the 90-day policy requirement (last rotated April 20, over 8 months ago). However, exception EXC-2025-031 in the exception register covers this exact scenario: the Datadog agent requires a static credential because it does not support OIDC federation. The exception is active (approved by CISO Wei Zhang on 2025-04-15, renewed October 1, expires 2026-04-01), and compensating controls include IP restriction to the monitoring VPC, read-only IAM policy scoped to CloudWatch and X-Ray, and weekly key usage auditing. A competent auditor should note the exception and move on.",
+      "evidence_sources": ["evidence/aws-iam-report.csv", "evidence/exception-register.csv"],
+      "expected_reasoning": "Static key for svc-datadog-apm → appears to violate 90-day rotation → check exception register → EXC-2025-031 is active with documented compensating controls → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["svc-datadog-apm", "EXC-2025-031", "exception", "compensating", "Datadog", "not a finding", "mitigated", "approved"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["finding", "gap", "violation", "deficiency"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Former employee rachel.nguyen has active IAM console access 45 days after termination",
+      "description": "The IAM report shows user rachel.nguyen with console login enabled, password last used December 15, 2025, and MFA active. Cross-referencing with the change management log (CHG-2025-Q4-018, November 1) reveals a note: 'Rachel Nguyen transition to Orbit Systems — transfer knowledge base access by Nov 15.' This implies Rachel left the company around November 1-15, yet her IAM console access was actively used on December 15, 2025 — approximately 30-45 days after departure. The exception register contains no exception for this user. Policy Section 6.1 requires Okta suspension within 4 hours and IAM removal within 24 hours of termination.",
+      "evidence_sources": ["evidence/aws-iam-report.csv", "evidence/change-management-log-q4.csv", "evidence/access-control-policy.md"],
+      "expected_reasoning": "rachel.nguyen console access used Dec 15 → change log shows departure around Nov 1-15 → no exception in register → 30-45 day gap → severe termination SLA violation.",
+      "detection_criteria": {
+        "required_keywords": ["rachel.nguyen", "terminated", "departure", "December 15", "November", "console", "active", "termination SLA"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "svc-jenkins-legacy has two active access keys, one unused since June 2025",
+      "description": "The IAM report shows svc-jenkins-legacy with two active access keys. Key 1 was created 2024-01-10 and last used June 8, 2025. Key 2 was created 2025-06-01 and last used December 29, 2025. Key 1 has been unused for over 6 months yet remains active — a clear rotation failure. Exception EXC-2025-019 in the register covers svc-jenkins-legacy for 'legacy CI/CD pipeline static credentials' but the exception's compensating controls specify 'key rotation every 90 days with old key disabled within 7 days of rotation.' The continued existence of Key 1 six months after Key 2 was created demonstrates the compensating control is not operating effectively.",
+      "evidence_sources": ["evidence/aws-iam-report.csv", "evidence/exception-register.csv"],
+      "expected_reasoning": "Two active keys → Key 1 unused since June → Key 2 created June → old key should have been disabled per exception compensating controls → compensating control failure → exception does not fully mitigate the risk.",
+      "detection_criteria": {
+        "required_keywords": ["svc-jenkins-legacy", "two active keys", "Key 1", "June", "rotation", "compensating control", "EXC-2025-019", "not operating"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "high",
+      "title": "IAM user marco.silva has AdministratorAccess policy attached directly, bypassing role-based controls",
+      "description": "The IAM report shows user marco.silva with the AWS-managed AdministratorAccess policy attached directly to the user (not via a group or role). Policy Section 3.3 requires all privileged access to be brokered through CyberArk with JIT access and session recording. Direct IAM policy attachment bypasses CyberArk entirely. marco.silva's last console login was December 28, 2025, indicating active use. The exception register has no entry for this user or this access pattern.",
+      "evidence_sources": ["evidence/aws-iam-report.csv", "evidence/access-control-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "marco.silva has AdministratorAccess attached directly → policy requires CyberArk JIT for privileged access → direct attachment bypasses all privileged access controls → no exception exists → policy violation.",
+      "detection_criteria": {
+        "required_keywords": ["marco.silva", "AdministratorAccess", "direct", "CyberArk", "bypass", "privileged", "no exception"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 3,
+    "tags": ["logical_access", "red_herring", "exception_register", "stale_credentials", "termination", "privileged_access", "noise_documents"]
+  }
+}

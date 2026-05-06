@@ -1,0 +1,89 @@
+{
+  "task_id": "cc6.1-4-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T18:47:12.550865",
+  "score": {
+    "task_id": "cc6.1-4-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 0.4615384615384615,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "svc-datadog-apm",
+          "EXC-2025-031",
+          "exception",
+          "compensating",
+          "Datadog",
+          "approved"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "rachel.nguyen",
+          "departure",
+          "November",
+          "active"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-jenkins-legacy",
+          "Key 1",
+          "June",
+          "rotation",
+          "compensating control",
+          "EXC-2025-019"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "marco.silva",
+          "AdministratorAccess",
+          "direct",
+          "CyberArk",
+          "bypass",
+          "privileged",
+          "no exception"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5199,
+    "output_tokens": 3988
+  },
+  "raw_response": "# CC6.1 Logical Access Security \u2014 Readiness Assessment Findings\n**Stratos Cloud Solutions | SOC 2 Type II | Q4 2025**\n\n---\n\n## Assessment Approach\n\nAll four artifacts were reviewed and cross-referenced. Exceptions in the exception register were evaluated against their compensating controls and coverage before flagging underlying issues. Documents labeled \"not directly relevant\" were still cross-referenced for corroborating or contradictory evidence.\n\n---\n\n## Summary Table\n\n| # | Title | Severity |\n|---|-------|----------|\n| F-01 | Rachel Nguyen IAM Account Active After Documented Departure | Critical |\n| F-02 | marco.silva Holds AdministratorAccess with No Group Affiliation and No Evident Role Justification | High |\n| F-03 | svc-jenkins-legacy Has Two Active Access Keys, One Unrotated Since Account Creation | High |\n| F-04 | svc-jenkins-legacy Retains PowerUserAccess After CI/CD Migration Completed | High |\n| F-05 | svc-backup-s3 Holds AmazonS3FullAccess \u2014 Overly Permissive for a Backup Service Account | Medium |\n| F-06 | svc-datadog-apm Access Key Unrotated Since Account Creation (April 2025) | Medium |\n| F-07 | svc-github-actions Uses Static IAM Access Key Rather Than Workload Identity Federation | Medium |\n| F-08 | root Account Password Used on December 20, 2025 \u2014 Outside Break-Glass Scope | Medium |\n| F-09 | Q4 Quarterly Access Review Not Evidenced as Completed Within Policy Timeline | Medium |\n| F-10 | svc-jenkins-legacy Lacks Registered CMDB Owner (Indirectly Evidenced) | Low |\n\n---\n\n## Detailed Findings\n\n---\n\n### F-01 \u2014 Rachel Nguyen IAM Account Active After Documented Departure\n**Severity: Critical**\n\n**Evidence Sources:** IAM Credential Report; CHG-2025-Q4-018\n\n**Detail:**\nChange record CHG-2025-Q4-018 documents that Rachel Nguyen transitioned to Orbit Systems (a separate organization) with a knowledge transfer completion date of November 15, 2025. As of the credential report dated December 30, 2025 \u2014 45 days after her documented departure \u2014 her IAM account (`rachel.nguyen`) remains:\n\n- **Password enabled:** `true`\n- **MFA active:** `true`\n- **Password last used:** `2025-12-15` \u2014 **30 days after her departure date**\n- **Attached policy:** `PowerUserAccess` (broad write access across most AWS services)\n\nPOL-AC-2025-003 \u00a76.1 requires Okta account suspension within 4 hours and IAM access key deactivation within 24 hours of termination notification. The account not only persists but shows active use post-departure, indicating either a failure of the offboarding process or an undocumented access continuation arrangement.\n\n**Gap:** An account for a departed employee with PowerUserAccess remained active and was used 30 days post-departure, with no evidence of authorized continuation. This represents a direct violation of the termination controls in \u00a76.1 and poses a significant unauthorized access risk to production systems.\n\n---\n\n### F-02 \u2014 marco.silva Holds AdministratorAccess with No Group Affiliation and No Evident Role Justification\n**Severity: High**\n\n**Evidence Sources:** IAM Credential Report; POL-AC-2025-003\n\n**Detail:**\nThe IAM credential report shows `marco.silva` with:\n\n- **Attached policy:** `AdministratorAccess` (full AWS account control)\n- **Groups:** `N/A` \u2014 the only human user with no group membership\n- **Access key 1 active:** `true`, last rotated `2025-11-15`, recently used `2025-12-28`\n- **MFA active:** `true`\n\nNo other human user holds AdministratorAccess; the CISO (`wei.zhang`) holds only `SecurityAudit`. The policy does not define an administrative role that would warrant standing `AdministratorAccess` outside of CyberArk JIT controls (\u00a73.3). Per \u00a73.3, privileged access to production systems must flow through CyberArk with JIT sessions, dual approval, and session recording \u2014 not persistent IAM-level administrator credentials.\n\nAdditionally, marco.silva has an active IAM access key, which is unusual for human users at Stratos (all other human users have no active keys). No exception exists in the register for this configuration.\n\n**Gap:** Standing `AdministratorAccess` via direct IAM attachment for a human user, combined with an active access key, bypasses the CyberArk privileged access controls required by \u00a73.3. The absence of group membership makes this account anomalous and harder to govern through RBAC. No justification or exception is documented.\n\n---\n\n### F-03 \u2014 svc-jenkins-legacy Has Two Active Access Keys, One Unrotated Since Account Creation\n**Severity: High**\n\n**Evidence Sources:** IAM Credential Report; Exception Register (EXC-2025-019); POL-AC-2025-003 \u00a73.4\n\n**Detail:**\n`svc-jenkins-legacy` has **two simultaneously active access keys**:\n\n| Key | Last Rotated | Last Used |\n|-----|-------------|-----------|\n| Key 1 | `2024-01-10` (account creation) | `2025-06-08` |\n| Key 2 | `2025-06-01` | `2025-12-29` |\n\n**Key 1 has never been rotated** \u2014 it dates to account creation in January 2024, nearly two years old. The approved exception EXC-2025-019 requires \"key rotation every 90 days with old key disabled within 7 days of rotation.\" The compensating control is therefore not being followed: Key 1 was last used in June 2025 and remains active rather than having been disabled.\n\nHaving two simultaneously active keys also suggests a rotation was initiated (Key 2 created June 2025) but Key 1 was never disabled as required by the compensating control. The exception's own terms are being violated.\n\n**Gap:** The core compensating control underpinning EXC-2025-019 \u2014 timely disablement of old keys after rotation \u2014 has not been implemented. Key 1 has been active for ~24 months without rotation. This undermines the exception's validity and leaves a long-lived static credential exposed.\n\n---\n\n### F-04 \u2014 svc-jenkins-legacy Retains PowerUserAccess After CI/CD Migration Completed\n**Severity: High**\n\n**Evidence Sources:** IAM Credential Report; CHG-2025-Q4-004; Exception Register (EXC-2025-019)\n\n**Detail:**\nCHG-2025-Q4-004 documents the completed migration of all 12 remaining pipelines from Jenkins to GitHub Actions, implemented October 28, 2025, with status `Completed`. Despite this, as of December 30, 2025:\n\n- `svc-jenkins-legacy` remains active with both access keys active and Key 2 last used `2025-12-29`\n- It retains `PowerUserAccess` \u2014 scoped by permission boundary per EXC-2025-019 but still broad\n- EXC-2025-019 was renewed on October 1, 2025 and extended to April 2026\n\nThe exception's business justification (legacy Jenkins CI/CD) has been eliminated by the completed migration. Continued active usage of this account after the migration raises questions about what it is being used for, and the exception should have been closed or its scope re-evaluated upon migration completion.\n\n**Gap:** A service account tied to a decommissioned system remains active with PowerUserAccess two months after the associated system was fully retired. The exception was renewed without apparent consideration of the migration completion, and no offboarding of the service account is documented.\n\n---\n\n### F-05 \u2014 svc-backup-s3 Holds AmazonS3FullAccess \u2014 Overly Permissive for Backup Function\n**Severity: Medium**\n\n**Evidence Sources:** IAM Credential Report; POL-AC-2025-003 \u00a73.4\n\n**Detail:**\n`svc-backup-s3` is attached to `AmazonS3FullAccess`, which grants permission to create, delete, and modify S3 buckets and objects across the account \u2014 including modifying bucket policies or deleting backups. For a service account whose function is backup operations, read and write access to specific backup buckets would be expected; full S3 administrative access (including `s3:DeleteBucket`, `s3:PutBucketPolicy`) is not consistent with least privilege principles.\n\nPOL-AC-2025-003 \u00a73.4 requires service accounts to follow least privilege. No exception exists for this account's permission scope. The account's access key was rotated October 15, 2025, and the account is actively used.\n\n**Gap:** The backup service account's permissions exceed what is required for its documented function, violating least privilege requirements. If compromised, the account could be used to delete or exfiltrate backup data.\n\n---\n\n### F-06 \u2014 svc-datadog-apm Access Key Unrotated Since Account Creation (April 2025)\n**Severity: Medium**\n\n**Evidence Sources:** IAM Credential Report; Exception Register (EXC-2025-031); CHG-2025-Q4-003\n\n**Detail:**\n`svc-datadog-apm` has a single active access key last rotated on `2025-04-20` \u2014 the account creation date. The account was created in April 2025, and as of December 30, 2025, the key is **8+ months old** with no rotation.\n\nEXC-2025-031 requires a compensating control of \"weekly key usage audit\" and is scoped to the Datadog APM use case. However, neither the exception nor policy \u00a73.4 waives the 90-day rotation requirement \u2014 the exception addresses the *use of static keys* (rather than OIDC federation), not the rotation cadence itself. CHG-2025-Q4-003 rotated Datadog API keys (Datadog-side) but this is distinct from rotating the IAM access key used by the agent.\n\n**Gap:** The IAM access key for svc-datadog-apm has not been rotated in 8+ months, violating the 90-day rotation requirement in \u00a73.4. The exception covers the use of static credentials but does not waive the rotation requirement.\n\n---\n\n### F-07 \u2014 svc-github-actions Uses Static IAM Access Key Rather Than Workload Identity Federation\n**Severity: Medium**\n\n**Evidence Sources:** IAM Credential Report; POL-AC-2025-003 \u00a73.4\n\n**Detail:**\n`svc-github-actions` has an active IAM access key (last rotated October 1, 2025). GitHub Actions natively supports OIDC-based workload identity federation with AWS, which eliminates the need for static long-lived credentials and is the AWS-recommended approach. POL-AC-2025-003 \u00a73.4 explicitly requires service accounts to \"use workload identity federation where supported.\"\n\nGitHub Actions' OIDC support is well-established and directly compatible with AWS IAM identity providers. No exception exists in the register for this account's use of static keys. The account was created in June 2025 \u2014 after the policy's February 2025 effective date \u2014 so the requirement applied at provisioning time.\n\n**Gap:** A service account was provisioned with static credentials for a platform (GitHub Actions) that supports workload identity federation, in direct violation of \u00a73.4. No exception has been approved. This is a policy compliance gap, not a compensated risk.\n\n---\n\n### F-08 \u2014 Root Account Password Used on December 20, 2025 \u2014 Outside Documented Break-Glass Scope\n**Severity: Medium**\n\n**Evidence Sources:** IAM Credential Report; Exception Register (EXC-2025-012); Access Control Policy \u00a73.3\n\n**Detail:**\nThe IAM credential report shows `root` account `password_last_used: 2025-12-20`. Exception EXC-2025-012 restricts root account use to \"break-glass scenarios only\" and states that \"all root usage triggers immediate SOC alert.\" The change log shows no emergency or break-glass event around December 20 \u2014 CHG-2025-Q4-017 (root MFA device rotation) was completed December 6, and the holiday freeze preparation (CHG-2025-Q4-019) was a December 20 change but does not require root access.\n\nWhile it is possible this login was for a legitimate undocumented purpose, no corresponding change record, incident, or break-glass log entry is present in the evidence. EXC-2025-012 requires quarterly root activity review, and the October 2025 review noted \"zero root logins in review period\" \u2014 this December login post-dates that review and will not be captured until the next cycle.\n\n**Gap:** Root account password use on December 20, 2025 is not corroborated by any change record or documented break-glass event in the evidence provided. Given EXC-2025-012's strict usage restriction, unexplained root logins represent an unresolved control gap pending documentation of the business justification.\n\n---\n\n### F-09 \u2014 Q4 Quarterly Access Review Not Evidenced as Completed Within Policy Timeline\n**Severity: Medium**\n\n**Evidence Sources:** CHG-2025-Q4-020; POL-AC-2025-003 \u00a75.1\n\n**Detail:**\nCHG-2025-Q4-020 (\"Year-end access review preparation\") was implemented December 22, 2025 \u2014 within the audit window \u2014 and describes generating access reports as *preparation* for the Q4 quarterly access review. No evidence of the completed access review (sign-off in ServiceNow, review output, or remediation actions) was provided.\n\nPOL-AC-2025-003 \u00a75.1 requires system owners to complete quarterly access reviews within 15 business days of initiation. If the Q4 review was initiated December 22 (the last day of the quarter), completion by January 12, 2026 would technically satisfy the 15-business-day SLA \u2014 but that falls outside the Q4 audit period. More significantly, several access anomalies identified in this assessment (rachel.nguyen, marco.silva) suggest that if a Q4 access review had been completed and functioning, these issues would have been identified and remediated within the period.\n\n**Gap:** No completed Q4 access review is evidenced within the audit period. The preparation change record does not demonstrate the review was conducted, and active access anomalies suggest the review either did not occur or was not effective.\n\n---\n\n### F-10 \u2014 svc-jenkins-legacy Lacks Verifiable CMDB Owner Registration\n**Severity: Low**\n\n**Evidence Sources:** IAM Credential Report; POL-AC-2025-003 \u00a73.4; Change Records\n\n**Detail:**\nPOL-AC-2025-003 \u00a73.4 requires all service accounts to be \"registered in the Stratos CMDB with a designated human owner.\" The CMDB itself was not provided as evidence. Cross-referencing available records: EXC-2025-019 lists David Park as requestor, suggesting informal ownership, but no CMDB registration artifact is available. Given F-04 (the account should have been decommissioned post-migration), the absence of clear ownership governance is a contributing factor to the account persisting after its purpose was eliminated.\n\n**Gap:** CMDB registration for service accounts cannot be confirmed from provided evidence. Auditors should request a CMDB extract for all service accounts to verify compliance with \u00a73.4.\n\n---\n\n## Evidence Gaps Noted (Not Findings)\n\nThe following items were noted as absent from the evidence package and should be requested to complete the assessment:\n\n| Item | Relevance |\n|------|-----------|\n| ServiceNow access request records | Would corroborate provisioning approvals for marco.silva and rachel.nguyen continuation |\n| CyberArk privileged session logs | Would support or refute whether marco.silva's admin access is managed through JIT |\n| CMDB service account registry | Required to verify \u00a73.4 ownership registration for all svc-* accounts |\n| SOC alert records for root login (Dec 20) | Would corroborate or refute legitimate break-glass use |\n| Completed Q4 access review sign-off | Required to evidence \u00a75.1 compliance |\n| Okta user lifecycle logs for rachel.nguyen | Would clarify whether Okta suspension occurred on schedule |\n\n---\n\n*Assessment prepared for readiness purposes only. Findings reflect conditions evidenced as of December 30, 2025 and should be validated against any additional evidence available.*"
+}

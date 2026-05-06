@@ -1,0 +1,84 @@
+{
+  "id": "cc7.2-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.2",
+  "control_description": "The entity monitors system components and the operation of those components for anomalies that are indicative of malicious acts, natural disasters, and errors affecting the entity's ability to meet its objectives; anomalies are analyzed to determine whether they represent security events.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/monitoring-policy.md",
+      "type": "policy",
+      "description": "Beacon Health security monitoring and alerting policy covering log collection, infrastructure monitoring, alerting, and log review procedures"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the security monitoring and alerting policy for Beacon Health and assess whether it adequately addresses SOC 2 CC7.2 requirements for monitoring and anomaly detection. Identify any gaps or missing elements that an auditor would flag.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No log retention period defined for any log source",
+      "description": "The monitoring policy does not specify retention periods for any of the log sources listed in Section 3.1. CC7.2 requires that monitoring data be available for analysis of security events, which implicitly requires logs to be retained for a sufficient period. Without defined retention, logs could be rotated or deleted before a security investigation requires them. For a healthcare organization handling EHR data, regulatory requirements (HIPAA) typically mandate minimum 6-year retention for audit logs. The absence of any retention period means the organization cannot demonstrate it maintains log data for an adequate duration.",
+      "evidence_sources": ["evidence/monitoring-policy.md"],
+      "expected_reasoning": "The auditor should scan the policy for retention period language and find none. Section 3.1 lists log sources but does not specify how long they are retained. No retention schedule, no minimum duration, no reference to regulatory requirements.",
+      "detection_criteria": {
+        "required_keywords": ["retention", "log retention", "duration", "retention period", "undefined", "missing", "Section 3.1", "HIPAA"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No monitoring of privileged activity or administrative actions",
+      "description": "Section 4.1 lists alert categories for application errors, resource exhaustion, SSL expiration, failed logins, and geographic access patterns, but does not include monitoring for privileged or administrative activity. There are no alerts for: privilege escalation, administrative account usage, configuration changes, database schema modifications, security group changes, IAM policy changes, or access to sensitive data stores. CC7.2 requires monitoring for anomalies indicative of malicious acts, and privileged account abuse is a primary attack vector. For a healthcare organization, monitoring administrative access to EHR data is critical.",
+      "evidence_sources": ["evidence/monitoring-policy.md"],
+      "expected_reasoning": "Section 4.1 covers operational and basic security alerts but omits privileged activity monitoring. CloudTrail logs are collected (Section 3.1) but no alerts are configured for administrative API activity. Database audit logs collect only slow queries (Section 3.1), not data access patterns or admin operations.",
+      "detection_criteria": {
+        "required_keywords": ["privileged", "administrative", "privilege escalation", "IAM", "configuration change", "admin", "missing", "not monitored"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Log review frequency undefined — uses vague 'periodically' language",
+      "description": "Section 5 states 'Security-relevant logs should be reviewed periodically to identify potential threats or anomalies.' This is vague and unenforceable. The word 'should' (instead of 'must') makes the requirement optional, and 'periodically' does not specify a cadence (daily, weekly, monthly). CC7.2 expects regular, documented review of monitoring data. Without a defined frequency, log review may not occur consistently, and the organization cannot demonstrate compliance with a regular review process.",
+      "evidence_sources": ["evidence/monitoring-policy.md"],
+      "expected_reasoning": "Section 5 uses 'should' and 'periodically' — both are weak language. The policy does not define who performs the review, how often, or what documentation is required. Compare to Section 4.2 where informational alerts are 'reviewed weekly' — suggesting weekly is the organization's cadence, but Section 5 does not commit to it.",
+      "detection_criteria": {
+        "required_keywords": ["periodically", "should", "vague", "undefined", "log review", "frequency", "Section 5", "cadence"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Database audit logging limited to slow queries only — no data access monitoring",
+      "description": "Section 3.1 states that database query logs collect 'slow query log only.' This captures performance-related queries but not security-relevant database activity such as: SELECT queries on sensitive tables (patient data, PHI), INSERT/UPDATE/DELETE operations on critical tables, DDL operations (schema changes), or privileged database operations (GRANT, REVOKE). For an EHR platform, database-level monitoring of data access patterns is essential for detecting unauthorized access to patient health information.",
+      "evidence_sources": ["evidence/monitoring-policy.md"],
+      "expected_reasoning": "The database log collection is limited to slow queries, which is a performance diagnostic tool, not a security monitoring tool. An attacker with database access could read or modify patient records without generating a slow query alert. Full database activity monitoring (DAM) is expected for healthcare applications handling PHI.",
+      "detection_criteria": {
+        "required_keywords": ["slow query", "database", "data access", "PHI", "patient", "SELECT", "audit", "monitoring gap"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["monitoring_policy", "log_retention", "privileged_activity", "healthcare", "EHR", "single_document"]
+  }
+}

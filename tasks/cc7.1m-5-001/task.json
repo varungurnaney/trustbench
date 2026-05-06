@@ -1,0 +1,91 @@
+{
+  "id": "cc7.1m-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "The entity maintains system components, including application, database, and operating system software, to meet the entity's objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/maintenance-policy.md",
+      "type": "policy",
+      "description": "Sentinel Infrastructure Corp maintenance policy with detailed overdue maintenance escalation thresholds and explicit statement that normal operation does not exempt equipment from preventive maintenance"
+    },
+    {
+      "path": "evidence/equipment-maintenance-logs-q4-2025.csv",
+      "type": "log",
+      "description": "Equipment maintenance logs for Q4 2025 with 14 entries showing quarterly and monthly preventive maintenance activities with 3 overdue items"
+    },
+    {
+      "path": "evidence/system-uptime-reports-q4-2025.csv",
+      "type": "report",
+      "description": "Monthly uptime reports showing 100% availability for all physical infrastructure equipment throughout Q4 2025"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II audit of Sentinel Infrastructure Corp for Q4 2025 (October 1 - December 31, 2025). Review the maintenance policy, equipment maintenance logs, and system uptime reports. Assess whether CC7.1 maintenance requirements are met. The uptime reports show 100% availability for all equipment — determine whether this is sufficient to demonstrate maintenance adequacy, or whether preventive maintenance gaps exist despite operational equipment. Consider the policy's explicit guidance on the relationship between operational status and maintenance compliance.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Three pieces of critical infrastructure have overdue quarterly maintenance for 86 days despite policy's explicit requirement that normal operation does not exempt from maintenance",
+      "description": "EML-712 (PDU-DC-A1), EML-713 (PDU-DC-B1), and EML-714 (GEN-DC-02) all show quarterly preventive maintenance overdue by 86 days. Last maintenance was October 4; next scheduled January 4 (quarterly = 90 days). All three are functioning normally per uptime reports (100% availability). However, policy Section 5.3 explicitly states: 'Equipment that is functioning normally does NOT exempt it from preventive maintenance requirements. Preventive maintenance is designed to detect degradation before failure occurs.' The specific maintenance activities skipped are consequential: (1) PDU thermal imaging — without this, potential hot spots from overloaded circuits or failing connections could go undetected until a fire or circuit trip occurs; (2) Generator 30-minute load test — the weekly 5-minute self-test confirms the generator starts but does not test sustained load capacity, which is the actual failure mode during a power outage; (3) Generator oil change and fuel contamination check — fuel contamination can cause generator failure precisely when it is needed most (during a real power outage after sitting idle). The maintenance was deferred because the December MW-EQUIP window was consumed by other work, revealing a capacity constraint — the single monthly equipment window cannot accommodate all quarterly maintenance when it coincides. No escalation per Section 5.2 was filed despite the thresholds being approached.",
+      "evidence_sources": [
+        "evidence/equipment-maintenance-logs-q4-2025.csv",
+        "evidence/maintenance-policy.md",
+        "evidence/system-uptime-reports-q4-2025.csv"
+      ],
+      "expected_reasoning": "The auditor should recognize that 100% uptime does not equal maintenance compliance. The policy explicitly addresses this (Section 5.3). The specific skipped activities (thermal imaging, 30-min load test, oil change, fuel sample) are designed to detect latent failures before they manifest. A PDU hot spot or generator with contaminated fuel would show 100% uptime right until the moment of catastrophic failure. The 5-minute generator self-test is necessary but not sufficient — it tests starting, not sustained load. The maintenance window capacity constraint (one MW-EQUIP per month) is a systemic issue.",
+      "detection_criteria": {
+        "required_keywords": ["PDU-DC-A1", "PDU-DC-B1", "GEN-DC-02", "86 days", "overdue", "Section 5.3", "functioning normally", "does NOT exempt", "thermal imaging", "30-minute load test", "5-minute self-test", "preventive maintenance"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "HVAC refrigerant pressure trending downward over 3 months — potential slow leak unaddressed",
+      "description": "The HVAC maintenance logs for HVAC-DC-A1 show refrigerant pressure declining over 3 months: 225 PSI (October), 222 PSI (November), 218 PSI (December). The spec range is 200-250 PSI, so all readings are within specification. However, the 7 PSI decline (3.1%) over 3 months represents a consistent downward trend that suggests a slow refrigerant leak. At this rate, the pressure would drop below the 200 PSI minimum in approximately 7-8 months. The December maintenance note acknowledges the trend ('Refrigerant pressure trending down but within 200-250 PSI spec range') and the uptime report notes it, but no investigation or corrective action is documented. Policy Section 5.3 states preventive maintenance is designed to 'detect degradation before failure occurs' — this is exactly the type of trend that should trigger investigation. A refrigerant leak, if unaddressed, could lead to HVAC failure during a heat event, jeopardizing server cooling in Data Center A. This is a judgment call: the readings are within spec, but the trend is concerning and the lack of investigation contradicts the policy's preventive intent.",
+      "evidence_sources": [
+        "evidence/equipment-maintenance-logs-q4-2025.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should observe the downward trend in refrigerant pressure across three consecutive monthly maintenance records: 225, 222, 218 PSI. While each individual reading is within the 200-250 PSI spec, the consistent decline suggests a slow leak. Preventive maintenance should detect and address degradation trends, not just confirm current-state compliance with specifications. The maintenance technician noted the trend but took no corrective action.",
+      "detection_criteria": {
+        "required_keywords": ["HVAC-DC-A1", "refrigerant pressure", "225", "222", "218", "trending down", "200-250 PSI", "slow leak", "Section 5.3", "degradation"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "UPS-DC-B1 battery cells below recommended voltage with replacement parts ordered but no risk tracking",
+      "description": "EML-703 (October 4) shows UPS-DC-B1 has 5 battery cells (B3-12 through B3-16) reading 12.2V against a spec minimum of 11.8V and recommended minimum of 12.5V. The assessment notes 'Estimated remaining life: 6-8 months' and 'Replacement parts ordered — delivery expected January 2026.' While the cells are above the minimum specification and replacement is planned, there is no risk acceptance or exception documented for operating a UPS with degraded batteries. The next quarterly maintenance is January 4 — if the replacement parts arrive on schedule, the cells will be replaced. However, between October 4 and January, the UPS has been operating with 5 cells below recommended voltage. Under a sustained power outage requiring full UPS runtime, these cells could fail earlier than expected, reducing the UPS runtime below the designed capacity. The uptime report shows 100% availability because no power outage occurred — but UPS maintenance is about ensuring the UPS will function when needed.",
+      "evidence_sources": [
+        "evidence/equipment-maintenance-logs-q4-2025.csv",
+        "evidence/maintenance-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note that EML-703 identified degraded battery cells in October but the replacement is scheduled for January — a 3-month gap where the UPS operates with known degraded cells. No risk assessment or exception was filed. The cells are above minimum spec (11.8V) but below recommended (12.5V). The distinction between 'functioning within minimum spec' and 'functioning at recommended capacity' is important for a UPS that must provide emergency runtime.",
+      "detection_criteria": {
+        "required_keywords": ["UPS-DC-B1", "B3-12", "12.2V", "12.5V recommended", "11.8V minimum", "replacement", "January 2026", "degraded", "6-8 months", "no risk acceptance"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 3,
+    "relevant_documents_count": 3,
+    "tags": ["system_maintenance", "equipment_maintenance", "overdue", "judgment", "uptime_vs_maintenance", "preventive", "degradation", "generator", "PDU", "HVAC", "UPS"]
+  }
+}

@@ -1,0 +1,65 @@
+{
+  "task_id": "cc6.6-4-002",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:26:15.586957",
+  "score": {
+    "task_id": "cc6.6-4-002",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3333333333333333,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "reconciliation"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "SEC-EXC-2025-009",
+          "expired",
+          "still active",
+          "staging",
+          "production"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "management",
+          "route table",
+          "security group"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3559,
+    "output_tokens": 1358
+  },
+  "raw_response": "Certainly! Below are specific findings from the review of Stratos Payments' controls and evidence for CC6.6 (system boundary protection), with cross-references to the documents provided.\n\n---\n\n### 1. **Residual Cross-VPC Peering Between Production and Staging**\n- **Document Section(s):**\n    - Network Boundary and Segmentation Policy (Section 3.3)\n    - VPC Peering Configuration Export\n    - Security Exception Register (SEC-EXC-2025-009)\n- **Gap Description:**\n    - The policy **explicitly prohibits peering between Production and Staging/Development** except by formal, time-limited exception. Exception SEC-EXC-2025-009, which granted this access for a database migration, **expired on 2025-10-17** and is tagged 'Expired' in the register. However, the **VPC peering configuration export (as of 2025-12-20) shows the production\u2013staging peering connection still ACTIVE** with full TCP access (0-65535) between the two VPCs.\n- **Why this is a gap:**\n    - Allowing this connection to persist after the exception\u2019s expiration violates the policy\u2019s segmentation requirements. It increases the risk that less controlled staging environments (test data, ephemeral code, etc.) could be leveraged by threats to access production systems. There is no evidence of retraction, disabling, or removal.\n- **Severity:** **High**\n    - The ongoing peering presents a material risk to the system boundary and is out of step with both policy and best practice.\n\n\n---\n\n### 2. **Egress Allowlist Registry Implemented and Aligned With Policy**\n- **Document Section(s):**\n    - Network Boundary and Segmentation Policy (Section 6.1)\n    - Production Egress Allowlist Registry\n- **Gap Description:**  \n    - No gap found. The egress controls are comprehensive, with clear business justification, approvals, and regular reviews. All required fields are documented and the listed destinations are reasonable.\n- **Severity:** **N/A (Positive control, no finding)**\n- **Note:**  \n    - Include as evidence of effective control for your overall CC6.6 narrative.\n\n\n---\n\n### 3. **Expired Security Exceptions Properly Tracked (but Remediation Delays)**\n- **Document Section(s):**\n    - Security Exception Register\n    - VPC Peering Configuration Export\n- **Gap Description:**\n    - The security exception register **correctly logs expired exceptions, including cross-VPC peering** (SEC-EXC-2025-009), and shows quarterly review. However, the residual configuration in the technical environment (see Finding #1) was not timely remediated. There is **no evidence of automated monitoring to ensure expired exceptions result in removal of temporary controls** in cloud configuration.\n- **Why this is a gap:**\n    - The process for **timely removal of technical controls associated with expired exceptions** is either lacking or insufficiently enforced, leading to ongoing exposures.\n- **Severity:** **Medium**\n    - The tracking process works, but weak integration with cloud configuration/remediation raises risk.\n\n\n---\n\n### 4. **Direct Internet Access Controls Aligned, with Proper Exception Handling**\n- **Document Section(s):**\n    - Network Boundary and Segmentation Policy (Section 6.2)\n    - Security Exception Register (SEC-EXC-2025-008)\n- **Gap Description:**  \n    - No gap. The only exception for direct internet egress (ML training node) is expired and remediation is confirmed (\u201cML training migrated to SageMaker with managed egress\u201d).\n- **Severity:** **N/A (Positive control, no finding)**\n- **Note:**  \n    - Supports effective implementation of CC6.6 and closure of known exposure.\n\n\n---\n\n### 5. **No Evidence of Automated Expiration Handling for Boundary Changes**\n- **Document Section(s):**\n    - Security Exception Register\n    - VPC Peering Configuration Export\n- **Gap Description:**\n    - There is **no indication that boundary-related changes** (e.g., opening peering, special security group rules) are **automatically rolled back or flagged at expiration**. The fact that an expired exception's peering remains active months after expiration suggests that exceptions are managed manually.\n- **Why this is a gap:**\n    - Reliance on manual processes for critical boundary enforcement invites human error and delayed risk mitigation.\n- **Severity:** **Medium**\n\n\n---\n\n### 6. **Management VPC Peering Limited and In-Scope with Policy**\n- **Document Section(s):**\n    - Network Boundary and Segmentation Policy (Section 3.3)\n    - VPC Peering Configuration Export\n- **Gap Description:**  \n    - No gap found. Management\u2013Production peering is tightly scoped to permitted subnets and ports (monitoring, logging only), matching policy Section 3.3.\n- **Severity:** **N/A (Positive control, no finding)**\n\n\n---\n\n## **Summary Table**\n\n| Title                                              | Section(s)                                       | Why It\u2019s a Gap                                                                                                                                      | Severity |\n|----------------------------------------------------|--------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------|----------|\n| Residual Cross-VPC Peering Between Prod & Staging  | Policy 3.3, VPC Config, Security Exception Reg.   | Prohibited peering between Prod & Staging is still active after exception expired, exposing Prod environment to less controlled segments.           | High     |\n| Expired Security Exceptions Properly Tracked but No Timely Remediation | Security Exception Reg., VPC Config               | Exceptions tracked, but expired technical controls not quickly removed; no linkage between exception status and cloud config enforcement.           | Medium   |\n| No Automated Expiration Handling for Boundary Changes | Exception Register, VPC Config                   | Manual process for boundary rollback\u2014no evidence of technical controls rolling back at exception expiration, risking prolonged exposure.            | Medium   |\n\n---\n\n## **Remediation Recommendations**\n1. **Immediately decommission the expired production\u2013staging VPC peering and associated security group or route table configurations.**\n2. **Implement an automated linkage between the exception register\u2019s expiration date and cloud infrastructure changes, so expired exceptions trigger technical rollback.**\n3. **Enhance quarterly/periodic reviews to include reconciliation of exception register and active cloud configuration (infrastructure-as-code/drift detection).**\n\n---\n\n**Conclusion:**  \nStratos Payments has strong policies and procedural controls. However, technical enforcement lags behind policy, resulting in lingering risky configurations. These should be resolved for SOC 2 CC6.6 alignment."
+}

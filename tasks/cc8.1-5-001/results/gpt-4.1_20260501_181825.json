@@ -1,0 +1,89 @@
+{
+  "task_id": "cc8.1-5-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:18:25.462855",
+  "score": {
+    "task_id": "cc8.1-5-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5555555555555556,
+    "f1": 0.7142857142857143,
+    "score": 0.7142857142857143,
+    "gaps_detected": 5,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-414",
+          "94.2%",
+          "flaky"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-415",
+          "CAB"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-406",
+          "CHG-418",
+          "rollback"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "CHG-409",
+          "staging"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "FLAKY-028",
+          "BEACON-4892",
+          "remediation SLA"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7578,
+    "output_tokens": 1701
+  },
+  "raw_response": "Certainly! Here is a structured list of findings after reviewing all provided Q4 2025 evidence (policy, automated test results, and deployment log) for SOC 2 CC8.1 change management. Each includes a title, affected policy section, rationale, and severity **with contextual analysis**\u2014including judgments about whether observed practice constitutes a true gap.\n\n---\n\n### 1. **CAB Approval Delegation During Holiday (CHG-415)**\n- **Section:** Change Management Policy \u00a74.4 (CAB Approval), Deployment Log (CHG-415)\n- **Gap:** The policy specifies CAB composition and regular approval process, but CHG-415 was approved by an Engineering Manager as a delegate (with verbal authorization from CAB chair) due to the CAB not convening during a holiday week. No formal written delegation is referenced in the policy, and approval was not documented by the full CAB or an alternate process.\n- **Severity:** **Low**\n  - **Contextual Judgment:** This deviation was operationally reasonable (unplanned absence of CAB due to holidays) and included verbal consent from the CAB chair. The change was not high risk. However, lack of formal process or documentation for CAB delegation could create ambiguity in more impactful cases.\n\n---\n\n### 2. **Flaky Tests Causing Staging Failures Below Threshold (CHG-414)**\n- **Section:** Change Management Policy \u00a74.3 (Staging Environment Testing), Automated Test Results, Deployment Log (CHG-414)\n- **Gap:** Policy mandates a 98% overall test pass rate for staging. In CHG-414, pass rate dropped to 94.2% wholly due to 7 tracked flaky tests (Kafka integration), all already under remediation (see BEACON-4892, BEACON-5011). CAB approved deployment with open acknowledgment of known flakiness.\n- **Severity:** **Low**\n  - **Contextual Judgment:** Transparent risk-based decision with documentation and tracking. Critical tests passed; failures were not regressions but persistent environmental issues. Control intent upheld; would rise to **Medium** if untracked or unmitigated flakiness propagated to multiple high-risk areas without plan.\n\n---\n\n### 3. **Emergency Change: Staging/Test Bypassed (CHG-409)**\n- **Section:** Change Management Policy \u00a75 (Emergency Change), Deployment Log (CHG-409)\n- **Gap:** Emergency change for critical XSS vulnerability bypassed staging environment and CAB approval. However, the policy allows this in emergencies, requiring retrospective CAB review (which occurred), and peer review and testing were still performed.\n- **Severity:** **Not a Gap**\n  - **Reasoning:** Practice aligned with documented policy. No finding. **Documenting for transparency but not a deficiency.**\n\n---\n\n### 4. **Rollbacks Initiated per Policy (CHG-406, CHG-418)**\n- **Section:** Change Management Policy \u00a74.6 (Rollback Criteria), Deployment Log (CHG-406, CHG-418)\n- **Gap:** Rollback criteria were triggered (latency, pod errors) and properly executed. Deployment log shows clear rollback action with rationale and follow-up change.\n- **Severity:** **Not a Gap**\n  - **Reasoning:** This demonstrates the effectiveness of the change management process. Control operated as intended\u2014no violation.\n\n---\n\n### 5. **Flaky Tests Persistently Exceeding Remediation SLA**\n- **Section:** Automated Test Results \"Flaky Test Registry\"\n- **Gap:** Three flaky Kafka-related tests (FLAKY-028, -029, -030) have been open >100 days, exceeding the stated remediation SLA of 30 days. These contribute to recurring test failures and, by exception, allow deployments with lower pass rates.\n- **Severity:** **Medium**\n  - **Contextual Judgment:** While risks are tracked, SLA violation weakens the reliability of the automated test gate\u2014raising the likelihood of missing genuine regressions within \"flaky\" areas. If flakiness remains unaddressed for many months, it could undermine the integrity of Change Management controls, especially if the exception process becomes routine. Mitigation: Continue transparent tracking and remediate blockers.\n\n---\n\n### 6. **CAB Composition Change Not Yet Documented in Policy**\n- **Section:** Change Management Policy Revision History, Deployment Log\n- **Gap:** CAB composition was updated in v4.0 (August 2025) to include Product Manager for customer-impacting changes, but deployment log for CHG-415 lists the Engineering Manager as CAB approver in absence of the full CAB, with verbal delegation. The updated policy requires documentation for alternate or delegated approvers, but in practice, documentation was weak for this ad-hoc approval.\n- **Severity:** **Low**\n  - **Contextual Judgment:** Mainly a documentation/process issue. Notably, the situation occurred just after a policy update\u2014minor lag in practice adoption highlighted.\n\n---\n\n### 7. **Deployment Outside Approved Windows (Emergency Change)**\n- **Section:** Change Management Policy \u00a75 (Emergency Change), Deployment Log (CHG-409)\n- **Gap:** Emergency deployment took place at 22:15 ET, outside normal windows. But per policy, window can be bypassed for emergencies (with retrospective review).\n- **Severity:** **Not a Gap**\n  - **Reasoning:** This is consistent with policy; not an exception in the control sense.\n\n---\n\n### 8. **Staging Stability Requirements Sometimes Exceeded, Not Less**\n- **Section:** Change Management Policy \u00a74.3 (Staging Stable for 2 Hours), Deployment Log (CHG-403, -410)\n- **Gap:** High-risk changes had extended staging (6\u20138 hours) before promotion. Policy sets a minimum (2 hours); exceeding it is allowed and is a conservative practice.\n- **Severity:** **Not a Gap**\n  - **Reasoning:** This is compliant and reflects proper risk management.\n\n---\n\n## **Summary Table (for clarity)**\n\n| # | Title                                                      | Section                                        | Why Gap / Context                                               | Severity  |\n|---|------------------------------------------------------------|------------------------------------------------|-----------------------------------------------------------------|-----------|\n| 1 | CAB Approval Delegation During Holiday                     | Policy \u00a74.4, Deployment Log (CHG-415)          | Ad hoc delegate, not formally documented per policy              | Low       |\n| 2 | Flaky Tests Causing Staging Failures Below Threshold       | Policy \u00a74.3, Test Results, Log (CHG-414)       | CAB approved with full risk visibility, but pass rate < threshold| Low       |\n| 3 | Emergency Change: Staging/Test Bypassed                    | Policy \u00a75, Deployment Log (CHG-409)            | Within emergency policy \u2014 not a gap                             | \u2013         |\n| 4 | Rollbacks Initiated per Policy                             | Policy \u00a74.6, Deployment Log                    | As required \u2014 demonstrates effective control                    | \u2013         |\n| 5 | Flaky Tests Persistently Exceeding Remediation SLA         | Test Results (Flaky Registry)                  | Some flakies >100d unresolved; SLA not met                      | Medium    |\n| 6 | CAB Composition Change Not Yet Documented in Policy        | Policy Revision, Deployment Log (CHG-415)      | Policy updated, but documentation on alternates is weak          | Low       |\n| 7 | Deployment Outside Approved Windows (Emergency Change)     | Policy \u00a75, Log (CHG-409)                       | Emergency exception matches policy                              | \u2013         |\n| 8 | Staging Stability Exceeded in Some Cases                   | Policy \u00a74.3, Deployment Log                    | Exceeding minimum requirement \u2014 conservative/compliant           | \u2013         |\n\n---\n\n### **Conclusion**\n- **No critical or high-severity control gaps.** All emergency actions matched documented exceptions. Most deviations were operationally justified and transparently handled.\n- **Primary area for improvement:** Address long-lived flaky tests and rigorously document delegated CAB approvals (especially in non-routine circumstances).\n- **No evidence of egregious or systemic policy bypassing.** The process is effective overall, with minor/documentation shortfalls and moderate long-lived test instability risk that, if left unaddressed, could become a more significant issue over time."
+}

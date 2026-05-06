@@ -1,0 +1,143 @@
+{
+  "task_id": "cc6.1-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-04-30T18:17:36.775763",
+  "scoring": {
+    "score": 1.0,
+    "detected": 4,
+    "total": 4,
+    "gaps": [
+      {
+        "gap_id": "gap-001",
+        "category": "access_revocation",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely",
+          "SLA",
+          "hours",
+          "immediate",
+          "revocation"
+        ],
+        "total_keywords": 7
+      },
+      {
+        "gap_id": "gap-002",
+        "category": "mfa_coverage",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "production",
+          "MFA",
+          "multi-factor",
+          "database",
+          "coverage",
+          "missing"
+        ],
+        "total_keywords": 7
+      },
+      {
+        "gap_id": "gap-003",
+        "category": "access_review_evidence",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "evidence",
+          "artifact",
+          "retention",
+          "format"
+        ],
+        "total_keywords": 7
+      },
+      {
+        "gap_id": "gap-004",
+        "category": "role_change_process",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "role change",
+          "manager",
+          "accumulation",
+          "previous"
+        ],
+        "total_keywords": 7
+      }
+    ]
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: CC6.1 Logical Access Security\n## NovaTech Solutions \u2013 Access Control Policy (POL-IAM-001 v3.2)\n\n## Overall Assessment\n\nThe policy demonstrates a reasonable foundation for logical access controls, addressing provisioning, authentication, periodic reviews, and privileged access management. However, several **material gaps** would likely be flagged during a SOC 2 Type II audit, particularly around MFA scope, termination timeliness, and evidentiary rigor. Below are the findings.\n\n---\n\n## Findings\n\n### Finding 1: Incomplete MFA Coverage\n- **Section:** 4.2 Multi-Factor Authentication\n- **Gap:** MFA is required only for VPN, AWS console, and email from non-corporate devices. CC6.1 expects MFA on all access to protected information assets, especially:\n  - Production systems and databases\n  - Privileged/administrator accounts\n  - Code repositories\n  - SaaS applications storing customer or sensitive data\n  - Email from corporate devices (a weak carve-out)\n- Auditors will view single-factor authentication for production access and admin accounts as a significant control weakness.\n- **Severity:** **High**\n\n---\n\n### Finding 2: Termination Access Removal Lacks Defined SLA\n- **Section:** 6.1 Termination\n- **Gap:** The policy states access \"should be removed in a timely manner\" without defining a measurable SLA (industry standard: within 24 hours, immediately for involuntary terminations). It also relies on **email notification** from HR, which is informal and not auditable. There is no requirement to disable access for all systems (only AD is referenced), no mention of session termination, token/key revocation, or removal from cloud IAM.\n- **Severity:** **High**\n\n---\n\n### Finding 3: Role Change Access Adjustment is Weak\n- **Section:** 6.2 Role Changes\n- **Gap:** Places responsibility on the \"previous manager\" with no defined timeline, no formal trigger mechanism, no validation step, and no requirement to remove access before granting new access. This commonly leads to **privilege accumulation (toxic combinations / SoD violations)** \u2014 a frequent SOC 2 finding.\n- **Severity:** **High**\n\n---\n\n### Finding 4: No Defined Source of Truth for User Inventory in Access Reviews\n- **Section:** 5.1 / 5.2 Access Reviews\n- **Gap:** The policy does not specify:\n  - Which systems are in scope for quarterly reviews (production, AWS IAM, databases, SaaS apps, code repos?)\n  - How completeness of the user list is validated\n  - Required evidence/artifacts (signed attestations, tickets for revocations)\n  - Escalation if a system owner fails to complete a review\n- Without this, auditors cannot verify the review is comprehensive or effective.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: Password Policy Conflicts with Modern Guidance, but More Importantly Lacks SSO/Federation Reference\n- **Section:** 4.1 Password Requirements\n- **Gap:** No mention of SSO/identity federation (e.g., Okta, Azure AD), which is foundational to centralized access control under CC6.1. Additionally, 90-day forced rotation contradicts NIST SP 800-63B guidance (which discourages periodic expiration in favor of breach-based resets) \u2014 not a failure, but worth modernizing. No mention of password storage/hashing requirements for in-house apps.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: No Mention of Network Segmentation or Infrastructure Controls\n- **Section:** Policy as a whole (CC6.1 covers \"infrastructure and architectures\")\n- **Gap:** CC6.1 explicitly references *\"infrastructure and architectures.\"* The policy is silent on:\n  - Network segmentation (production vs. corporate)\n  - Firewall/security group management\n  - Bastion/jump host requirements\n  - VPN configuration standards\n  - Endpoint requirements for accessing production\n- These may live in other documents, but the policy should reference them.\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: Monitoring Scope is Insufficient\n- **Section:** 7. Monitoring\n- **Gap:** Only failed logins are addressed. Missing:\n  - Monitoring/alerting on successful privileged logins\n  - Anomalous access patterns (impossible travel, off-hours access)\n  - Alerting thresholds and incident escalation paths\n  - SIEM integration references\n  - Log retention period (only privileged session retention is specified)\n- Weekly manual log review is unlikely to detect timely security events.\n- **Severity:** **Medium**\n\n---\n\n### Finding 8: No Service Account / Non-Human Identity Management\n- **Section:** 3.3 Privileged Access (and absent elsewhere)\n- **Gap:** The policy prohibits shared accounts but does not address:\n  - Service accounts / API keys / machine identities\n  - Ownership and rotation requirements\n  - Inclusion in periodic access reviews\n  - Secret management (e.g., AWS Secrets Manager, Vault)\n- Service account sprawl is a top CC6.1 finding.\n- **Severity:** **Medium**\n\n---\n\n### Finding 9: Exception Process Lacks Lifecycle Management\n- **Section:** 8. Exceptions\n- **Gap:** While CISO approval and documentation are required, the policy lacks:\n  - Maximum exception duration / expiration\n  - Periodic review of active exceptions\n  - Centralized exception register\n- Auditors will request the exception log; without lifecycle management, exceptions become permanent.\n- **Severity:** **Low**\n\n---\n\n### Finding 10: No Reference to Onboarding/Background Checks or User Acknowledgment\n- **Section:** 3.1 New User Access\n- **Gap:** CC6.1 (and related CC6.2) expects access to be predicated on completed onboarding, including background checks and acceptance of acceptable use / security policies. The policy does not require these as preconditions to provisioning.\n- **Severity:** **Low**\n\n---\n\n### Finding 11: Provisioning SLA May Not Align with Approval Evidence\n- **Section:** 3.1 New User Access\n- **Gap:** \"2 business days\" SLA is fine, but the policy doesn't require that provisioning **only occur after** all required approvals are captured in ServiceNow, nor does it require IT to retain the ticket as evidence. Auditors will sample tickets and look for missing approvals.\n- **Severity:** **Low**\n\n---\n\n## Summary Table\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Incomplete MFA coverage | High |\n| 2 | Termination SLA undefined; informal notification | High |\n| 3 | Role change access adjustment lacks rigor | High |\n| 4 | Access review scope/evidence not defined | Medium |\n| 5 | No SSO reference; password practices outdated | Medium |\n| 6 | Infrastructure/network controls absent | Medium |\n| 7 | Monitoring scope too narrow | Medium |\n| 8 | Service accounts not addressed | Medium |\n| 9 | Exception lifecycle not managed | Low |\n| 10 | No background check / AUP linkage | Low |\n| 11 | Provisioning evidence requirements weak | Low |\n\n## Recommended Priority Remediations Before Audit\n1. Expand MFA to **all production, admin, and SaaS access** (Finding 1).\n2. Define **24-hour termination SLA** with automated HRIS \u2192 IAM workflow (Finding 2).\n3. Implement formal **role-change access review trigger** with revoke-before-grant (Finding 3).\n4. Document scoped quarterly access reviews with retained evidence (Finding 4).\n5. Add **service account governance** section (Finding 8).\n\nAddressing items 1\u20133 is essential before entering a Type II observation period.",
+  "score": {
+    "task_id": "cc6.1-1-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.36363636363636365,
+    "f1": 0.5333333333333333,
+    "score": 1.0,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "timely",
+          "SLA",
+          "hours",
+          "immediate",
+          "revocation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "production",
+          "MFA",
+          "multi-factor",
+          "database",
+          "coverage",
+          "missing"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "evidence",
+          "artifact",
+          "retention",
+          "format"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "role change",
+          "manager",
+          "accumulation",
+          "previous"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  }
+}

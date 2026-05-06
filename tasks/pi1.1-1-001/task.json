@@ -1,0 +1,71 @@
+{
+  "id": "pi1.1-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "PI1.1",
+  "control_description": "The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/sdlc-policy.md",
+      "type": "policy",
+      "description": "Meridian Software Inc. SDLC policy covering development phases, quality gates, release management, and security requirements"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the Software Development Lifecycle (SDLC) policy for Meridian Software Inc. Assess whether it adequately addresses SOC 2 PI1.1 requirements for ensuring complete, accurate, and timely processing. Identify any gaps or missing elements that an auditor would flag regarding processing integrity controls.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No peer code review requirement in the SDLC policy",
+      "description": "The SDLC policy defines development phases (Section 3), quality gates (Section 4.2), and a Definition of Done (Section 4.1) but does not require peer code review at any stage. There is no mention of pull request reviews, code review approvals, minimum reviewer counts, or any human review of code changes before merge or deployment. The Definition of Done in Section 4.1 lists six criteria (acceptance criteria met, unit tests pass, integration tests pass, SAST clean, documentation updated, PO acceptance) but none involve a peer reviewing the code. Without mandatory code review, defects affecting processing accuracy and completeness may reach production undetected. Automated testing and SAST alone cannot catch logic errors, incorrect business rule implementations, or architectural issues that a human reviewer would identify.",
+      "evidence_sources": ["evidence/sdlc-policy.md"],
+      "expected_reasoning": "The policy lists detailed quality gates and a Definition of Done but neither includes code review. Section 3.3 mentions feature branches and GitHub Enterprise but does not require pull request approvals. Section 4.1 has six completion criteria with no code review. Section 4.2 quality gates are all automated checks. This is a significant processing integrity gap — code changes can reach production without any human verification of correctness.",
+      "detection_criteria": {
+        "required_keywords": ["code review", "peer review", "pull request", "Definition of Done", "Section 4.1", "approval", "human review", "missing"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No input validation or data integrity requirements defined",
+      "description": "The SDLC policy does not include any requirements for input validation, output verification, or data integrity checks in application code. Section 6 covers secure coding, dependency management, and secrets management but does not address processing integrity controls such as input validation rules, data format verification, boundary checks, referential integrity enforcement, or reconciliation procedures. PI1.1 requires that the entity define what constitutes complete and accurate processing, which necessarily includes validating that inputs are well-formed and outputs are correct.",
+      "evidence_sources": ["evidence/sdlc-policy.md"],
+      "expected_reasoning": "Section 6 (Security Requirements) covers secure coding training and dependency scanning but never mentions input validation, output verification, or data integrity. For a policy governing how software is built, the absence of processing integrity controls means there is no standard for ensuring applications process data completely and accurately.",
+      "detection_criteria": {
+        "required_keywords": ["input validation", "data integrity", "output verification", "processing integrity", "Section 6", "missing", "complete", "accurate"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No data processing completeness verification or reconciliation requirement",
+      "description": "The policy does not define any mechanism for verifying that batch jobs, data pipelines, or transaction processing complete fully without data loss. There are no requirements for record count reconciliation, checksum verification, end-to-end processing confirmation, or alerting on incomplete processing. Section 3.6 mentions post-deployment monitoring using Datadog APM but this covers application performance, not data processing completeness. PI1.1 requires defining what constitutes complete processing, which should include mechanisms to detect when processing is incomplete.",
+      "evidence_sources": ["evidence/sdlc-policy.md"],
+      "expected_reasoning": "Section 3.6 addresses monitoring for bugs and performance but not for data processing completeness. There is no mention of reconciliation, record counts, idempotency requirements, or completeness checks. Applications could silently drop records or partially process transactions without detection.",
+      "detection_criteria": {
+        "required_keywords": ["completeness", "reconciliation", "record count", "batch", "data loss", "processing", "Section 3.6", "monitoring"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 6
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "8 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["processing_integrity", "SDLC", "code_review", "policy_review", "input_validation", "single_document"]
+  }
+}

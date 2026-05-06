@@ -1,0 +1,103 @@
+{
+  "id": "c1.1-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "C1.1",
+  "control_description": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/data-protection-policy.md",
+      "type": "policy",
+      "description": "Nextera Health Analytics data protection policy with HIPAA-specific requirements"
+    },
+    {
+      "path": "evidence/tls-endpoint-audit.csv",
+      "type": "config",
+      "description": "TLS endpoint audit showing all internal and external endpoints including the de-identification service on HTTP"
+    },
+    {
+      "path": "evidence/certificate-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Certificate inventory showing CERT-NHA-005 has no certificate for the de-identification service"
+    },
+    {
+      "path": "evidence/hipaa-risk-assessment-excerpt.md",
+      "type": "report",
+      "description": "Independent HIPAA risk assessment identifying the de-identification service PHI transmission gap with compensating controls and remediation timeline"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are a SOC 2 auditor evaluating Nextera Health Analytics' data protection controls under C1.1 and CC6.7. Nextera is a healthcare analytics company processing PHI under BAA agreements with healthcare providers. Review all evidence to assess encryption controls for confidential data protection. This assessment requires professional judgment on several issues: the materiality of internal network encryption gaps when compensating controls exist, the adequacy of HIPAA risk assessment findings for SOC 2 purposes, and whether identified gaps with remediation plans represent current control deficiencies or managed risks. Consider the heightened sensitivity of PHI data when making materiality assessments.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "De-identification service receives raw PHI over unencrypted HTTP despite policy requiring TLS for Restricted data",
+      "description": "The TLS audit shows deidentification-svc.internal.nextera-health.com runs on HTTP (port 8080) with no TLS. The certificate inventory confirms no certificate exists (CERT-NHA-005 shows 'No Certificate'). The HIPAA risk assessment (Section 7.3) confirms raw PHI (patient names, medical record numbers, diagnosis codes, dates of service) flows over this unencrypted channel. The policy (Section 5.2) requires TLS 1.2+ for all internal communications carrying Restricted data. The auditor must exercise judgment on severity: compensating controls exist (VPC isolation, security groups, flow logs, no public IP), the HIPAA risk assessment rates likelihood as Low but impact as High, and remediation is targeted for Q1 2026. However, for a SOC 2 assessment, the question is whether the control is 'operating effectively' — the answer is that the encryption control for this data flow is NOT operating because it does not exist. The risk assessment's acknowledgment of the gap and planned remediation do not change the current control status. For PHI data, this is a significant finding.",
+      "evidence_sources": ["evidence/tls-endpoint-audit.csv", "evidence/certificate-inventory.csv", "evidence/hipaa-risk-assessment-excerpt.md", "evidence/data-protection-policy.md"],
+      "expected_reasoning": "The auditor must distinguish between 'managed risk' and 'operating control.' The organization has identified the gap, assessed the risk, documented compensating controls, and planned remediation. This is responsible risk management. However, for SOC 2, the control (TLS encryption for PHI in transit) is definitively not operating for this data flow. The compensating controls reduce but do not eliminate the risk. A reasonable auditor would rate this high severity given it involves raw PHI, while acknowledging the organization's responsible handling (identification, compensating controls, remediation plan). The CISO-reviewed architecture and independent risk assessment demonstrate awareness but not control effectiveness.",
+      "detection_criteria": {
+        "required_keywords": ["deidentification", "de-identification", "HTTP", "PHI", "patient names", "medical record numbers", "unencrypted", "raw PHI", "CERT-NHA-005", "compensating", "remediation"],
+        "minimum_keyword_matches": 4,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "HIPAA addressable specification implemented but not fully enforced — internal inconsistency",
+      "description": "The policy (Section 5.4) explicitly states that Nextera has determined encryption is 'reasonable and appropriate' for all PHI transmissions and that the HIPAA encryption addressable specification is 'implemented, not documented-and-declined.' However, the de-identification service gap demonstrates that this commitment is not fully enforced. The auditor must assess whether this represents a policy integrity issue: the organization claims full implementation of an addressable specification that is demonstrably not fully implemented. This is not just a technical gap — it's a misrepresentation of the organization's HIPAA implementation status. A compensating control argument could be made, but the policy itself does not acknowledge the exception.",
+      "evidence_sources": ["evidence/data-protection-policy.md", "evidence/hipaa-risk-assessment-excerpt.md"],
+      "expected_reasoning": "The auditor faces a nuanced judgment. The policy claims the encryption addressable specification is 'implemented' — but it is not fully implemented. The HIPAA risk assessment identifies the gap, which shows the organization is aware. However, the policy was not updated to reflect this known gap. The question is whether the risk assessment's identification of the gap supersedes the policy's claim, or whether the policy should be updated to accurately reflect the current state. For SOC 2, the inconsistency between the policy statement and actual implementation is itself a control design issue.",
+      "detection_criteria": {
+        "required_keywords": ["addressable", "implemented", "not declined", "Section 5.4", "HIPAA", "inconsistency", "policy", "not fully", "de-identification"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Policy uses weak 'should' and 'where technically feasible' language for Confidential data internal encryption",
+      "description": "Policy Section 5.2 states 'Confidential data internal communications should use TLS where technically feasible' — using advisory rather than mandatory language. In a healthcare context where the boundary between Confidential and Restricted data can be fluid (a dataset may be reclassified when combined with other data), the weak language creates a gap where Confidential data could flow unencrypted internally without violating the policy. The 'technically feasible' qualifier further weakens the requirement by allowing any technical difficulty as justification for not implementing encryption. The auditor must assess whether this policy language provides sufficient control design for a healthcare analytics company.",
+      "evidence_sources": ["evidence/data-protection-policy.md"],
+      "expected_reasoning": "In a healthcare context, the boundary between Confidential and Restricted is particularly important. Data reclassification scenarios (e.g., combining datasets) could elevate Confidential to Restricted, and the weak policy language means the encryption control might not be in place when the reclassification occurs. The 'should' language is appropriate for general Internal data but concerning for Confidential data in a healthcare company. A reasonable auditor would recommend strengthening this to 'must' for Confidential data.",
+      "detection_criteria": {
+        "required_keywords": ["should", "where technically feasible", "Confidential", "Section 5.2", "weak language", "advisory", "mandatory", "healthcare"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Grafana monitoring certificate (CERT-NHA-007) requires manual renewal without auto-renewal",
+      "description": "The certificate inventory shows CERT-NHA-007 for grafana.internal.nextera-health.com has auto_renewal set to 'No' while all other internal certificates have auto-renewal enabled. The policy (Section 7) requires auto-renewal for all production certificates but does not explicitly extend this to internal certificates. The auditor must assess whether this is material: the service handles only Internal-classified data with no PHI, and the certificate doesn't expire until September 2026 (well outside the audit period). A reasonable auditor would note this as a minor observation for process consistency rather than a compliance finding.",
+      "evidence_sources": ["evidence/certificate-inventory.csv", "evidence/data-protection-policy.md"],
+      "expected_reasoning": "Certificate has no auto-renewal but: (1) it handles only Internal data, (2) no PHI exposure, (3) expiry is 9 months away, (4) policy only mandates auto-renewal for 'production' certificates. This is a minor consistency issue, not a compliance gap. A reasonable auditor would note it as an observation or recommendation, not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["CERT-NHA-007", "grafana", "auto_renewal", "No", "manual", "Internal", "minor", "observation"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": []
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 4,
+    "tags": ["PHI", "HIPAA", "healthcare", "encryption_in_transit", "internal_traffic", "judgment", "materiality", "risk_assessment", "addressable_specification", "de-identification"]
+  }
+}

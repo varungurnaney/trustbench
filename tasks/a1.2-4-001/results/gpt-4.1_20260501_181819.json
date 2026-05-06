@@ -1,0 +1,92 @@
+{
+  "task_id": "a1.2-4-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-01T18:18:19.052088",
+  "score": {
+    "task_id": "a1.2-4-001",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 6,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "WAL archiving",
+          "compensating control"
+        ],
+        "total_keywords": 3,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "December 1",
+          "re-run",
+          "delayed",
+          "RPO",
+          "4-hour"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RTO",
+          "restore time",
+          "margin"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAL",
+          "no evidence",
+          "RPO"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "capacity",
+          "growth",
+          "planning"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 8694,
+    "output_tokens": 1370
+  },
+  "raw_response": "Below are potential **SOC 2 findings** for Cobalt Systems\u2019 backup and recovery controls under TSC A1.2, based solely on the provided evidence. Each finding includes the required details: short title, relevant section, description of the gap, and severity.\n\n---\n\n## 1. **Tightening RTO Margin and Future Breach Risk**\n- **Section:** Q4 2025 Quarterly Restore Test Report; Backup and Recovery Policy (3.3 Recovery Objectives; 5.1 Restore Testing)\n- **Description:**  \n  The Q4 2025 restore test completed within the 4-hour RTO (at 3 hours, 50 minutes) but showed a significant quarter-over-quarter increase in restore duration\u2014an 18% jump with only a 10-minute RTO margin remaining. The test report explicitly warns that, if the data growth and performance trend continue, the next quarterly restore could exceed the organization\u2019s RTO.  \n  While specific recommendations are made (monitoring, process changes), there is no documented and approved action plan or escalation process in place to proactively address the declining RTO margin or what steps will be taken if restore times exceed the 4-hour target before the next test.  \n- **Severity:** **Medium**  \n  *Rationale: This is not a present breach, but a foreseeable control risk that may soon impact the ability to meet stated recovery objectives. Addressing in advance is a good practice under SOC 2.*\n\n---\n\n## 2. **Backup Re-Run Delay \u2014 On-Call Responsiveness**\n- **Section:** Daily Backup Execution Log (12/1/2025 entry); Backup and Recovery Policy (6.1 Backup Failure Response)\n- **Description:**  \n  On December 1, 2025, the backup failed at 2:31 UTC due to a network timeout. The failure alert was sent at 2:32 UTC, but the re-run was not initiated until 8:15 UTC, resulting in a 6-hour delay\u2014well outside the policy requirement to \u201cinitiate a re-run within 2 hours\u201d of failure.  \n  The log notes \u201cdelayed on-call response\u201d but there is no mention of escalation, formal exception, or additional investigation. This suggests a breakdown in the backup failure response process and possible risks to RPO if such delays recur.\n- **Severity:** **Medium**\n  *Rationale: The process breakdown could extend backup gaps and is a deviation from the stated and approved control process. Recurring events of this type could erode the organization's availability commitments.*\n\n---\n\n## 3. **Backup Failure Without Re-Run \u2014 Reliance on Compensating Controls**\n- **Section:** Exception Register (Exception EXC-2025-042, 11/8/2025); Backup and Recovery Policy (6.2 Exception Process)\n- **Description:**  \n  On November 8, 2025, a full backup failed and no re-run was executed, leaving a 48-hour gap between full backups. However, WAL archiving continued to function, providing point-in-time recovery coverage and maintaining the RPO. The incident was promptly documented, reviewed, and formally accepted by the CISO, with remediation to add a backup re-run trigger to the runbook.  \n  This demonstrates a well-managed exception process with appropriate compensating controls. Still, **reliance on exception handling rather than routine compliance** could become problematic if repeated, especially as WAL-only recovery (without recent full backup) can increase complexity and recovery time.\n- **Severity:** **Low**\n  *Rationale: The control failure was mitigated by strong compensating controls and formal process adherence. No action is required beyond monitoring for recurrence.*\n\n---\n\n## 4. **Restore Testing Does Not Explicitly Cover All Critical Systems**\n- **Section:** Backup and Recovery Policy (5.1 Restore Testing); Q4 2025 Quarterly Restore Test Report\n- **Description:**  \n  The quarterly restore test covers the main production PostgreSQL database and validates application functionality against that database. However, no evidence is provided that similar restore tests are performed for **all other systems within backup scope** (e.g., file storage buckets, configuration repositories, certificate and secrets stores).  \n  The policy states that full restores are to be tested quarterly, but the evidence only details database recovery and related applications. Without explicit proof that all critical system types are covered by restore testing, there is a potential gap in demonstrating that backup and recovery procedures are effective across the environment.\n- **Severity:** **Low**\n  *Rationale: Evidence likely exists, but was not supplied. This is a documentation/coverage observation, not a proven control insufficiency.*\n\n---\n\n## 5. **No Proactive Capacity Planning Evidence Beyond Policy**\n- **Section:** Backup and Recovery Policy (7. Capacity Management)\n- **Description:**  \n  The policy requires continuous monitoring of backup storage utilization and semi-annual capacity planning reviews, but there\u2019s no evidence provided of actual capacity review execution or monitoring alerts (e.g., storage utilization approaching thresholds, associated actions taken).  \n  Absence of such evidence could pose a risk if data growth outpaces available backup storage, potentially impacting backup success or retention, especially as observed backup file sizes increased ~30% USD in Q4.\n- **Severity:** **Low**\n  *Rationale: Not a proven failure; more an evidence gap. Recommend management provide actual capacity review records going forward.*\n\n---\n\n## 6. **No Control Gap Noted: Backup Encryption and Data Security**\n- **Section:** Backup and Recovery Policy (3.4 Backup Encryption); Q4 Restore Test\n- **Description:**  \n  Both the policy and restore test log demonstrate consistent use of strong encryption (AES-256 at rest, TLS 1.3 in transit, quarterly key rotation). This meets and exceeds SOC 2 TSC requirements.  \n- **Severity:** **N/A (Not a Gap)**\n  *Rationale: No deficiency observed; included for completeness.*\n\n---\n\n**In summary**, **the backup and recovery program for Cobalt Systems is generally robust and well-implemented**. Most issues are minor or foreseeable rather than evidence of any current systemic failure. The main areas for improvement are around:  \n- **Proactively remediating backup restore time trend to guarantee RTO before a breach occurs**  \n- **Consistent timely response to backup failures**  \n- **Broader evidencing and coverage of restore testing across all in-scope systems**  \n- **Documenting capacity management as practiced (not just as policy)**\n\nNo critical or high-severity findings arise from the reviewed evidence. If the organization acts on these medium and low findings, the program should fully satisfy TSC A1.2 expectations."
+}

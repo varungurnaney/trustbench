@@ -1,0 +1,66 @@
+{
+  "task_id": "cc9.1-4-003",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:38:26.573410",
+  "score": {
+    "task_id": "cc9.1-4-003",
+    "model": "gpt-4.1",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.25,
+    "f1": 0.3333333333333333,
+    "score": 0.3333333333333333,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 4,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "MongoDB Atlas",
+          "risk acceptance"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "LaunchDarkly",
+          "scope change",
+          "customer segmentation",
+          "August 2025",
+          "Section 4.4",
+          "reassessment"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "Critical",
+          "missing"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2157,
+    "output_tokens": 1075
+  },
+  "raw_response": "# CC9.1 Readiness Assessment: Vendor Risk Mitigation Findings  \n**Observation period: Q4 2025 (Oct 1 \u2013 Dec 31, 2025)**  \n**Documents reviewed:**  \n- Vendor inventory  \n- Vendor risk management policy  \n- Vendor risk assessment log  \n- Incident response plan (vendor section)  \n\n---\n\n## 1. **Incomplete Ongoing Review Evidence for Medium and Low Tier Vendors**\n**Related to:**  \n- Vendor Risk Management Policy \u2013 Sections 2 (Vendor Classification), 4 (Ongoing Monitoring), 3 (Onboarding)\n- Vendor Inventory\n\n**Gap:**  \n- The vendor inventory includes Medium (e.g., Figma Inc., Notion Labs) and Low (e.g., DocuSign) tier vendors. According to policy, Medium vendors require a security questionnaire at onboarding and biennial review; Low tier vendors require contractual review.  \n- The inventory for these vendors shows \"N/A\" under business and risk assessment review dates/status, and there are no entries in the risk assessment log for them during or prior to the observation period.  \n- No documentary evidence is provided showing that onboarding security questionnaires, biennial reviews, or even contractual reviews for Low tier have been completed.\n\n**Severity:** Medium  \n- These vendors are not Critical/High and do not process customer data, but policy-driven minimum reviews are missing or undocumented, which exposes Solaris to overlooked internal threats over time.\n\n---\n\n## 2. **LaunchDarkly Data Access Scope Change Not Promptly Reassessed**\n**Related to:**  \n- Vendor Risk Management Policy \u2013 Section 4.4 (Scope Change Reassessment); Section 3 (Onboarding)\n- Vendor Inventory (\"Notes\" field for LaunchDarkly)\n- Vendor Risk Assessment Log\n\n**Gap:**  \n- In the vendor inventory, LaunchDarkly notes: \u201cGranted access to customer segmentation data August 2025 for targeted rollouts.\u201d\n- The risk assessment log (May 15, 2025) for LaunchDarkly explicitly states: \u201cNo customer data access at time of assessment.\u201d\n- Policy requires a risk assessment refresh within 30 days when a vendor receives access to new categories of data, such as customer data (Section 4.4).\n- No evidence of a refreshed risk assessment is shown after customer segmentation data access commenced (August 2025). Q4 2025 falls after this access, so this was likely missed or late.\n\n**Severity:** High  \n- Granting a vendor new customer data access without timely risk reassessment could result in unmitigated exposure.\n\n---\n\n## 3. **SOC 2 Review Evidence Missing for Medium/Low Vendors Where Applicable**\n**Related to:**  \n- Vendor Risk Management Policy \u2013 Section 3 (Onboarding)\n- Vendor Inventory\n\n**Gap:**  \n- Policy notes only Critical and High vendors require annual SOC 2 review, which matches with evidence.  \n- However, for some Medium tier vendors, there is no documentation of onboarding security questionnaire or equivalent (aside from SOC 2, which is \u201cN/A\u201d).  \n- Not strictly a SOC 2 issue, but as the onboarding evidence is not provided for these vendors, onboarding review requirements for Medium vendors are not evidenced.\n\n**Severity:** Low  \n- Procedural; lower risk because these vendors do not process customer data, but evidence of required onboarding diligence is missing.\n\n---\n\n## 4. **Incident Handling and Lessons Learned Well-Documented (No Gaps Noted)**\n**Related to:**  \n- Incident Response Plan \u2013 Vendor procedures (Section 7)\n- Vendor Risk Assessment Log (MongoDB Atlas, incident reviewed & risk accepted)\n\n**Gap:**  \n- No deficiency. Procedures for vendor incident escalation and post-incident review are in evidence and followed for the only noted incident (MongoDB Atlas 2024), which was fully reviewed, root cause analyzed, and risk acceptance documented.\n\n**Severity:** N/A (no gap)\n\n---\n\n# Summary Table\n\n| # | Title                                                                  | Section                | Why It's a Gap                                                        | Severity   |\n|---|------------------------------------------------------------------------|------------------------|-----------------------------------------------------------------------|------------|\n| 1 | Incomplete Ongoing Review Evidence for Medium and Low Tier Vendors      | Policy 2, 3, 4 & Inv. | Biennial or contractual reviews un-documented in inventory/log        | Medium     |\n| 2 | LaunchDarkly Data Access Scope Change Not Promptly Reassessed          | Policy 4.4, Inv., Log | Customer data access added Aug 2025; no updated risk assessment shown | High       |\n| 3 | SOC 2 Review/Onboarding Gaps for Medium/Low Vendors                    | Policy 3, Inventory   | No onboarding questionnaire/review evidence for Medium/Low vendors    | Low        |\n| 4 | Vendor Incident Handling Process Implemented                           | IRP, Log              | No gap - controls followed for incident management                    | N/A        |\n\n---\n\n**Key Remediation Recommendations:**\n1. Ensure onboarding and periodic reviews for all Medium/Low vendors are completed and evidence is maintained.\n2. Enforce and document risk assessment refreshes immediately after any material change in vendor data scope (as with LaunchDarkly).\n3. Maintain a complete audit trail for vendor onboarding diligence even for vendors handling only internal data."
+}

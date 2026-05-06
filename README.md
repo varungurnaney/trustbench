@@ -6,7 +6,7 @@
 
 **[varungurnaney.github.io/trustbench](https://varungurnaney.github.io/trustbench/)** | **[Draft Paper (PDF)](https://github.com/varungurnaney/trustbench/blob/main/TrustBench_Paper.pdf)**
 
-> **This is an early-stage project (v0.1).** The current task set has 20 tasks across 8 controls — enough to show meaningful differentiation but not yet statistically robust. We need 50+ tasks before this benchmark produces reliable aggregate scores. If you're a compliance professional, we'd welcome your help building tasks grounded in real audit findings. See the [authoring guide](docs/authoring.md).
+> **v0.2** — 153 tasks across 17 compliance themes. 920 benchmark runs across 6 models. Results are directional — we welcome compliance professionals to contribute tasks and help validate task quality. See the [authoring guide](docs/authoring.md).
 
 A benchmark for evaluating LLMs on security compliance auditing.
 
@@ -36,59 +36,57 @@ Requires an `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` environment variable dependi
 
 ## Results
 
-6 models evaluated on all 20 tasks (120 total runs).
+6 models evaluated on all 153 tasks (920 total runs). 17 compliance themes. 67% D4-D5 tasks.
 
-**How scoring works:** D1-D3 tasks use detection scoring (did the model find the planted gaps?). D4-D5 tasks use F1 scoring — the harmonic mean of recall (what fraction of real gaps were found) and precision (what fraction of the model's reported findings were real gaps). F1 penalizes both missed gaps AND over-reporting. A model that finds all 5 gaps but reports 15 total findings gets a lower F1 than one that finds 5 and reports 6.
+**How scoring works:** D1-D3 tasks use detection scoring (did the model find the planted gaps?). D4-D5 tasks use F1 scoring — the harmonic mean of recall (what fraction of real gaps were found) and precision (what fraction of the model's reported findings were real gaps). F1 penalizes both missed gaps AND over-reporting.
 
-| Rank | Model | Provider | Avg Score | Highest | Lowest |
-|------|-------|----------|-----------|---------|--------|
-| 1 | Claude Sonnet 4.6 | Anthropic | **82%** | 100% (4 tasks) | 36% (cc9.1-5) |
-| 2 | Claude Opus 4.7 | Anthropic | **72%** | 100% (4 tasks) | 15% (cc9.1-5) |
-| 3 | GPT-5.5 | OpenAI | **71%** | 100% (4 tasks) | 15% (cc6.6-5) |
-| 4 | GPT-4.1 | OpenAI | **61%** | 100% (cc8.1-1) | 0% (cc3.1-5, cc7.2-2) |
-| 5 | Claude Haiku 4.5 | Anthropic | **61%** | 100% (3 tasks) | 12% (cc3.1-5) |
-| 6 | GPT-4o | OpenAI | **44%** | 100% (2 tasks) | 0% (cc3.1-5, cc7.2-2) |
+| Rank | Model | Provider | Avg Score |
+|------|-------|----------|-----------|
+| 1 | Claude Sonnet 4.6 | Anthropic | **70%** |
+| 2 | GPT-5.5 | OpenAI | **64%** |
+| 3 | Claude Opus 4.7 | Anthropic | **63%** |
+| 4 | Claude Haiku 4.5 | Anthropic | **59%** |
+| 5 | GPT-4.1 | OpenAI | **57%** |
+| 6 | GPT-4o | OpenAI | **40%** |
 
-**Per-task breakdown (all 20 tasks, grouped by difficulty):**
+**By difficulty level:**
 
-| Task | D | Control | Sonnet | Opus | GPT-5.5 | GPT-4.1 | Haiku | GPT-4o | Avg |
-|------|---|---------|--------|------|---------|---------|-------|--------|-----|
-| cc8.1-1-001 | D1 | Change Mgmt | 100% | 100% | 100% | 100% | 100% | 100% | **100%** |
-| cc6.1-1-002 | D1 | Logical Access | 100% | 100% | 100% | 75% | 100% | 50% | **88%** |
-| cc7.2-2-001 | D2 | Monitoring | 75% | 100% | 75% | 0% | 100% | 0% | **58%** |
-| cc6.1-3-001 | D3 | Logical Access | 100% | 88% | 100% | 89% | 100% | 78% | **92%** |
-| cc6.3-3-001 | D3 | Data Access | 100% | 100% | 100% | 80% | 80% | 60% | **87%** |
-| cc8.1-4-001 | D4 | Change Mgmt | 92% | 80% | 86% | 92% | 92% | 100% | **90%** |
-| cc6.1-4-001 | D4 | Logical Access | 100% | 75% | 100% | 86% | 67% | 50% | **80%** |
-| a1.2-4-001 | D4 | Backup/Recovery | 100% | 62% | 80% | 80% | 32% | 60% | **69%** |
-| cc9.1-4-001 | D4 | Vendor Mgmt | 73% | 67% | 100% | 67% | 80% | 18% | **67%** |
-| cc3.1-4-001 | D4 | Risk Assessment | 73% | 62% | 50% | 80% | 67% | 44% | **63%** |
-| cc6.3-4-001 | D4 | Data Access | 67% | 57% | 60% | 55% | 67% | 40% | **58%** |
-| cc6.6-4-001 | D4 | System Boundaries | 100% | 57% | 62% | 55% | 25% | 44% | **57%** |
-| cc7.2-4-001 | D4 | Monitoring | 89% | 67% | 67% | 20% | 42% | 20% | **51%** |
-| cc8.1-5-001 | D5 | Change Mgmt | 83% | 91% | 73% | 71% | 43% | 80% | **74%** |
-| cc7.2-5-001 | D5 | Monitoring | 67% | 91% | 83% | 91% | 59% | 43% | **72%** |
-| a1.2-5-001 | D5 | Backup/Recovery | 89% | 67% | 73% | 80% | 80% | 30% | **70%** |
-| cc6.1-5-001 | D5 | Logical Access | 83% | 67% | 57% | 62% | 30% | 31% | **55%** |
-| cc6.6-5-001 | D5 | System Boundaries | 55% | 33% | 15% | 20% | 27% | 20% | **28%** |
-| cc9.1-5-001 | D5 | Vendor Mgmt | 36% | 40% | 15% | 20% | 14% | 20% | **24%** |
-| cc3.1-5-001 | D5 | Risk Assessment | 55% | 40% | 33% | 0% | 12% | 0% | **23%** |
+| Level | Tasks | Sonnet | GPT-5.5 | Opus | Haiku | GPT-4.1 | GPT-4o |
+|-------|-------|--------|---------|------|-------|---------|--------|
+| D1 | 17 | 90% | 93% | 93% | 93% | 69% | 50% |
+| D2 | 17 | 95% | 92% | 98% | 96% | 84% | 59% |
+| D3 | 17 | 74% | 72% | 68% | 68% | 74% | 71% |
+| D4 | 51 | 58% | 56% | 50% | 45% | 46% | 29% |
+| D5 | 51 | 67% | 50% | 53% | 47% | 49% | 30% |
 
-**No model dominates.** Sonnet leads overall but scored 36% on vendor judgment. Opus scored 91% on change management judgment (beating GPT-5.5's 73%). GPT-4o scored 100% on change management but 0% on risk assessment. Each model has blind spots.
+**By control domain (avg across all models):**
 
-**Three tasks average below 28%.** cc3.1-5-001 (risk assessment, 23%), cc9.1-5-001 (vendor incident, 24%), and cc6.6-5-001 (boundary materiality, 28%). Two models scored 0% on risk assessment judgment. These require materiality assessment where auditors disagree.
+| Control | Domain | Tasks | Avg |
+|---------|--------|-------|-----|
+| CC8.1 | Change Mgmt | 9 | 75% |
+| C1.1 | Data Protection | 9 | 75% |
+| CC6.3 | Data Access | 9 | 66% |
+| CC3.1 | Risk Assessment | 9 | 63% |
+| CC1.1 | Governance | 9 | 63% |
+| CC6.1 | Logical Access | 9 | 63% |
+| A1.2 | Backup/Recovery | 9 | 61% |
+| P1.1 | Privacy | 9 | 61% |
+| CC6.6 | System Boundaries | 9 | 60% |
+| CC7.2 | Monitoring | 9 | 56% |
+| CC7.1 | Vuln Mgmt + Maint | 18 | 55% |
+| CC9.1 | Vendor Mgmt | 9 | 55% |
+| CC6.4 | Physical Security | 9 | 54% |
+| PI1.1 | System Integrity | 9 | 53% |
+| CC1.4 | HR Security | 9 | 51% |
+| CC7.3 | Incident Response | 9 | 36% |
 
-**Sonnet leads because it's both thorough and concise.** It achieves 100% recall on 16 of 20 tasks (vs 13 for GPT-5.5) while reporting an average of 7.4 findings per task (vs 8.5 for GPT-5.5, 9.6 for Opus).
+**Incident Response is the hardest domain (36% avg).** Change Management and Data Protection are the easiest (75%).
 
 ### A note on scoring and over-reporting
 
-F1 scoring penalizes models that report findings beyond the planted gaps. In a real audit, this penalization is debatable. When Opus reports 9 findings on a task with 5 planted gaps, the extra 4 might be legitimate compliance observations — things a human auditor would include in their report. But our keyword-based scorer has no way to distinguish "useful extra finding" from "noise." Any finding that doesn't match a planted gap counts as a false positive, lowering precision and therefore F1.
+F1 scoring penalizes models that report findings beyond the planted gaps. In a real audit, this is debatable — extra findings might be legitimate compliance observations. Our keyword-based scorer cannot distinguish "useful extra finding" from "noise." This favors concise models over thorough ones. Sonnet's lead is partly driven by reporting fewer findings per task. For v2, we plan to add an LLM-as-judge secondary scorer to evaluate extra findings. The primary keyword score remains for reproducibility.
 
-This means **the current scoring favors models that are concise over models that are thorough.** Sonnet's lead over Opus and GPT-5.5 is partly because it reports fewer extra findings — not necessarily because those extra findings are wrong. In a production compliance workflow, the additional observations from a more thorough model might be more valuable than a higher F1 score.
-
-This is a known limitation. For v2, we plan to add an optional LLM-as-judge secondary scorer that can evaluate whether extra findings are legitimate compliance observations or actual noise. The primary keyword-based score will remain for reproducibility.
-
-See [Task Reference](docs/tasks.md) for per-task analysis and [Leaderboard](LEADERBOARD.md) for full results.
+See [Leaderboard](LEADERBOARD.md) for full results.
 
 ## Task Structure
 

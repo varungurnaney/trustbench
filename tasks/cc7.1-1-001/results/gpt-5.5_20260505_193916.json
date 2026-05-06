@@ -1,0 +1,75 @@
+{
+  "task_id": "cc7.1-1-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T19:39:16.282293",
+  "score": {
+    "task_id": "cc7.1-1-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Section 3.3",
+          "regular basis",
+          "scan frequency",
+          "cadence",
+          "weekly",
+          "monthly"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Section 5.2",
+          "timely manner",
+          "remediation SLA",
+          "severity",
+          "Critical",
+          "days"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "authenticated",
+          "credentialed",
+          "unauthenticated",
+          "coverage",
+          "missing",
+          "patches",
+          "local"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1082,
+    "output_tokens": 1588
+  },
+  "raw_response": "The policy **partially addresses SOC 2 CC7.1** because it defines vulnerability scanning tools, broad scope, severity classification, tracking, and reporting. However, an auditor would likely conclude that it is **not fully sufficient** for CC7.1 because it lacks specific requirements for detecting configuration changes, defined monitoring cadence, event-driven scanning, and procedures for newly disclosed vulnerabilities.\n\n| # | Finding | Document Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Scan frequency is not defined | Section 3.3 \u2014 Scan Frequency | The policy states that vulnerability scans shall be performed \u201con a regular basis,\u201d but does not define the required cadence, such as daily, weekly, monthly, or continuous scanning. SOC 2 CC7.1 expects detection and monitoring procedures to be sufficiently defined to identify vulnerabilities in a timely manner. Without a required frequency, scan execution may be inconsistent. | High |\n| 2 | No requirement for scanning after configuration or infrastructure changes | Sections 3.2 and 3.3 \u2014 Scanning Scope and Scan Frequency | CC7.1 specifically refers to identifying changes to configurations that introduce new vulnerabilities. The policy does not require vulnerability scans or configuration reviews after system changes, firewall changes, cloud configuration changes, new deployments, patching, or infrastructure provisioning. | High |\n| 3 | Configuration change monitoring is not addressed | Section 3 \u2014 Vulnerability Identification | The policy focuses on vulnerability scanning tools but does not describe procedures to monitor configuration changes that could introduce vulnerabilities, such as insecure ports, weak encryption, public storage buckets, firewall rule changes, IAM permission changes, or disabled security controls. | High |\n| 4 | No defined process for newly discovered vulnerabilities | Section 3 \u2014 Vulnerability Identification; Section 4 \u2014 Vulnerability Assessment | The policy does not describe how Cirrus monitors for newly disclosed vulnerabilities, such as CVEs, vendor advisories, CISA KEV catalog entries, zero-days, or threat intelligence alerts. It also does not require expedited assessment when a critical vulnerability is announced. | High |\n| 5 | Remediation timelines are vague | Section 5.2 \u2014 Remediation Procedures | The policy says remediation should be performed \u201cin a timely manner commensurate with severity and risk,\u201d but does not define required remediation SLAs by severity. For example, there are no stated deadlines for Critical, High, Medium, or Low vulnerabilities. This makes it difficult to assess whether vulnerabilities are addressed consistently and timely. | Medium |\n| 6 | No explicit requirement for authenticated or credentialed scanning | Section 3.1 \u2014 Scanning Tools | The policy lists scanning tools but does not state whether scans must be authenticated or credentialed where technically feasible. Unauthenticated scans may miss missing patches, insecure local configurations, vulnerable packages, and endpoint-level issues. | Medium |\n| 7 | Limited detail on cloud, container, and application configuration monitoring | Section 3.1 \u2014 Scanning Tools; Section 3.2 \u2014 Scanning Scope | The listed tools cover infrastructure, open-source dependencies, and endpoints, but the policy does not explicitly address monitoring for cloud misconfigurations, container image vulnerabilities, Kubernetes configuration issues, infrastructure-as-code scanning, or CI/CD pipeline security checks. If these technologies are in use, this would be a notable gap. | Medium |\n| 8 | Asset inventory validation is only quarterly | Section 3.2 \u2014 Scanning Scope | The policy requires network segments to be validated against the asset inventory quarterly. Quarterly validation may not be frequent enough to ensure new systems, cloud resources, or endpoints are promptly included in vulnerability monitoring. Assets introduced between quarterly reviews may remain unscanned. | Medium |\n| 9 | No process for scan failures or incomplete coverage | Section 6.1 \u2014 Vulnerability Tracking | The policy describes tracking identified vulnerabilities, but does not require tracking scan failures, unreachable assets, unauthenticated scans, excluded assets, or coverage gaps. Without this, management may not know whether monitoring is operating effectively across the full environment. | Medium |\n| 10 | Third-party hosted systems are not sufficiently addressed | Section 2 \u2014 Scope | The policy states that third-party hosted systems are covered under vendor management agreements, but does not specify how Cirrus verifies those vendors perform vulnerability detection and monitoring. For CC7.1, auditors may expect evidence of vendor vulnerability management requirements, reporting, or assurance mechanisms. | Medium |\n| 11 | No alerting or escalation requirements for critical vulnerabilities | Section 6.2 \u2014 Reporting; Section 9 \u2014 Compliance | Monthly reporting to the Security Steering Committee is defined, but the policy does not require immediate alerting or escalation for critical vulnerabilities, actively exploited vulnerabilities, or internet-facing exposures. Monthly reporting alone may not be timely enough for high-risk vulnerability events. | High |\n| 12 | No evidence retention or auditability requirements | Section 6 \u2014 Tracking and Reporting | The policy requires vulnerabilities to be tracked in Jira and monthly reports to be provided, but does not specify retention of scan results, reports, exception approvals, remediation evidence, or scan logs. This may make it difficult to demonstrate consistent operation of the control during an audit period. | Low |\n\n### Overall Assessment\n\nThe policy establishes a reasonable foundation for vulnerability management, including tools, ownership, severity classification, tracking, reporting, and risk acceptance. However, for SOC 2 CC7.1 readiness, the policy should be strengthened to include:\n\n- Defined vulnerability scan frequencies.\n- Event-driven scanning after system or configuration changes.\n- Explicit configuration monitoring requirements.\n- Procedures for responding to newly disclosed vulnerabilities and zero-days.\n- Remediation SLAs by severity.\n- Requirements for scan coverage, authenticated scanning, and handling scan failures.\n- Timely escalation for critical or actively exploited vulnerabilities.\n- Clear expectations for third-party vulnerability monitoring."
+}

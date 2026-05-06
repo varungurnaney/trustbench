@@ -1,0 +1,72 @@
+{
+  "task_id": "cc7.1-4-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T19:44:28.916994",
+  "score": {
+    "task_id": "cc7.1-4-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.6666666666666666,
+    "f1": 0.8,
+    "score": 0.8,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 2,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "CVE-2025-22224",
+          "esxi-prod-07",
+          "compensating controls",
+          "risk acceptance",
+          "revalidation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "CVE-2025-24472",
+          "fw-internal-03",
+          "authentication bypass",
+          "FortiOS",
+          "no risk acceptance",
+          "VULN-4870",
+          "Board Risk Committee"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Medium",
+          "remediation",
+          "CVE-2024-11680",
+          "internal-share-02"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5242,
+    "output_tokens": 3932
+  },
+  "raw_response": "## Findings\n\n### 1. Critical vulnerability remained open beyond SLA with no risk acceptance or required escalation\n\n**Document section:**  \n- Vulnerability Management Policy \u00a74 \u201cSeverity Classification and Remediation SLAs\u201d  \n- Vulnerability Management Policy \u00a74.2 \u201cEscalation\u201d  \n- Vulnerability Management Policy \u00a75 \u201cRisk Acceptance\u201d  \n- Qualys VMDR report: `CVE-2025-24472`, `VULN-4870`, `fw-internal-03`\n\n**Why it\u2019s a gap:**  \nA Critical vulnerability, **CVE-2025-24472 \u2013 FortiOS CSF Authentication Bypass**, was first detected on **August 15, 2025** and remained **Open** as of **December 29, 2025**. Per policy, Critical vulnerabilities must be remediated within **15 calendar days** from first detection. This vulnerability was more than 100 days past SLA by the end of Q4.\n\nThe remediation notes explicitly state: **\u201cdeployment delayed due to HA cluster complexity. No risk acceptance filed.\u201d** This is not consistent with the policy requirement that vulnerabilities unable to be remediated within SLA have a formal risk acceptance with business justification, compensating controls, residual risk, and approval.\n\nAdditionally, the policy requires vulnerabilities exceeding SLA by more than 50% to be escalated to the CISO and those exceeding SLA by more than 100% to be reported to the Board Risk Committee. No evidence of CISO escalation or Board Risk Committee reporting was provided for this item.\n\n**Severity:** Critical\n\n\n### 2. Incomplete evidence that all required vulnerability scanning activities operated during Q4\n\n**Document section:**  \n- Vulnerability Management Policy \u00a73.1 \u201cScan Tools and Frequency\u201d  \n- Vulnerability Management Policy \u00a73.2 \u201cScan Coverage\u201d\n\n**Why it\u2019s a gap:**  \nThe policy requires the following vulnerability detection activities:\n\n- **Qualys VMDR** for infrastructure and servers \u2014 weekly  \n- **Snyk** for application dependencies \u2014 continuous in CI/CD  \n- **AWS Inspector** for cloud workloads \u2014 weekly  \n- Quarterly validation of scan coverage against the asset inventory\n\nThe evidence provided includes a Q4 Qualys VMDR report, but does not include evidence that:\n\n- Snyk scans operated continuously during Q4 for application dependencies;\n- AWS Inspector scans operated weekly for cloud workloads;\n- Qualys scans ran weekly throughout Q4, rather than only a point-in-time or aggregate report;\n- Quarterly scan coverage was reconciled against the asset inventory to confirm all production and corporate subnets were included.\n\nBecause the control design explicitly includes these detection mechanisms and coverage validation activities, the absence of operating evidence prevents confirmation that the full vulnerability monitoring program operated as designed across applications, cloud workloads, and infrastructure during Q4.\n\n**Severity:** Medium\n\n\n## Items reviewed that do not appear to be gaps\n\nThe following items had apparent issues but were supported by valid explanations or documented risk acceptances:\n\n- **CVE-2025-22224 \u2013 VMware ESXi Heap Overflow RCE** on `esxi-prod-07`: Although Critical and not remediated, it had an active CISO-approved risk acceptance, documented compensating controls, and Q4 revalidation evidence.\n- **CVE-2024-53677 \u2013 Apache Struts Path Traversal** on `legacy-crm`: Open finding, but covered by active risk acceptance `RA-2025-014`.\n- **CVE-2024-10914 \u2013 D-Link NAS Command Injection** on `nas-archive-01`: Open Low finding, but covered by active risk acceptance `RA-2025-011`.\n- **CVE-2024-11680 \u2013 ProjectSend Authentication Bypass** on `internal-share-02`: Open Medium finding, but covered by active risk acceptance `RA-2025-009`.\n- Other Medium and Low open vulnerabilities in the Qualys report generally did not exceed their policy-defined remediation SLAs as of the end of Q4 2025."
+}

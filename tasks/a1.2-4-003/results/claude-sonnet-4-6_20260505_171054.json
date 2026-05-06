@@ -1,0 +1,68 @@
+{
+  "task_id": "a1.2-4-003",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-05T17:10:54.656650",
+  "score": {
+    "task_id": "a1.2-4-003",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 1.0,
+    "f1": 1.0,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 2,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [
+          "2 tables",
+          "PostgreSQL version"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "application functionality",
+          "deferred",
+          "January",
+          "Section 5.1",
+          "incomplete",
+          "holiday"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "RTO",
+          "5-minute margin",
+          "data growth",
+          "Q1 2026"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3575,
+    "output_tokens": 2174
+  },
+  "raw_response": "# SOC 2 A1.2 Readiness Assessment \u2014 Apex Digital Inc.\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n**Auditor Review Date:** December 2025\n**Controls Framework:** Trust Services Criteria \u2014 Availability (A1.2)\n\n---\n\n## Executive Summary\n\nThe evidence reviewed spans four documents: the Backup and Recovery Policy (POL-BKP-007 v2.6), the Q3 2025 restore test report (RT-2025-Q3), the Q4 2025 restore test report (RT-2025-Q4), and the Q4 2025 change management log. Overall, Apex Digital demonstrates a structured and largely operational backup and recovery program. Several positive indicators are present: the Q3 finding regarding the PostgreSQL version mismatch was remediated promptly via documented change control (CHG-2025-0412), backup retention was aligned to policy (CHG-2025-0418), encryption key rotation was performed quarterly (CHG-2025-0445), and both test cycles produced signed, approved reports. However, two findings rise to a level that warrants auditor attention, with one representing a direct policy deviation and another representing a credible emerging risk to RTO compliance.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Q4 Restore Test Incomplete \u2014 Application Validation Phase Deferred Outside the Observation Period\n\n**Severity: High**\n\n**Relevant Sources:**\n- RT-2025-Q4, `phase_4_application_validation` (status: DEFERRED)\n- RT-2025-Q4, `issues_encountered[0]`\n- POL-BKP-007, Section 5.1, Requirement 4\n\n**Gap Description:**\n\nPOL-BKP-007 Section 5.1 explicitly requires that each quarterly restore test validate *application functionality post-restore*, specifically including API health checks, background job processing, and user authentication flow. These are not optional components \u2014 the policy lists them as numbered requirements that each test *must* validate.\n\nThe Q4 2025 restore test report acknowledges this directly: the issues log notes the deferral and characterizes it as an impact on \"policy Section 5.1 requirement 4.\" Application validation was deferred to January 8, 2026, which falls outside the Q4 observation period entirely. As of the test close date (December 20, 2025), no compensating validation \u2014 such as a production health check attestation, a prior-quarter carryover record, or a partial automated test run \u2014 was documented in its place.\n\nThis matters because application validation is the layer that confirms a restored database and infrastructure are actually functional end-to-end. Database restore and checksum verification confirm data is present and intact; they do not confirm that the application layer can successfully connect, authenticate users, or process jobs against that data. The Q3 test demonstrated this distinction \u2014 all four phases were required to constitute a complete test.\n\nThe cited cause (engineering team unavailability during the holiday period) is understandable operationally but does not constitute a control exception or pre-approved deviation. The test date of December 20 was within the team's control to schedule, and the policy imposes no holiday carve-out. The Q4 test, as executed, cannot be characterized as a complete restore test for the purposes of A1.2.\n\n**What Would Be Needed to Remediate for Audit Purposes:**\n- Completion of the deferred application validation on January 8, 2026, with a supplemental test report appended to RT-2025-Q4 and signed off by the Infrastructure Lead and CISO\n- A formal policy exception or risk acceptance document covering the gap period (December 20, 2025 \u2013 January 8, 2026), signed by an appropriate owner\n- Going forward, a scheduling control (e.g., a standing Q4 test date that accounts for holiday staffing constraints) to prevent recurrence\n\n---\n\n### Finding 2: RTO Margin Erosion Driven by Data Growth \u2014 No Documented Remediation Plan\n\n**Severity: Medium**\n\n**Relevant Sources:**\n- RT-2025-Q4, `rto_assessment` (235 min actual vs. 240 min target; 5-minute margin)\n- RT-2025-Q4, `quarter_over_quarter` (restore time increased 22.4%; data volume increased 19.1%)\n- RT-2025-Q4, `recommendations` (parallel restore evaluation, archival strategy, RTO target review)\n- RT-2025-Q3, `rto_assessment` (192 min actual; 48-minute margin)\n- POL-BKP-007, Section 3 (RTO target: 4 hours / 240 minutes)\n\n**Gap Description:**\n\nThe Q4 test passed the RTO threshold, and a passing result must be acknowledged. However, the margin has compressed from 48 minutes in Q3 to 5 minutes in Q4 \u2014 a reduction of 89.6% in buffer \u2014 over a single quarter. This is not a stable operating condition; it is a trajectory. Data volume grew 19.1% (156.2 GB to 186.0 GB) in the same period, and the restore phase slowed proportionally, dropping from approximately 1.3 GB/min to 1.22 GB/min throughput due to increased index count. If data growth continues at a comparable rate and restore throughput does not improve, the next quarterly test (Q1 2026) carries a material risk of RTO breach.\n\nThe Q4 report itself acknowledges this: the notes on Phase 3 flag it as a \"concerning trend,\" the issues log identifies the slowdown, and the recommendations section lists four specific mitigations (parallel restore via `pg_restore --jobs`, data archival, improved scheduling, and potential RTO target revision). These are well-identified recommendations. The gap is that none of them are accompanied by assigned owners, target completion dates, or a formal remediation plan that would allow an auditor to conclude the risk is being actively managed rather than noted. The sign-off comments describe the RTO margin as \"concerning\" and recommend a \"capacity planning review,\" but no follow-on action item has been formally committed to within the evidence set.\n\nFor A1.2, the criterion requires that the entity *monitors* backup and recovery infrastructure and that recovery plan procedures *meet* availability commitments. A control that passes by 5 minutes against a known growth trajectory, without a documented corrective action plan, introduces real uncertainty about whether the 4-hour RTO commitment can be met in Q1 2026.\n\n**What Would Be Needed to Remediate for Audit Purposes:**\n- A documented capacity planning or remediation action plan addressing the restore time trend, with owners and target dates assigned to the recommendations already identified in RT-2025-Q4\n- Evidence that at least one of the identified mitigations (parallel restore evaluation, archival strategy) is in active progress before the Q1 2026 test\n- Optionally, an interim risk acceptance memo from the CISO acknowledging the reduced margin and confirming acceptability pending remediation\n\n---\n\n## Findings Not Raised \u2014 Disposition Notes\n\nThe following items were considered and determined not to constitute independent findings for the Q4 observation period:\n\n| Item | Disposition |\n|---|---|\n| Q3 checksum mismatch (2 tables) | Remediated within Q4 via CHG-2025-0412 (PostgreSQL upgrade to 15.4). Q4 report confirms all 512 tables passed. No residual gap. |\n| Manual verification used in Q3 for 2 failed tables | Acceptable as a documented compensating step given confirmed root cause and prompt remediation. Not a pattern as of Q4. |\n| Backup retention extension (6 \u2192 12 months) | Change aligns retention to policy Section 7. No gap; this is evidence of policy adherence. |\n| Encryption key rotation | CHG-2025-0445 confirms quarterly rotation with prior key versioning preserved. Consistent with sound key management practice. |\n| RDS Multi-AZ failover (CHG-2025-0431) | Automatic failover in 47 seconds with no data loss and application reconnection in 2 minutes. Represents a real-world availability event handled within normal operations. No finding warranted. |\n| Q3 test overall | Q3 falls within the observation period (September 18 is outside Q4; October 1 is the start). The Q3 test is referenced as contextual background and for trend analysis but is not the primary test under Q4 review. |\n\n---\n\n## Summary Table\n\n| # | Finding Title | Policy Reference | Severity |\n|---|---|---|---|\n| 1 | Q4 Restore Test Incomplete \u2014 Application Validation Deferred Outside Observation Period | POL-BKP-007 \u00a75.1 Req. 4; RT-2025-Q4 Phase 4 | **High** |\n| 2 | RTO Margin Erosion Without Documented Remediation Plan | POL-BKP-007 \u00a73; RT-2025-Q4 Phase 3 / QoQ Analysis | **Medium** |\n\n---\n\n*This assessment is based solely on the evidence provided. Additional evidence (e.g., Q1 and Q2 2025 restore test reports, backup monitoring logs, January 8 supplemental application validation results) may affect these conclusions if produced.*"
+}

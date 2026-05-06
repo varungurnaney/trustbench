@@ -1,0 +1,84 @@
+{
+  "id": "cc6.3-1-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.3",
+  "control_description": "The entity authorizes, modifies, or removes access to data, software functions, and other protected information assets based on roles and responsibilities, segregation of duties, and least privilege principles.",
+  "difficulty": 1,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/data-access-policy.md",
+      "type": "policy",
+      "description": "Quorum Digital data access authorization policy"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the provided data access authorization policy for Quorum Digital. Assess whether the policy adequately addresses the requirements of SOC 2 Trust Service Criteria CC6.3 (Data Access Authorization). Specifically evaluate whether the policy defines least privilege principles, data classification-based access controls, segregation of duties, and access lifecycle management. Identify any gaps or missing elements.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "No least-privilege requirement defined in the policy",
+      "description": "The policy does not define or reference the principle of least privilege. Section 3 (Access Authorization) describes role-based access but states that roles are 'aligned to department needs' without specifying that access should be limited to the minimum necessary. There is no requirement to scope permissions to only the data and functions required for a user's specific job duties. Without a least-privilege requirement, there is no policy basis for challenging overly broad access grants.",
+      "evidence_sources": ["evidence/data-access-policy.md"],
+      "expected_reasoning": "CC6.3 explicitly requires least-privilege principles. The policy mentions RBAC but does not define least privilege as a guiding principle. 'Department needs' is too broad — a marketing department member should not necessarily have access to all marketing data.",
+      "detection_criteria": {
+        "required_keywords": ["least privilege", "minimum necessary", "department", "overly broad", "missing", "not defined"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "No data classification-based access controls",
+      "description": "The policy does not define data classification levels (e.g., Public, Internal, Confidential, Restricted) or tie access controls to classification. Section 4 (Data Protection) mentions 'sensitive data' but does not define what constitutes sensitive data or how access requirements differ based on data sensitivity. Without classification, there is no basis for applying differentiated access controls — all data is treated the same regardless of sensitivity.",
+      "evidence_sources": ["evidence/data-access-policy.md"],
+      "expected_reasoning": "CC6.3 requires access authorization based on the sensitivity of the data. Without data classification, the organization cannot implement tiered access controls. PII, financial data, and internal memos would all receive the same access treatment.",
+      "detection_criteria": {
+        "required_keywords": ["classification", "sensitive", "tiered", "PII", "not defined", "missing", "differentiated"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No segregation of duties requirements for data access",
+      "description": "The policy does not address segregation of duties for data access. There is no restriction preventing a single individual from having both write access and approval authority on the same data sets. For example, there is no prohibition on a finance team member having both data entry and data approval access to financial records.",
+      "evidence_sources": ["evidence/data-access-policy.md"],
+      "expected_reasoning": "CC6.3 requires consideration of segregation of duties. The policy has no SoD controls, meaning a single user could both create and approve financial transactions in the database.",
+      "detection_criteria": {
+        "required_keywords": ["segregation", "duties", "write", "approval", "same", "missing", "single"],
+        "minimum_keyword_matches": 2
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No process for modifying or removing data access upon role change",
+      "description": "Section 6 (Access Revocation) addresses termination but does not describe any process for modifying or removing access when an employee changes roles within the organization. This creates a risk of privilege accumulation — employees moving from one department to another would retain their previous data access in addition to receiving new access for their new role.",
+      "evidence_sources": ["evidence/data-access-policy.md"],
+      "expected_reasoning": "CC6.3 requires that access be modified or removed. The policy handles termination but not role changes — a common gap that leads to privilege creep over time.",
+      "detection_criteria": {
+        "required_keywords": ["role change", "transfer", "accumulation", "creep", "modify", "previous", "retain"],
+        "minimum_keyword_matches": 2
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "5 minutes",
+    "documents_count": 1,
+    "relevant_documents_count": 1,
+    "tags": ["data_access", "policy_review", "least_privilege", "data_classification", "segregation_of_duties"]
+  }
+}

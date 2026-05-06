@@ -1,0 +1,101 @@
+{
+  "id": "c1.1-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "C1.1",
+  "control_description": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/key-management-procedure.md",
+      "type": "policy",
+      "description": "Halcyon Cloud Services encryption key management procedure defining lifecycle requirements"
+    },
+    {
+      "path": "evidence/key-rotation-log.csv",
+      "type": "log",
+      "description": "Key rotation log showing rotation status for all KMS, application, PGP, and SSH keys"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO-approved exceptions for key management deviations"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/change-management-log-q4.csv",
+      "type": "log",
+      "description": "Q4 2025 change management log — tangentially related to encryption changes but primarily operational"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Halcyon Cloud Services covering Q4 2025 (October 1 - December 31, 2025). Review the key management procedure, key rotation log, and exception register to assess whether encryption key lifecycle controls are operating effectively under C1.1 and CC6.7. Consider whether approved exceptions adequately address apparent deviations. Not all provided documents may be directly relevant. Identify genuine control deficiencies and distinguish them from appropriately managed exceptions.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Meridian Financial PGP key uses 24-month rotation instead of annual (valid exception EXC-2025-022)",
+      "description": "PGP-002 for Meridian Financial has a 24-month rotation cycle instead of the standard 12 months specified in SOP-KM-001 Section 4.1. However, exception EXC-2025-022 is active (approved by CISO, expires March 2026) and documents that the extended cycle is due to the partner's 90-day security review lead time. Compensating controls include monthly key integrity verification, SFTP transit encryption, SHA-256 checksums, and quarterly partner security calls. The key exchange for January 2026 is already in coordination. This is NOT a finding — the deviation is properly managed.",
+      "evidence_sources": ["evidence/key-rotation-log.csv", "evidence/exception-register.csv", "evidence/key-management-procedure.md"],
+      "expected_reasoning": "PGP-002 shows 24-month cycle → check exception register → EXC-2025-022 active and CISO-approved → compensating controls documented → partner coordination already started → properly managed deviation, not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["Meridian Financial", "PGP-002", "EXC-2025-022", "24-month", "approved", "compensating", "partner", "not a finding"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["finding", "gap", "violation", "deficiency"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "APP-006 notification service key rotation overdue by 14 months with expired exception",
+      "description": "The key rotation log shows APP-006 (hcs-prod-notification-key) has been overdue for rotation since October 2024 — 14 months ago. The key was last rotated in October 2023. The exception register shows EXC-2025-021 was filed in January 2025 to cover this deferral, but it expired on July 10, 2025 and was 'Expired without renewal. Remediation not completed. No follow-up exception filed.' The notification service encrypts customer contact preferences including email and phone (PII). This key has been unrotated for over 2 years with no current exception coverage, no active remediation plan, and no CISO-approved risk acceptance.",
+      "evidence_sources": ["evidence/key-rotation-log.csv", "evidence/exception-register.csv", "evidence/key-management-procedure.md"],
+      "expected_reasoning": "APP-006 status OVERDUE since October 2024 → last rotated October 2023 → exception EXC-2025-021 filed but expired July 2025 → no renewal → service handles PII → 14+ months overdue with no coverage → critical gap.",
+      "detection_criteria": {
+        "required_keywords": ["APP-006", "notification", "OVERDUE", "October 2024", "October 2023", "EXC-2025-021", "expired", "no renewal", "email", "phone", "PII"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "Expired exception EXC-2025-021 not tracked to closure — exception lifecycle process failure",
+      "description": "EXC-2025-021 expired on July 10, 2025 with the review outcome noting 'Expired without renewal. Remediation not completed. No follow-up exception filed.' The key management procedure (Section 4.4) requires rotation tracking, and the policy exception process (per the encryption policy Section 9, cross-referenced) requires quarterly review and renewal-or-remediation. The fact that an exception expired without either remediation or renewal indicates a breakdown in the exception management process. The original exception cited 'Engineering bandwidth allocated for Q2 2025' but the work was never completed.",
+      "evidence_sources": ["evidence/exception-register.csv", "evidence/key-management-procedure.md"],
+      "expected_reasoning": "EXC-2025-021 expired without renewal or remediation → Q2 2025 engineering work never completed → no follow-up → exception lifecycle process is broken → systemic concern beyond just APP-006.",
+      "detection_criteria": {
+        "required_keywords": ["EXC-2025-021", "expired", "without renewal", "remediation not completed", "no follow-up", "Q2 2025", "process", "lifecycle"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "No evidence of monthly key inventory review for APP-006 detection",
+      "description": "The key management procedure Section 7 states 'Monthly review of key inventory and rotation status by Security Engineering.' If monthly reviews were occurring as documented, the APP-006 overdue rotation should have been flagged and escalated every month since October 2024. The fact that it remained unaddressed for 14 months suggests either the monthly reviews are not occurring, or the review process lacks escalation teeth. The overdue status is explicitly documented in the rotation log, meaning anyone reviewing it would see the issue.",
+      "evidence_sources": ["evidence/key-rotation-log.csv", "evidence/key-management-procedure.md"],
+      "expected_reasoning": "Procedure requires monthly key inventory review → APP-006 has been visibly OVERDUE for 14 months → monthly reviews should have caught and escalated this → either reviews not happening or lacking escalation → monitoring control ineffective.",
+      "detection_criteria": {
+        "required_keywords": ["monthly review", "key inventory", "APP-006", "OVERDUE", "14 months", "escalation", "monitoring", "not occurring"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "25 minutes",
+    "documents_count": 4,
+    "relevant_documents_count": 3,
+    "tags": ["key_management", "key_rotation", "exceptions", "red_herring", "noise_documents", "lifecycle", "PII_encryption"]
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "task_id": "cc6.1-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:18:55.334738",
+  "score": {
+    "task_id": "cc6.1-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "contractor",
+          "VPN",
+          "exempt",
+          "MFA",
+          "equivalent",
+          "Table 3-1"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "emergency",
+          "break-glass",
+          "recommended",
+          "revocation"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "service account",
+          "credential",
+          "password"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1860,
+    "output_tokens": 1308
+  },
+  "raw_response": "Certainly! Below is a list of findings based on a detailed review of the Pinnacle Financial Services Access Control Policy, focusing on any gaps or ambiguities in relation to CC6.1 (Logical Access Security).\n\n---\n\n### 1. **No Explicit Coverage of Periodic Policy Review / Update Process**\n- **Section:** General / Document Metadata\n- **Why it's a Gap:** While the approval and next review date are stated in the document metadata, there is no mention in the body of the policy of a formal process or responsible parties for periodic policy review and version updates, which can impact the assurance that access control practices remain current and effective.\n- **Severity:** Low\n\n---\n\n### 2. **Lack of Explicit Segregation of Duties Guidance**\n- **Section:** Privileged Access (3.3), Role Changes (6.2), Incident & Emergency (7.3)\n- **Why it's a Gap:** There is no explicit mention of segregation of duties (SoD) or prohibition of conflicting access (e.g., developer and production access, or requestor and approver being the same person). SoD is considered a key element of logical access under CC6.1 to prevent fraud or error.\n- **Severity:** Medium\n\n---\n\n### 3. **No Specific Control for Disabling Dormant Accounts**\n- **Section:** Access Reviews (5), Access Revocation (6)\n- **Why it's a Gap:** While quarterly access reviews are mentioned, there is no clear policy for automatically or manually disabling accounts that have been inactive/dormant beyond a defined period. Leaving inactive accounts enabled increases risk of unauthorized access.\n- **Severity:** Medium\n\n---\n\n### 4. **Emergency Access Review Not Strictly Mandatory**\n- **Section:** Incident and Emergency Procedures (7.3)\n- **Why it's a Gap:** The policy says post-incident review of emergency access is \"recommended\" and that SRE team lead \"is responsible for ensuring\" a report is included, but does not require that emergency/break-glass actions are always subject to formal, documented review. This could lead to abuse of emergency access.\n- **Severity:** High\n\n---\n\n### 5. **Ambiguity in Third-Party Contractor Controls (VPN / MFA Exemption)**\n- **Section:** Access Provisioning, Table 3-1\n- **Why it's a Gap:** Contractors using client-provided VPN are \"exempt from MFA where the contractor's home organization enforces equivalent authentication controls,\" but there's no requirement or evidence described in the policy to validate equivalence. This trust without verification weakens access security.\n- **Severity:** Medium\n\n---\n\n### 6. **No Explicit Timeframe for Emergency Access Revocation**\n- **Section:** Incident and Emergency Procedures (7.3)\n- **Why It's a Gap:** While emergency access procedures are described, the policy does not state when or how soon emergency access (emergency credential) must be revoked, reset, or re-secured after use. Prolonged availability can be exploited.\n- **Severity:** Medium\n\n---\n\n### 7. **Lack of Detail on Non-Human Identity Decommissioning**\n- **Section:** Service Accounts and Non-Human Identities (8)\n- **Why It's a Gap:** The policy describes creation, governance, and review but does not specify procedures or triggers for timely deactivation/cleanup of service accounts or API keys (e.g., upon resource decommissioning, project end, or ownership change).\n- **Severity:** Medium\n\n---\n\n### 8. **Scope of Authentication Logging/Monitoring not Fully Comprehensive**\n- **Section:** Monitoring and Logging (9)\n- **Why It's a Gap:** Policy states that \"authentication events are logged,\" but doesn't specify inclusion of authorizations, privilege escalations, or other critical logical access activities (e.g., failed privileged access attempts), nor integration with incident response.\n- **Severity:** Low\n\n---\n\n### 9. **Automated Account Lockout Process not Mapped to Unlock/Reset Procedures**\n- **Section:** Authentication (4.1)\n- **Why It\u2019s a Gap:** While the lockout criteria are defined (after 5 failed attempts), the process for unlocking accounts is not addressed\u2014whether it is automated after 30 minutes, requires IT/SOC intervention, or self-service password reset. This omission may result in unclear recovery steps and possible user lockout issues.\n- **Severity:** Low\n\n---\n\n### 10. **No Explicit Prohibition or Monitoring of Shared Accounts (Except Emergency)**\n- **Section:** General, Emergency Access (7.3)\n- **Why it\u2019s a Gap:** While the policy strictly governs emergency shared credentials, it lacks a general prohibition or monitoring guidance for shared logins elsewhere. Shared (non-emergency) accounts are a common compliance/CC6.1 concern.\n- **Severity:** Low\n\n---\n\n## Summary Table\n\n| # | Title | Section | Severity |\n|---|-----|---------|----------|\n| 1 | No Explicit Coverage of Periodic Policy Review | General/Meta | Low |\n| 2 | Lack of Explicit Segregation of Duties Guidance | 3.3, 6.2, 7.3 | Medium |\n| 3 | No Specific Control for Disabling Dormant Accounts | 5, 6 | Medium |\n| 4 | Emergency Access Review Not Strictly Mandatory | 7.3 | High |\n| 5 | Ambiguity in Third-Party Contractor Controls (VPN/MFA) | 3.1/Table 3-1 | Medium |\n| 6 | No Explicit Timeframe for Emergency Access Revocation | 7.3 | Medium |\n| 7 | Lack of Detail on Non-Human Identity Decommissioning | 8 | Medium |\n| 8 | Scope of Authentication Logging/Monitoring not Fully Comprehensive | 9 | Low |\n| 9 | Automated Account Lockout Process not Mapped to Unlock/Reset | 4.1 | Low |\n| 10 | No Explicit Prohibition/Monitoring of Shared Accounts | General/7.3 | Low |\n\n\n---\n\n**Note:** There are several areas of strength and good coverage (MFA, RBAC, access reviews, privileged account management, password policy, API key governance, access revocation timing for terminations, etc.). These findings are limited to those areas that may be called out for improvement under CC6.1 in the context of the evidence provided."
+}

@@ -1,0 +1,75 @@
+{
+  "task_id": "cc8.1-1-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T14:00:31.216416",
+  "score": {
+    "task_id": "cc8.1-1-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.375,
+    "f1": 0.5454545454545454,
+    "score": 1.0,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "segregation",
+          "separation",
+          "requesting engineer",
+          "developer",
+          "independent",
+          "review"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "testing",
+          "test",
+          "validation",
+          "staging",
+          "no requirement",
+          "before production"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "emergency",
+          "verbal",
+          "retroactive",
+          "auditable",
+          "security review",
+          "post-implementation",
+          "documentation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 679,
+    "output_tokens": 1894
+  },
+  "raw_response": "# SOC 2 CC8.1 Readiness Assessment \u2014 Change Management Policy (POL-CHG-002)\n\n**Entity:** Orion Health\n**Auditor Review Date:** Current\n**Control:** CC8.1 \u2014 Change Management\n**Document Reviewed:** POL-CHG-002 v2.0\n\n---\n\n## Assessment Summary\n\nCC8.1 requires that changes be **authorized, designed, developed or acquired, configured, documented, tested, approved, and implemented** in a controlled manner. The policy establishes a reasonable foundational framework but contains several notable gaps that would likely result in audit findings or insufficient evidence conclusions. Eight findings are identified below.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: No Mandatory Testing Requirements Before Production Deployment\n\n**Section:** 4.3 \u2014 Implementation\n\n**Gap:** The policy references a CI/CD pipeline (GitHub Actions \u2192 staging \u2192 production) but does not establish any formal testing requirements as a prerequisite for promotion to production. There is no requirement for unit testing, integration testing, regression testing, or security testing (e.g., SAST/DAST). The mere existence of a staging environment is not equivalent to a defined testing obligation. CC8.1 explicitly calls out *testing* as a required element of the change lifecycle, and without a documented testing requirement, there is no assurance that changes are validated before affecting production systems.\n\n**Severity:** \ud83d\udd34 Critical\n\n---\n\n### Finding 2: Emergency Changes Lack Adequate Pre-Implementation Authorization Controls\n\n**Section:** 4.2 \u2014 Review and Approval\n\n**Gap:** Emergency changes are permitted based solely on verbal approval from the VP Engineering, with the Jira ticket created *retroactively*. This means at the moment of deployment, there is no documented, timestamped authorization on record. From an audit perspective, verbal approvals are not verifiable, and retroactive ticket creation creates a risk that the record is constructed after the fact rather than reflecting real-time control operation. The policy also does not define what qualifies as an \"emergency,\" creating a risk that this lighter-weight pathway is used to bypass normal controls. The 48-hour retrospective CAB review is positive but insufficient to compensate for the absence of contemporaneous documented authorization.\n\n**Severity:** \ud83d\udd34 Critical\n\n---\n\n### Finding 3: No Segregation of Duties Over Deployments\n\n**Section:** 4.3 \u2014 Implementation\n\n**Gap:** The policy states that \"changes are deployed by the requesting engineer\" with no requirement for an independent reviewer or approver to authorize or perform the actual deployment. This means the same individual who authored a change can approve and deploy it to production (particularly for Standard changes, which require no approval). CC8.1, read in conjunction with the broader SOC 2 common criteria around logical access (CC6) and control activities, requires that compensating controls or segregation exist to prevent unauthorized or unreviewed changes from reaching production. The absence of any separation between developer and deployer is a significant design gap.\n\n**Severity:** \ud83d\udd34 Critical\n\n---\n\n### Finding 4: Standard Change Catalog Not Defined or Referenced\n\n**Section:** 3 \u2014 Change Categories / 4.2 \u2014 Review and Approval\n\n**Gap:** The policy references a \"Standard Change Catalog\" as the basis for pre-approving routine changes, but this catalog is not included in the policy, referenced as an attachment, or cited as a controlled document. Without a defined and maintained catalog, there is no auditable basis for determining which changes qualify as Standard versus Normal. This creates a risk that changes are self-classified as Standard to avoid CAB review. Auditors would expect to see the catalog as supporting evidence, and its absence from the policy framework is a documentation and control design gap.\n\n**Severity:** \ud83d\udfe0 High\n\n---\n\n### Finding 5: No Security or Risk Review Requirement for Changes\n\n**Section:** 4.1 \u2014 Submission / 4.2 \u2014 Review and Approval\n\n**Gap:** The change request submission requirements (description, business justification, impact assessment, rollback plan) do not include a security impact assessment or privacy impact consideration. There is no requirement to involve a security team member in CAB review, nor any threshold at which a security review is mandatory (e.g., changes touching authentication, encryption, data access controls, or PHI-handling logic). For a healthcare entity subject to SOC 2, the absence of a formalized security review step in the change process is a meaningful gap in how the control addresses risk to the confidentiality and availability of sensitive data.\n\n**Severity:** \ud83d\udfe0 High\n\n---\n\n### Finding 6: No Defined Scope or Process for Configuration and Infrastructure-as-Code Changes\n\n**Section:** 2 \u2014 Scope / 4.3 \u2014 Implementation\n\n**Gap:** While the scope mentions \"infrastructure modifications\" and \"configuration updates,\" the policy provides no specific guidance for how changes to infrastructure-as-code (e.g., Terraform, Kubernetes manifests, cloud configuration), environment variables, or security group rules are managed. These change types carry significant risk but may not follow the same Jira-based submission process as application code. There is no mention of whether CI/CD pipeline controls apply to infrastructure changes or whether configuration drift detection is in place. This is a coverage gap that could leave a meaningful category of changes outside the control boundary.\n\n**Severity:** \ud83d\udfe0 High\n\n---\n\n### Finding 7: Post-Implementation Review Is Informal and Insufficiently Defined\n\n**Section:** 4.4 \u2014 Post-Implementation\n\n**Gap:** The post-implementation review consists solely of the change owner self-verifying that the deployment was successful. There are no defined criteria for what \"successful\" means, no required timeframe for verification, no independent validation requirement, and no formal sign-off step in the Jira workflow. For higher-risk Normal changes, best practice and auditor expectations would include an independent verification step and defined acceptance criteria. The policy also does not address how failed verifications are escalated beyond noting they are \"reported to the CAB,\" with no required remediation timeline other than the 30-minute rollback window for incidents.\n\n**Severity:** \ud83d\udfe1 Medium\n\n---\n\n### Finding 8: Policy Does Not Address Change Freeze Periods or Release Scheduling Controls\n\n**Section:** General \u2014 Not Addressed\n\n**Gap:** The policy contains no provisions for change freeze periods (e.g., around critical business events, end-of-quarter, or high-risk windows) or any formal release scheduling process. While CAB meets weekly, there is no documented mechanism for denying or deferring changes based on timing risk. For healthcare entities with availability commitments and SLAs, the absence of this control represents a gap in the entity's ability to protect production stability during sensitive periods.\n\n**Severity:** \ud83d\udfe1 Medium\n\n---\n\n## Summary Table\n\n| # | Finding Title | Section | Severity |\n|---|--------------|---------|----------|\n| 1 | No Mandatory Testing Requirements | 4.3 | \ud83d\udd34 Critical |\n| 2 | Emergency Changes Lack Contemporaneous Authorization | 4.2 | \ud83d\udd34 Critical |\n| 3 | No Segregation of Duties Over Deployments | 4.3 | \ud83d\udd34 Critical |\n| 4 | Standard Change Catalog Not Defined or Referenced | 3, 4.2 | \ud83d\udfe0 High |\n| 5 | No Security Review Requirement in Change Process | 4.1, 4.2 | \ud83d\udfe0 High |\n| 6 | No Guidance for Infrastructure/Configuration Changes | 2, 4.3 | \ud83d\udfe0 High |\n| 7 | Post-Implementation Review Is Informal | 4.4 | \ud83d\udfe1 Medium |\n| 8 | No Change Freeze or Release Scheduling Controls | N/A | \ud83d\udfe1 Medium |\n\n---\n\n## Overall Readiness Assessment\n\n**Not Ready for Audit** \u2014 The policy demonstrates foundational intent but has three critical-severity gaps (testing, emergency authorization, and segregation of duties) that represent direct failures to address CC8.1's explicit requirements. These gaps are likely to result in **exceptions** if taken to a formal audit without remediation. The High severity findings would likely produce **qualified observations or management letter comments**. Remediation of Critical and High findings should be prioritized before scheduling the Type 1 or Type 2 audit window."
+}

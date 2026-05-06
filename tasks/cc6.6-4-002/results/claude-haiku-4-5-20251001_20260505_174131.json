@@ -1,0 +1,66 @@
+{
+  "task_id": "cc6.6-4-002",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-05T17:41:31.646195",
+  "score": {
+    "task_id": "cc6.6-4-002",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 0.5,
+    "precision": 0.2,
+    "f1": 0.28571428571428575,
+    "score": 0.28571428571428575,
+    "gaps_detected": 1,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SEC-EXC-2025-010",
+          "TLS 1.2",
+          "compensating controls",
+          "reconciliation"
+        ],
+        "total_keywords": 5,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "pcx-0x334455bb",
+          "SEC-EXC-2025-009",
+          "expired",
+          "staging",
+          "production"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "security group"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4102,
+    "output_tokens": 2619
+  },
+  "raw_response": "# CC6.6 Compliance Readiness Assessment\n## Stratos Payments \u2014 System Boundary Protection\n\n---\n\n## FINDINGS SUMMARY\n**Total Findings:** 5  \n**Critical:** 1 | **High:** 2 | **Medium:** 2 | **Low:** 0\n\n---\n\n## FINDING 1: Expired Cross-VPC Peering Connection Remains Active\n\n**Related Document:** VPC Peering Configuration Export; Security Exception Register (SEC-EXC-2025-009)\n\n**Issue:**\nThe security exception register documents that SEC-EXC-2025-009 (Cross-VPC peering between staging and production) **expired on 2025-10-17** with a review outcome stating \"migration completed October 10. Peering connection scheduled for deletion.\"\n\nHowever, the VPC peering configuration export (dated 2025-12-20) shows that peering connection **pcx-0x334455bb** remains **active** with:\n- Full bidirectional routing across entire VPCs (10.20.0.0/16 \u2194 10.10.0.0/16)\n- Unrestricted TCP access (ports 0-65535) between staging and production\n- Security group rules allowing all TCP traffic in both directions\n\n**Policy Violation:**\n- STR-SEC-POL-014 Section 3.1 explicitly prohibits peering between Production and Staging VPCs\n- STR-SEC-POL-014 Section 3.2 requires cross-environment connectivity to be approved via exception with maximum 6-month duration\n- The exception has expired; the peering connection should have been deleted per the documented review outcome\n\n**Risk:**\nThis creates a direct network bridge violating environment segmentation, exposing production payment data and systems to unauthorized access from staging, which per policy contains only synthetic data but may have weaker security controls. An attacker or misconfigured staging process could pivot directly to production systems without traversing external boundaries.\n\n**Severity:** **CRITICAL**\n\n---\n\n## FINDING 2: Expired ML Training Egress Exception Lacks Compensating Control Verification\n\n**Related Document:** Security Exception Register (SEC-EXC-2025-008); Production Egress Allowlist Registry\n\n**Issue:**\nSEC-EXC-2025-008 (Direct internet access for ML training node egress) **expired on 2025-11-12** with review outcome \"ML training migrated to SageMaker with managed egress.\"\n\nThe exception documented compensating controls:\n- Limited to specific EC2 instance (i-0abc123def)\n- Egress restricted to PyPI and Docker Hub via security group\n- Instance in isolated subnet with no access to payment data\n\nHowever:\n1. The egress allowlist registry does **not include PyPI or Docker Hub entries**, suggesting either:\n   - The exception traffic was not properly routed through the standard NAT/allowlist controls, or\n   - The allowlist is incomplete and doesn't reflect actual egress exceptions\n\n2. No evidence provided that the SageMaker migration was completed and the original EC2 instance was decommissioned\n\n3. If the instance still exists, it may have direct internet access that is no longer compensated by an active exception\n\n**Policy Violation:**\n- STR-SEC-POL-014 Section 6.2 explicitly prohibits direct internet access for all production instances\n- Upon exception expiration, systems must revert to policy-compliant state; no evidence of this reversion\n\n**Risk:**\nUnvalidated egress access to external package repositories could facilitate supply chain compromise, malware delivery, or data exfiltration if the legacy EC2 instance remains operational.\n\n**Severity:** **HIGH**\n\n---\n\n## FINDING 3: Active TLS 1.2 Exception on Production Payment Reconciliation Endpoint Extends Beyond Policy Timeline\n\n**Related Document:** Security Exception Register (SEC-EXC-2025-010); Network Boundary and Segmentation Policy\n\n**Issue:**\nSEC-EXC-2025-010 (TLS 1.2 on legacy payment reconciliation batch endpoint) is currently **active until 2025-12-03** (expired or expiring very soon based on audit date of 2025-12-20).\n\nThe exception states:\n- TLS 1.3 upgrade blocked by vendor library reconciliation-sdk v2.x\n- Vendor patch expected Q1 2026\n\n**Policy Violation:**\n- STR-SEC-POL-014 Section 5.1 mandates \"All production traffic must use TLS 1.3\"\n- This is an absolute requirement with no conditional language\n- The exception duration (6 months: June 1 \u2013 December 3, 2025) aligns with policy maximum, but the policy contains no provision for renewal beyond the initial period\n- The endpoint processes payment reconciliation data (financial data subject to PCI DSS), making the weaker encryption particularly sensitive\n\n**Procedural Issue:**\n- The last review date was 2025-11-28 (22 days before expiration) with outcome \"Renewed\" \u2014 but the expiration date remains 2025-12-03\n- If this exception has already expired as of the audit date (2025-12-20), the endpoint is now operating in violation of policy without a valid exception\n\n**Risk:**\nTLS 1.2 has known vulnerabilities (POODLE, other downgrade attacks). Continued use on a payment reconciliation endpoint processing financial data increases exposure to man-in-the-middle attacks and credential compromise, particularly if the endpoint is internet-accessible or traverses untrusted networks.\n\n**Severity:** **HIGH**\n\n---\n\n## FINDING 4: Lack of Evidence for VPC Flow Logs and SIEM Forwarding for Cross-VPC Peering\n\n**Related Document:** VPC Peering Configuration Export; Network Boundary and Segmentation Policy Section 6.1\n\n**Issue:**\nThe security exception register for SEC-EXC-2025-009 (the expired cross-VPC peering) documented that **\"all access logged via VPC Flow Logs\"** as a compensating control.\n\nThe VPC peering configuration export does **not include**:\n- VPC Flow Logs configuration or status\n- Evidence that logs are being forwarded to a SIEM (as required by Section 6.1: \"All egress traffic logged and forwarded to SIEM\")\n- Retention policies or log aggregation endpoints\n\nAdditionally, with the peering connection active but the exception expired, any logging controls are now operating **without a documented basis or review schedule**.\n\n**Policy Violation:**\n- STR-SEC-POL-014 Section 6.1 requires all egress traffic to be logged and forwarded to SIEM as a core control (not merely as a compensating control)\n- This is presented as a system requirement, not exception-dependent\n\n**Risk:**\nWithout evidence of functional logging and SIEM integration, the organization cannot:\n- Detect lateral movement between production and staging\n- Audit compliance with the (expired) exception's time-window restriction (Saturday 02:00-06:00 UTC)\n- Identify unauthorized access patterns\n- Meet forensic investigation requirements for security incidents\n\n**Severity:** **MEDIUM**\n\n---\n\n## FINDING 5: Egress Allowlist Does Not Include Necessary Internal AWS Service Endpoints\n\n**Related Document:** Production Egress Allowlist Registry; Network Boundary and Segmentation Policy Section 6.1\n\n**Issue:**\nThe egress allowlist contains 10 entries, but is missing documentation for several AWS service endpoints used by the documented infrastructure:\n\n**Missing Entries:**\n- **VPC Peering DNS resolution** \u2014 No Route 53 endpoints listed despite policy mandating \"DNS-based egress filtering via Route 53 Resolver rules\" (Section 6.1)\n- **AWS Certificate Authority/Vault PKI** \u2014 Policy requires \"90-day maximum lifetime via Vault PKI\" (Section 5.4) but no egress allowlist entry for certificate retrieval/OCSP validation (note: EGR-009 lists `ocsp.vault.internal` but no AWS service or external CA endpoints)\n- **ECR (Elastic Container Registry)** \u2014 If using containerized services, image pulls would require egress to public.ecr.aws or ECR VPC endpoints; not listed\n- **CloudWatch Logs** \u2014 Logging infrastructure would require egress; not listed\n- **Systems Manager/SSM Endpoints** \u2014 If using Session Manager or EC2 Systems Manager agent, VPC endpoints needed; not listed\n\n**Policy Violation:**\n- STR-SEC-POL-014 Section 6.1 requires \"allowlisted external destinations maintained in the Egress Allowlist Registry\"\n- The registry is incomplete, creating ambiguity about whether unlisted services are:\n  - Accessed via VPC endpoints (exempt from this allowlist), or\n  - Operating outside documented controls\n\n**Risk:**\nIncomplete allowlist documentation creates operational confusion and audit gaps. It increases risk of:\n- Unauthorized outbound access being missed (if services default to allowing unlisted destinations)\n- Services failing if they require egress to undocumented destinations\n- Inability to forensically validate that all outbound traffic conforms to policy\n\n**Severity:** **MEDIUM**\n\n---\n\n## SUMMARY TABLE\n\n| Finding # | Title | Severity | Status |\n|-----------|-------|----------|--------|\n| 1 | Expired Cross-VPC Peering Remains Active | **CRITICAL** | Requires immediate remediation |\n| 2 | Expired ML Training Egress Exception Lacks Verification | **HIGH** | Requires immediate investigation & remediation |\n| 3 | Active TLS 1.2 Exception Expired or Expiring | **HIGH** | Requires immediate renewal or endpoint remediation |\n| 4 | Missing VPC Flow Logs & SIEM Evidence | **MEDIUM** | Requires documentation or configuration |\n| 5 | Incomplete Egress Allowlist Documentation | **MEDIUM** | Requires audit and completion of registry |\n\n---\n\n## REMEDIATION PRIORITY\n\n1. **IMMEDIATE (within 24 hours):**\n   - Finding 1: Verify and delete peering connection pcx-0x334455bb; confirm via AWS CLI\n   - Finding 3: Confirm status of TLS 1.2 exception; either renew with CISO approval or disable endpoint\n\n2. **URGENT (within 1 week):**\n   - Finding 2: Confirm SageMaker migration completion; document or decommission legacy EC2 instance; remove any residual direct internet access\n\n3. **SCHEDULED (within 30 days):**\n   - Finding 4: Provide evidence of VPC Flow Logs configuration and SIEM integration; confirm active monitoring\n   - Finding 5: Complete egress allowlist audit; document VPC endpoint usage and add/remove entries as appropriate\n\n---\n\n## COMPLIANCE ASSESSMENT\n\n**Current Status:** \u274c **NOT READY**\n\nStratos Payments is **not ready for SOC 2 Type II certification on CC6.6** due to:\n- **Active violation of explicit policy requirements** (expired exception with active risky configuration)\n- **Gaps in logging and monitoring evidence** required to validate control effectiveness\n- **Incomplete documentation** preventing auditor validation of compensating controls\n\nRecommend **addressing all Critical and High findings before resuming Type II audit activities**."
+}

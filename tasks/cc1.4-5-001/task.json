@@ -1,0 +1,119 @@
+{
+  "id": "cc1.4-5-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.4",
+  "control_description": "The entity demonstrates a commitment to attract, develop, and retain competent individuals in alignment with objectives.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/hr-security-policy.md",
+      "type": "policy",
+      "description": "Nexus Payments Inc. HR security policy defining background check requirements, training content review requirements, AUP acknowledgment procedures, and refusal process"
+    },
+    {
+      "path": "evidence/training-content-review-log.csv",
+      "type": "log",
+      "description": "Training content review log for 2022-2025 showing annual review history, content versions, and CISO approval dates"
+    },
+    {
+      "path": "evidence/training-completion-report-2025.csv",
+      "type": "log",
+      "description": "Annual security awareness training completion report for 2025 with 20 employees showing content version v2023.1 and 3 employees on leave"
+    },
+    {
+      "path": "evidence/aup-acknowledgment-tracker.csv",
+      "type": "spreadsheet",
+      "description": "AUP acknowledgment tracker for all personnel showing signing history and one refusal case with ongoing legal review"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/employee-onboarding-checklist-q1-2025.md",
+      "type": "report",
+      "description": "Q1 2025 onboarding checklist for Sarah Kim (InfoSec Lead replacement) — contains contextual information about the staffing gap that led to the training content review failure"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II audit of Nexus Payments Inc. for the Q1 2025 observation period (January 1 - March 31, 2025). Review all personnel security evidence including the HR policy, training content review log, training completion report, AUP acknowledgment tracker, and onboarding documentation. Assess CC1.4 compliance with attention to both procedural adherence and the substance and effectiveness of controls. Some situations may require auditor judgment about whether a finding represents a genuine control gap or whether the organization handled it appropriately. Not all provided documents may be directly relevant.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "high",
+      "title": "Training content v2023.1 deployed for 2025 cycle without required annual review or CISO approval",
+      "description": "The training content review log shows the 2025 training cycle opened January 15 using content version v2023.1 — the same version used in the 2024 cycle. The 2025 review was initiated December 1, 2024, but Mark Stevens (InfoSec Lead) departed December 15, 2024, before completing it. His replacement, Sarah Kim (NXP-6022), did not start until February 3, 2025, creating a 7-week vacancy. Sarah Kim completed her content review on March 28 and recommended updates, but the content was already deployed and in use since January 15. No CISO approval was obtained for the 2025 cycle content per policy Section 4.3. The 2024 review also resulted in no changes, meaning content version v2023.1 has been in use for 3 consecutive training cycles (2023, 2024, 2025) without substantive updates. For a payments company, this means the training does not cover PCI DSS v4.0 enforcement changes that took effect in 2024, recent payment fraud techniques, or current social engineering attack patterns. The staffing gap explains why the review was not completed, but does not excuse deploying unreviewed content without CISO approval.",
+      "evidence_sources": [
+        "evidence/training-content-review-log.csv",
+        "evidence/hr-security-policy.md",
+        "evidence/employee-onboarding-checklist-q1-2025.md"
+      ],
+      "expected_reasoning": "The auditor should trace the training content version across cycles: v2023.1 was deployed for 2023 with updates, reused in 2024 without changes (but with review and CISO approval), and reused again in 2025 without completed review or CISO approval. The 2025 review entry shows the review was never completed before deployment. Policy Section 4.3 requires annual review, documentation, and CISO approval before the cycle opens. The staffing gap explains the operational failure but the organization should have either delayed the cycle or obtained interim CISO approval for the existing content. The judgment element is whether the staffing gap is a mitigating factor — it explains the cause but does not eliminate the gap.",
+      "detection_criteria": {
+        "required_keywords": ["v2023.1", "3 cycles", "2025 review", "Mark Stevens", "December 15", "Sarah Kim", "February 3", "CISO approval", "January 15", "Section 4.3", "content review", "not completed", "PCI DSS"],
+        "minimum_keyword_matches": 6
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "NXP-6021 Umar Rashid has full system access since October 2024 despite refusing AUP and unresolved legal review",
+      "description": "The AUP tracker shows NXP-6021 (Umar Rashid, Engineering) refused to sign the AUP v3.0, citing personal privacy concerns with Section 7 (device monitoring). Per policy Section 5.3, employees who refuse to sign the AUP 'may not be granted access to company information systems' and HR/General Counsel must be consulted. The notes indicate General Counsel was consulted and legal review case LEG-2024-0891 was opened November 28, 2024 — but the review 'has not concluded as of March 31, 2025,' over 4 months later. Critically, the employee was granted full system access on October 14, 2024, by the hiring manager 'before AUP status was verified,' and access has not been suspended despite the AUP refusal. This creates multiple gaps: (1) access was granted without AUP acknowledgment in violation of Section 5.1, (2) the policy states access may not be granted to employees who refuse to sign, yet access was granted and maintained, (3) the legal review has been pending for over 4 months with no resolution, and (4) no compensating control or interim risk acceptance is documented. The employee has had 5+ months of system access without ever acknowledging the organization's acceptable use requirements.",
+      "evidence_sources": [
+        "evidence/aup-acknowledgment-tracker.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should identify the 'Refused' status for NXP-6021 in the AUP tracker and read the detailed notes. The key judgment is whether the organization's response was adequate. Policy Section 5.3 provides a process for refusals (consult HR and General Counsel), which was followed. However, the policy also states access 'may not be granted' without a signed AUP, and the legal review has been pending for 4+ months without resolution while the employee maintains full access. The combination of the AUP refusal, unauthorized initial access, unresolved legal review, and continued access without suspension makes this a critical finding. The organization initiated the right process but failed to enforce the access restriction while the process was ongoing.",
+      "detection_criteria": {
+        "required_keywords": ["NXP-6021", "Umar Rashid", "refused", "AUP", "Section 7", "device monitoring", "LEG-2024-0891", "October 14", "November 28", "General Counsel", "Section 5.3", "access not suspended", "4 months", "privacy concerns"],
+        "minimum_keyword_matches": 6
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "3 employees on leave did not complete training — judgment required on whether leave constitutes acceptable exception",
+      "description": "Three employees did not complete the 2025 annual training by the March 31 deadline: NXP-6018 (Rachel Kim, parental leave since February 1, return April 14), NXP-6019 (Steven Petrov, extended medical leave since January 20, access suspended January 22), and NXP-6020 (Tara Okonkwo, parental leave since March 1, return May 15). Policy Section 4.4 requires 100% completion by March 31 with no explicit exception for employees on leave. However, NXP-6019's access was proactively suspended, indicating the organization is managing the risk. NXP-6018 and NXP-6020 are on parental leave but their access suspension status is not documented. The AUP tracker shows NXP-6018's re-acknowledgment was 'deferred to return date April 14.' The judgment question is whether employees on protected leave (parental, medical) constitute an acceptable exception to the 100% completion requirement. The policy is silent on leave-related exceptions. Best practice would be to either suspend access during extended leave or document a formal exception. NXP-6019's case is better managed (access suspended) than NXP-6018 and NXP-6020 (no documented access action).",
+      "evidence_sources": [
+        "evidence/training-completion-report-2025.csv",
+        "evidence/aup-acknowledgment-tracker.csv",
+        "evidence/hr-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should identify the 3 non-completions and evaluate each case. NXP-6019 is the strongest case for dismissal since access was proactively suspended. NXP-6018 and NXP-6020 present the judgment challenge: their leave is a valid reason they could not complete training, but the policy does not provide a leave exception, and there is no documentation of access suspension or formal exception. The organization should have either a leave exception policy, proactive access suspension during extended leave, or documented risk acceptance for each case.",
+      "detection_criteria": {
+        "required_keywords": ["NXP-6018", "NXP-6019", "NXP-6020", "Rachel Kim", "Steven Petrov", "Tara Okonkwo", "parental leave", "medical leave", "March 31", "100%", "access suspended", "no exception", "Section 4.4"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "7-week InfoSec Lead vacancy created single point of failure for training program governance",
+      "description": "The departure of Mark Stevens (InfoSec Lead) on December 15, 2024, and the start of Sarah Kim on February 3, 2025, created a 7-week gap during which no InfoSec Lead was responsible for training content review, CISO approval coordination, or training program governance. The training cycle opened January 15 during this vacancy. This indicates a single point of failure in the training program — the content review and approval process depended entirely on one individual with no documented backup or succession plan. While this is an operational risk rather than a direct control gap, it demonstrates insufficient resilience in a critical CC1.4 control.",
+      "evidence_sources": [
+        "evidence/training-content-review-log.csv",
+        "evidence/employee-onboarding-checklist-q1-2025.md"
+      ],
+      "expected_reasoning": "The auditor should connect the staffing gap to the training content review failure and identify the systemic issue: the organization's training governance depended on a single individual. When that person departed, the entire review process collapsed. A mature control environment would have a backup reviewer or a documented succession plan for critical compliance activities.",
+      "detection_criteria": {
+        "required_keywords": ["Mark Stevens", "December 15", "Sarah Kim", "February 3", "7-week", "vacancy", "single point of failure", "InfoSec Lead", "backup", "succession"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "45 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["hr_security", "judgment", "training_content", "AUP_refusal", "legal_review", "staffing_gap", "leave_exception", "PCI_DSS", "payments"]
+  }
+}

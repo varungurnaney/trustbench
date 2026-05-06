@@ -1,0 +1,85 @@
+{
+  "task_id": "cc7.2-2-001",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-01T18:24:41.800707",
+  "score": {
+    "task_id": "cc7.2-2-001",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "detection_only",
+    "recall": 0.75,
+    "precision": 0.25,
+    "f1": 0.375,
+    "score": 0.75,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 12,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "P2",
+          "business hours",
+          "after-hours",
+          "24/7",
+          "weekend",
+          "unauthorized access",
+          "coverage gap",
+          "on-call"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Qualys",
+          "weekly",
+          "vulnerability",
+          "critical",
+          "timely"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "monitoring"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "annual",
+          "tabletop",
+          "testing",
+          "insufficient",
+          "simulation"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1259,
+    "output_tokens": 2427
+  },
+  "raw_response": "# SOC 2 CC7.2 Readiness Assessment\n## Pinnacle SaaS Inc. \u2014 Incident Response Plan (POL-IR-001)\n\n---\n\n### Scope of Review\n\nCC7.2 requires the entity to: (1) monitor system components and their operation for anomalies indicative of malicious acts, natural disasters, and errors; and (2) analyze those anomalies to determine whether they represent security events. The assessment below evaluates whether the provided IRP adequately demonstrates these capabilities.\n\n---\n\n## Summary Scorecard\n\n| Severity | Count |\n|----------|-------|\n| Critical | 2 |\n| High | 3 |\n| Medium | 4 |\n| Low | 2 |\n| **Total Findings** | **11** |\n\n---\n\n## Findings\n\n---\n\n### Finding 1: No Defined Process for Analyzing Anomalies to Determine Whether They Are Security Events\n\n**Section:** 3.2 \u2014 Alert Triage\n\n**Gap Description:**\nCC7.2 explicitly requires that anomalies be *analyzed* to determine whether they constitute security events. Section 3.2 provides basic triage timelines but contains no description of *how* that analysis is performed. There is no documented decision framework, criteria, or logic for escalating an anomaly from \"alert\" to \"security event\" to \"security incident.\" Without this, there is no evidence that the entity has operationalized the core analytical requirement of the control.\n\n**Severity: Critical**\n\n---\n\n### Finding 2: No Evidence of Automated or Continuous Anomaly Detection Capabilities\n\n**Section:** 3.1 \u2014 Monitoring Sources\n\n**Gap Description:**\nThe monitoring source table lists tools (Datadog, CrowdStrike, Qualys, Proofpoint) but provides no description of *what* is being monitored, what constitutes an anomalous baseline, or whether behavioral/threshold-based detection rules are configured. CC7.2 requires monitoring for anomalies indicative of malicious acts, natural disasters, *and errors*. There is no mention of error-rate monitoring, performance anomaly detection, or capacity thresholds \u2014 only security-oriented tooling is implied. An auditor cannot conclude that monitoring is actually functioning without evidence of configured detection logic.\n\n**Severity: Critical**\n\n---\n\n### Finding 3: Natural Disasters and Environmental Threats Not Addressed\n\n**Section:** 3.1 \u2014 Monitoring Sources / Document-Wide\n\n**Gap Description:**\nCC7.2 specifically names natural disasters as a category of anomaly that must be monitored for. The IRP contains no reference to environmental monitoring, physical facility alerts, infrastructure redundancy failure signals, or disaster/business continuity triggers. There is no mapping to a BCP/DR plan or escalation path for physical/environmental events. This represents a complete gap in coverage for one of the three explicit threat categories named in the control.\n\n**Severity: High**\n\n---\n\n### Finding 4: Vulnerability Scanning Not Integrated into Anomaly Detection Workflow\n\n**Section:** 3.1 \u2014 Monitoring Sources\n\n**Gap Description:**\nQualys vulnerability scans are listed as a monitoring source, but results are routed only as a \"weekly report to Security Lead.\" There is no documented process for how scan findings feed into anomaly triage, whether critical vulnerabilities trigger incident-level response, or what thresholds require escalation. A weekly report cadence also means newly discovered critical vulnerabilities may go unaddressed for up to seven days, which is inconsistent with the spirit of continuous monitoring under CC7.2.\n\n**Severity: High**\n\n---\n\n### Finding 5: P3/P4 Alert Review Has No Documented Aggregation or Trend Analysis Process\n\n**Section:** 3.2 \u2014 Alert Triage\n\n**Gap Description:**\nP3 and P4 alerts are deferred to \"next business day\" review with no documented process for aggregating, correlating, or trending these lower-severity alerts. CC7.2 requires analysis of anomalies, and a pattern of P3/P4 alerts could be indicative of a low-and-slow attack, reconnaissance activity, or systemic errors. Without an aggregation or correlation process, these signals may never be evaluated in context. There is also no defined owner responsible for conducting this daily review.\n\n**Severity: High**\n\n---\n\n### Finding 6: No Defined Baseline or Threshold Documentation for Monitoring Tools\n\n**Section:** 3.1 \u2014 Monitoring Sources\n\n**Gap Description:**\nThe plan references Datadog and CrowdStrike as monitoring tools but does not document what normal operating baselines look like, what alert thresholds are configured, or how those thresholds were established. CC7.2 requires anomaly detection, which presupposes a defined \"normal.\" Without documented baselines, it is impossible to verify that the monitoring program would reliably surface deviations. This is an evidence gap that will likely require supplemental documentation (e.g., Datadog alert configuration exports) to close.\n\n**Severity: Medium**\n\n---\n\n### Finding 7: Annual Tabletop Exercise Is Insufficient to Validate Detection Capabilities\n\n**Section:** 6 \u2014 Plan Testing\n\n**Gap Description:**\nThe IRP specifies only an annual tabletop exercise as the testing mechanism. CC7.2 implicitly requires that monitoring be *operational and effective*, not just planned. A tabletop exercise tests decision-making processes but does not validate that detection tools are correctly configured, that alerts are actually firing, or that the triage process works as designed. There is no mention of purple team exercises, alert simulation, or functional testing of detection rules (e.g., simulated attack scenarios or red team engagements).\n\n**Severity: Medium**\n\n---\n\n### Finding 8: On-Call Coverage Gap for P2/P3 Alerts Outside Business Hours\n\n**Section:** 3.2 \u2014 Alert Triage\n\n**Gap Description:**\nThe plan provides 24/7 on-call coverage only for P1 alerts. P2 alerts \u2014 which include unauthorized access to production systems \u2014 are triaged only within 15 minutes *during business hours*, with no defined after-hours response commitment. A P2 event occurring at 2:00 AM on a weekend could go undetected for hours. This creates a monitoring gap that is inconsistent with CC7.2's expectation of continuous system monitoring.\n\n**Severity: Medium**\n\n---\n\n### Finding 9: No Documented Log Retention Policy Referenced\n\n**Section:** 3.1 / 4.4 \u2014 Monitoring Sources / Evidence Preservation\n\n**Gap Description:**\nWhile Section 4.4 addresses evidence preservation during an active incident, there is no reference to a log retention policy governing how long monitoring data is retained under normal (non-incident) conditions. CC7.2 requires ongoing monitoring, which depends on having sufficient historical log data for anomaly detection and retrospective analysis. Without a defined retention period, there is no assurance that logs are available to support lookback investigations.\n\n**Severity: Medium**\n\n---\n\n### Finding 10: Contact List Maintained Outside the Document Without Version Control Visibility\n\n**Section:** 8 \u2014 Contact List\n\n**Gap Description:**\nCritical escalation contact information is stored separately in an internal wiki and updated quarterly. The IRP does not specify a review or validation process to confirm the contact list is accurate at the time of an incident. Stale contact information could impair timely escalation, which is part of the anomaly-to-response chain. An auditor cannot confirm the contact list is current or controlled without reviewing the wiki separately.\n\n**Severity: Low**\n\n---\n\n### Finding 11: Post-Mortem Process Does Not Explicitly Require Monitoring Gap Analysis\n\n**Section:** 5.1 / 5.2 \u2014 Post-Mortem / Lessons Learned\n\n**Gap Description:**\nThe post-mortem template requirements (timeline, root cause, impact assessment, action items) do not explicitly require an assessment of whether existing monitoring controls detected the incident in a timely manner, or whether detection gaps contributed to the event. CC7.2 is strengthened by a feedback loop that improves detection over time. While Section 5.2 mentions updating detection rules, this is stated broadly and is not formally tied to the post-mortem structure.\n\n**Severity: Low**\n\n---\n\n## Consolidated Gap Summary\n\n| # | Finding Title | Section | Severity |\n|---|---------------|---------|----------|\n| 1 | No process to analyze anomalies and classify as security events | 3.2 | Critical |\n| 2 | No evidence of configured detection logic or behavioral baselines | 3.1 | Critical |\n| 3 | Natural disasters and environmental threats not addressed | 3.1 / General | High |\n| 4 | Vulnerability scanning not integrated into anomaly triage | 3.1 | High |\n| 5 | No aggregation or trend analysis for P3/P4 alerts | 3.2 | High |\n| 6 | No documented monitoring baselines or alert thresholds | 3.1 | Medium |\n| 7 | Annual tabletop only \u2014 no functional detection testing | 6 | Medium |\n| 8 | P2 alerts lack 24/7 on-call coverage | 3.2 | Medium |\n| 9 | No log retention policy referenced | 3.1 / 4.4 | Medium |\n| 10 | Contact list stored externally with no validation process | 8 | Low |\n| 11 | Post-mortem does not require detection effectiveness review | 5.1 / 5.2 | Low |\n\n---\n\n## Recommended Remediation Priorities\n\n1. **Immediate (before audit):** Document a formal anomaly analysis and classification procedure (Finding 1) and produce evidence of configured detection rules with defined baselines (Finding 2). These are foundational to demonstrating CC7.2 compliance.\n\n2. **Short-term (30\u201360 days):** Extend on-call coverage to P2 incidents (Finding 8), integrate Qualys findings into the triage workflow (Finding 4), and add environmental/natural disaster monitoring references or a cross-reference to the BCP/DR plan (Finding 3).\n\n3. **Medium-term (60\u201390 days):** Establish a formal P3/P4 aggregation process with a named owner (Finding 5), document a log retention standard (Finding 9), and supplement tabletop testing with functional detection testing (Finding 7).\n\n4. **Ongoing:** Embed detection gap analysis into post-mortem templates (Finding 11) and formalize the contact list review process with documented version control (Finding 10)."
+}

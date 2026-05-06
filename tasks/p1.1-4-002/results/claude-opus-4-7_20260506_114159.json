@@ -1,0 +1,88 @@
+{
+  "task_id": "p1.1-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:41:59.940361",
+  "score": {
+    "task_id": "p1.1-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.3,
+    "f1": 0.4615384615384615,
+    "score": 0.4615384615384615,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "312",
+          "respect_opt_out",
+          "false",
+          "GA4 migration"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "migration",
+          "DPO-2025-041",
+          "v3.1",
+          "unchanged",
+          "re-consent",
+          "not required"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "3 years",
+          "5 years",
+          "Health Assessment",
+          "retention",
+          "discrepancy"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "nh_health_session",
+          "health assessment",
+          "analytics category",
+          "sensitive",
+          "separate",
+          "grouped",
+          "health-specific"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 7906,
+    "output_tokens": 2945
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 Control P1.1 (Privacy Notice)\n\n## Scope Note\nThe Network Architecture Overview (NET-ARCH-2025-v2) is not relevant to P1.1 and was excluded from this assessment. The Privacy Policy v4.0, CookieBot configuration, Data Retention Schedule, and Consent Management export were cross-referenced to evaluate whether the privacy notice accurately reflects actual practices.\n\n---\n\n## Findings\n\n### Finding 1: Material discrepancy between disclosed and actual health data retention period\n**Document/Section:** Privacy Policy \u00a76 \"Data Retention\" vs. Data Retention Schedule (row 3)\n**Gap:** The privacy notice states personal health information is retained for \"a maximum of 3 years after your last interaction with the platform.\" However, the internal retention schedule specifies Health Assessment Data is retained for **5 years after last assessment** (justified by Clinical Advisory Board recommendation CAB-2024-008). The notice materially understates actual retention of the most sensitive data category. Data subjects cannot make informed decisions if disclosed practices contradict actual practices.\n**Severity:** **Critical**\n\n---\n\n### Finding 2: Analytics opt-out mechanism not honored \u2014 direct contradiction with privacy notice\n**Document/Section:** Privacy Policy \u00a75 \"Your Choices\" vs. CookieBot configuration (`analytics.respect_opt_out: false`)\n**Gap:** The privacy policy explicitly states: \"You can opt out of non-essential analytics tracking at any time\u2026 We respect your choice and will not track your usage for analytics purposes once you opt out.\" The CookieBot configuration shows `respect_opt_out: false` for the analytics category, with an internal comment indicating this was \"temporarily disabled during GA4 migration\" (ENG-4521, target 2025-11-01). Regardless of the operational justification, the notice makes a representation that is currently false. Per consent log summary, 312 users have opted out of analytics \u2014 these opt-outs are not being honored.\n**Severity:** **Critical**\n\n---\n\n### Finding 3: Health assessment progression cookie miscategorized; sensitive processing not disclosed\n**Document/Section:** Privacy Policy \u00a72/\u00a73 vs. CookieBot config (`nh_health_session` cookie)\n**Gap:** The `nh_health_session` cookie tracks completion of specific health assessment modules (cardiovascular, mental health, nutrition, sleep) and \"wellness journey stage\" feeding the personalization/recommendation engine. This is processing of sensitive health-related data via cookies, but it is grouped under generic \"Analytics & Performance\" with a description (\"understand how visitors interact\") that does not disclose health-specific tracking or personalization use. The privacy notice does not specifically inform data subjects that cookie-based tracking includes health module progression used for personalized recommendations.\n**Severity:** **High**\n\n---\n\n### Finding 4: Mixpanel and Datadog not disclosed as data recipients/processors\n**Document/Section:** Privacy Policy \u00a77 \"Data Sharing\"\n**Gap:** \u00a77 lists only AWS, Stripe, SendGrid, and Intercom as service providers. However:\n- The retention schedule (row 5) confirms Usage Analytics are stored in **Mixpanel**.\n- CookieBot configuration confirms **Mixpanel** (`mp_nextera_token`) and **Datadog** (`_dd_s` RUM) cookies set on the domain.\n- A Facebook Pixel (`_fbp`) and LinkedIn Insight Tag (`li_fat_id`) are also deployed for marketing.\n\nThese categories of recipients are not disclosed in the privacy notice, which violates the transparency requirement that data subjects be informed of categories of recipients.\n**Severity:** **High**\n\n---\n\n### Finding 5: International data transfers / US recipients not disclosed\n**Document/Section:** Privacy Policy \u00a77 and general\n**Gap:** The notice claims jurisdiction includes EU/UK/US and lists US-based processors (Stripe, SendGrid, Intercom, plus undisclosed Mixpanel, Datadog, Meta, LinkedIn, Google Analytics, Cloudflare). The notice does not disclose international transfers, transfer mechanisms (SCCs, UK IDTA, adequacy decisions), or that data leaves the UK/EU \u2014 even though the Network Architecture document claims \"all data remains within UK/EU AWS regions\" (which conflicts with the use of these US SaaS processors). Required UK GDPR Article 13(1)(f) disclosure is absent.\n**Severity:** **High**\n\n---\n\n### Finding 6: Inconsistent retention period for marketing/consent records vs. notice silence\n**Document/Section:** Privacy Policy \u00a76 vs. Retention Schedule (rows 5, 7, 8, 9, 10)\n**Gap:** The privacy notice discloses retention only for: health information (3 years \u2014 see Finding 1), account data (subscription + 12 months), and payment records (7 years). It is silent on retention of:\n- Usage Analytics (24 months)\n- Support Communications (24 months)\n- Marketing Consent Records (24 months)\n- Research Participation Data (10 years)\n- Application Logs (12 months)\n\nP1.1 requires notice of retention practices for each category collected.\n**Severity:** **Medium**\n\n---\n\n### Finding 7: Research data retention period not disclosed in notice\n**Document/Section:** Privacy Policy \u00a73/\u00a76 vs. Retention Schedule (row 9)\n**Gap:** The notice mentions \"anonymized health research (with separate consent)\" but does not disclose the **10-year retention period** for research participation data. Given the 1,956 users who have actively opted out of health research, transparency around what happens to those who opt in (including duration) is material.\n**Severity:** **Medium**\n\n---\n\n### Finding 8: \"Country-level only\" geolocation claim potentially inconsistent\n**Document/Section:** Privacy Policy \u00a72 \"Information Collected Automatically\"\n**Gap:** The notice states geolocation is \"country-level\u2026not precise location.\" However, the platform collects full IP address (per consent records storing IP hashes) and uses Cloudflare/AWS WAF. While IP-derived geolocation can be country-level, the IP address itself is precise data and is used for security/fraud prevention (a use disclosed elsewhere). The notice's framing may understate what is actually collected. Recommend clarification.\n**Severity:** **Low**\n\n---\n\n### Finding 9: Pre-v4.0 consent migration not addressed in user-facing notice\n**Document/Section:** Privacy Policy \u00a711 \"Changes to This Policy\" vs. Consent Export (records CR-0011 through CR-0024)\n**Gap:** 14+ documented (and per summary, more) consent records remain on policy v3.1 with annotation \"Migrated from v3.1 policy \u2014 consent scope unchanged; re-consent not required per DPO assessment DPO-2025-041.\" The privacy notice promises \"We will notify you of material changes via email at least 30 days before they take effect.\" There is no evidence within the provided documents of the v3.1\u2192v4.0 notification, and the DPO assessment justifying no re-consent is not provided for review. This is a documentation/evidence gap rather than a confirmed violation, but should be substantiated before audit.\n**Severity:** **Medium**\n\n---\n\n### Finding 10: Cookie scanner last scan date inconsistent with audit period\n**Document/Section:** CookieBot configuration (`last_scan_date: 2025-12-20`)\n**Gap:** Minor data quality issue \u2014 the scan date is recorded as 2025-12-20 while the configuration's `last_updated` is 2025-09-15 and the audit period covers Q3-Q4 2025. The future-dated scan (relative to config update) suggests either a data entry error or an unverified field. Worth confirming the scanner is operating as scheduled, since the privacy notice's accuracy depends on cookie inventory completeness.\n**Severity:** **Low**\n\n---\n\n## Summary\n\n| Severity | Count |\n|---|---|\n| Critical | 2 |\n| High | 3 |\n| Medium | 3 |\n| Low | 2 |\n\n**Overall P1.1 Readiness:** **Not Ready.** Two Critical findings (retention misrepresentation and unhonored opt-outs) reflect a privacy notice that does not accurately describe actual practices \u2014 the core requirement of P1.1. Remediation of Findings 1 and 2 should be prioritized before any SOC 2 Type II observation period begins. The \"temporary\" disabling of analytics opt-out is particularly concerning given it directly contradicts an affirmative representation made to users."
+}

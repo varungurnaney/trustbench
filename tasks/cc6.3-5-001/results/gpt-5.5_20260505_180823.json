@@ -1,0 +1,72 @@
+{
+  "task_id": "cc6.3-5-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T18:08:23.238953",
+  "score": {
+    "task_id": "cc6.3-5-001",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2727272727272727,
+    "f1": 0.42857142857142855,
+    "score": 0.42857142857142855,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DS-STG-007",
+          "test data",
+          "Production Clone",
+          "masking",
+          "not required",
+          "PII",
+          "weekly"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "not included",
+          "PII",
+          "email",
+          "unmasked"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "d.okonkwo",
+          "expiration",
+          "contractor",
+          "staging",
+          "unmasked"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3361,
+    "output_tokens": 2472
+  },
+  "raw_response": "## Overall Readiness Assessment\n\nPrism is **not ready** for CC6.3 with respect to non-production data access and masking. The most significant issue is that a full production clone containing real PII is present in staging and broadly accessible, despite policy prohibitions and no CISO-approved exception.\n\n---\n\n## Findings\n\n| # | Finding Title | Related Document / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Unmasked production PII present in staging under \u201ctest data\u201d designation | **Data masking pipeline configuration \u2014 `excluded_datasets` DS-STG-007**; **Staging dataset inventory \u2014 DS-STG-007**; **Policy Sections 4.1, 4.2, 7** | DS-STG-007 is a weekly refreshed production clone containing real PII, including full name, email, phone, SSN, DOB, and physical address. It is excluded from masking because the QA lead classified it as \u201ctest data.\u201d This is not a substantive control basis and directly conflicts with the policy requirement that non-production environments must not contain unmasked production data. No CISO-approved exception or compensating controls are documented. | **Critical** |\n| 2 | QA lead approval used in place of required CISO exception | **Data masking pipeline configuration \u2014 DS-STG-007 exclusion reason**; **Policy Section 7 \u2014 Exceptions** | The exclusion for DS-STG-007 was approved by Jamie Morrison, QA Lead. However, the policy requires exceptions to be CISO-approved, documented in an exception register, time-bound to a maximum of six months, and supported by compensating controls. None of those requirements are evidenced. | **High** |\n| 3 | Email addresses are not included in the masking pipeline | **Data masking pipeline configuration \u2014 `masking_rules`**; **Policy Sections 4.3 and 4.4**; **Dataset inventory \u2014 DS-STG-002 notes** | The policy defines email addresses as PII and requires synthetic email generation in non-production environments. The masking configuration does not include an email masking rule. DS-STG-002 explicitly notes that email addresses are not masked. This indicates masking coverage is incomplete for production-derived staging datasets. | **High** |\n| 4 | Masking validation scope excludes a known production PII dataset | **Data masking pipeline configuration \u2014 `validation`**; **Policy Section 4.5** | The validation result only covers DS-STG-001 through DS-STG-005 and excludes DS-STG-007, even though DS-STG-007 contains real production PII. Excluding the highest-risk dataset from validation undermines the effectiveness of the masking control and allows unmasked PII to remain undetected or unremediated. | **High** |\n| 5 | Broad \u201cALL\u201d access to staging exposes unmasked PII to multiple users | **Staging database access grants \u2014 `datasets_accessible = ALL`**; **Policy Sections 3.1, 3.2, 6.1** | Several users have access to **ALL** staging datasets, including DS-STG-007, which contains real PII. This includes QA users and a contractor. Because DS-STG-007 is unmasked, these grants provide broad access to restricted production PII and do not demonstrate least privilege. | **High** |\n| 6 | Contractor has read/write access to all staging datasets without expiration date | **Staging database access grants \u2014 d.okonkwo**; **Policy Section 6.2** | The contractor account for Dayo Okonkwo has read/write access to **ALL** staging datasets, including the unmasked production clone, and has no expiration date recorded. The policy requires contractor accounts to have a defined expiration date not exceeding the contract end date. | **High** |\n| 7 | Access approvals are not evidenced for staging database grants | **Staging database access grants \u2014 `granted_by` field**; **Policy Sections 3.3 and 6.1** | The access listing shows grants made by `db_admin` or `postgres`, but does not evidence ServiceNow requests or the required approval chain. For Restricted / PII data, the policy requires Manager, Data Owner, Privacy Officer, and CISO approval. The evidence does not demonstrate that access was authorized according to role, data classification, and least privilege requirements. | **Medium** |\n| 8 | Read/write access appears excessive for several non-admin users | **Staging database access grants \u2014 access levels for QA and Engineering users**; **Policy Sections 3.1 and 3.2** | Multiple QA and Engineering users have read/write access to broad staging datasets. The evidence does not show why write access is required for each user or whether read-only access would be sufficient. This weakens least privilege and increases the risk of unauthorized data modification or misuse in non-production systems. | **Medium** |\n| 9 | Quarterly access reviews are required but not evidenced | **Policy Section 6.3**; **Staging database access grants** | The policy requires quarterly access reviews for all environments, including non-production. The evidence includes current grants but does not include access review records, reviewer sign-off, remediation tracking, or evidence that excessive access was identified and removed. | **Medium** |\n| 10 | Physical address masking coverage is inconsistent | **Data masking pipeline configuration \u2014 `physical_address` masking rule**; **Dataset inventory \u2014 DS-STG-005 notes**; **Policy Section 4.4** | The pipeline configuration applies physical address masking to DS-STG-001, DS-STG-002, and DS-STG-004 only. However, the inventory notes that DS-STG-005 contains shipping addresses that are generalized to city/state. The evidence is inconsistent and does not clearly demonstrate that all address fields in DS-STG-005 are masked by the approved pipeline. | **Medium** |\n| 11 | Dataset classification does not align with actual data sensitivity | **Dataset inventory \u2014 DS-STG-007 masking status and notes**; **Policy Sections 4.1, 4.3, 7** | DS-STG-007 is marked \u201cNot Required \u2014 Test Data\u201d despite being sourced from production and containing real PII. Labeling production-derived PII as \u201ctest data\u201d does not change its sensitivity or control requirements. This classification appears cosmetic and results in bypassing required masking and exception processes. | **High** |\n\n---\n\n## Key CC6.3 Impact\n\nThe evidence does not demonstrate that access to protected information assets in staging is consistently governed according to:\n\n- **Least privilege**\n- **Role-based access**\n- **Data sensitivity**\n- **Approved authorization workflow**\n- **Appropriate removal or expiration of access**\n- **Effective masking before non-production use**\n\nThe presence of unmasked production PII in DS-STG-007, combined with broad staging access, is the primary control failure."
+}

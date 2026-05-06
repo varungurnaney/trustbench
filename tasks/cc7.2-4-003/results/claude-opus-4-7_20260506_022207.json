@@ -1,0 +1,73 @@
+{
+  "task_id": "cc7.2-4-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T02:22:07.494377",
+  "score": {
+    "task_id": "cc7.2-4-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "low",
+        "detected": true,
+        "matched_keywords": [
+          "recommendation-engine-v2",
+          "December 8",
+          "December 10",
+          "in progress"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "fraud-detection-sidecar",
+          "November 18",
+          "340K transactions",
+          "payment data",
+          "vendor dashboard"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "ALT-Q4-015",
+          "ALT-Q4-019",
+          "SLA breach",
+          "18 minutes",
+          "6 minutes",
+          "Black Friday",
+          "concurrent",
+          "capacity"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5736,
+    "output_tokens": 3040
+  },
+  "raw_response": "# CC7.2 Readiness Assessment \u2014 Zenith Commerce\n\n**Control:** CC7.2 \u2014 Monitoring system components for anomalies indicative of malicious acts, natural disasters, and errors; analyzing anomalies to determine security events.\n\n**Observation Period:** Q4 2025 (October 1 \u2013 December 31, 2025)\n\n**Documents Reviewed:**\n- ZEN-SEC-STD-008 (Security Monitoring Standards) \u2014 relevant\n- Datadog Coverage Report Q4 2025 \u2014 relevant\n- Q4 2025 Alert Response Log \u2014 relevant\n- Change Management Summary Q4 2025 \u2014 **not directly relevant** to CC7.2; excluded from analysis\n\n---\n\n## Findings\n\n### Finding 1: Critical production service (fraud-detection-sidecar) has no security monitoring\n\n- **Related to:** Datadog Coverage Report \u2014 `unmonitored_services`; ZEN-SEC-STD-008 \u00a73.2 (3-business-day SIEM integration SLA), \u00a73.3 (required log sources), \u00a75.1\n- **Gap:** The fraud-detection-sidecar was deployed November 18, 2025 and remained unmonitored by Datadog through December 31, 2025 \u2014 **44 days past** the 3-business-day integration SLA. The service processes 100% of payment transactions including PII/PCI-relevant data (payment data, IPs, device fingerprints, ~340K transactions/day). The reliance on the FraudShield vendor dashboard as a \"compensating control\" is inadequate because (a) Zenith's own Security Operations team has no direct access to raw logs, (b) no documented evaluation of the vendor's alerting/SLAs against ZEN-SEC-STD-008 \u00a74 requirements, and (c) the vendor's monitoring is not integrated with Zenith's incident response workflow. The reconciliation alert from Nov 18 was merely \"Acknowledged \u2014 vendor integration in progress\" with no remediation timeline or risk acceptance documented. CC7.2 requires monitoring of components material to meeting objectives; a fraud-detection capability over the entire payment stream qualifies.\n- **Severity:** **Critical**\n\n---\n\n### Finding 2: Recommendation-engine-v2 partial monitoring exceeds SLA and lacks required alert rules\n\n- **Related to:** Datadog Coverage Report \u2014 `partially_monitored_services`; ZEN-SEC-STD-008 \u00a73.2, \u00a74.1\n- **Gap:** Recommendation-engine-v2 was deployed December 8, 2025. The Datadog agent was installed December 10 (within SLA), but as of the December 31 reporting date (23 days post-deployment) the service had only 2 of the 4 minimum required alert rules per \u00a74.1. Missing: authentication failure threshold, latency anomaly detection, and data access monitoring. The service handles 4.2M requests/day involving customer browsing/purchase history (personal data). The standard does not define an explicit SLA for completing alert-rule configuration after agent install, but a 23-day gap on a high-volume customer-data service represents a material monitoring deficiency.\n- **Severity:** **High**\n\n---\n\n### Finding 3: P1 SLA breach on data-exfiltration alert (ALT-Q4-019)\n\n- **Related to:** Alert Response Log \u2014 ALT-Q4-019; ZEN-SEC-STD-008 \u00a74.2\n- **Gap:** Alert ALT-Q4-019 (P1 data_exfiltration on marketplace-api, December 15) was acknowledged in 6 minutes versus the 5-minute P1 SLA. While the overrun is small (1 minute) and was a true positive that was successfully remediated, P1 alerts represent the highest severity tier and any miss should be tracked. No root-cause or corrective action is documented in the log. Combined with Finding 4, this indicates SLA breaches are recorded but not formally remediated.\n- **Severity:** **Low**\n\n---\n\n### Finding 4: P2 SLA breach on Black Friday (ALT-Q4-015) \u2014 concurrent-incident capacity gap\n\n- **Related to:** Alert Response Log \u2014 ALT-Q4-015; ZEN-SEC-STD-008 \u00a74.2, \u00a74.3\n- **Gap:** Alert ALT-Q4-015 (P2 error_rate_spike on order-management) was acknowledged in 18 minutes versus the 15-minute P2 SLA. The recorded reason \u2014 \"On-call handling concurrent P1 from user-auth\" \u2014 exposes a structural weakness: the dual-pager routing in \u00a74.3 routes P1/P2 to the same on-call rotation (Security + SRE), so a single concurrent incident degrades P2 response. There is no documented surge or escalation procedure for concurrent high-severity events, particularly during peak periods (Black Friday). This is a recurring risk, not a one-off.\n- **Severity:** **Medium**\n\n---\n\n### Finding 5: No evidence of false-positive rate measurement or tuning per \u00a74.4\n\n- **Related to:** ZEN-SEC-STD-008 \u00a74.4; Alert Response Log\n- **Gap:** Of the 19 monitored alerts in Q4, 6 were false positives (~32%) \u2014 above the 20% threshold in \u00a74.4 that mandates tuning within 5 business days. False positives included repeat patterns (external dependency degradation: Stripe, Twilio, partner maintenance; expected seasonal batch jobs). No evidence was provided of: (a) per-rule false-positive rate tracking, (b) tuning tickets or Datadog Audit Trail entries showing rule adjustments, or (c) suppression rules for known external-dependency patterns. The standard's tuning requirement appears unenforced.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: Quarterly monitoring coverage audit not evidenced\n\n- **Related to:** ZEN-SEC-STD-008 \u00a75.2\n- **Gap:** Section 5.2 requires a manual quarterly audit covering service inventory reconciliation, alert rule completeness, log retention compliance, and false positive rate review. No Q4 2025 quarterly audit report or attestation was provided. The Datadog Coverage Report appears to be an automated/system-generated artifact; it does not demonstrate the manual audit required by policy. The fact that gaps in Findings 1, 2, and 5 went unremediated suggests the quarterly audit either did not occur or did not result in corrective action.\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: Reconciliation alert severity insufficient for high-risk service onboarding\n\n- **Related to:** ZEN-SEC-STD-008 \u00a75.1; Coverage Report \u2014 `automated_reconciliation`\n- **Gap:** The daily reconciliation generates a P3 alert (business-hours response, 1-hour SLA) when a new unmonitored service is detected. This severity proved inadequate for fraud-detection-sidecar (Finding 1), where a P3 acknowledgement permitted 44+ days of no monitoring on a payment-critical service. The standard does not require severity escalation based on the data sensitivity or criticality of the unmonitored service, nor does it require a remediation deadline tied to the \u00a73.2 SLA.\n- **Severity:** **Medium**\n\n---\n\n### Finding 8: No documented monitoring for natural disasters / infrastructure-availability anomalies\n\n- **Related to:** CC7.2 control language; ZEN-SEC-STD-008 \u00a74.1\n- **Gap:** CC7.2 explicitly addresses anomalies indicative of \"natural disasters\" in addition to malicious acts and errors. The minimum alert rules in \u00a74.1 cover application-level signals (error rate, auth, latency, health checks) but the documentation does not address AWS region-level health, AZ failover detection, or infrastructure-disaster scenarios despite operating in two regions (us-east-1, eu-west-1). Synthetic monitoring per \u00a76 covers third-party services but not Zenith's own multi-region resilience signals.\n- **Severity:** **Low**\n\n---\n\n## Summary\n\n| Severity | Count |\n|----------|-------|\n| Critical | 1 |\n| High | 1 |\n| Medium | 4 |\n| Low | 2 |\n\n**Overall Readiness Conclusion:** **Not Ready.** The fraud-detection-sidecar gap (Finding 1) alone is likely to result in a qualified opinion or material weakness for CC7.2. A core security-relevant component processing 100% of payment transactions has been unmonitored by the entity's SIEM for over six weeks during the audit period, with insufficient compensating controls and no documented risk acceptance. The recommendation-engine-v2 partial monitoring (Finding 2) compounds the concern by demonstrating the gap is not isolated. Findings 5\u20137 indicate the underlying governance processes (tuning, quarterly audit, reconciliation severity) are not effectively enforcing the well-written standard. **Remediation required prior to Type 2 attestation.**"
+}

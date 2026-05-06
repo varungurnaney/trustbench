@@ -1,0 +1,82 @@
+{
+  "task_id": "cc6.3-5-002",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T18:39:52.098294",
+  "score": {
+    "task_id": "cc6.3-5-002",
+    "model": "gpt-5.5",
+    "scoring_method": "f1",
+    "recall": 0.75,
+    "precision": 0.375,
+    "f1": 0.5,
+    "score": 0.5,
+    "gaps_detected": 3,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "Priya Mehta",
+          "SOW-NB-2025-034",
+          "NDA",
+          "48 hours",
+          "active",
+          "customer_analytics"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "Marcus Webb",
+          "SOW-NB-2025-042",
+          "NDA"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "svc-appdev-team",
+          "shared",
+          "Jason Torres",
+          "Lisa Huang",
+          "Kevin Park",
+          "AppDev Partners",
+          "individual",
+          "accountability"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "low",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3895,
+    "output_tokens": 4159
+  },
+  "raw_response": "## Findings for CC6.3 \u2014 Contractor Data Access\n\n### 1. Contractor access remained active after SOW completion for Priya Mehta\n\n**Related document section:**  \n- Data Access Policy \u00a76.1 Pre-Provisioning Requirements  \n- Data Access Policy \u00a76.3 Access Duration and Revocation  \n- Active Contractor Access Register  \n- Q4 2025 Database Access Audit Log\n\n**Why it\u2019s a gap:**  \nPriya Mehta\u2019s SOW, **SOW-NB-2025-034**, ended on **2025-11-15** and is marked **Completed** in the access register. However, her database account `p.mehta` has no revocation date and remained active after the SOW end date.\n\nThe audit log shows multiple queries after the SOW ended:\n\n- **2025-11-22** \u2014 `customer_analytics`, 1,500 rows, note: \u201cPost-SOW query \u2014 access should have been revoked\u201d\n- **2025-12-08** \u2014 `customer_analytics`, 2,200 rows, note: \u201cContinued unauthorized access \u2014 23 days post SOW\u201d\n- **2025-12-18** \u2014 `customer_analytics`, 1,800 rows, note: \u201cStill querying \u2014 33 days post SOW end\u201d\n\nPolicy requires contractor access to be revoked within **48 hours** of SOW completion or contract end date. The existence of an NDA does not justify continued system access after the SOW has ended. NDAs provide confidentiality obligations, but they do not replace authorization, active business need, or least-privilege requirements.\n\n**Severity:** High\n\n---\n\n### 2. Restricted data access occurred before SOW start, access grant date, and required pre-provisioning conditions\n\n**Related document section:**  \n- Data Access Policy \u00a73 Data Classification  \n- Data Access Policy \u00a76.1 Pre-Provisioning Requirements  \n- Data Access Policy \u00a76.3 Access Duration and Revocation  \n- Active Contractor Access Register  \n- NDA Register  \n- Q4 2025 Database Access Audit Log\n\n**Why it\u2019s a gap:**  \nRachel Kim and Omar Hassan are listed under **SOW-NB-2025-045**, with:\n\n- SOW start date: **2025-11-01**\n- Access granted date: **2025-11-05**\n- NDA execution date: **2025-10-28**\n- Data classification: **Restricted**\n\nHowever, the database audit log shows activity before the SOW start date and before the recorded access grant date:\n\n- **Rachel Kim** queried `customer_profiles` on **2025-10-24**, before:\n  - SOW start date of 2025-11-01\n  - access granted date of 2025-11-05\n  - NDA execution date of 2025-10-28\n  - background check completion date of 2025-10-25\n\n- **Omar Hassan** queried `payment_history` on **2025-10-28**, before:\n  - SOW start date of 2025-11-01\n  - access granted date of 2025-11-05\n\nBoth `customer_profiles` and `payment_history` are Restricted data types. This indicates access to sensitive customer/payment-related data occurred before required authorization and provisioning prerequisites were met.\n\n**Severity:** Critical\n\n---\n\n### 3. Shared contractor database account used by AppDev Partners team\n\n**Related document section:**  \n- Data Access Policy \u00a76.2 Individual Accountability  \n- Data Access Policy \u00a74.1 Least Privilege  \n- Active Contractor Access Register  \n- Q4 2025 Database Access Audit Log\n\n**Why it\u2019s a gap:**  \nThe access register shows three AppDev Partners contractors \u2014 Jason Torres, Lisa Huang, and Kevin Park \u2014 all assigned to the same database account: `svc-appdev-team`.\n\nThe policy explicitly states:\n\n> \u201cEach contractor must have an individual database account. Shared accounts for contractor teams are prohibited. All contractor activity must be attributable to a named individual for audit purposes.\u201d\n\nThe audit log contains numerous activities under `svc-appdev-team`, including both SELECT and INSERT activity:\n\n- INSERT into `feature_flags`\n- INSERT into `user_preferences`\n- SELECT from `product_catalog`, `feature_flags`, and `user_preferences`\n\nBecause the account is shared, NovaBridge cannot determine which individual contractor performed each action. This undermines individual accountability, access review effectiveness, incident investigation, and the ability to remove access for a single contractor without affecting others.\n\n**Severity:** High\n\n---\n\n### 4. Contractor access provisioned without NDA on file for Marcus Webb\n\n**Related document section:**  \n- Data Access Policy \u00a76.1 Pre-Provisioning Requirements  \n- Data Access Policy \u00a76.4 NDA Requirements  \n- Data Access Policy \u00a76.5 Contractor Access Reviews  \n- Active Contractor Access Register  \n- NDA Register  \n- Q4 2025 Database Access Audit Log\n\n**Why it\u2019s a gap:**  \nMarcus Webb is listed as having active contractor database access under **SOW-NB-2025-042**, with access to Internal data tables:\n\n- `product_catalog`\n- `feature_usage`\n\nHowever, the access register has a blank NDA reference for Marcus Webb, and the NDA register does not include an executed NDA for him.\n\nThe policy requires an executed NDA before any contractor data access is provisioned. Despite the missing NDA, the audit log shows Marcus Webb accessed the database multiple times, including:\n\n- **2025-10-10** \u2014 `product_catalog`\n- **2025-11-10** \u2014 `product_catalog`\n- **2025-11-28** \u2014 `feature_usage`\n- **2025-12-24** \u2014 `product_catalog`\n\nThis indicates contractor access was provisioned and remained active without satisfying mandatory pre-provisioning requirements.\n\n**Severity:** High\n\n---\n\n### 5. Monthly contractor access reviews were ineffective or incomplete\n\n**Related document section:**  \n- Data Access Policy \u00a76.5 Contractor Access Reviews  \n- Data Access Policy \u00a76.3 Access Duration and Revocation  \n- Active Contractor Access Register  \n- Q4 2025 Database Access Audit Log\n\n**Why it\u2019s a gap:**  \nThe policy requires monthly contractor access reviews to verify:\n\n- SOW is still active\n- Access scope remains appropriate\n- NDA is current and on file\n- No data exports outside approved channels\n\nEvidence indicates these reviews are not operating effectively:\n\n- Priya Mehta\u2019s SOW was completed on **2025-11-15**, but her access remained active and was used into December.\n- Marcus Webb\u2019s record shows a monthly review date of **2025-12-01**, but he has no NDA reference and no NDA in the NDA register.\n- The AppDev Partners shared account remained active despite the policy prohibiting shared contractor accounts.\n- Rachel Kim and Omar Hassan accessed Restricted data before the recorded access grant date, suggesting provisioning records and review processes did not detect unauthorized access timing.\n\nThe presence of monthly review dates alone is insufficient if the reviews do not identify completed SOWs, missing NDAs, shared accounts, or unauthorized access.\n\n**Severity:** High\n\n---\n\n### 6. Access register does not accurately reflect actual access activity\n\n**Related document section:**  \n- Data Access Policy \u00a75.2 Reviews  \n- Data Access Policy \u00a76.3 Access Duration and Revocation  \n- Data Access Policy \u00a76.5 Contractor Access Reviews  \n- Active Contractor Access Register  \n- Q4 2025 Database Access Audit Log\n\n**Why it\u2019s a gap:**  \nThe access register appears to be used as the authoritative record of active contractor access, but it does not reconcile to actual database activity.\n\nExamples:\n\n- Rachel Kim\u2019s access granted date is listed as **2025-11-05**, but she queried `customer_profiles` on **2025-10-24**.\n- Omar Hassan\u2019s access granted date is listed as **2025-11-05**, but he queried `payment_history` on **2025-10-28**.\n- Priya Mehta\u2019s SOW is marked **Completed**, but her account remained active with no revocation date and continued to be used.\n- AppDev Partners contractors are listed individually, but actual activity is logged only to the shared account `svc-appdev-team`.\n\nIf the access register does not accurately reflect who has access, when access was granted, and whether access was revoked, management cannot reliably enforce least privilege, time-limited access, or periodic access reviews.\n\n**Severity:** High\n\n---\n\n### 7. Restricted data access approval evidence is insufficient\n\n**Related document section:**  \n- Data Access Policy \u00a73 Data Classification  \n- Data Access Policy \u00a74 Access Authorization  \n- Active Contractor Access Register\n\n**Why it\u2019s a gap:**  \nThe policy requires Restricted data access \u2014 including customer PII and payment data \u2014 to be approved by:\n\n- CISO\n- Data Owner\n- Privacy Officer\n\nRachel Kim and Omar Hassan are granted access to Restricted data tables:\n\n- `customer_profiles`\n- `payment_history`\n\nThe access register lists Angela Foster as contractor sponsor, but the provided evidence does not demonstrate approval by the Data Owner and Privacy Officer. Because this access involves Restricted data, the evidence is insufficient to conclude access was fully authorized in accordance with policy.\n\n**Severity:** Medium\n\n---\n\n### 8. Least-privilege concerns for Restricted data contractors\n\n**Related document section:**  \n- Data Access Policy \u00a74.1 Least Privilege  \n- Data Access Policy \u00a76.5 Contractor Access Reviews  \n- Active Contractor Access Register  \n- Q4 2025 Database Access Audit Log\n\n**Why it\u2019s a gap:**  \nRachel Kim and Omar Hassan are both granted access to both Restricted tables:\n\n- `customer_profiles`\n- `payment_history`\n\nHowever, audit activity suggests their actual usage may be narrower:\n\n- Rachel Kim queried `customer_profiles`\n- Omar Hassan queried `payment_history`\n\nThe evidence does not show why each contractor requires access to both Restricted datasets. For Restricted data, access should be limited to the minimum data necessary for the contractor\u2019s role and current project phase. The current access scope may be broader than required.\n\n**Severity:** Medium"
+}

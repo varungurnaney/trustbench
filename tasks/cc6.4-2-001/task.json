@@ -1,0 +1,68 @@
+{
+  "id": "cc6.4-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.4",
+  "control_description": "The entity restricts physical access to facilities and protected information assets to meet the entity's objectives.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/physical-security-policy.md",
+      "type": "policy",
+      "description": "Helios Systems physical security policy defining badge access controls, CCTV requirements, and termination procedures"
+    },
+    {
+      "path": "evidence/badge-access-log-q4-2025.csv",
+      "type": "log",
+      "description": "Badge access log for Q4 2025 with 55 entries showing employee badge swipes across all access points"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "Review the physical security policy and badge access log for Helios Systems. Assess whether the organization is meeting its SOC 2 CC6.4 obligations for restricting physical access to facilities. Cross-reference the access log against the policy requirements to identify any compliance gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Terminated employee badge used 2 days after termination date",
+      "description": "Badge access log row 47 shows employee Rachel Simmons (badge ID B-2847) accessing the General Office zone on November 17, 2025, at 08:42 AM. The badge access log employee_status column shows her status as 'Terminated' with a termination_date of November 15, 2025. This means a terminated employee's badge was used to access the facility 2 days after separation. Policy Section 4.3 requires badge deactivation within 24 hours of termination notification. This indicates a failure in the badge deactivation process — the badge should have been deactivated on or before November 16. A terminated employee retaining physical access creates risk of unauthorized data access, equipment theft, or sabotage.",
+      "evidence_sources": [
+        "evidence/badge-access-log-q4-2025.csv",
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should review all badge swipes and check the employee_status field for any non-Active entries. Row 47 shows Rachel Simmons with status 'Terminated' and termination_date November 15, but a badge swipe on November 17. The policy requires deactivation within 24 hours. This is a 2-day gap indicating the badge was never deactivated as required.",
+      "detection_criteria": {
+        "required_keywords": ["Rachel Simmons", "B-2847", "Terminated", "November 15", "November 17", "24 hours", "badge deactivation", "Section 4.3"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CCTV retention configured at 30 days but policy requires 90 days",
+      "description": "Policy Section 5.3 specifies that CCTV footage must be retained for a minimum of 90 days. However, the policy's Appendix A configuration table shows the CCTV NVR retention setting is configured at 30 days. This means footage is overwritten after 30 days, leaving a 60-day gap where footage required by policy is unavailable. If a security incident is discovered more than 30 days after it occurred, the relevant CCTV footage will have been deleted despite the policy requiring 90-day availability.",
+      "evidence_sources": [
+        "evidence/physical-security-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note that Section 5.3 requires 90-day CCTV retention. Appendix A shows the actual NVR configuration with a 30-day retention setting. The mismatch between the policy requirement and the configuration table indicates a control implementation gap. The 30-day setting is only one-third of the required retention period.",
+      "detection_criteria": {
+        "required_keywords": ["CCTV", "90 days", "30 days", "retention", "NVR", "Appendix A", "Section 5.3", "overwritten"],
+        "minimum_keyword_matches": 4
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 4
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "12 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["physical_security", "badge_access", "terminated_employee", "CCTV_retention", "configuration_gap"]
+  }
+}

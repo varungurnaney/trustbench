@@ -1,0 +1,93 @@
+{
+  "id": "cc6.6-4-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.6",
+  "control_description": "The entity implements logical access security measures to protect against threats from sources outside its system boundaries.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/network-boundary-policy.md",
+      "type": "policy",
+      "description": "Stratos Payments network boundary and segmentation policy defining VPC isolation, WAF requirements, mTLS, and egress controls"
+    },
+    {
+      "path": "evidence/vpc-peering-config.json",
+      "type": "config",
+      "description": "VPC peering configuration export showing two active peering connections with route tables and security group rules"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Security exception register documenting four exceptions including the expired cross-VPC peering exception"
+    },
+    {
+      "path": "evidence/egress-allowlist.csv",
+      "type": "config",
+      "description": "Production egress allowlist registry showing 10 approved external destinations"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/compliance-team-contacts.md",
+      "type": "reference",
+      "description": "Compliance and security team contact information and on-call rotation. Not relevant to CC6.6 boundary controls."
+    }
+  ],
+  "prompt": "You are auditing Stratos Payments' SOC 2 Type II compliance for control CC6.6 (System Boundary Protection). Review the network boundary policy, VPC peering configuration, exception register, and egress allowlist. Assess whether system boundaries are properly enforced. Be thorough in cross-referencing — some apparent issues may have valid exceptions, and some exceptions may have expired leaving residual configurations.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "medium",
+      "title": "TLS 1.2 on legacy payment reconciliation batch endpoint",
+      "description": "Exception SEC-EXC-2025-010 documents a legacy batch reconciliation endpoint using TLS 1.2 instead of the required TLS 1.3. This appears to violate Section 5.1 of the policy. However, the exception is active, approved by the CISO, has valid compensating controls (internal-only endpoint, single-service access, nightly batch only), and includes a documented remediation timeline (vendor patch Q1 2026). The exception was reviewed November 28, 2025 and renewed. This is NOT a finding — the exception process was followed correctly with appropriate compensating controls.",
+      "evidence_sources": ["evidence/exception-register.csv", "evidence/network-boundary-policy.md"],
+      "expected_reasoning": "The auditor should identify the TLS 1.2 usage, cross-reference SEC-EXC-2025-010, verify the exception is active and recently reviewed, confirm compensating controls are reasonable (internal-only, single consumer, no payment card data in transit), and note the documented remediation timeline. This is a properly managed exception.",
+      "detection_criteria": {
+        "required_keywords": ["SEC-EXC-2025-010", "TLS 1.2", "compensating controls", "approved exception", "reconciliation"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["SEC-EXC-2025-010", "approved exception", "valid exception", "compensating controls", "not a finding"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "Expired cross-VPC peering exception but peering connection still active with full access",
+      "description": "The VPC peering configuration shows an active peering connection (pcx-0x334455bb) between the staging VPC and production VPC with route table entries allowing full VPC CIDR access (10.10.0.0/16 and 10.20.0.0/16) and security group rules permitting all TCP ports (0-65535) in both directions. The exception register shows SEC-EXC-2025-009 was approved for database schema migration with an expiration date of October 17, 2025 and is marked 'Expired.' The review outcome states 'migration completed October 10. Peering connection scheduled for deletion.' However, the VPC peering config export from December 20, 2025 shows the peering connection is still active — more than 2 months after the exception expired and the migration completed. The peering connection references SEC-EXC-2025-009, but that exception's compensating controls (Saturday-only windows, read-only credentials) are no longer governing the connection. This is a critical finding: staging has unrestricted network access to the production VPC containing payment data, with no valid exception.",
+      "evidence_sources": ["evidence/vpc-peering-config.json", "evidence/exception-register.csv", "evidence/network-boundary-policy.md"],
+      "expected_reasoning": "The auditor should cross-reference pcx-0x334455bb with SEC-EXC-2025-009. The exception expired October 17, 2025. The config export from December 20 shows the peering is still active. The route tables allow full CIDR access, and the security group rules allow all TCP ports. The original compensating controls (migration windows, read-only credentials) are no longer relevant since the migration is complete. This violates Section 3.1 (separate VPCs with no direct peering) and Section 3.2 (cross-environment access prohibited without valid exception). This is the primary finding.",
+      "detection_criteria": {
+        "required_keywords": ["pcx-0x334455bb", "SEC-EXC-2025-009", "expired", "still active", "October 17", "December 20", "staging", "production", "full access", "all TCP ports"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Management-to-production peering has broader route than security group rules restrict",
+      "description": "The management-to-production peering (pcx-0x001122aa) has security group rules correctly limiting traffic to ports 9090, 9200, and 5044 from the management log aggregation subnet (10.40.2.0/24). However, the route table entry routes all traffic destined for 10.10.8.0/24 (production monitoring subnet), and the return route allows production to reach 10.40.2.0/24. While the security group rules provide the actual access restriction, the routing configuration is broader than necessary. This is a defense-in-depth concern — if a security group misconfiguration occurred, the routing would not prevent unauthorized access. Policy Section 3.3 restricts management peering to 'monitoring and log aggregation only (ports 9090, 9200, 5044),' and the security group rules enforce this, but the route tables do not provide a secondary control.",
+      "evidence_sources": ["evidence/vpc-peering-config.json", "evidence/network-boundary-policy.md"],
+      "expected_reasoning": "The auditor should note that the management peering is correctly configured at the security group level but the route tables allow full subnet routing. This is a minor defense-in-depth concern, not a policy violation, since the security groups enforce the port restrictions. A thorough auditor would note this as an observation.",
+      "detection_criteria": {
+        "required_keywords": ["pcx-0x001122aa", "management", "route table", "security group", "defense-in-depth", "monitoring subnet"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 5
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-04-30",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["VPC_peering", "expired_exception", "red_herring", "cross_environment", "segmentation", "payment_data", "system_boundary"]
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "task_id": "pi1.1-4-003",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T13:23:46.674603",
+  "score": {
+    "task_id": "pi1.1-4-003",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.5,
+    "f1": 0.6666666666666666,
+    "score": 0.6666666666666666,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 3,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PR-5610",
+          "emergency",
+          "double-charge",
+          "post-deploy review",
+          "Nina Patel",
+          "48 hours",
+          "PR-5615",
+          "follow-up"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "PR-5614",
+          "no post-deploy review",
+          "order processing timeout",
+          "48 hours",
+          "Section 3.2",
+          "35 days"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "ORDER_TIMEOUT_MS",
+          "configuration drift",
+          "staging",
+          "production",
+          "35 days",
+          "48 hours",
+          "Section 5.2",
+          "CDR-309",
+          "CDR-314",
+          "Under Review"
+        ],
+        "total_keywords": 10,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 3286,
+    "output_tokens": 2651
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 PI1.1 Control Evaluation\n**Cascade Systems | Q4 2025 Observation Period (October 1 \u2013 December 31, 2025)**\n\n---\n\n## Control Objective\n\n**PI1.1** requires that the entity uses processing objectives to define what constitutes complete, accurate, and timely processing. In practice, this means the entity must have defined standards for how processing should occur, enforce those standards consistently, and detect and remediate deviations in a timely manner.\n\n---\n\n## Evidence Reviewed\n\n| Document | Coverage |\n|---|---|\n| SDLC Policy POL-SDLC-011 v4.0 (effective Jan 20, 2025) | Code review, emergency change, configuration management requirements |\n| Pull Request Records PR-5601 through PR-5620 | 20 PRs across Q4 2025, including 2 emergency deployments |\n| Configuration Drift Reports CDR-301 through CDR-314 | Weekly staging-vs-production scans, 14 reports across Q4 2025 |\n\n---\n\n## Summary Assessment\n\nThe entity has established a documented SDLC policy that addresses several dimensions relevant to PI1.1, including mandatory code review, emergency change compensating controls, and configuration drift thresholds. Routine development activity reflects consistent adherence to the standard process. However, two findings represent substantive control gaps: one emergency change bypassed the required post-deploy review entirely, and a configuration drift condition introduced during an emergency deployment remained unremediated for the remainder of the quarter. These gaps indicate that processing integrity standards, while defined, are not being consistently enforced.\n\n**Overall PI1.1 Readiness: Conditional \u2014 two findings require remediation before opinion.**\n\n---\n\n## Findings\n\n---\n\n### Finding 1: Emergency Change PR-5614 Did Not Receive Required Post-Deploy Review\n\n**Severity: High**\n\n**Relevant Policy Section:** POL-SDLC-011 \u00a73.2 \u2014 Emergency Changes\n\n**Evidence:** PR-5614 (\"EMERGENCY: Fix order processing timeout\") was deployed to production on November 24, 2025 under CTO authorization. The PR record explicitly states: *\"No post-deploy review performed.\"* No reviewer is listed. No review date is recorded. The status is noted as N/A.\n\n**Why This Is a Gap:**\n\nSection 3.2 of the SDLC policy establishes that pre-merge review may be waived for emergencies, but only on the condition that a post-deploy review is completed within 48 hours and documented with findings and required follow-up actions. This compensating control is what preserves the integrity of the review requirement when the standard gate is bypassed. PR-5614 satisfies neither condition \u2014 no review occurred at all, and there is no documentation of findings or follow-up actions.\n\nThis can be contrasted directly with PR-5610 (\"EMERGENCY: Fix payment double-charge bug\"), which followed the same emergency authorization path but complied with the compensating control requirement: a post-deploy review was performed by Nina Patel on November 9 (within 48 hours of the November 7 deployment), findings were documented, and a follow-up action item was created and tracked to completion (PR-5615). PR-5610 represents the correct application of the policy. PR-5614 does not.\n\nThe gap is material to PI1.1 because the post-deploy review is the mechanism by which the entity confirms that an emergency change processed data correctly and did not introduce integrity risks. Without it, there is no documented basis for concluding that the order processing timeout fix was accurate or complete. The change also introduced configuration drift (see Finding 2), which suggests the absence of review had downstream consequences.\n\n**What Is Missing:**\n- Post-deploy review within 48 hours of November 24 deployment\n- Documented reviewer and review date\n- Documented findings regarding correctness of the fix\n- Documented follow-up actions, if any\n\n---\n\n### Finding 2: Configuration Drift Introduced by PR-5614 Remained Unremediated for 35 Days Through End of Quarter\n\n**Severity: High**\n\n**Relevant Policy Section:** POL-SDLC-011 \u00a75.2 \u2014 Configuration Management\n\n**Evidence:** CDR-309 (November 26, 2025) first identified three drifted parameters following the PR-5614 emergency deployment: `LOG_LEVEL` (expected, acknowledged), `ORDER_TIMEOUT_MS` (staging=30000, production=15000), and `ORDER_RETRY_MAX` (staging=3, production=5). Both ORDER parameters were flagged as medium severity and placed \"Under Review.\" CDR-314 (December 29, 2025), the final scan of the quarter, records that `ORDER_TIMEOUT_MS` remains drifted, with the note: *\"ORDER_TIMEOUT_MS drift persists from Nov 24 emergency change \u2014 35 days without remediation.\"*\n\n**Why This Is a Gap:**\n\nSection 5.2 of the SDLC policy establishes two distinct requirements for configuration drift: (1) drift must not exceed 5% of configuration parameters, and (2) drift above 5% requires immediate investigation and remediation within 48 hours. The observed drift in this case peaked at 0.6% (CDR-309, CDR-310), which is below the 5% threshold triggering the 48-hour remediation SLA. The policy does not explicitly state a remediation timeline for drift below 5%.\n\nHowever, this represents a gap in two respects. First, the policy does not define any remediation timeline for sub-threshold drift, which means there is no defined standard for what constitutes timely remediation in this scenario \u2014 itself a weakness in the completeness of the processing objective framework required by PI1.1. Second, and more concretely, a production configuration parameter (`ORDER_TIMEOUT_MS`) that differs materially from the staging-validated value remained in an unresolved state for 35 days through the end of the audit period. The staging environment is the reference environment against which changes are validated; when production diverges from that baseline and the divergence is not reconciled, the entity cannot reliably use staging validation as a basis for concluding that production processing meets its defined objectives.\n\nThe `ORDER_RETRY_MAX` parameter was partially remediated between CDR-310 and CDR-311 (staging updated to match production value of 5), demonstrating that remediation is operationally feasible. The continued failure to resolve `ORDER_TIMEOUT_MS` is not attributable to technical constraint.\n\n**What Is Missing:**\n- A defined remediation timeline in policy for configuration drift below the 5% threshold\n- Remediation of `ORDER_TIMEOUT_MS` drift within the observation period\n- A closed status on CDR-309 through CDR-314 for the ORDER_TIMEOUT_MS drift item\n- Evidence that the production value of ORDER_TIMEOUT_MS was intentionally validated as the correct processing parameter, as distinct from an emergency workaround\n\n---\n\n### Finding 3 (Observation): SDLC Policy Does Not Define Remediation SLA for Sub-Threshold Configuration Drift\n\n**Severity: Low**\n\n**Relevant Policy Section:** POL-SDLC-011 \u00a75.2 \u2014 Configuration Management\n\n**Note:** This finding is classified as an observation rather than a primary gap because no actual drift exceeded the 5% threshold during Q4 2025. It is documented here because the absence of a sub-threshold SLA was a contributing condition to Finding 2.\n\n**Why This Is a Gap:**\n\nSection 5.2 defines a 48-hour remediation requirement only for drift exceeding 5%. It is silent on what constitutes acceptable duration for drift below that threshold. The LOG_LEVEL difference (staging=DEBUG, production=INFO) is acknowledged as expected and intentional, which is appropriate. However, the ORDER_TIMEOUT_MS situation illustrates that sub-threshold drift can persist indefinitely without a policy violation being technically triggered, even when the drift represents a meaningful difference in processing behavior between environments.\n\nPI1.1 requires that the entity define what constitutes complete and timely processing. A configuration management standard that allows production to diverge from the validated staging baseline for an indeterminate period without a defined remediation obligation does not fully satisfy that requirement.\n\n**What Is Missing:**\n- A defined remediation SLA for acknowledged drift below the 5% threshold (suggested: 30 days, or next scheduled release cycle)\n- Criteria distinguishing intentional and permanent environment differences (such as LOG_LEVEL) from temporary drift requiring remediation\n\n---\n\n## Conforming Evidence \u2014 Noted for the Record\n\nThe following observations support the conclusion that the entity's PI1.1 controls are largely functional and that the findings above are localized rather than systemic.\n\n| Observation | Basis |\n|---|---|\n| 18 of 20 PRs followed the standard pre-merge review process with no exceptions | PR-5601 through PR-5620, excluding PR-5610 and PR-5614 |\n| PR-5610 emergency change correctly applied the compensating control \u2014 post-deploy review within 48 hours, findings documented, follow-up tracked | PR-5610 record; PR-5615 completion |\n| No configuration drift exceeded the 5% policy threshold at any point in Q4 | CDR-301 through CDR-314 |\n| LOG_LEVEL drift was consistently acknowledged and documented as an expected environment difference | CDR-303, CDR-307, CDR-309 through CDR-314 |\n| Processing integrity changes (checksum on data export, idempotency key for payments, input validation for bulk import, duplicate handling for inventory sync) were reviewed with substantive comments in each case | PR-5604, PR-5606, PR-5609, PR-5619 |\n| Configuration parameters increased from 482 to 490 across the quarter with changes traceable to specific PRs | CDR-305 (rate limiting, +3), CDR-312 (SSL rotation, +3) |\n\n---\n\n## Summary of Findings\n\n| # | Title | Policy Section | Severity |\n|---|---|---|---|\n| 1 | Emergency change PR-5614 received no post-deploy review | \u00a73.2 Emergency Changes | **High** |\n| 2 | ORDER_TIMEOUT_MS configuration drift unremediated for 35 days through end of quarter | \u00a75.2 Configuration Management | **High** |\n| 3 (Obs.) | No remediation SLA defined for sub-threshold configuration drift | \u00a75.2 Configuration Management | **Low** |\n\n---\n\n## Recommended Management Actions Prior to Audit\n\n1. **For Finding 1:** Perform and document a retroactive technical review of PR-5614 to assess whether the order timeout fix was correct. Establish a tracking mechanism (ticket, log, or registry) for open emergency changes requiring post-deploy review so that the 48-hour requirement cannot be missed without visible escalation.\n\n2. **For Finding 2:** Remediate the `ORDER_TIMEOUT_MS` drift immediately \u2014 either update staging to reflect the validated production value, or revert production if the emergency value was a temporary workaround. Close CDR-309 through CDR-314 items with a documented resolution date and rationale.\n\n3. **For Finding 3:** Amend \u00a75.2 of POL-SDLC-011 to define a remediation timeline for acknowledged, sub-threshold drift. Distinguish in policy between permanent intentional differences (which should be documented exceptions) and temporary drift requiring remediation."
+}

@@ -1,0 +1,106 @@
+{
+  "id": "cc6.3-4-003",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC6.3",
+  "control_description": "The entity authorizes, modifies, or removes access to data, software functions, and other protected information assets based on roles and responsibilities, segregation of duties, and least privilege principles.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/data-access-policy.md",
+      "type": "policy",
+      "description": "Vertex Financial data access authorization policy with RBAC, classification, and DLP requirements"
+    },
+    {
+      "path": "evidence/snowflake-access-export.csv",
+      "type": "config",
+      "description": "Snowflake data warehouse role and grant export as of December 22, 2025"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "CISO-approved exception register for data access policy deviations"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/data-retention-policy.md",
+      "type": "policy",
+      "description": "Vertex Financial data retention and archival policy — not directly relevant to CC6.3 access authorization"
+    },
+    {
+      "path": "evidence/pen-test-summary-q4.md",
+      "type": "report",
+      "description": "Q4 2025 penetration test executive summary — not relevant to CC6.3"
+    }
+  ],
+  "prompt": "You are auditing Vertex Financial's SOC 2 Type II compliance for control CC6.3 (Data Access Authorization). Vertex is a fintech company handling payment card data (PCI scope) and financial records. Review all provided evidence to assess data access authorization controls. Not all documents may be relevant. Cross-reference the Snowflake access grants against the policy and exception register. Identify genuine findings only — some apparent issues may have valid exceptions.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "COMPLIANCE_AUDITOR role has SELECT on all schemas including PCI-scoped tables — but authorized under EXC-2025-088",
+      "description": "The Snowflake export shows the COMPLIANCE_AUDITOR role has SELECT on all databases and schemas, including PCI-scoped tables (cardholder_data, transactions, payment_methods). This initially appears to be a broad access violation. However, exception EXC-2025-088 specifically authorizes this for the annual PCI-DSS compliance assessment. Compensating controls include: queries routed through a time-limited virtual warehouse that auto-suspends after 4 hours, card numbers and CVV fields masked via Snowflake dynamic data masking policies, all queries logged with 24-month retention, and access limited to two named auditors (Sandra Lee, External Auditor from Meridian Compliance Group, and Nathan Brooks, Internal Audit). The exception expires January 31, 2026.",
+      "evidence_sources": ["evidence/snowflake-access-export.csv", "evidence/exception-register.csv", "evidence/data-access-policy.md"],
+      "expected_reasoning": "COMPLIANCE_AUDITOR has broad read access → check exception register → EXC-2025-088 authorizes for PCI audit → time-bound to Jan 31 → compensating controls include data masking and limited warehouse → not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["COMPLIANCE_AUDITOR", "EXC-2025-088", "PCI", "Meridian Compliance", "Sandra Lee", "masking", "not a finding"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["COMPLIANCE_AUDITOR violation", "COMPLIANCE_AUDITOR gap"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "critical",
+      "title": "User j.crawford (Risk team) has ACCOUNTADMIN role granting full Snowflake administrative privileges",
+      "description": "The Snowflake export shows j.crawford (Jason Crawford, Risk Analytics) has been granted the ACCOUNTADMIN role — Snowflake's most privileged built-in role. ACCOUNTADMIN can create and drop databases, manage users, and modify security policies. Policy Section 3.1 restricts ACCOUNTADMIN to the DBA team only (maximum 2 named individuals). Jason Crawford is in the Risk Analytics department, not the DBA team. The exception register has no entry for this user or this role grant. The grant was made on November 18, 2025 by user admin_setup. This represents unrestricted administrative access to all financial data by a non-DBA user.",
+      "evidence_sources": ["evidence/snowflake-access-export.csv", "evidence/data-access-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "j.crawford has ACCOUNTADMIN → policy restricts to DBA team → j.crawford is Risk Analytics → no exception → unrestricted admin access to all financial and PCI data → critical segregation of duties violation.",
+      "detection_criteria": {
+        "required_keywords": ["j.crawford", "ACCOUNTADMIN", "Risk Analytics", "DBA team", "no exception", "November 18", "admin_setup", "unrestricted"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "high",
+      "title": "MARKETING_ANALYTICS role has SELECT on cardholder_data table with no data masking policy applied",
+      "description": "The Snowflake export shows the MARKETING_ANALYTICS role has SELECT on VERTEX_PROD.PAYMENTS.cardholder_data. Unlike the COMPLIANCE_AUDITOR role (which has dynamic data masking applied), the MARKETING_ANALYTICS role accesses the cardholder_data table without a masking policy — the masking_policy column is null. Policy Section 4.2 states: 'All non-DBA roles accessing PCI-scoped tables must use dynamic data masking to redact card numbers, CVV, and expiration dates.' Three users are assigned to this role: h.park, s.mehta, and b.chen (all Marketing department). There is no exception in the register for unmasked marketing access to cardholder data.",
+      "evidence_sources": ["evidence/snowflake-access-export.csv", "evidence/data-access-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "MARKETING_ANALYTICS has SELECT on cardholder_data → no masking policy applied → policy requires masking for all non-DBA PCI access → COMPLIANCE_AUDITOR has masking but MARKETING_ANALYTICS does not → no exception → PCI data exposure to marketing team.",
+      "detection_criteria": {
+        "required_keywords": ["MARKETING_ANALYTICS", "cardholder_data", "masking", "null", "PCI", "h.park", "s.mehta", "b.chen", "no exception"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Service account SVC_DATA_PIPELINE has SYSADMIN role — exceeds minimum necessary for ETL operations",
+      "description": "The Snowflake export shows SVC_DATA_PIPELINE with the SYSADMIN role, which grants the ability to create and manage databases, schemas, and all database objects. Policy Section 5.1 requires service accounts to be 'scoped to the minimum privileges required for the automated workflow.' An ETL pipeline typically needs read access to source tables and write access to target tables — it does not need SYSADMIN capabilities like creating databases or managing schemas. The exception register has no entry for this service account. The grant was created on 2024-07-15, suggesting it may be a legacy over-provisioning.",
+      "evidence_sources": ["evidence/snowflake-access-export.csv", "evidence/data-access-policy.md", "evidence/exception-register.csv"],
+      "expected_reasoning": "SVC_DATA_PIPELINE has SYSADMIN → ETL does not need database management privileges → violates least-privilege → no exception → legacy over-provisioning from 2024.",
+      "detection_criteria": {
+        "required_keywords": ["SVC_DATA_PIPELINE", "SYSADMIN", "minimum", "ETL", "least privilege", "2024-07-15", "over-provisioning"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "35 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 3,
+    "tags": ["data_access", "Snowflake", "PCI", "fintech", "red_herring", "data_masking", "ACCOUNTADMIN", "least_privilege", "noise_documents"]
+  }
+}

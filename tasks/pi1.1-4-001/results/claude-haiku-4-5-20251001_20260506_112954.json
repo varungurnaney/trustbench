@@ -1,0 +1,55 @@
+{
+  "task_id": "pi1.1-4-001",
+  "model": "claude-haiku-4-5-20251001",
+  "timestamp": "2026-05-06T11:29:54.085701",
+  "score": {
+    "task_id": "pi1.1-4-001",
+    "model": "claude-haiku-4-5-20251001",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.125,
+    "f1": 0.2222222222222222,
+    "score": 0.2222222222222222,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 8,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-7203",
+          "EXC-SAST-2025-044",
+          "false positive",
+          "Nathan Brooks"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "SQ-7207",
+          "XXE",
+          "XmlDataIngester",
+          "unassigned",
+          "escalation"
+        ],
+        "total_keywords": 11,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4902,
+    "output_tokens": 2230
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: PI1.1 Processing Integrity Control\n## Vantage Analytics Q4 2025\n\n---\n\n## Executive Summary\n\nThe assessment identifies **4 gaps** in the entity's ability to demonstrate that processing objectives are defined and operationalized to ensure complete, accurate, and timely processing. While the SDLC policy framework is sound and most findings are being remediated appropriately, there are specific instances where high-severity vulnerabilities remain unresolved beyond policy timelines and processing integrity issues lack explicit objectives.\n\n---\n\n## Detailed Findings\n\n### **FINDING 1: Unresolved High-Severity XXE Vulnerability Beyond SLA**\n\n**Related Document:** SonarQube Findings (SQ-7207) + SDLC Policy \u00a74.1\n\n**Issue:**\n- **SQ-7207** (XXE injection in `XmlDataIngester.java`) was first detected **September 10, 2025**\n- Severity: **High**\n- Policy requires resolution within **30 calendar days** (deadline: October 10, 2025)\n- Current status as of December 29, 2025: **Open, Unassigned**\n- **94 days past SLA** with no documented justification, false positive determination, or escalation\n\n**Why This Is a Gap:**\nPI1.1 requires processing objectives that define complete and accurate processing. An unresolved XXE vulnerability in the XML data ingestion pipeline (which processes partner data feeds) directly threatens the accuracy and completeness of data processing. The entity has not:\n- Assigned ownership\n- Documented a false positive justification (note: this appears to be a genuine vulnerability, not a false positive like SQ-7203)\n- Escalated per policy \u00a74.3 to the Engineering VP\n- Implemented compensating controls\n\nThis represents a breakdown in the operationalization of processing integrity controls.\n\n**Severity:** **CRITICAL**\n\n---\n\n### **FINDING 2: SQL Injection Finding (SQ-7211) Past SLA Without Escalation**\n\n**Related Document:** SonarQube Findings (SQ-7211) + SDLC Policy \u00a74.1 & \u00a74.3\n\n**Issue:**\n- **SQ-7211** (SQL injection in `LegacyReportDao.java`) first detected **November 18, 2025**\n- Severity: **Medium** (but SQL injection is a high-impact vulnerability type)\n- Policy requires resolution within **90 calendar days** (deadline: February 16, 2026)\n- Current status: **Open**, assigned to Carlos Reyes with target date January 10, 2026\n- This finding **is within SLA**, but evidence shows refactoring was merged earlier\n\n**Clarification & Basis for Inclusion:**\nMerge request **MR-3860** (December 18-19, 2025) documents \"SQL injection remediation complete\" for the legacy report DAO. However, **SQ-7211 remains in \"Open\" status** in the latest scan (December 29, 2025). This suggests either:\n1. The fix was incomplete\n2. The SonarQube database was not updated after the merge\n3. A different code path in the same file remains vulnerable\n\n**Why This Is a Gap:**\nThe mismatch between merge request approval and SAST scan status creates ambiguity about whether the processing pipeline actually implements the input validation objective defined in SDLC \u00a76.1. The entity cannot conclusively demonstrate that SQL injection vulnerabilities in critical reporting pipelines have been remediated.\n\n**Severity:** **HIGH**\n\n---\n\n### **FINDING 3: Weak Cryptography (MD5) Lacks Explicit Processing Objective Documentation**\n\n**Related Document:** SonarQube Finding (SQ-7213) + SAST Exception Register (EXC-SAST-2025-047) + SDLC Policy \u00a76.2\n\n**Issue:**\n- **SQ-7213** (MD5 weak hashing in `ChecksumValidator.java`) flagged November 22, 2025\n- **Status:** Open; assigned to Grace Kim with note \"evaluating migration to SHA-256\"\n- An exception was documented (**EXC-SAST-2025-047**) by Nathan Brooks justifying MD5 for \"non-security\" file integrity checksums\n- However, **MD5 finding remains in \"Open\" status** in SAST database (not marked as Resolved or Excluded)\n\n**Why This Is a Gap:**\nSDLC \u00a76.2 states: \"Critical pipelines implement record count reconciliation **and checksum verification** at pipeline boundaries.\" The entity has not documented:\n1. **A formal processing objective** defining what \"critical\" means and which pipelines require checksum verification\n2. **Why MD5 is acceptable** for non-sensitive report integrity (the justification is informal\u2014in the exception register\u2014not a control specification)\n3. **What compensating controls** exist to detect collision attacks (even if theoretically unlikely in legacy systems)\n\nThe false positive exception exists but the finding status remains \"Open,\" suggesting incomplete governance of the exception process. PI1.1 requires objectives to be *defined*\u2014this control lacks explicit definition beyond the informal justification.\n\n**Severity:** **MEDIUM**\n\n---\n\n### **FINDING 4: Missing Processing Objectives Definition for Data Completeness and Accuracy**\n\n**Related Document:** SDLC Policy (absence of explicit language) + Merge Requests + SonarQube Findings\n\n**Issue:**\nThe SDLC Policy document defines:\n- \u2713 Code review standards (\u00a73.2)\n- \u2713 SAST quality gates (\u00a74.1)\n- \u2713 Input validation requirement (\u00a76.1)\n- \u2713 Data integrity through checksums (\u00a76.2)\n\n**However, the policy does NOT define:**\n- What constitutes **\"complete\"** processing (e.g., record counts, transaction boundaries, missing field thresholds)\n- What constitutes **\"accurate\"** processing (e.g., rounding rules, precision standards, tolerance levels)\n- What constitutes **\"timely\"** processing (e.g., SLA for batch jobs, transaction settlement times, reporting lag)\n- **Measurement criteria** for validating these objectives are met\n- **Roles and responsibilities** for monitoring processing quality post-deployment\n\nThe merge request review records show developers addressing *symptoms* (e.g., \"Rounding mode discussion\" in MR-3800, \"BigDecimal migration\" for invoice calculations) rather than *defined objectives* being validated.\n\n**Why This Is a Gap:**\nPI1.1 explicitly requires the entity to **use processing objectives to define** complete, accurate, and timely processing. While controls exist to prevent errors (code review, SAST scanning, input validation), the foundational requirement\u2014formal, documented processing objectives\u2014is absent. This is a design gap in the control framework.\n\n**Severity:** **HIGH**\n\n---\n\n## Positive Observations\n\nThe following demonstrate effective control implementation within PI1.1 scope:\n\n- \u2713 **Code review discipline:** All 20 merged MRs in Q4 show peer review and approval; security-relevant changes (MR-3805, MR-3815, MR-3840, MR-3850, MR-3860) are documented with specific validation steps.\n- \u2713 **SAST false positive governance:** EXC-SAST-2025-038, EXC-SAST-2025-041, EXC-SAST-2025-044 demonstrate rigorous justification and Application Security team sign-off.\n- \u2713 **High-severity SLA tracking:** Most high-severity findings (SQ-7203, SQ-7217) have been resolved or properly documented as exceptions.\n- \u2713 **Input validation remediation:** Evidence of active remediation (MR-3790: metrics endpoint validation; MR-3840: path validation).\n\n---\n\n## Summary Table\n\n| Finding ID | Title | Severity | Gap Category | Remediation Priority |\n|---|---|---|---|---|\n| 1 | Unresolved XXE Beyond SLA | **CRITICAL** | Control Execution | Immediate (escalate to VP Engineering per policy) |\n| 2 | SQL Injection Status Ambiguity | **HIGH** | Control Documentation | Within 2 weeks (reconcile MR-3860 with SQ-7211 status) |\n| 3 | Weak Cryptography Objective Ambiguity | **MEDIUM** | Control Definition | Within 30 days (formalize MD5 exception or migrate to SHA-256) |\n| 4 | Missing Processing Objectives Definition | **HIGH** | Control Framework | Within 60 days (develop formal processing objectives documentation) |\n\n---\n\n## Recommendations\n\n1. **Immediate:** Escalate SQ-7207 (XXE) to Engineering VP per \u00a74.3; assign owner and set remediation deadline.\n2. **Within 2 weeks:** Issue memo confirming status of SQ-7211 remediation; update SAST database if fix was deployed.\n3. **Within 30 days:** Formalize processing objectives for data completeness, accuracy, and timeliness in an addendum to POL-SDLC-007.\n4. **Within 30 days:** Resolve MD5 exception by either (a) formally adopting it as an approved algorithm for non-cryptographic checksums, or (b) migrating to SHA-256.\n5. **Ongoing:** Establish quarterly review of open SAST findings vs. policy SLAs to prevent future drift."
+}

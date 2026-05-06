@@ -1,0 +1,40 @@
+{
+  "task_id": "a1.2-2-001",
+  "model": "gpt-4.1",
+  "timestamp": "2026-05-05T17:06:10.293213",
+  "score": {
+    "task_id": "a1.2-2-001",
+    "model": "gpt-4.1",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.14285714285714285,
+    "f1": 0.25,
+    "score": 1.0,
+    "gaps_detected": 1,
+    "gaps_total": 1,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "235 minutes",
+          "240 minutes",
+          "RTO",
+          "data growth"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1719,
+    "output_tokens": 1146
+  },
+  "raw_response": "Certainly! Here\u2019s a findings table based on your review requirements:\n\n---\n\n### **Finding 1: RTO Objective Met in Practice**\n- **Section:** Policy Section 3 (\"Recovery Objectives\"); Restore Test \"rto_assessment\"\n- **Gap:** **None.** The Q4 2025 quarterly restore test report shows an actual restore time (235 minutes) within the policy\u2019s RTO target of 240 minutes. Procedure and actual performance align.\n- **Severity:** *N/A* (No gap \u2013 Requirement met)\n\n---\n\n### **Finding 2: RPO Coverage Not Fully Demonstrated in Testing**\n- **Section:** Policy Section 3/4.2/4.3 (\"Recovery Objectives\", \"Continuous WAL Archiving\", \"Incremental Backups\")\n- **Gap:** The Q4 test demonstrates restore from a full backup, but it does **not explicitly test or demonstrate the ability to restore to a point-in-time within the stated RPO (4 hours)**, or from WAL/incremental backups. There's no evidence that WAL archiving/incremental backups and tight RPO recovery are periodically validated.\n- **Severity:** **Medium**\n    - *Rationale:* Could affect real-world data loss in scenarios between full backups; periodic non-full restores are best practice.\n\n---\n\n### **Finding 3: Data Integrity Validation Thorough and Effective**\n- **Section:** Restore Test \"data_integrity_results\"; Policy 6.1 (\"Restore Testing\")\n- **Gap:** **None.** The test report confirms thorough data integrity checks (checksum, row count, referential validation). Fully meets policy.\n- **Severity:** *N/A* (No gap \u2013 Requirement met)\n\n---\n\n### **Finding 4: Documentation and Approval Processes Followed**\n- **Section:** Policy 6.2 (\"Documentation\"); Restore Test \"sign_off\", \"approved_by\"\n- **Gap:** **None.** Test documentation is complete, detailed, and reviewed/approved by responsible personnel in accordance with policy.\n- **Severity:** *N/A* (No gap \u2013 Requirement met)\n\n---\n\n### **Finding 5: Monitoring of Data Growth and RTO Sustainability Identified as Area Needing Attention**\n- **Section:** Test Report \"quarter_over_quarter_comparison\", \"recommendations\"\n- **Gap:** **Near RTO Limit.** The Q4 test margin (5 mins) is much tighter than previous (42 mins in Q3), indicating that as data volume grows, RTO may soon be exceeded **if no optimization occurs**. The restore process is close to the maximum allowed window, and this risk is acknowledged in recommendations but not yet mitigated.\n- **Severity:** **Medium**\n    - *Rationale:* Not a current failure, but a potential for future non-compliance if not proactively addressed.\n\n---\n\n### **Finding 6: Restore Testing Does Not Cover All Scope Elements**\n- **Section:** Policy Section 2 (\"Scope\"), Policy 6.1 (\"Restore Testing\")\n- **Gap:** The scope includes not just PostgreSQL databases, but also application file storage (S3: pin-prod-assets, pin-prod-uploads) and configuration/secrets (Vault). **The Q4 test report details database and config restoration and validation, but does not specifically mention or evidence file storage (S3) backup/restore validation.** Lack of this detail means coverage of all scoped systems cannot be confirmed.\n- **Severity:** **Medium**\n    - *Rationale:* Partial evidence; unclear if all critical systems can truly be restored rapidly.\n\n---\n\n### **Finding 7: No Evidence of Testing Failure Handling Procedures**\n- **Section:** Policy Section 7 (\"Failure Handling\")\n- **Gap:** The Q4 report shows a successful restore and minor issues only. **No demonstration of the policy\u2019s \u2018failure handling\u2019 process (e.g., how an engineer is alerted and how a failed restore is rerun/escalated) is provided or tested.**\n- **Severity:** **Low**\n    - *Rationale:* Would further prove operational readiness, though not required in every routine test.\n\n---\n\n## **Summary Table**\n\n| Title                                              | Section                  | Why it's a gap                                        | Severity |\n|-----------------------------------------------------|--------------------------|--------------------------------------------------------|----------|\n| RTO Objective Met in Practice                       | Policy 3, Test RTO       | N/A \u2013 Objective met                                    | N/A      |\n| RPO Coverage Not Fully Demonstrated in Testing      | Policy 3, 4.2, 4.3       | No restore from incremental/WAL tested                 | Medium   |\n| Data Integrity Validation Thorough and Effective    | Test data_integrity      | N/A \u2013 Requirement met                                  | N/A      |\n| Documentation and Approval Processes Followed       | Policy 6.2, Test signoff | N/A \u2013 Requirement met                                  | N/A      |\n| Monitoring RTO Sustainability Needed                | Test q-o-q comparison    | RTO margin shrinking; at risk if data growth continues | Medium   |\n| Restore Testing Does Not Cover All Scope Elements   | Policy 2, 6.1            | Lack of S3/file storage restore test evidence          | Medium   |\n| No Evidence of Testing Failure Handling Procedures  | Policy 7                 | No failure scenario recovery/escalation tested         | Low      |\n\n---\n\n**Recommendations:**  \n- Expand quarterly tests to include S3/file storage restores.\n- Explicitly test and document point-in-time and WAL/incremental restores to demonstrate RPO compliance.\n- Address restore speed scalability proactively.\n- Periodically perform or simulate failed restore scenarios.\n\nLet me know if you need control wording, management response suggestions, or other detail!"
+}

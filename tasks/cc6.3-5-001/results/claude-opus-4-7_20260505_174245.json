@@ -1,0 +1,72 @@
+{
+  "task_id": "cc6.3-5-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:42:45.581189",
+  "score": {
+    "task_id": "cc6.3-5-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.2727272727272727,
+    "f1": 0.42857142857142855,
+    "score": 0.42857142857142855,
+    "gaps_detected": 3,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 11,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DS-STG-007",
+          "test data",
+          "Production Clone",
+          "47,000",
+          "masking",
+          "PII"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "email_address",
+          "PII",
+          "email",
+          "unmasked"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "d.okonkwo",
+          "TechBridge",
+          "expiration",
+          "contractor",
+          "staging",
+          "unmasked"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 5298,
+    "output_tokens": 3483
+  },
+  "raw_response": "# SOC 2 Readiness Assessment \u2014 CC6.3\n## Prism Analytics \u2014 Data Access & Masking Controls\n\n---\n\n## Executive Summary\n\nReview of the evidence reveals **significant control failures** in Prism Analytics' staging environment governance. The most serious issue is a 47,000-record production clone (DS-STG-007) containing unmasked PII \u2014 including SSNs, full names, DOBs, and physical addresses \u2014 that has been excluded from the masking pipeline based on a \"test data\" reclassification by the QA Lead. This designation appears to be cosmetic rather than substantive and circumvents the policy's masking requirements. Additionally, multiple users with broad staging access have access to this dataset, and several other access governance issues are present.\n\n---\n\n## Findings\n\n### Finding 1: Unmasked Production PII in Staging via \"Test Data\" Reclassification (DS-STG-007)\n- **Related Section:** Masking Pipeline Configuration (`excluded_datasets` \u2192 DS-STG-007); Dataset Inventory (DS-STG-007); Policy \u00a74.1, \u00a74.2, \u00a77\n- **Gap:** DS-STG-007 is a full 47,000-record clone of `customer_profiles` containing real, unmasked SSNs, full names, email addresses, phone numbers, DOBs, and physical addresses. The masking pipeline excludes this dataset based on a designation as \"test data\" approved by the QA Lead (Jamie Morrison). This is improper for several reasons:\n  1. **Policy \u00a74.1** explicitly prohibits unmasked production data in non-production environments \u2014 there is no \"test data\" carve-out.\n  2. **Policy \u00a77** requires CISO approval for exceptions with compensating controls and a 6-month maximum. The dataset notes confirm \"**no CISO exception on file**.\"\n  3. The QA Lead has no authority under the policy to reclassify production PII as exempt from masking.\n  4. The reclassification appears cosmetic \u2014 the data remains a Production Clone with all original PII fields, on the same refresh cadence as masked datasets.\n- **Severity:** **Critical**\n\n---\n\n### Finding 2: Broad Access to Unmasked PII Dataset (DS-STG-007)\n- **Related Section:** Access Grants table; Policy \u00a73.1, \u00a73.3\n- **Gap:** Users with `ALL` datasets access \u2014 including a contractor (d.okonkwo, TechBridge Solutions), QA staff (j.morrison, s.nakamura, l.tanaka), and the DBA (p.desai) \u2014 have access to DS-STG-007 and its 47,000 unmasked production records. Per Policy \u00a73.3, access to PII/Restricted data requires Manager + Data Owner + Privacy Officer + CISO approval. The grant log shows only `db_admin` as grantor with no documented multi-party approval chain. Least privilege (\u00a73.1) is violated \u2014 there is no business justification for a contractor or general developer to access real customer SSNs.\n- **Severity:** **Critical**\n\n---\n\n### Finding 3: Email Addresses Not Masked Despite PII Classification\n- **Related Section:** Masking Pipeline Configuration (`masking_rules`); Dataset Inventory (DS-STG-002 notes); Policy \u00a74.3, \u00a74.4\n- **Gap:** Policy \u00a74.3 explicitly defines email addresses as PII, and \u00a74.4 requires \"Synthetic email generation.\" However, the masking pipeline configuration has **no masking rule for `email_address`**. DS-STG-002 notes confirm: \"Email addresses not masked (see masking config).\" This is a direct policy violation affecting at least one Restricted dataset (52,000 records).\n- **Severity:** **High**\n\n---\n\n### Finding 4: Contractor Access Exceeds Least-Privilege Scope\n- **Related Section:** Access Grants (d.okonkwo); Policy \u00a73.1, \u00a76.2\n- **Gap:** Contractor Dayo Okonkwo (TechBridge Solutions) is granted `readwrite` access to **ALL** datasets, including DS-STG-007 with unmasked PII. Engineering employees in similar developer roles are scoped to specific datasets (DS-STG-001, 005, 006, 008). The contractor has broader privilege than full-time developers, contradicting least privilege. While the contract end date (Dec 31, 2025) is mentioned in notes, the `expiration_date` field in the access record is **blank**, violating Policy \u00a76.2 which requires a \"defined expiration date not exceeding the contract end date.\"\n- **Severity:** **High**\n\n---\n\n### Finding 5: Missing Expiration Dates on All Accounts\n- **Related Section:** Access Grants table (`expiration_date` column); Policy \u00a76.2, \u00a76.3\n- **Gap:** Every row in the access grants table has a blank `expiration_date`, including the contractor account. Policy \u00a76.2 mandates expiration dates for contractors. While employees may not require expiration, the lack of any time-bounding combined with no evidence of the quarterly access reviews required by \u00a76.3 means there is no enforcement mechanism for access lifecycle hygiene.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: Masking Validation Excludes Highest-Risk Dataset\n- **Related Section:** Masking Pipeline Configuration (`validation`); Policy \u00a74.5\n- **Gap:** The masking validation explicitly excludes DS-STG-007 from sampling, with the rationale that it is \"classified as test data.\" This creates a circular control failure \u2014 the dataset most likely to contain unmasked PII is removed from the very validation designed to detect unmasked PII. Policy \u00a74.5 requires sampling \"each masked dataset,\" but does not provide a basis for excluding production-cloned datasets from validation entirely. Last validation was 2025-10-15, but the policy requires quarterly validation (\u00a74.2) \u2014 this appears on schedule, but its scope is insufficient.\n- **Severity:** **High**\n\n---\n\n### Finding 7: Segregation of Duties \u2014 DBA as Sole Provisioner\n- **Related Section:** Access Grants (`granted_by` column); Policy \u00a73.3\n- **Gap:** All access grants except the DBA's own (granted by `postgres`) were issued by `db_admin`. There is no evidence of the multi-party approval chain required by Policy \u00a73.3 (Manager + Data Owner + Privacy Officer + CISO for Restricted data). The grant records do not capture approver identities \u2014 only the technical grantor. This indicates either (a) approvals are happening outside the access record system with no traceability, or (b) approvals are not occurring. Either way, CC6.3 requires evidence of authorization, which is absent.\n- **Severity:** **High**\n\n---\n\n### Finding 8: Customer Success and Product Personnel Access to Restricted Data\n- **Related Section:** Access Grants (t.williams, n.garcia); Policy \u00a73.1\n- **Gap:** Tanya Williams (Customer Success) has readonly access to DS-STG-001 (Restricted, masked production clone \u2014 47,000 customer records). Even masked, the dataset retains tokenized financial data and partially-redacted phone numbers. The justification (\"customer workflow testing\") is generic, and there is no documented Privacy Officer or CISO approval as required by \u00a73.3 for Restricted data. Nicole Garcia's access to synthetic data only (DS-STG-006, DS-STG-008) is appropriately scoped \u2014 included for contrast.\n- **Severity:** **Medium**\n\n---\n\n### Finding 9: Address Masking Inconsistency Across Datasets\n- **Related Section:** Masking Pipeline (`physical_address` rule); Policy \u00a74.4\n- **Gap:** The `physical_address` masking rule applies to DS-STG-001, 002, and 004 \u2014 but not DS-STG-003 or DS-STG-005. DS-STG-005 notes describe addresses as \"generalized to city/state\" but the masking config does not include DS-STG-005 in the address rule's `applies_to_datasets`. This is either a configuration error, a documentation discrepancy, or an unmasked-address gap \u2014 all of which require remediation. The absence from DS-STG-003 may be acceptable if no address field exists in `payment_records`, but this is not documented.\n- **Severity:** **Medium**\n\n---\n\n### Finding 10: No Documented Sponsor Reviews for Contractor Account\n- **Related Section:** Access Grants (d.okonkwo); Policy \u00a76.2\n- **Gap:** Policy \u00a76.2 requires \"Monthly review by contractor sponsor.\" The contractor account (d.okonkwo) lists Elena Vasquez as sponsor but no review attestation evidence was provided. Given the contractor's `ALL` dataset access and active period (Aug 2025 \u2013 present), at least 4 monthly reviews should exist.\n- **Severity:** **Medium**\n\n---\n\n### Finding 11: DBA Admin Access Lacks Break-Glass Controls\n- **Related Section:** Access Grants (p.desai); Policy \u00a73.1\n- **Gap:** Priya Desai holds permanent `admin` access with `ALL` datasets. While DBA access is operationally necessary, there is no evidence of break-glass controls, session logging, or just-in-time elevation typically expected as compensating controls for standing privileged access \u2014 particularly given DBAs can bypass masking by querying production directly via the staging pipeline configuration credentials.\n- **Severity:** **Low**\n\n---\n\n## Recommended Remediation Priorities\n\n1. **Immediate (within 7 days):** Suspend or mask DS-STG-007; revoke `ALL` dataset access for users not requiring it; rotate any exposed credentials.\n2. **Short-term (30 days):** Add `email_address` masking rule; remediate DS-STG-005 address masking; backfill expiration dates for contractors; produce evidence of access approvals.\n3. **Medium-term (90 days):** Re-engineer the access provisioning workflow to capture multi-party approvals; expand masking validation to cover all production-cloned datasets regardless of classification; implement quarterly access reviews with documented attestations.\n\n**Overall Readiness Assessment:** **Not Ready for SOC 2.** The CC6.3 control is not operating effectively due to the unmasked production data exposure (Findings 1, 2, 6) and the absence of documented authorization workflows (Finding 7)."
+}

@@ -1,0 +1,65 @@
+{
+  "task_id": "a1.2-5-003",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:10:02.516203",
+  "score": {
+    "task_id": "a1.2-5-003",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 0.3333333333333333,
+    "precision": 0.14285714285714285,
+    "f1": 0.2,
+    "score": 0.2,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "legal hold",
+          "LH-2024-003",
+          "7-year",
+          "customer transaction",
+          "lifecycle"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "vault",
+          "legal hold"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "legal hold",
+          "LH-2025-004"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 4204,
+    "output_tokens": 2545
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: Control A1.2\n## Backup and Recovery \u2014 Q4 2025 Observation Period\n\n## Executive Summary\n\nKeystone Data has documented backup and recovery procedures with defined RPO/RTO, retention schedules, encryption, and quarterly restore testing \u2014 all of which generally support A1.2. However, my review identified a **critical disconnect between the legal hold register and the backup retention configuration** that creates material risk of spoliation and control failure. Additional gaps relate to vault immutability and cross-region DR retention.\n\n---\n\n## Findings\n\n### Finding 1: Legal Holds Not Enforced in Backup Infrastructure\n**Document/Section:** AWS Backup Configuration \u2014 `legal_hold_configuration` (enabled: false); Legal Hold Register (LH-2024-003, LH-2025-001, LH-2025-004); Backup Policy \u00a75\n\n**Gap:** Three active legal holds explicitly require preservation of backup-resident data (transaction data, financial reporting data, audit logs, HR data) for periods ranging from 2 to 7 years. However:\n- The AWS Backup configuration explicitly states: *\"AWS Backup Vault Lock not configured. No legal hold tagging mechanism in place. All backups in vault follow standard lifecycle rules.\"*\n- Daily backups are deleted after 365 days, and DR copies after only 30 days.\n- LH-2024-003 (Meridian Litigation) requires preservation of transaction data from 2022-01-01 onward \u2014 backups from that period have likely **already been deleted** under the 365-day lifecycle rule, and any remaining backups will continue to be auto-purged during the Q4 2025 observation period.\n- The Backup Policy (POL-BKP-008) makes no reference to legal holds; the Data Retention Policy \u00a73 references holds but defers backup retention to POL-BKP-008, creating a circular gap.\n\n**Severity:** **Critical**\n\nThis is a material finding. It represents both a control failure under A1.2 (recovery infrastructure does not meet the entity's preservation requirements) and potential spoliation exposure in active litigation. Auditor should consider whether this is a qualifying finding for the SOC 2 report.\n\n---\n\n### Finding 2: Backup Vault Lock Not Enabled (Backup Immutability)\n**Document/Section:** AWS Backup Configuration \u2014 `vault_lock_enabled: false`\n\n**Gap:** The production backup vault has no Vault Lock (WORM) protection. Backups can be modified or deleted by anyone with sufficient IAM privileges \u2014 including by accident, by malicious insider action, or by ransomware actors who have obtained credentials. A1.2 requires recovery infrastructure that meets availability commitments; without immutability, the integrity of recovery data cannot be assured. This also compounds Finding 1 \u2014 even if a legal-hold tagging mechanism were added, lifecycle deletions could still occur without Vault Lock enforcement.\n\n**Severity:** **High**\n\n---\n\n### Finding 3: Annual Archive Retention Insufficient for 7-Year Obligations\n**Document/Section:** AWS Backup Configuration \u2014 `ks-annual-archive` plan (`delete_after_days: 2555`); Data Retention Policy \u00a72; Backup Policy \u00a75.1\n\n**Gap:** The annual archive is configured for exactly 2,555 days (7 years \u00d7 365). However:\n- The Data Retention Policy requires 7-year retention for customer transaction records and financial reporting data based on **SOX/SEC** requirements, which typically calculate from end of fiscal year, not from backup creation date.\n- LH-2024-003 estimates 5\u20137 year duration but indicates litigation may extend beyond.\n- Leap years and the start-of-year scheduling (`cron(0 4 1 1 ? *)`) mean the actual retention will be ~6 years, 11 months from year-end events \u2014 potentially under-running the obligation.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 4: DR Copy Retention Significantly Shorter Than Primary\n**Document/Section:** AWS Backup Configuration \u2014 `ks-daily-full-backup.copy_action.lifecycle` (`delete_after_days: 30`)\n\n**Gap:** Cross-region DR copies in `us-west-2` are retained only 30 days, while primary backups are retained 365 days. If a regional failure or data-corruption incident is not detected within 30 days (e.g., slow-burn data corruption, undetected logical errors, late-discovered ransomware), the entity will have no off-region recovery capability beyond that window. This may be acceptable for short-RPO recovery scenarios but should be risk-assessed and documented.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 5: Vault Lock Min/Max Retention Not Configured\n**Document/Section:** AWS Backup Configuration \u2014 `vault_lock_min_retention_days: null`, `vault_lock_max_retention_days: null`\n\n**Gap:** Related to Finding 2 \u2014 even baseline minimum-retention guardrails are absent. This means a misconfigured backup plan (or accidental Terraform change) could shorten retention below policy without any infrastructure-level prevention.\n\n**Severity:** **Medium**\n\n---\n\n### Finding 6: Restore Testing Frequency Adequate but No Evidence Provided\n**Document/Section:** Backup Policy \u00a77\n\n**Gap:** Policy specifies quarterly restore tests with checksum validation and RTO compliance. For the Q4 2025 observation period, **no test results, run logs, or after-action reports were provided** as evidence. The policy is well-designed, but A1.2 requires evidence of operating effectiveness \u2014 auditor will need to request Q4 2025 (and ideally prior-quarter) test artifacts before this control can be opined on.\n\n**Severity:** **Medium** (informational \u2014 depends on artifacts being produced)\n\n---\n\n### Finding 7: Policy Conflict Between Documents on Backup-Held Data\n**Document/Section:** Data Retention Policy \u00a73 and \u00a76; Backup Policy (no legal hold reference)\n\n**Gap:** The Data Retention Policy states that legal holds supersede standard retention but defers all backup retention questions to POL-BKP-008. POL-BKP-008 contains no language addressing legal holds, no procedure for extending backup retention under a hold, no defined responsibility for translating legal holds into backup configuration changes, and no role assignment between Legal and Infrastructure. This is a documentation/governance gap underlying Finding 1.\n\n**Severity:** **High**\n\n---\n\n## Overall Opinion (Readiness)\n\nControl A1.2 is **NOT READY** for SOC 2 attestation as of this assessment. Findings 1 and 7 alone are sufficient to drive a qualified opinion, given that legal-hold preservation failures directly contradict the entity's stated availability and recovery commitments. Recommend remediation prior to formal observation:\n\n1. **Immediate:** Issue a manual preservation hold on all backups in scope of LH-2024-003, LH-2025-001, and LH-2025-004 (e.g., copy to a separate, lifecycle-exempt vault or apply AWS Backup legal hold API).\n2. **Short-term:** Update POL-BKP-008 to include legal-hold procedures with named owners and SLAs; enable Vault Lock with appropriate min retention.\n3. **Medium-term:** Implement tag-driven legal-hold automation tied to the legal hold register; reassess DR copy retention; produce Q4 2025 restore test evidence."
+}

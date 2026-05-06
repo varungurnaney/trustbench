@@ -1,0 +1,90 @@
+{
+  "task_id": "cc7.3-5-002",
+  "model": "claude-sonnet-4-6",
+  "timestamp": "2026-05-06T12:38:18.037485",
+  "score": {
+    "task_id": "cc7.3-5-002",
+    "model": "claude-sonnet-4-6",
+    "scoring_method": "f1",
+    "recall": 0.4,
+    "precision": 0.4,
+    "f1": 0.4000000000000001,
+    "score": 0.4000000000000001,
+    "gaps_detected": 2,
+    "gaps_total": 5,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 5,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-803",
+          "missing 5-Whys",
+          "returned for revision",
+          "Marco DeLuca"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-806"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-804",
+          "ransomware"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-804",
+          "PM-804-AI-08",
+          "network egress restrictions",
+          "not started",
+          "supply chain",
+          "ransomware"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "INC-2025-805"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6705,
+    "output_tokens": 3491
+  },
+  "raw_response": "# SOC 2 Type II Readiness Assessment \u2014 CC7.3 Post-Mortem Quality Review\n**Entity:** Helix Collaboration | **Period:** Q4 2025 | **Auditor Review Date:** January 2026\n\n---\n\n## Assessment Scope and Methodology\n\nEvidence reviewed against CC7.3 (incident response execution \u2014 understand, contain, remediate, communicate) and the entity's own IRP-POL-2025-009 v3.5. Post-mortem quality standards in \u00a74.2 serve as the primary internal benchmark. Where the entity's own policy is more stringent than the TSC criterion minimum, non-compliance with internal policy is treated as a control gap because SOC 2 Type II evaluates whether controls operate as designed.\n\n---\n\n## Findings\n\n---\n\n### Finding 1: INC-2025-803 Post-Mortem Does Not Meet Minimum Quality Standards and Remains Unrevised\n\n**Policy Reference:** IRP-POL-2025-009 \u00a74.2 (Quality Standards), \u00a74.3 (Post-Mortem Review)\n**Incident Register Reference:** INC-2025-803 row \u2014 `post_mortem_status: Complete`, `reviewer_sign_off: No \u2014 returned for revision Nov 14`\n\n**Gap Description:**\n\nThe post-mortem for INC-2025-803 is a three-sentence narrative paragraph. The reviewer (Marco DeLuca) explicitly returned it for revision on November 14, 2025, citing five specific deficiencies: missing timestamped timeline, missing 5-Whys root cause analysis, unquantified impact assessment, missing remediation details, and missing detection improvement recommendations. All five are mandatory elements under \u00a74.2.\n\nAs of the incident register snapshot, the document has not been resubmitted and does not carry a valid reviewer sign-off. The incident register nonetheless records `post_mortem_status: Complete`, which is materially inaccurate \u2014 a returned-for-revision document is not complete. This status misrepresentation means management's own post-mortem completion metric (5 of 6 completed on time, per the Q4 dashboard) is overstated.\n\nSpecific \u00a74.2 elements missing from the submitted document:\n- **\u00a74.2.1** \u2014 No incident timeline with UTC timestamps\n- **\u00a74.2.2** \u2014 No 5-Whys root cause analysis\n- **\u00a74.2.3** \u2014 No quantified impact (number of tenants affected, number of document IDs exposed)\n- **\u00a74.2.4** \u2014 Remediation described in one clause with no technical specifics\n- **\u00a74.2.6** \u2014 No detection improvement recommendations\n\nThe \u00a74.2.5 action items partially satisfy form requirements (owner, priority, date) but lack Jira ticket references as required, and the action item tracking entry in the register shows 2 of 3 items complete with no notation of revision status.\n\n**Auditor Judgment:** This is not a technical edge case or a minor formatting deficiency. The reviewer's own notes confirm the document fails policy. The gap between the reviewer's finding and the incident register's \"Complete\" status suggests a process breakdown in post-mortem lifecycle management, not merely document quality. An auditor reviewing this evidence would not be able to conclude that the entity understood or captured lessons learned from this incident.\n\n**Severity: High**\n\n---\n\n### Finding 2: INC-2025-804 Has Four High-Priority Action Items Not Started, Including Network Egress Restriction on Compromised Node Class\n\n**Policy Reference:** IRP-POL-2025-009 \u00a74.2.5 (Preventive Action Items), \u00a74.4 (Action Item Governance)\n**Incident Register Reference:** INC-2025-804 row \u2014 `action_items_total: 9`, `action_items_completed: 5`\n\n**Gap Description:**\n\nThe INC-2025-804 post-mortem (SEV-1 ransomware) is substantively strong and correctly identifies systemic supply chain risk. However, four of nine action items remain open as of the post-mortem date (November 24, 2025), and the status of those items warrants scrutiny:\n\n| Item | Priority | Status |\n|---|---|---|\n| PM-804-AI-04: Docker Hub allowlist | High | In Progress |\n| PM-804-AI-05: Private Docker registry | Medium | In Progress |\n| PM-804-AI-06: Container image provenance (Sigstore/Cosign) | Medium | Not Started |\n| PM-804-AI-07: Supply chain security training | Medium | Not Started |\n| **PM-804-AI-08: Network egress restrictions on processing nodes** | **High** | **Not Started** |\n| PM-804-AI-09: CI/CD pipeline supply chain hardening | High | Not Started |\n\nOf particular concern is PM-804-AI-08 (network egress restriction, High priority, target January 15, 2026). The root cause analysis establishes that ransomware execution succeeded because the compromised container called out to a C2 server to download the Conti payload. Blocking unauthorized outbound network traffic from processing nodes is a direct, independent control that would have interrupted the attack chain regardless of image scanning outcomes. Its \"Not Started\" status means the node class that was compromised retains the same network exposure profile as during the incident.\n\nPM-804-AI-09 (CI/CD pipeline hardening, High priority) is similarly not started. The root cause traces to CI pipeline configuration (mutable tags, no pre-pull scanning). Three of the five completed items addressed immediate containment (image pinning, Falco, malware scanning), but the broader pipeline hardening that would prevent recurrence across other pipelines has not begun.\n\nUnder \u00a74.4, action items 14 days overdue escalate to the CISO. Items with January 2026 target dates are not yet overdue at the time of this assessment, but the \"Not Started\" status on High-priority items from a SEV-1 incident warrants auditor attention as a forward risk during the audit period.\n\n**Auditor Judgment:** The remediation posture for this SEV-1 incident is incomplete at the close of Q4 2025. The entity has addressed the most visible technical controls but has not yet closed the network-level defensive gap that the incident directly exposed. This is a meaningful residual risk finding, not merely a tracking observation.\n\n**Severity: High**\n\n---\n\n### Finding 3: Q4 Dashboard Reports 3 Overdue Action Items with No Evidence of Required Escalation\n\n**Policy Reference:** IRP-POL-2025-009 \u00a74.4 (Action Item Governance \u2014 14-day CISO escalation, 30-day CTO escalation)\n\n**Gap Description:**\n\nThe Q4 2025 Security Operations Metrics Dashboard reports 3 action items overdue at quarter close. The policy requires escalation to the CISO at 14 days overdue and to the CTO at 30 days overdue. No evidence has been provided of escalation communications, escalation tracking, or management acknowledgment of these overdue items.\n\nCross-referencing the incident register against post-mortem action item data, at least some of the overdue items likely relate to INC-2025-803 (where 1 of 3 action items is incomplete and the underlying post-mortem is unrevised) and INC-2025-805 (where 2 of 5 items remain open). Without a detailed action item aging report, the specific items and their overdue duration cannot be confirmed from the evidence provided \u2014 which is itself a secondary gap, as an auditor cannot verify escalation compliance without an action item aging log.\n\nThe absence of escalation evidence means the entity cannot demonstrate that its own governance mechanism for overdue corrective actions operated as designed during Q4.\n\n**Auditor Judgment:** \u00a74.4 is a designed compensating control \u2014 it exists precisely to prevent corrective actions from stalling after incidents. The combination of acknowledged overdue items and no escalation evidence is a process control failure, not a documentation technicality. An auditor would require escalation records or a management representation explaining why escalation was not triggered.\n\n**Severity: Medium**\n\n---\n\n### Finding 4: INC-2025-806 Post-Mortem Action Item Count Is Marginal and May Reflect Scope Limitation\n\n**Policy Reference:** IRP-POL-2025-009 \u00a74.2.5 (minimum 3 action items)\n**Post-Mortem Reference:** INC-2025-806 \u00a75 (Preventive Action Items)\n\n**Gap Description:**\n\nThe INC-2025-806 post-mortem technically satisfies the minimum threshold of three action items (\u00a74.2.5 requires a minimum of three; the document contains two preventive action items plus three remediation actions taken during the incident). Whether the two preventive items satisfy the minimum depends on how the reviewer interprets \"preventive action items\" versus \"remediation actions taken\" \u2014 these are listed in separate sections, suggesting the author treats them as distinct categories. On a strict reading, the preventive section contains only two items, falling one short of the minimum.\n\nMore substantively, the 5-Whys analysis identifies a systemic root cause: the change management process does not cover infrastructure configuration changes associated with new features. This is a process-level finding with organization-wide implications. The post-mortem addresses it with a single action item (PM-806-AI-02: add security review to launch checklist). A thorough response to this root cause would also consider: a review of other features launched since the gap existed (Q2 2025 onward) to identify similar Cloudflare misconfigurations, and a broader audit of the change management policy itself. Neither is captured.\n\nThe reviewer (Marco DeLuca) approved the post-mortem without flagging this, suggesting either the reviewer accepted the narrow scope or the review process did not critically evaluate systemic implications.\n\n**Auditor Judgment:** This is a lower-severity finding because both action items are completed, the incident impact was limited, and the detection/response performance was strong. However, the failure to trace a process-level root cause to a process-level remediation beyond a single checklist item is a qualitative gap in lessons-learned depth.\n\n**Severity: Low**\n\n---\n\n### Finding 5: INC-2025-803 Action Items Lack Jira Ticket References at Submission\n\n**Policy Reference:** IRP-POL-2025-009 \u00a74.2.5 (each action item must include Jira ticket reference), \u00a74.4 (entered in Jira within 2 business days)\n\n**Gap Description:**\n\nThe three action items in the INC-2025-803 post-mortem do not include Jira ticket references (HLX-PM numbers). This is a required element under \u00a74.2.5. Compare to INC-2025-804 and INC-2025-806, where every action item includes a Jira reference. The absence of ticket references means these action items cannot be verified as having been entered into the governance tracking system, cannot be confirmed as subject to the weekly Monday Security Standup review, and cannot be confirmed as subject to the 14/30-day escalation triggers in \u00a74.4.\n\nThis finding is partially subsumed by Finding 1 (the post-mortem as a whole is deficient and unrevised), but is noted separately because it represents a specific, independently testable policy requirement.\n\n**Severity: Low** *(Noted as subordinate to Finding 1; remediation of Finding 1 should address this concurrently.)*\n\n---\n\n## Summary Table\n\n| # | Finding | Policy Reference | Severity |\n|---|---|---|---|\n| 1 | INC-2025-803 post-mortem returned for revision, not resubmitted, incorrectly recorded as Complete | \u00a74.2 (all subsections), \u00a74.3 | **High** |\n| 2 | INC-2025-804 has 4 High-priority action items not started, including network egress control directly responsive to attack vector | \u00a74.2.5, \u00a74.4 | **High** |\n| 3 | 3 overdue action items in Q4 with no evidence of required CISO/CTO escalation | \u00a74.4 | **Medium** |\n| 4 | INC-2025-806 preventive action items below minimum threshold; systemic root cause not fully addressed | \u00a74.2.5 | **Low** |\n| 5 | INC-2025-803 action items missing required Jira ticket references | \u00a74.2.5, \u00a74.4 | **Low** *(subordinate to F1)* |\n\n---\n\n## Observations (Not Findings)\n\nThe following are noted as strengths or contextual observations that do not constitute gaps but inform the overall CC7.3 assessment:\n\n- **Response SLA performance is strong.** All Q4 SEV-1 and SEV-2 incidents met triage and containment SLAs per the incident register. SEV-2 mean containment time improved 55% quarter-over-quarter.\n- **INC-2025-804 post-mortem is substantively high quality.** The 5-Whys analysis is specific, evidence-based, and traces to systemic supply chain risk. CISO sign-off was obtained within one business day of submission, meeting the \u00a74.3 two-business-day requirement.\n- **INC-2025-801 and INC-2025-802 post-mortems** (not provided as full documents but reflected in the register) show 100% action item completion with appropriate reviewer sign-off, indicating the process functions correctly for most incidents.\n- **Plan testing cadence is compliant.** Two tabletop exercises and one red team engagement were completed in 2025, satisfying \u00a77 requirements.\n- **INC-2025-803 reviewer behavior reflects a functioning quality gate.** The fact that Marco DeLuca returned the post-mortem for revision demonstrates the review control is operating. The gap is in post-revision follow-through, not in the review step itself.\n\n---\n\n## Recommended Remediation Actions Before Audit\n\n| Priority | Action |\n|---|---|\n| Immediate | Revise and resubmit INC-2025-803 post-mortem per reviewer's November 14 notes; update incident register status upon valid sign-off |\n| Immediate | Produce action item aging report identifying the 3 overdue items; provide escalation evidence or document management decision to accept/defer |\n| Before audit fieldwork | Update INC-2025-804 action item tracker to reflect current status of PM-804-AI-08 (network egress) and PM-804-AI-09 (CI/CD hardening); if not started, provide a written risk acceptance or accelerated timeline approved by CISO |\n| Before audit fieldwork | Correct the incident register status for INC-2025-803 from \"Complete\" to \"Pending Revision\" to ensure management reporting accurately reflects control status |"
+}

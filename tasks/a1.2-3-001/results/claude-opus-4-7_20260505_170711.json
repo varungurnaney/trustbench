@@ -1,0 +1,57 @@
+{
+  "task_id": "a1.2-3-001",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-05T17:07:11.354642",
+  "score": {
+    "task_id": "a1.2-3-001",
+    "model": "claude-opus-4-7",
+    "scoring_method": "detection_and_precision",
+    "recall": 1.0,
+    "precision": 0.2,
+    "f1": 0.33333333333333337,
+    "score": 0.5,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 10,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "incremental",
+          "backup log",
+          "4-hour",
+          "RPO"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "WAL",
+          "archiving",
+          "no evidence",
+          "not provided",
+          "continuous",
+          "point-in-time",
+          "log"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6421,
+    "output_tokens": 2827
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: Control A1.2\n## Nexus Platforms Inc. \u2014 Q4 2025 Observation Period (Oct 1 \u2013 Dec 31, 2025)\n\n---\n\n## Executive Summary\n\nThe backup policy (POL-BKP-005 v2.8) is well-structured and defines clear schedules, RPO/RTO targets, encryption, retention, and failure handling. The Q4 2025 backup execution log demonstrates **100% success rate (92/92) for daily full backups** of `nx-db-prod-01` with checksum verification, consistent execution within the 02:00\u201306:00 UTC maintenance window, and reasonable size growth patterns indicating real data is being captured.\n\nHowever, the evidence provided is **insufficient to fully demonstrate A1.2 compliance**. Several material gaps exist between what the policy commits to and what the evidence actually proves. Findings below.\n\n---\n\n## Findings\n\n### Finding 1: Backup Evidence Limited to a Single Database System\n- **Related to:** Policy \u00a72 (Scope); Evidence \u2014 backup execution log\n- **Gap:** The policy's scope covers four PostgreSQL clusters (`nx-db-prod-01` through `nx-db-prod-04`), three S3 buckets (`nx-prod-assets`, `nx-prod-uploads`, `nx-prod-configs`), and the HashiCorp Vault cluster. The execution log only contains entries for `nx-db-prod-01`. There is **no evidence** that backups are being performed for the other three database clusters, the S3 file storage, or Vault. An auditor cannot conclude A1.2 is met across the in-scope environment based on a single system's logs.\n- **Severity:** **Critical**\n\n---\n\n### Finding 2: No Evidence of Incremental Backups\n- **Related to:** Policy \u00a73.2 (Incremental Backups)\n- **Gap:** The policy mandates incremental file-system backups every 4 hours (06:00, 10:00, 14:00, 18:00, 22:00 UTC) \u2014 i.e., five incremental jobs per day. The provided log contains zero incremental entries for the 92-day period. Either incremental backups are not running (a control failure) or evidence was not provided. Without these, the stated 4-hour RPO cannot be substantiated.\n- **Severity:** **High**\n\n---\n\n### Finding 3: No Evidence of WAL Archiving\n- **Related to:** Policy \u00a73.3 (WAL Archiving)\n- **Gap:** Policy commits to continuous PostgreSQL WAL archiving with \u226415-minute archive lag to a cross-region (us-west-2) location, supporting point-in-time recovery. No WAL archive logs, lag metrics, or cross-region replication evidence were provided. WAL archiving is essential to meeting the 4-hour RPO for databases between full backups.\n- **Severity:** **High**\n\n---\n\n### Finding 4: No Evidence of Quarterly Restore Testing\n- **Related to:** Policy \u00a77 (Restore Testing)\n- **Gap:** The policy requires a full quarterly restore test in the DR environment to validate restoration success, data integrity, and RTO compliance. For the Q4 2025 observation period, **at least one restore test should have occurred**, but no test report, restoration log, or RTO measurement was provided. A1.2 specifically requires monitoring of recovery procedures \u2014 backups that are never test-restored are unverified. This is one of the most commonly tested aspects of A1.2.\n- **Severity:** **Critical**\n\n---\n\n### Finding 5: No Evidence of Backup Encryption / KMS Key Rotation\n- **Related to:** Policy \u00a75 (Backup Encryption)\n- **Gap:** Policy commits to AES-256 at rest via AWS KMS, TLS 1.3 in transit, and quarterly key rotation. The execution log includes a `checksum_verified` column but no fields evidencing encryption status, KMS key ID, or rotation events. No key rotation records were provided for Q4 2025 (one rotation should have occurred during the period).\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: No Evidence of Offsite / Cross-Region Backup Storage\n- **Related to:** Policy \u00a73.3 (cross-region storage); A1.2 (environmental protections)\n- **Gap:** A1.2 explicitly addresses environmental protections. While the policy references cross-region (us-west-2) storage for WAL archives, no evidence is provided of backup replication, geographic redundancy, or storage location for the daily full backups. If backups reside only in the same region/AZ as production, an environmental event could destroy both primary data and backups.\n- **Severity:** **High**\n\n---\n\n### Finding 7: No Evidence of Backup Failure Alerting Mechanism\n- **Related to:** Policy \u00a78 (Failure Handling)\n- **Gap:** Policy specifies PagerDuty alerts within 5 minutes of failure and re-run within 2 hours. While the log shows 100% success (no failures to test the process), there is no supporting evidence that the alerting mechanism is configured and operational \u2014 e.g., a synthetic failure test, PagerDuty integration screenshot, or runbook. Auditors typically require evidence the detective control *would* fire, not just that nothing failed.\n- **Severity:** **Medium**\n\n---\n\n### Finding 8: Backup Duration Trending Toward Maintenance Window Limit\n- **Related to:** Policy \u00a73.1 (must complete within 02:00\u201306:00 UTC window)\n- **Gap:** Backup duration is growing linearly across Q4: ~1h38m on Oct 1 \u2192 ~2h35m on Dec 31. At the current growth rate (~1 minute/day), the backup will exceed the 4-hour maintenance window within roughly 12\u201314 months. While not a current control failure, no evidence of capacity monitoring, trend analysis, or planned remediation (e.g., parallelization, deduplication) was provided. This is a forward-looking availability risk relevant to A1.2's \"monitors\" requirement.\n- **Severity:** **Low**\n\n---\n\n### Finding 9: Policy Approver Inconsistency\n- **Related to:** Policy header vs. \u00a79 (Roles and Responsibilities)\n- **Gap:** The document header lists the CISO (Patricia Morales) as approver, and \u00a79 lists CISO as approver, but also lists \"VP Infrastructure\" as the policy owner \u2014 while the document metadata identifies \"Infrastructure Engineering\" as owner without naming the VP. Minor governance documentation inconsistency; recommend explicit named ownership.\n- **Severity:** **Low**\n\n---\n\n### Finding 10: No Evidence of Monthly Consolidated or Long-Term Retention\n- **Related to:** Policy \u00a76 (Retention)\n- **Gap:** Policy specifies 12-month retention of \"monthly consolidated\" backups. No evidence was provided that monthly consolidations are being created or retained. For a Q4 observation, at least three monthly consolidated backups (Oct, Nov, Dec) should be evidenced.\n- **Severity:** **Medium**\n\n---\n\n## Summary of Severity\n\n| Severity | Count | Findings |\n|----------|-------|----------|\n| Critical | 2 | #1, #4 |\n| High | 3 | #2, #3, #6 |\n| Medium | 3 | #5, #7, #10 |\n| Low | 2 | #8, #9 |\n\n---\n\n## Recommendation\n\nThe auditee has demonstrated reliable execution of **one** backup job stream. To achieve A1.2 readiness, Nexus Platforms should provide, prior to the formal SOC 2 examination:\n\n1. Backup execution logs for **all in-scope systems** (4 DB clusters, 3 S3 buckets, Vault).\n2. Incremental backup logs for the full Q4 period.\n3. WAL archive metrics demonstrating \u226415-minute lag and cross-region delivery.\n4. **At least one Q4 2025 restore test report** with RTO/data-integrity validation (highest priority).\n5. KMS encryption configuration evidence and Q4 key rotation record.\n6. Evidence of cross-region/offsite storage for daily full backups.\n7. PagerDuty alert configuration and a sample alert test.\n8. Monthly consolidated backup inventory.\n\nWithout items 1\u20134 in particular, A1.2 cannot be opined upon favorably."
+}

@@ -1,0 +1,136 @@
+{
+  "id": "cc7.1-5-002",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC7.1",
+  "control_description": "To meet its objectives, the entity uses detection and monitoring procedures to identify changes to configurations that result in the introduction of new vulnerabilities, and susceptibilities to newly discovered vulnerabilities.",
+  "difficulty": 5,
+  "category": "judgment",
+  "evidence_files": [
+    {
+      "path": "evidence/vulnerability-management-policy.md",
+      "type": "policy",
+      "description": "Prism Data Systems vulnerability management policy with detailed compensating control validation requirements (90-day revalidation, independent validation, auto-void at 90 days overdue)"
+    },
+    {
+      "path": "evidence/qualys-scan-report-q4-2025.csv",
+      "type": "report",
+      "description": "Qualys VMDR scan report for Q4 2025 with 33 findings including 2 Critical vulnerabilities in Risk Accepted status"
+    },
+    {
+      "path": "evidence/risk-acceptance-register.csv",
+      "type": "exception_register",
+      "description": "Risk acceptance register showing 4 risk acceptances with validation dates, revalidation status, and expiration tracking"
+    },
+    {
+      "path": "evidence/compensating-control-validation-log.csv",
+      "type": "log",
+      "description": "Detailed log of compensating control validation activities showing test methodology, results, and validator identity for each revalidation"
+    },
+    {
+      "path": "evidence/asset-inventory-esxi.md",
+      "type": "config",
+      "description": "ESXi host inventory showing production cluster configuration and VM distribution including the affected host esxi-prod-09"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II audit of Prism Data Systems for Q4 2025 (October 1 - December 31, 2025). Review all evidence related to the vulnerability management program and assess CC7.1 compliance. Pay particular attention to risk acceptance practices, compensating control validation currency, and the interplay between vulnerability remediation timelines and risk acceptance durations. Not every risk acceptance with compensating controls is adequately managed — examine the details carefully.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "RA-2025-041 compensating controls not revalidated for 193 days — risk acceptance void per policy",
+      "description": "Risk acceptance RA-2025-041 for CVE-2025-22224 (CVSS 9.3, Critical VMware ESXi Heap Overflow RCE on esxi-prod-09) was approved June 20, 2025 with 5 compensating controls. The compensating control validation log shows initial validation was performed on June 20 (VLD-2025-101 through VLD-2025-105). However, no quarterly revalidation has been performed. The next revalidation was due September 18 (90 days after June 20). As of December 29, the revalidation is 102 days overdue. Per policy Section 5.3, risk acceptances with validations overdue by more than 90 days 'are considered void and the vulnerability reverts to standard SLA tracking.' This means: (1) the risk acceptance is automatically void per policy, (2) the vulnerability reverts to the 14-day Critical SLA which expired on June 29 (183 days ago), and (3) the compensating controls have not been verified as operational since June 20 — 193 days ago. The ESXi host inventory confirms esxi-prod-09 is the only host still on ESXi 8.0 U2c (all others patched to U3b in October), hosting 15 production VMs including payment-processor and customer-data-api.",
+      "evidence_sources": [
+        "evidence/risk-acceptance-register.csv",
+        "evidence/compensating-control-validation-log.csv",
+        "evidence/vulnerability-management-policy.md",
+        "evidence/asset-inventory-esxi.md"
+      ],
+      "expected_reasoning": "The auditor should examine each risk acceptance's revalidation dates. RA-2025-041 shows initial validation June 20 with next revalidation due September 18. The validation log has no entries for RA-2025-041 after June 20. At 102 days overdue, this exceeds the 90-day void threshold in Section 5.3. The auditor should also note the risk acceptance itself expired December 20 (6-month max). The ESXi inventory shows this host is uniquely unpatched. The combination of void risk acceptance, expired acceptance, and unvalidated compensating controls on a Critical vulnerability affecting payment processing VMs is the most severe finding.",
+      "detection_criteria": {
+        "required_keywords": ["RA-2025-041", "CVE-2025-22224", "esxi-prod-09", "revalidation overdue", "102 days", "Section 5.3", "void", "June 20", "September 18", "compensating controls not validated", "payment-processor"],
+        "minimum_keyword_matches": 5
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "RA-2025-041 risk acceptance expired December 20 with no renewal — Critical vuln unmanaged",
+      "description": "Independent of the revalidation gap, risk acceptance RA-2025-041 itself expired on December 20, 2025 (6-month maximum per policy Section 5.1). The register shows status 'Expired — Validation Overdue' with no renewal filed. The vulnerability remains open in the scan report. Without an active risk acceptance, CVE-2025-22224 reverts to standard SLA tracking — the 14-day Critical SLA expired on June 29, making this 183 days past SLA with no formal coverage. This compounds the revalidation gap: the vulnerability is simultaneously past SLA, has a void risk acceptance (validation overdue), and has an expired risk acceptance (duration exceeded).",
+      "evidence_sources": [
+        "evidence/risk-acceptance-register.csv",
+        "evidence/qualys-scan-report-q4-2025.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note that RA-2025-041 has two independent policy violations: (1) revalidation overdue (void per Section 5.3) and (2) expiration exceeded (Section 5.1 maximum 6 months). Even if revalidation had been performed on time, the acceptance would still have expired December 20 without renewal. The result is a Critical vulnerability with no active risk management.",
+      "detection_criteria": {
+        "required_keywords": ["RA-2025-041", "expired", "December 20", "6-month maximum", "no renewal", "183 days past SLA", "Section 5.1", "no active risk acceptance"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "RA-2025-035 expired December 5 — legacy-billing-03 Struts vulnerability without formal risk coverage",
+      "description": "Risk acceptance RA-2025-035 for CVE-2024-53677 (Medium, Apache Struts on legacy-billing-03) expired December 5, 2025 (6-month maximum). The register states 'No renewal filed.' The vulnerability remains open with application retirement planned for H1 2026 — approximately 3-6 months away. While the Q3 revalidation was completed on time (September 5, VLD-2025-402), the acceptance has lapsed. The compensating controls (WAF, VPN restriction, read-only DB, Splunk logging) are presumably still in place, but there is no formal risk acceptance covering the current period. This creates a gap between the expired acceptance and the planned retirement.",
+      "evidence_sources": [
+        "evidence/risk-acceptance-register.csv",
+        "evidence/compensating-control-validation-log.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should track all expired risk acceptances. RA-2025-035 expired December 5 without renewal. Unlike RA-2025-041 (Critical, no revalidation), this acceptance had proper revalidation but simply was not renewed. The remediation path (app retirement H1 2026) extends well beyond the expiration. A new risk acceptance should have been filed before expiration.",
+      "detection_criteria": {
+        "required_keywords": ["RA-2025-035", "CVE-2024-53677", "legacy-billing-03", "expired December 5", "no renewal", "H1 2026", "6-month maximum", "lapsed"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "RA-2025-038 compensating control revalidation deferred 3 times — maintenance window repeatedly postponed",
+      "description": "Risk acceptance RA-2025-038 for CVE-2025-24472 (CVSS 9.8, Critical FortiOS auth bypass on fw-internal-07) has valid revalidation (October 8) and is not yet expired (January 8, 2026). However, the register notes that business stakeholders have deferred the HA failover maintenance window 3 times (originally September, then October, then November, now January 11). This pattern of repeated deferral raises a judgment question: at what point does a 'temporary' risk acceptance become a permanent acceptance of an unpatched Critical vulnerability? The vulnerability has been open since July 1 — nearly 6 months — with a maximum risk acceptance duration of 6 months. If the January maintenance window is deferred again, the acceptance will expire without remediation, and a third 6-month acceptance would need to be filed.",
+      "evidence_sources": [
+        "evidence/risk-acceptance-register.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "The auditor should note the pattern of 3 deferrals for RA-2025-038's remediation window. While the risk acceptance process has been followed correctly (proper approval, timely revalidation), the repeated postponement of the actual fix suggests the compensating controls are being used as a substitute for remediation rather than a temporary measure. For a CVSS 9.8 authentication bypass on an internal firewall, this pattern warrants scrutiny.",
+      "detection_criteria": {
+        "required_keywords": ["RA-2025-038", "CVE-2025-24472", "fw-internal-07", "deferred 3 times", "maintenance window", "September", "October", "November", "January", "permanent acceptance", "pattern"],
+        "minimum_keyword_matches": 4
+      }
+    },
+    {
+      "id": "F-005",
+      "type": "gap",
+      "severity": "low",
+      "title": "RA-2025-030 expired November 18 — D-Link NAS without active risk acceptance",
+      "description": "Risk acceptance RA-2025-030 for CVE-2024-10914 (Low, D-Link NAS on nas-archive-03) expired November 18 without renewal. While this is a Low-severity finding on an isolated device with no PII, the policy requires formal risk acceptance for any vulnerability past SLA. The register notes the team 'assumes replacement in Q1 covers remaining period' but no formal coverage exists. The Q3 revalidation was completed on time (August 18), so compensating controls were verified as recently as August.",
+      "evidence_sources": [
+        "evidence/risk-acceptance-register.csv",
+        "evidence/vulnerability-management-policy.md"
+      ],
+      "expected_reasoning": "This is a minor finding — Low severity, isolated device, no PII. The auditor should note it as part of a pattern: 3 of 4 risk acceptances (RA-2025-041, RA-2025-035, RA-2025-030) have expired without renewal. This pattern suggests a systemic gap in risk acceptance lifecycle management rather than isolated oversights.",
+      "detection_criteria": {
+        "required_keywords": ["RA-2025-030", "nas-archive-03", "expired November 18", "not renewed", "Low-severity", "pattern", "lifecycle management"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 10
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "50 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 5,
+    "tags": ["vulnerability_management", "compensating_controls", "revalidation", "risk_acceptance_lifecycle", "VMware", "FortiOS", "judgment", "expiration"]
+  }
+}

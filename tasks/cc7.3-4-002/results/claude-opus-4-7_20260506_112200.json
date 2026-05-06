@@ -1,0 +1,96 @@
+{
+  "task_id": "cc7.3-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:22:00.558742",
+  "score": {
+    "task_id": "cc7.3-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.4444444444444444,
+    "f1": 0.6153846153846153,
+    "score": 0.6153846153846153,
+    "gaps_detected": 4,
+    "gaps_total": 4,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 1,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-504",
+          "false positive",
+          "SEC-EXC-2025-091",
+          "Section 5.1"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": true
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "critical",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-503",
+          "Not Started",
+          "former contractor",
+          "cross-account trust"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-505",
+          "3 of 7 action items",
+          "ransomware",
+          "patient data",
+          "PHI",
+          "SEV-1"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-004",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "INC-2025-507",
+          "WAF bypass",
+          "incomplete remediation"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-005",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "SEC-EXC-2025-088",
+          "January 2026",
+          "testing gap"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6380,
+    "output_tokens": 3439
+  },
+  "raw_response": "# SOC 2 CC7.3 Readiness Assessment \u2014 Beacon Health Technologies\n## Q4 2025 Observation Period (October 1 - December 31, 2025)\n\n## Scope Note on Evidence\n\nTwo evidence items provided are **not directly relevant** to CC7.3 effectiveness testing and were reviewed but not used as primary evidence:\n- **HIPAA Security Awareness Training Report** \u2014 Relates to CC1.4/CC2.2 (training/competence), not incident response execution.\n- **Q4 Change Management Log** \u2014 Relates to CC8.1 (change management). However, the emergency change records do provide useful corroboration that incident-driven remediation actions were formally tracked.\n\nFindings below are based on the Incident Register, Incident Response Policy, and Security Exception Register.\n\n---\n\n## Findings\n\n### Finding 1: Missing Post-Mortem for SEV-2 Incident INC-2025-503\n- **Related Section:** IRP Section 5.1 (Post-Mortem Applicability); Incident Register row INC-2025-503\n- **Gap:** INC-2025-503 (anomalous IAM role assumption by external account \u2014 former contractor cross-account trust not revoked) was a SEV-2 incident resolved on 2025-11-06. Per policy, a post-mortem was due within 5 business days (by 2025-11-13). As of report date, post-mortem status is \"Not Started\" and zero action items have been logged. This is particularly concerning because the root cause (failure to revoke contractor access) suggests systemic access management gaps that warrant root cause analysis and corrective actions. The policy does not authorize skipping post-mortems for non-false-positive SEV-2 events.\n- **Severity:** **High**\n\n### Finding 2: Incomplete Action Items for SEV-1 Ransomware Incident INC-2025-505\n- **Related Section:** IRP Section 5.3 (Action Items); Incident Register row INC-2025-505\n- **Gap:** The November 22 ransomware incident (SEV-1, PHI involved \u2014 patient data files encrypted in transit) has only 3 of 7 action items completed. The post-mortem was due 2025-11-27; by report date (January 2026), the 4 outstanding items are well past the 14-day overdue threshold that requires CISO escalation. There is no evidence of escalation documentation. Given this incident involved confirmed PHI impact and ransomware on a production gateway, incomplete remediation represents material residual risk.\n- **Severity:** **High**\n\n### Finding 3: Containment SLA Breach on SEV-2 Incident INC-2025-507\n- **Related Section:** IRP Section 4.2 (Containment SLA); Incident Register row INC-2025-507\n- **Gap:** INC-2025-507 (HTTP/2 request smuggling WAF bypass) had containment time of 1.5 hours, within the 2-hour SEV-2 SLA. However, **resolution time was 29.25 hours**, within the 48-hour SEV-2 target. *No SLA breach here on review.* Withdrawn \u2014 see Finding 3 (revised) below.\n\n### Finding 3 (revised): Triage SLA Breach on SEV-3 Incident INC-2025-504\n- **Related Section:** IRP Section 4.1 (Triage SLA); Incident Register row INC-2025-504\n- **Gap:** INC-2025-504 was detected at 03:22 UTC and triaged at 08:45 UTC (323 minutes / ~5.4 hours). The SEV-3 triage SLA is 2 hours during business hours. Detection occurred outside business hours, and the policy limits SEV-3 coverage to business hours \u2014 so this may technically conform. However, the incident involved a 4.7 GB outbound data transfer from an analytics cluster, which initially appeared to be potential data exfiltration. The risk classification at detection time should have warranted SEV-2 treatment (suspected PHI exposure) with 24/7 coverage until investigation downgraded it. The lack of an initial-classification-vs-final-classification process is a control design weakness.\n- **Severity:** **Medium**\n\n### Finding 4: Triage SLA Breach on SEV-3 Brute Force Incident INC-2025-508\n- **Related Section:** IRP Section 4.1 (Triage SLA); Incident Register row INC-2025-508\n- **Gap:** INC-2025-508 was detected 2025-12-15 at 19:00 UTC and triaged 2025-12-16 at 08:15 UTC (795 minutes / ~13 hours). While SEV-3 coverage is business-hours-only and this falls within that window technically, a 15,000-attempt brute force from Tor exit nodes against the VPN gateway is a notable event left unattended overnight. Even though MFA prevented compromise, the delay highlights a coverage gap for after-hours security signals that could escalate.\n- **Severity:** **Low** (compensating control \u2014 MFA \u2014 was effective)\n\n### Finding 5: Triage SLA Breach on SEV-4 Insider Access Incident INC-2025-506\n- **Related Section:** IRP Section 4.1 (Triage SLA); Incident Register row INC-2025-506\n- **Gap:** INC-2025-506 (employee accessing PHI without business justification) had a triage time of 270 minutes. While the SEV-4 SLA is \"next business day\" (technically met), this incident **involved confirmed PHI access** and arguably should have been classified higher (SEV-2 per Section 3 \u2014 \"suspected PHI exposure\"). Unauthorized PHI access by an insider with no business justification is a confirmed unauthorized disclosure, not a policy violation. Misclassification could affect HIPAA breach notification timing. No HIPAA breach risk assessment is documented for this event in the register.\n- **Severity:** **High**\n\n### Finding 6: Q4 Tabletop Exercise Postponement Creates HIPAA Compliance Gap\n- **Related Section:** IRP Section 8 (Plan Testing); SEC-EXC-2025-088\n- **Gap:** Q4 2025 tabletop exercise was postponed to January 2026 via approved exception. While the exception is properly documented and approved by the CEO, IRP Section 8 states quarterly tabletops are a **HIPAA requirement**, not a discretionary practice. Postponing a HIPAA-mandated control activity due to \"audit preparation workload\" is itself a control failure that an auditor must report. Additionally, this means **zero tabletop exercises occurred during the Q4 observation period** \u2014 a direct testing gap for CC7.3 effectiveness.\n- **Severity:** **Medium**\n\n### Finding 7: HIPAA Breach Risk Assessment Not Evidenced for PHI Incidents\n- **Related Section:** IRP Section 5.2 (Required Post-Mortem Content, item 4)\n- **Gap:** Three Q4 incidents involved PHI: INC-2025-501 (12,400 records accessed), INC-2025-505 (3 patient files encrypted), INC-2025-506 (1 record viewed by unauthorized employee). The policy requires a HIPAA breach risk assessment in each post-mortem. The incident register does not surface whether these assessments were performed, whether 48-hour customer notifications occurred, or whether HHS notification was triggered for INC-2025-501 (which exceeds 500 records and would require expedited HHS reporting under the HIPAA Breach Notification Rule). Evidence of breach notification execution is not provided.\n- **Severity:** **High**\n\n### Finding 8: Single Incident Commander Concentration Risk\n- **Related Section:** Incident Register \u2014 \"assigned_ic\" column\n- **Gap:** Of 8 incidents, Dr. James Okonkwo (CISO) was IC for 4 and Anita Patel (SecOps Lead) for 4. All SEV-1s were handled by the CISO. While not a direct policy violation, the absence of a documented IC rotation or backup IC roster creates key-person risk and limits 24/7/365 coverage assurance for SEV-1/SEV-2 events.\n- **Severity:** **Low**\n\n---\n\n## Summary of Findings\n\n| # | Finding | Severity |\n|---|---------|----------|\n| 1 | Missing post-mortem for INC-2025-503 (SEV-2) | High |\n| 2 | Incomplete action items for ransomware INC-2025-505; no CISO escalation | High |\n| 3 | Initial classification weakness \u2014 INC-2025-504 should have been SEV-2 | Medium |\n| 4 | After-hours triage delay for VPN brute force | Low |\n| 5 | Misclassification of insider PHI access (INC-2025-506) as SEV-4 | High |\n| 6 | Q4 HIPAA-required tabletop not performed in observation period | Medium |\n| 7 | HIPAA breach risk assessments / customer & HHS notifications not evidenced | High |\n| 8 | IC concentration risk | Low |\n\n## Areas Where Controls Operated Effectively\n\n- **INC-2025-501** (SEV-1 PHI breach): Triage in 7 minutes, containment in 24 minutes \u2014 both within SLA. Post-mortem complete with all 6 action items closed. Emergency change properly filed (CHG-2025-E041).\n- **False positive handling (INC-2025-504):** Properly documented per IRP Section 5.1; exception register entry SEC-EXC-2025-091 demonstrates appropriate governance. **This is not a finding** \u2014 the policy explicitly permits this treatment.\n- **Detection tooling:** CrowdStrike, GuardDuty, WAF, and DLP all generated incidents during the period, demonstrating layered detection.\n- **Emergency change integration:** All incident-driven emergency changes were retroactively ticketed, showing IR/change management linkage.\n\n## Overall Opinion\n\nCC7.3 is **partially effective** with significant gaps. The incident response program is well-designed on paper, but execution shows material weaknesses around post-mortem completion, action item closure, severity classification of PHI events, and HIPAA breach notification evidence. Recommend remediation of High findings prior to Type II opinion issuance."
+}

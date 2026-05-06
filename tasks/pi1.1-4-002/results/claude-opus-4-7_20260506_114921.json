@@ -1,0 +1,73 @@
+{
+  "task_id": "pi1.1-4-002",
+  "model": "claude-opus-4-7",
+  "timestamp": "2026-05-06T11:49:21.850910",
+  "score": {
+    "task_id": "pi1.1-4-002",
+    "model": "claude-opus-4-7",
+    "scoring_method": "f1",
+    "recall": 1.0,
+    "precision": 0.25,
+    "f1": 0.4,
+    "score": 0.4,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 1,
+    "red_herrings_total": 1,
+    "model_findings_count": 7,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "red_herring",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "DIC-4510",
+          "stuck in queue",
+          "manual reprocessing",
+          "06:00 UTC"
+        ],
+        "total_keywords": 6,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "DIC-4527",
+          "153",
+          "bulk import",
+          "without user notification",
+          "partial file",
+          "silently",
+          "MIME type",
+          "schema"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "webhook",
+          "URL",
+          "internal network",
+          "SSRF",
+          "VALIDATION GAP"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 6228,
+    "output_tokens": 2383
+  },
+  "raw_response": "# SOC 2 Readiness Assessment: PI1.1 Processing Integrity\n\n**Control:** PI1.1 \u2014 The entity uses processing objectives to define what constitutes complete, accurate, and timely processing.\n\n**Observation Period:** October 1 \u2013 December 31, 2025\n\n**Auditor Conclusion:** Control is **partially effective**. Documented processing objectives exist and most integrity checks operate as designed, but specific validation gaps and one unremediated incident pattern prevent a clean opinion.\n\n---\n\n## Findings\n\n### Finding 1: Webhook URL validation accepts internal/private network targets (SSRF risk to processing integrity)\n\n- **Related to:** API Input Validation Configuration \u2014 `/api/v2/webhooks` endpoint, `url` field\n- **Gap:** The endpoint configuration explicitly notes \"VALIDATION GAP: No URL scheme restriction or domain allowlist enforced. Accepts any URI including internal network addresses.\" This contradicts SDLC Policy \u00a75.1, which requires validation against OpenAPI schemas with adequate constraints. Beyond the security implication, this directly affects processing integrity: events delivered to invalid or internal URLs may be silently lost, retried indefinitely, or routed incorrectly, breaking the \"complete\" processing objective for downstream consumers.\n- **Severity:** **High**\n\n---\n\n### Finding 2: Bulk import accepts partial files without user notification \u2014 repeat/systemic issue\n\n- **Related to:** API Input Validation Configuration \u2014 `/api/v2/bulk-import` endpoint; Integrity Check log DIC-4527 (2025-11-12)\n- **Gap:** The endpoint configuration notes \"File contents are not validated against entity schema before processing. Only MIME type is checked.\" This was directly realized on 2025-11-12 when 153 of 12,000 rows were rejected due to malformed CSV and \"Importer accepted partial file without user notification.\" This violates the core PI1.1 objective of *complete* processing \u2014 partial success was treated as success without alerting the data submitter. The action_taken field shows the discrepancy was detected by the post-hoc integrity check (DIC-4527), but no remediation to the importer itself is documented during the observation window. A subsequent bulk import (DIC-4539, 2025-12-18) passed but does not demonstrate the underlying control was fixed \u2014 only that the next file happened to be clean.\n- **Severity:** **High**\n\n---\n\n### Finding 3: No documented processing objectives / SLA definitions for \"timely\" processing\n\n- **Related to:** SDLC Policy (overall) and the integrity check log\n- **Gap:** PI1.1 requires the entity to define what constitutes complete, accurate, **and timely** processing. The SDLC policy addresses validation and code review but does not define timeliness thresholds (e.g., maximum acceptable latency for order ingestion, payment reconciliation cadence requirements, freshness SLAs for inventory sync). The integrity check log shows scheduled vs. execution times but no benchmark exists to determine whether the observed lags (e.g., DIC-4527 ran 22 minutes; DIC-4512 ran 12 minutes) meet a defined objective. Without explicit timeliness criteria, the auditor cannot conclude the control is designed to meet PI1.1.\n- **Severity:** **Medium**\n\n---\n\n### Finding 4: Order ingestion failure (DIC-4510) lacks root-cause analysis and preventive action\n\n- **Related to:** Integrity Check Log \u2014 DIC-4510 (2025-10-04)\n- **Gap:** Three orders were stuck in queue and required manual reprocessing. While detection and remediation worked (alert triggered, manual reprocessing completed by 06:00 UTC), there is no evidence of a post-incident review, root cause analysis, or preventive control change. PI1.1 readiness expects that detected integrity failures drive systemic improvement. A single isolated incident with strong response would be acceptable; the absence of any RCA documentation is the gap. (Mitigating factor: this appears to be the only order-ingestion failure across ~20 runs in Q4, suggesting it is isolated rather than systemic.)\n- **Severity:** **Low**\n\n---\n\n### Finding 5: Integrity checks are not consistently scheduled across all pipelines\n\n- **Related to:** Integrity Check Log\n- **Gap:** Order ingestion and payment reconciliation run daily/near-daily, but `inventory-sync` shows gaps (e.g., no entries between 10/14 and 11/17), `customer-data-export` runs only ~monthly, and `bulk-import-validation` only logs three runs across the quarter. There is no documented schedule or coverage standard establishing that integrity checks are run at appropriate frequencies for each pipeline's risk profile. The auditor cannot conclude that integrity coverage is comprehensive without a defined cadence policy.\n- **Severity:** **Medium**\n\n---\n\n### Finding 6: Bulk-import endpoint allows `mode: upsert` without idempotency key requirement\n\n- **Related to:** API Input Validation Configuration \u2014 `/api/v2/bulk-import`\n- **Gap:** The `/api/v2/payments` endpoint correctly requires an `idempotency_key`, but `/api/v2/bulk-import` (which supports `upsert` mode and accepts files up to 50MB) does not. Re-submission of a bulk import after a transient failure could result in duplicate processing or inconsistent state, undermining the \"accurate\" and \"complete\" processing objectives.\n- **Severity:** **Medium**\n\n---\n\n### Finding 7: SDLC policy does not require validation of processing-integrity-affecting changes via integrity-check regression\n\n- **Related to:** SDLC Policy \u00a73, \u00a76\n- **Gap:** The deployment process requires staging validation but does not specifically require that changes to data-processing logic be validated against integrity checks (record counts, checksums) before production release. The policy treats integrity controls (the daily DIC-* checks) as detective only, with no link to the preventive SDLC gate. This is a design gap rather than an operating-effectiveness issue.\n- **Severity:** **Low**\n\n---\n\n## Summary Table\n\n| # | Title | Severity |\n|---|-------|----------|\n| 1 | Webhook URL validation accepts internal targets | High |\n| 2 | Bulk import silently accepts partial files (realized incident) | High |\n| 3 | No defined timeliness objectives | Medium |\n| 4 | Order ingestion failure lacks RCA documentation | Low |\n| 5 | Inconsistent integrity-check cadence across pipelines | Medium |\n| 6 | Bulk-import lacks idempotency key | Medium |\n| 7 | SDLC deployment gate not linked to integrity regression | Low |\n\n## Recommendation\n\nTwo **High** findings (Findings 1 and 2) should be remediated prior to a Type 2 examination. Finding 2 is particularly important because it is both a documented design gap **and** a realized control failure during the observation period, weakening management's ability to assert the control operated effectively over Q4 2025."
+}

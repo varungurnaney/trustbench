@@ -1,0 +1,59 @@
+{
+  "task_id": "cc6.6-2-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-05T19:01:51.276254",
+  "score": {
+    "task_id": "cc6.6-2-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_only",
+    "recall": 1.0,
+    "precision": 0.2222222222222222,
+    "f1": 0.3636363636363636,
+    "score": 1.0,
+    "gaps_detected": 2,
+    "gaps_total": 2,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 9,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "FW-018",
+          "9300",
+          "0.0.0.0/0",
+          "Elasticsearch",
+          "sg-prod-analytics",
+          "outbound",
+          "data exfiltration"
+        ],
+        "total_keywords": 8,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": true,
+        "matched_keywords": [
+          "FW-019",
+          "webhook",
+          "0.0.0.0/0",
+          "partner",
+          "allowlist",
+          "inbound"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 1183,
+    "output_tokens": 2078
+  },
+  "raw_response": "## SOC 2 CC6.6 Firewall Rule Review Findings\n\nBased on the production AWS security group export, most inbound application and database tier rules are restricted by security group reference and appear aligned with least-privilege segmentation. However, several rules are overly broad or require additional compensating controls to satisfy CC6.6 expectations for protecting system boundaries from external threats.\n\n| # | Finding Title | Related Rule / Section | Why It\u2019s a Gap | Severity |\n|---|---|---|---|---|\n| 1 | Unrestricted outbound Elasticsearch transport traffic | **FW-018 \u2014 sg-prod-analytics outbound TCP 9300 to 0.0.0.0/0** | TCP 9300 is commonly used for Elasticsearch cluster transport traffic and should not be open to all internet destinations. Allowing the analytics security group to initiate connections to any external IP on this port creates unnecessary exposure, increases data exfiltration risk, and does not follow least privilege. The destination should be restricted to a specific internal security group, private subnet, approved vendor IP range, VPC endpoint, or other controlled destination. | **High** |\n| 2 | Broad outbound internet access from application tier | **FW-008 \u2014 sg-prod-app-tier outbound TCP 443 to 0.0.0.0/0** | The rule permits the production application tier to establish HTTPS connections to any internet destination. While outbound HTTPS may be required for Stripe, Twilio, or other third-party APIs, the rule is broader than necessary. Without destination restrictions, an egress proxy, AWS prefix lists, DNS filtering, or firewall inspection, compromised workloads could communicate with unapproved external services or exfiltrate data over HTTPS. | **Medium** |\n| 3 | Broad outbound internet access from analytics tier for S3 exports | **FW-017 \u2014 sg-prod-analytics outbound TCP 443 to 0.0.0.0/0** | The description indicates this rule is for S3 exports, but the destination allows all internet IPs over HTTPS. For S3 access, security best practice is to use an S3 VPC endpoint, AWS-managed prefix list, or other explicit egress control rather than unrestricted internet egress. The current rule expands the attack surface and does not evidence least-privilege boundary protection. | **Medium** |\n| 4 | Broad outbound internet access from monitoring tier | **FW-021 \u2014 sg-prod-monitoring outbound TCP 443 to 0.0.0.0/0** | The monitoring tier is allowed to connect to any external HTTPS destination for PagerDuty and Slack alerts. While alerting integrations may require outbound HTTPS, the rule lacks restriction to approved destinations or evidence of compensating egress controls such as proxy allowlisting, DNS filtering, or firewall inspection. This could allow unauthorized outbound communication if monitoring infrastructure is compromised. | **Medium** |\n| 5 | Public webhook endpoint open to all internet sources | **FW-019 \u2014 sg-prod-webhook inbound TCP 443 from 0.0.0.0/0** | Inbound HTTPS from the internet may be required for partner webhooks, but the rule permits traffic from any external source. If partners publish static IP ranges or if webhook traffic can be routed through a controlled edge layer, source restrictions should be applied. At minimum, evidence should exist for compensating controls such as WAF rules, webhook signature validation, rate limiting, DDoS protections, and logging/monitoring. Without those controls evidenced, the endpoint is more exposed than necessary. | **Medium** |\n| 6 | HTTP exposed publicly without evidence of enforced redirect-only behavior | **FW-002 \u2014 sg-prod-alb-public inbound TCP 80 from 0.0.0.0/0** | The description states HTTP is allowed only to redirect to HTTPS. Public TCP 80 exposure can be acceptable when strictly used for redirect, but the export alone does not evidence that the ALB listener only performs a redirect and does not serve application content over plaintext HTTP. Evidence should confirm HTTP-to-HTTPS redirection, HSTS configuration where appropriate, and no sensitive content served over HTTP. | **Low** |\n| 7 | Bastion inbound SSH source range is broad | **FW-012 \u2014 sg-prod-bastion inbound TCP 22 from 10.3.0.0/16** | SSH to the bastion is restricted to a VPN CIDR, which is better than internet exposure; however, a full `/16` VPN range may be broader than necessary. The rule does not demonstrate restriction to specific administrative subnets, user groups, or hardened access paths. For stronger boundary protection, SSH access should be limited to specific VPN subnets or managed access solutions, with MFA, just-in-time access, and logging. | **Medium** |\n| 8 | Bastion outbound SSH permitted to entire production subnet range | **FW-013 \u2014 sg-prod-bastion outbound TCP 22 to 10.0.0.0/16** | The bastion can initiate SSH to the entire production CIDR. This is broader than least privilege and increases lateral movement risk if the bastion is compromised. Access should be limited to specific administrative target security groups or hosts that require SSH, preferably using security group references, session manager, or just-in-time access controls. | **Medium** |\n| 9 | Monitoring inbound access allowed from entire production CIDR | **FW-014 \u2014 sg-prod-monitoring inbound TCP 9090 from 10.0.0.0/16** | Prometheus or monitoring access on TCP 9090 is allowed from the full production CIDR. Monitoring interfaces can expose sensitive metrics and operational data. The source should be limited to specific monitoring collectors, service security groups, or internal load balancers rather than the entire production network. | **Medium** |\n\n## Rules That Appear Appropriately Restricted\n\nThe following rules appear generally aligned with least-privilege security group design because they use specific security group references or limited internal sources/destinations:\n\n- **FW-001** \u2014 Public HTTPS to ALB is expected for an internet-facing web application.\n- **FW-003 / FW-004** \u2014 ALB to application tier on TCP 8080 is restricted by security group.\n- **FW-005** \u2014 App tier SSH limited to bastion security group.\n- **FW-006 / FW-009 / FW-023** \u2014 Database access limited to specific application/internal API tiers.\n- **FW-007 / FW-011** \u2014 Redis access limited between app tier and cache tier.\n- **FW-010** \u2014 Analytics access to PostgreSQL is restricted by security group, though database-level read-only permissions should also be validated separately.\n- **FW-015** \u2014 Grafana access limited to bastion security group.\n- **FW-016** \u2014 Analytics API access limited to app tier.\n- **FW-020** \u2014 Webhook forwarding limited to internal app tier.\n- **FW-022** \u2014 Internal API inbound access limited to app tier.\n\n## Overall Assessment\n\nThe security group configuration shows a generally segmented production environment, with most internal application, database, cache, and service-to-service flows restricted by security group references. The primary compliance gaps relate to **unrestricted outbound internet egress**, **overly broad internal CIDR-based access**, and **publicly exposed endpoints that require additional compensating control evidence**.\n\nThe most significant issue is **FW-018**, which allows outbound Elasticsearch transport traffic to `0.0.0.0/0` on TCP 9300 and should be remediated or formally justified with strong compensating controls."
+}

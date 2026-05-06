@@ -1,0 +1,64 @@
+{
+  "task_id": "cc7.2-3-001",
+  "model": "gpt-5.5",
+  "timestamp": "2026-05-06T11:28:47.125137",
+  "score": {
+    "task_id": "cc7.2-3-001",
+    "model": "gpt-5.5",
+    "scoring_method": "detection_and_precision",
+    "recall": 0.3333333333333333,
+    "precision": 1.0,
+    "f1": 0.5,
+    "score": 0.3333333333333333,
+    "gaps_detected": 1,
+    "gaps_total": 3,
+    "red_herrings_flagged": 0,
+    "red_herrings_total": 0,
+    "model_findings_count": 1,
+    "finding_results": [
+      {
+        "finding_id": "F-001",
+        "finding_type": "gap",
+        "severity": "high",
+        "detected": true,
+        "matched_keywords": [
+          "customer-identity-resolution",
+          "CAS-SVC-013",
+          "October 20",
+          "7 business days",
+          "not integrated",
+          "1.2M events",
+          "Fluent Bit"
+        ],
+        "total_keywords": 9,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-002",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [
+          "CAS-SVC-013",
+          "CloudWatch only"
+        ],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      },
+      {
+        "finding_id": "F-003",
+        "finding_type": "gap",
+        "severity": "medium",
+        "detected": false,
+        "matched_keywords": [],
+        "total_keywords": 7,
+        "correctly_dismissed": false
+      }
+    ]
+  },
+  "usage": {
+    "input_tokens": 2360,
+    "output_tokens": 879
+  },
+  "raw_response": "## Finding 1: New Production Service Not Integrated with SIEM Within Required SLA\n\n**Related document section:**  \n- Security Monitoring Policy \u00a73.1 \u2014 SIEM Coverage Requirement  \n- Security Monitoring Policy \u00a73.2 \u2014 Integration Validation  \n- Security Monitoring Policy \u00a74.1 \u2014 Required Alert Categories  \n- SOC 2 CC7.2 \u2014 Monitoring system components for anomalies indicative of malicious acts, disasters, or errors\n\n**Why it\u2019s a gap:**  \nThe Q4 deployment log shows a new production service, **customer-identity-resolution / CAS-SVC-013**, was deployed on **October 20, 2025**.\n\nPer policy, all production services must be integrated with the centralized SIEM within **7 business days** of production deployment. Based on the deployment date, the service should have been integrated by approximately **October 29, 2025**.\n\nHowever, the SIEM coverage tracker as of **December 31, 2025** shows:\n\n- **SIEM status:** Pending / Not Integrated  \n- **Log types ingested:** N/A  \n- **Alert rules count:** 0  \n- **Last ingestion check:** N/A  \n- **Current logging:** CloudWatch only  \n- **Reason:** Blocked pending custom Fluent Bit parser development\n\nThis means the service operated in production for most of Q4 without centralized SIEM monitoring, without validated log ingestion, and without service-specific alerting. The gap is heightened because the service processes **customer behavioral data, device fingerprints, cross-device matching, and approximately 1.2M events/day**. Without SIEM integration and alert rules, Cascade may not detect or analyze anomalies related to unauthorized access, abnormal data usage, processing errors, or malicious activity affecting this service.\n\n**Severity:** High"
+}

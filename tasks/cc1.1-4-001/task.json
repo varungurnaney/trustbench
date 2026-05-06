@@ -1,0 +1,106 @@
+{
+  "id": "cc1.1-4-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "CC1.1",
+  "control_description": "The entity demonstrates a commitment to integrity and ethical values.",
+  "difficulty": 4,
+  "category": "red_herring",
+  "evidence_files": [
+    {
+      "path": "evidence/security-committee-charter.md",
+      "type": "policy",
+      "description": "ISGC charter defining membership, quorum requirements, meeting cadence, and alternate async review procedures"
+    },
+    {
+      "path": "evidence/committee-meeting-log.csv",
+      "type": "log",
+      "description": "Committee meeting log for 2025 showing all four quarterly meetings including one async review"
+    },
+    {
+      "path": "evidence/exception-register.csv",
+      "type": "exception_register",
+      "description": "Security exception register tracking all approved policy deviations with compensating controls"
+    },
+    {
+      "path": "evidence/security-metrics-dashboard.md",
+      "type": "report",
+      "description": "Annual security metrics dashboard with five KPIs tracked quarterly"
+    }
+  ],
+  "noise_files": [
+    {
+      "path": "evidence/employee-satisfaction-survey-summary.md",
+      "type": "report",
+      "description": "Annual employee satisfaction survey results — not directly relevant to CC1.1 security governance assessment"
+    }
+  ],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Crestwood Dynamics covering the audit period January 1 - December 31, 2025. Review all provided evidence artifacts and assess the operating effectiveness of governance controls under CC1.1 (Commitment to Integrity and Ethical Values). Evaluate whether the security committee fulfilled its charter obligations, whether exceptions were properly managed, and whether security oversight was maintained throughout the year. Note that the committee charter allows asynchronous reviews under specific conditions — evaluate whether any async reviews met the charter requirements before flagging them as gaps. Not all documents may be relevant to the assessment.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "red_herring",
+      "severity": "low",
+      "title": "Q3 async review properly followed charter Section 3.3 alternate procedures — not a finding",
+      "description": "The Q3 2025 meeting was conducted as an asynchronous email review instead of an in-person meeting. This initially appears to be a governance gap (missed quarterly meeting). However, the committee charter (Section 3.3) explicitly permits asynchronous reviews in extraordinary circumstances, provided: (1) written approval from quorum (3 of 5), (2) materials distributed 5+ business days in advance, (3) responses documented and retained, and (4) ratification at next in-person meeting. The meeting log confirms all four conditions were met: materials distributed July 9 (7 business days before responses), 4 of 5 members provided email approval (exceeding quorum), and the Q4 meeting formally ratified the Q3 async decisions. This is NOT a finding — the charter's alternate procedure was properly invoked and executed.",
+      "evidence_sources": ["evidence/committee-meeting-log.csv", "evidence/security-committee-charter.md"],
+      "expected_reasoning": "Q3 listed as 'Async Review' in meeting log. Check charter Section 3.3 for alternate procedures. Verify: materials sent July 9 (7 business days advance - exceeds 5 day requirement). 4 of 5 approvals (exceeds 3 quorum). Q4 minutes show ratification. All conditions met. Not a finding.",
+      "detection_criteria": {
+        "required_keywords": ["Q3", "async", "Section 3.3", "charter", "quorum", "ratified", "Q4", "not a finding", "alternate procedure"],
+        "minimum_keyword_matches": 3,
+        "exclusion_keywords": ["finding", "gap", "missed meeting", "deficiency"]
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "Q2 meeting had no quorum — only 2 of 5 required members attended, no decisions valid",
+      "description": "The Q2 2025 meeting (April 16) had only 2 of 5 members present: the CISO (Richard Tanaka) and VP of Engineering (Karen Petrova). The charter (Section 3.2) requires a quorum of 3 of 5 voting members for the committee to conduct official business. The meeting log confirms quorum_met=No, status 'Completed — No Quorum,' and 'None — no quorum to approve decisions' in the decisions column. The CEO was traveling internationally, CFO was at a subsidiary board meeting, and GC had a family emergency. Critically, the notes state: 'CISO noted need to reschedule but rescheduled meeting never occurred.' Unlike Q3 where the CISO properly invoked the async procedure (Section 3.3), no such alternate procedure was used for Q2. This means Q2 had no valid governance oversight — no risk register review, no policy approvals, and no metrics review for an entire quarter.",
+      "evidence_sources": ["evidence/committee-meeting-log.csv", "evidence/security-committee-charter.md"],
+      "expected_reasoning": "Meeting log shows Q2 quorum_met=No, only 2 of 5 members. No decisions made. CISO planned to reschedule but never did. Unlike Q3 which used the charter's async procedure, Q2 had no alternate governance. Full quarter without valid committee oversight.",
+      "detection_criteria": {
+        "required_keywords": ["Q2", "2 of 5", "no quorum", "no decisions", "reschedule", "never occurred", "April", "governance gap"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "Q2 governance gap coincides with Q2 security metrics degradation that went unreviewed",
+      "description": "The Q2 2025 quarter — during which no valid committee meeting occurred — was the same quarter that saw the highest security incident volume (44 incidents, including the only P1 incident of the year: INC-2025-062 ransomware attempt), the highest phishing click rate (12.4% vs 10% target), and a dip in critical vulnerability SLA compliance from Q1. The security metrics dashboard shows Q2 was the worst-performing quarter across multiple KPIs. Because the Q2 committee meeting lacked quorum, these metrics were not reviewed by the governance body, decisions on remediation actions were not made, and the P1 incident retrospective did not receive committee oversight until Q3. The committee's failure to maintain governance during a period of elevated risk is a compounding concern.",
+      "evidence_sources": ["evidence/security-metrics-dashboard.md", "evidence/committee-meeting-log.csv"],
+      "expected_reasoning": "Cross-reference Q2 meeting failure with Q2 metrics. Q2 had highest incident volume (44), only P1 (INC-2025-062), highest phishing rate (12.4%), declining vuln SLA. All went unreviewed due to no quorum. Governance gap during highest-risk quarter.",
+      "detection_criteria": {
+        "required_keywords": ["Q2", "no quorum", "incident", "INC-2025-062", "phishing", "12.4%", "metrics", "unreviewed", "P1"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "low",
+      "title": "Committee charter review overdue — charter review date was January 2025",
+      "description": "The ISGC charter (GOV-ISGC-001 v2.0) specifies 'Next Charter Review: January 2025' at the bottom of the document. As of the end of the audit period (December 31, 2025), there is no evidence the charter was reviewed or updated. The charter remains at version 2.0 with an effective date of January 15, 2024. While this is a lower severity issue, the charter governs the committee's own operating procedures, and a stale charter means the governance body's foundational document has not been validated for currency in nearly two years.",
+      "evidence_sources": ["evidence/security-committee-charter.md"],
+      "expected_reasoning": "Charter footer shows 'Next Charter Review: January 2025.' Still version 2.0 from January 2024. No evidence of review. The governing document for governance is itself out of date.",
+      "detection_criteria": {
+        "required_keywords": ["charter review", "January 2025", "overdue", "version 2.0", "January 2024", "not reviewed", "stale"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "f1",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "30 minutes",
+    "documents_count": 5,
+    "relevant_documents_count": 4,
+    "tags": ["governance", "quorum", "async_review", "red_herring", "committee_meeting", "metrics_oversight", "noise_document", "charter_review"]
+  }
+}

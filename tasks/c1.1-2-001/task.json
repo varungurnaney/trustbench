@@ -1,0 +1,89 @@
+{
+  "id": "c1.1-2-001",
+  "version": "1.0",
+  "framework": "SOC2",
+  "control": "C1.1",
+  "control_description": "The entity identifies and maintains confidential information to meet the entity's objectives related to confidentiality.",
+  "difficulty": 2,
+  "category": "detection",
+  "evidence_files": [
+    {
+      "path": "evidence/tls-audit-report.csv",
+      "type": "config",
+      "description": "TLS configuration audit report for all Crestline Data Systems endpoints (18 endpoints scanned)"
+    },
+    {
+      "path": "evidence/certificate-inventory.csv",
+      "type": "spreadsheet",
+      "description": "Certificate inventory with renewal status and monitoring configuration"
+    }
+  ],
+  "noise_files": [],
+  "prompt": "You are conducting a SOC 2 Type II readiness assessment for Crestline Data Systems covering Q4 2025 (October 1 - December 31, 2025). Review the TLS audit report and certificate inventory to assess the organization's encryption posture for data in transit under C1.1 and CC6.7. Identify any endpoints with weak encryption, expiring certificates, or configuration gaps.",
+  "findings": [
+    {
+      "id": "F-001",
+      "type": "gap",
+      "severity": "critical",
+      "title": "legacy-reporting.crestline.com running TLS 1.0 with CBC cipher in production",
+      "description": "Row 16 of the TLS audit report shows legacy-reporting.crestline.com is running TLS 1.0 with TLS_RSA_WITH_AES_128_CBC_SHA cipher. TLS 1.0 has been deprecated since March 2021 (RFC 8996) and is vulnerable to BEAST, POODLE, and other attacks. This endpoint is classified as Confidential and serves quarterly financial reports to enterprise clients. The CBC mode cipher is also vulnerable to padding oracle attacks. This is a production endpoint handling confidential data with a deprecated, insecure protocol.",
+      "evidence_sources": ["evidence/tls-audit-report.csv"],
+      "expected_reasoning": "Scan the TLS audit CSV for protocol versions below TLS 1.2 → row 16 shows legacy-reporting.crestline.com with TLS 1.0 → data classification is Confidential → serves financial reports → critical violation of encryption standards.",
+      "detection_criteria": {
+        "required_keywords": ["legacy-reporting", "TLS 1.0", "deprecated", "CBC", "financial reports", "Confidential", "enterprise clients"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-002",
+      "type": "gap",
+      "severity": "high",
+      "title": "CERT-011 for legacy-reporting.crestline.com expires January 30 with no auto-renewal",
+      "description": "The certificate inventory shows CERT-011 for legacy-reporting.crestline.com expires on 2026-01-30, approximately 33 days from the audit scan date. Auto-renewal is set to 'No' and the notes state 'no auto-renewal configured.' Combined with the TLS 1.0 issue on this same endpoint, this suggests the legacy reporting system is unmaintained. If the certificate expires, it will either cause an outage or force users to bypass certificate warnings.",
+      "evidence_sources": ["evidence/certificate-inventory.csv"],
+      "expected_reasoning": "Certificate inventory shows CERT-011 expiring 2026-01-30 with auto_renewal_enabled=No → only 33 days from scan date → manual renewal required but no process evident → risk of expiration.",
+      "detection_criteria": {
+        "required_keywords": ["CERT-011", "legacy-reporting", "January 30", "auto-renewal", "No", "expires", "manual"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-003",
+      "type": "gap",
+      "severity": "medium",
+      "title": "CERT-007 for internal-tools.crestline.net expires January 10 with no auto-renewal",
+      "description": "CERT-007 for internal-tools.crestline.net expires on 2026-01-10 (approximately 13 days from the scan date) with auto-renewal disabled and manual renewal required. While this is an internal endpoint, the tight timeline combined with a holiday period (early January) creates a risk of certificate expiration and potential service disruption.",
+      "evidence_sources": ["evidence/certificate-inventory.csv"],
+      "expected_reasoning": "CERT-007 expires January 10 → no auto-renewal → manual renewal during holiday period → high risk of missing renewal deadline.",
+      "detection_criteria": {
+        "required_keywords": ["CERT-007", "internal-tools", "January 10", "auto-renewal", "manual", "expires"],
+        "minimum_keyword_matches": 3
+      }
+    },
+    {
+      "id": "F-004",
+      "type": "gap",
+      "severity": "medium",
+      "title": "legacy-reporting.crestline.com has HSTS disabled in production",
+      "description": "The TLS audit shows legacy-reporting.crestline.com has HSTS (HTTP Strict Transport Security) disabled. Without HSTS, users could be downgraded to HTTP via man-in-the-middle attacks, bypassing TLS encryption entirely. This is a production endpoint serving confidential financial reports.",
+      "evidence_sources": ["evidence/tls-audit-report.csv"],
+      "expected_reasoning": "HSTS is disabled on a production endpoint classified Confidential → users could be downgraded from HTTPS to HTTP → combined with the TLS 1.0 issue, this endpoint has multiple encryption weaknesses.",
+      "detection_criteria": {
+        "required_keywords": ["legacy-reporting", "HSTS", "disabled", "downgrade", "production", "Confidential"],
+        "minimum_keyword_matches": 3
+      }
+    }
+  ],
+  "scoring": {
+    "method": "detection_only",
+    "max_expected_findings": 8
+  },
+  "metadata": {
+    "author": "TrustBench",
+    "created_date": "2026-05-05",
+    "estimated_human_time": "12 minutes",
+    "documents_count": 2,
+    "relevant_documents_count": 2,
+    "tags": ["TLS", "certificates", "encryption_in_transit", "deprecated_protocol", "certificate_expiration"]
+  }
+}
